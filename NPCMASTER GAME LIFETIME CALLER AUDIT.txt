@@ -1,0 +1,867 @@
+NPCMASTER GAME LIFETIME CALLER AUDIT
+Program: SCUS_971.40
+Generated: Tue Nov 24 12:02:22 MST 2026
+Targets: init__4Game, destroy__4Game, doLevel__F6eLevelT0
+
+############################################################
+TARGET FUNCTION: doLevel__F6eLevelT0
+ENTRY: 001008d8
+NON-FUNCTION REFERENCE: Entry Point TYPE: EXTERNAL
+
+============================================================
+CALLER: main
+CALLER ENTRY: 001014d0
+TARGET: doLevel__F6eLevelT0
+CALLSITE: 001015e8
+INSTRUCTION CONTEXT:
+001015d8  li a0,0x1
+001015dc  sw zero,0x6af4(s0)
+001015e0  sb zero,0x6af8(s0)
+001015e4  sb a0,-0x2e20(gp)
+001015e8  jal 0x001008d8
+001015ec  _lw a1,-0x4ba0(gp)
+001015f0  move a0,v0
+001015f4  lw v0,-0x4ba4(gp)
+001015f8  beql v0,zero,0x00101614
+DECOMPILED CALLER:
+
+void main(void)
+
+{
+  int iVar1;
+  long lVar2;
+  long lVar3;
+  int iVar4;
+  
+  iVar4 = 0;
+  __main();
+  gameState = 0xffffffff;
+  startGame__Fv();
+  do {
+    gameState = 0;
+    ShowBootSequence__Fb(iVar4 == 0);
+    if (game._92916_4_ == 0) {
+      game._82708_4_ = 0x28;
+      game._82460_4_ = 1;
+      game._82704_4_ = 7;
+      NewGame__Fv();
+    }
+    iVar4 = iVar4 + 1;
+    game._82708_4_ = 0x28;
+    actualPreviousLevel = 0x28;
+    game._92912_4_ = 0;
+    _4Game_transition_via_slideshow = 0;
+    _4Game_transition_disable_sound_load = 0;
+    skipPreLevelMovie = 0;
+    lVar3 = 7;
+    do {
+      iVar1 = game._92916_4_;
+      if ((game._92916_4_ != 0) && (iVar1 = 0, game[0x16af8] == '\0')) {
+        iVar1 = game._92916_4_;
+      }
+      if (iVar1 == 0) {
+        lVar2 = lVar3;
+        if ((game._92916_4_ != 0) && (game[0x16af8] != '\0')) {
+          lVar2 = 1;
+          game._92916_4_ = 0;
+          game[0x16af8] = '\0';
+          _4Game_loaded_sage_from_front_end = 1;
+        }
+        lVar2 = doLevel__F6eLevelT0(lVar2,actualPreviousLevel);
+      }
+      else {
+        game._92916_4_ = 0;
+        gameState = 1;
+        lVar2 = doSavedLevel__Fv();
+      }
+      if (sFinishGame != 0) {
+        FinishGame__Fv();
+        game._92912_4_ = 1;
+        lVar2 = 0x28;
+      }
+      actualPreviousLevel = (undefined4)lVar3;
+      lVar3 = lVar2;
+    } while (((game._92916_4_ != 0) || (lVar2 != 0x28)) || (lVar3 = 7, game._92912_4_ == 0));
+  } while( true );
+}
+
+
+
+############################################################
+TARGET FUNCTION: init__4Game
+ENTRY: 002bde60
+NON-FUNCTION REFERENCE: Entry Point TYPE: EXTERNAL
+
+============================================================
+CALLER: doLevel__F6eLevelT0
+CALLER ENTRY: 001008d8
+TARGET: init__4Game
+CALLSITE: 00100920
+INSTRUCTION CONTEXT:
+00100910  move a0,v1
+00100914  sd s2,0x130(sp)
+00100918  lbu s0,-0x2e20(gp)
+0010091c  lw s4,0x74d4(s1)
+00100920  jal 0x002bde60
+00100924  _lw s2,0x74d8(s1)
+00100928  beq s0,zero,0x0010093c
+0010092c  _nop
+00100930  sb s0,-0x2e20(gp)
+DECOMPILED CALLER:
+
+undefined8 doLevel__F6eLevelT0(int param_1,long param_2)
+
+{
+  bool bVar1;
+  undefined4 uVar2;
+  undefined4 uVar3;
+  char cVar4;
+  undefined1 *puVar5;
+  undefined8 *puVar6;
+  long lVar7;
+  undefined4 *puVar8;
+  undefined8 *puVar9;
+  undefined8 *puVar10;
+  undefined8 uVar11;
+  undefined8 uVar12;
+  undefined8 *puVar13;
+  undefined8 *puVar14;
+  int iVar15;
+  undefined8 uVar16;
+  undefined8 uStack_190;
+  undefined4 uStack_188;
+  undefined4 uStack_184;
+  undefined4 uStack_180;
+  undefined1 uStack_17c;
+  undefined1 uStack_17b;
+  undefined1 uStack_17a;
+  undefined1 uStack_179;
+  undefined4 uStack_170;
+  undefined4 uStack_16c;
+  undefined4 uStack_168;
+  undefined4 uStack_164;
+  undefined4 uStack_160;
+  undefined4 uStack_15c;
+  undefined4 uStack_158;
+  undefined4 uStack_154;
+  undefined4 uStack_150;
+  undefined4 uStack_14c;
+  undefined4 uStack_148;
+  undefined4 uStack_144;
+  undefined4 uStack_140;
+  undefined4 uStack_13c;
+  undefined4 uStack_138;
+  undefined4 uStack_134;
+  undefined4 auStack_130 [16];
+  undefined1 auStack_f0 [4];
+  undefined8 uStack_ec;
+  undefined4 auStack_e4 [13];
+  undefined1 uStack_b0;
+  undefined1 uStack_af;
+  undefined1 uStack_ae;
+  undefined5 uStack_ad;
+  undefined8 uStack_a8;
+  undefined *puStack_a0;
+  undefined4 uStack_90;
+  undefined4 uStack_8c;
+  undefined4 uStack_88;
+  
+  cVar4 = _4Game_loaded_sage_from_front_end;
+  uVar3 = game._95448_4_;
+  uVar2 = game._95444_4_;
+  puVar9 = &uStack_190;
+  init__4Game(0x3c4590);
+  if (cVar4 != '\0') {
+    game._95444_4_ = uVar2;
+    game._95448_4_ = uVar3;
+    _4Game_loaded_sage_from_front_end = cVar4;
+  }
+  menu_init__Fv();
+  if (s_playMode == 0) {
+    SetClearColor__13sysDisplayEnvUcUcUcUc(_13sysDisplayEnv_pTheDisplayEnv,0,0,0x33,0xff);
+    do {
+      PregameMenu__Fv();
+      param_1 = *(int *)(gLevelManager + 0x7c);
+      if (game._96100_4_ == 0) {
+        bVar1 = false;
+      }
+      else {
+        if (game._96100_4_ == 500) {
+          PlayMovie__F7eMoviesb10eMovieExit(0x26,0,2);
+          uVar11 = 0x11;
+LAB_00100a14:
+          PlayMovie__F7eMoviesb10eMovieExit(uVar11,0,2);
+        }
+        else {
+          if (game._96100_4_ == 0x1f5) {
+            PlayMovie__F7eMoviesb10eMovieExit(9,0,2);
+            uVar11 = 0x16;
+            goto LAB_00100a14;
+          }
+          if (game._96100_4_ == 0x1f6) {
+            PlayMovie__F7eMoviesb10eMovieExit(0x15,0,2);
+            PlayMovie__F7eMoviesb10eMovieExit(0xb,0,2);
+            uVar11 = 0x13;
+            goto LAB_00100a14;
+          }
+          if (game._96100_4_ == 0x1f7) {
+            PlayMovie__F7eMoviesb10eMovieExit(0xc,0,2);
+            uVar11 = 0x25;
+            goto LAB_00100a14;
+          }
+          PlayMovie__F7eMoviesb10eMovieExit(game._96100_4_,0,0);
+        }
+        bVar1 = true;
+        game._92904_4_ = 0;
+      }
+    } while (bVar1);
+    SetClearColor__13sysDisplayEnvUcUcUcUc(_13sysDisplayEnv_pTheDisplayEnv,0,0,0,0xff);
+    gameState = (uint)(param_1 != 1);
+  }
+  _4Game_transition_via_slideshow = 0;
+  lVar7 = TransitionIsSlideShow__F6eLevel(param_1);
+  if (lVar7 != 0) {
+    _4Game_transition_via_slideshow = 1;
+  }
+  if (gLevelManager != 0) {
+    if (*(int *)(gLevelManager + 0x80) == 0) {
+      uStack_188 = 0x43c80000;
+      uStack_184 = 0x42f00000;
+      uStack_180 = 0x43020000;
+      uStack_179 = 0;
+      iVar15 = 3;
+      uStack_190._6_1_ = 0;
+      uStack_190._7_1_ = 0;
+      uStack_17c = 0;
+      uStack_17b = 0;
+      uStack_17a = 0;
+      uStack_170 = 0;
+      uStack_164 = 0x3f800000;
+      uStack_16c = 0;
+      uStack_168 = 0;
+      uStack_160 = 0;
+      uStack_154 = 0x3f800000;
+      uStack_15c = 0;
+      uStack_158 = 0;
+      uStack_150 = 0;
+      uStack_144 = 0x3f800000;
+      uStack_14c = 0;
+      uStack_148 = 0;
+      uStack_140 = 0;
+      uStack_134 = 0x3f800000;
+      uStack_13c = 0;
+      uStack_138 = 0;
+      do {
+        iVar15 = iVar15 + -1;
+      } while (iVar15 != -1);
+      uStack_190._4_1_ = 0xff;
+      puVar8 = auStack_130;
+      uStack_190._5_1_ = 0;
+      puStack_a0 = PTR_DAT_00434fb0;
+      iVar15 = 0xf;
+      do {
+        *puVar8 = puStack_a0;
+        iVar15 = iVar15 + -1;
+        puVar8 = puVar8 + 1;
+      } while (-1 < iVar15);
+      puVar5 = auStack_f0;
+      iVar15 = 3;
+      do {
+        *puVar5 = 0x30;
+        iVar15 = iVar15 + -1;
+        puVar5[1] = 0;
+        puVar5[2] = 0;
+        puVar5[3] = 0;
+        uStack_90 = 0xbe800000;
+        uStack_8c = 0x3f000000;
+        uStack_88 = 0x3e800000;
+        *(undefined8 *)(puVar5 + 4) = 0x3f000000be800000;
+        *(undefined4 *)(puVar5 + 0xc) = 0x3e800000;
+        puVar5 = puVar5 + 0x10;
+      } while (-1 < iVar15);
+      uStack_ae = 0;
+      uStack_af = 0x80;
+      uStack_b0 = 0x80;
+      uStack_190._0_4_ = 0;
+      LoadLevelSettings__F6eLevelR14LevelStartInfo(param_1,&uStack_190);
+      puVar14 = (undefined8 *)(gLevelManager + 0x80);
+      do {
+        puVar10 = puVar14;
+        uVar16 = puVar9[1];
+        uVar11 = puVar9[2];
+        uVar12 = puVar9[3];
+        *puVar10 = *puVar9;
+        puVar10[1] = uVar16;
+        puVar10[2] = uVar11;
+        puVar10[3] = uVar12;
+        puVar9 = puVar9 + 4;
+        puVar14 = puVar10 + 4;
+      } while (puVar9 != (undefined8 *)&uStack_b0);
+      puVar10[4] = CONCAT53(uStack_ad,CONCAT12(uStack_ae,CONCAT11(uStack_af,uStack_b0)));
+      puVar10[5] = uStack_a8;
+    }
+    else {
+      puVar10 = (undefined8 *)(gLevelManager + 0x160);
+      puVar9 = &uStack_190;
+      puVar14 = (undefined8 *)(gLevelManager + 0x80);
+      do {
+        puVar13 = puVar14;
+        puVar6 = puVar9;
+        uVar11 = puVar13[1];
+        uVar12 = puVar13[2];
+        uVar16 = puVar13[3];
+        *puVar6 = *puVar13;
+        puVar6[1] = uVar11;
+        puVar6[2] = uVar12;
+        puVar6[3] = uVar16;
+        puVar14 = puVar13 + 4;
+        puVar9 = puVar6 + 4;
+      } while (puVar14 != puVar10);
+      uVar11 = puVar13[5];
+      puVar6[4] = *puVar14;
+      puVar6[5] = uVar11;
+      LoadLevelSettings__F6eLevelR14LevelStartInfo(param_1,&uStack_190);
+      puVar9 = (undefined8 *)(gLevelManager + 0x80);
+      puVar14 = &uStack_190;
+      do {
+        puVar6 = puVar14;
+        puVar10 = puVar9;
+        uVar11 = puVar6[1];
+        uVar12 = puVar6[2];
+        uVar16 = puVar6[3];
+        *puVar10 = *puVar6;
+        puVar10[1] = uVar11;
+        puVar10[2] = uVar12;
+        puVar10[3] = uVar16;
+        puVar14 = puVar6 + 4;
+        puVar9 = puVar10 + 4;
+      } while (puVar14 != (undefined8 *)&uStack_b0);
+      uVar11 = puVar6[5];
+      puVar10[4] = *puVar14;
+      puVar10[5] = uVar11;
+    }
+  }
+  if (skipPreLevelMovie == '\0') {
+    PlayPreLevelMovie__F6eLevel(param_1);
+  }
+  else {
+    skipPreLevelMovie = '\0';
+  }
+  loadLevel__F6eLevelT0(param_1,param_2);
+  if (((param_1 == 1) && (param_2 == 0x28)) && (_4Game_loaded_sage_from_front_end != '\0')) {
+    LoadToSage__Fii(game._95444_4_,game._95448_4_);
+    game._95448_4_ = 0xffffffff;
+    game._95444_4_ = 0xffffffff;
+  }
+  do {
+    startLevel__F6eLevel(param_1);
+    game._92904_4_ = 1;
+    game[0x16afa] = '\0';
+    uVar11 = runLevel__F6eLevel(param_1);
+  } while (game[0x16afa] != '\0');
+  if ((game._92912_4_ == 0) && ((game._96364_2_ & 0x3b0) == 0)) {
+    PlayPostLevelMovie__F6eLevelT0(param_1,uVar11);
+  }
+  if ((game._96364_2_ & 0x200) != 0) {
+    skipPreLevelMovie = '\x01';
+  }
+  return uVar11;
+}
+
+
+
+============================================================
+CALLER: doSavedLevel__Fv
+CALLER ENTRY: 00101028
+TARGET: init__4Game
+CALLSITE: 00101148
+INSTRUCTION CONTEXT:
+00101138  lui v0,0x1
+0010113c  addu s1,a0,v0
+00101140  lbu s0,-0x2e20(gp)
+00101144  lw s7,0x74d4(s1)
+00101148  jal 0x002bde60
+0010114c  _lw s8,0x74d8(s1)
+00101150  beq s0,zero,0x00101164
+00101154  _nop
+00101158  sb s0,-0x2e20(gp)
+DECOMPILED CALLER:
+
+undefined8 doSavedLevel__Fv(void)
+
+{
+  undefined4 uVar1;
+  undefined4 uVar2;
+  char cVar3;
+  undefined8 *puVar4;
+  undefined1 *puVar5;
+  long lVar6;
+  int iVar7;
+  undefined4 *puVar8;
+  undefined8 *puVar9;
+  undefined8 *puVar10;
+  undefined8 *puVar11;
+  undefined8 uVar12;
+  undefined8 uVar13;
+  undefined8 uVar14;
+  long lVar15;
+  uint uVar16;
+  uint uVar17;
+  undefined *puStack_1b0;
+  int iStack_1ac;
+  undefined4 uStack_1a0;
+  undefined4 uStack_19c;
+  undefined4 uStack_198;
+  undefined4 uStack_190;
+  undefined8 uStack_18c;
+  undefined8 uStack_184;
+  undefined4 uStack_17c;
+  undefined4 uStack_170;
+  undefined4 uStack_16c;
+  undefined4 uStack_168;
+  undefined4 uStack_164;
+  undefined4 uStack_160;
+  undefined4 uStack_15c;
+  undefined4 uStack_158;
+  undefined4 uStack_154;
+  undefined4 uStack_150;
+  undefined4 uStack_14c;
+  undefined4 uStack_148;
+  undefined4 uStack_144;
+  undefined4 uStack_140;
+  undefined4 uStack_13c;
+  undefined4 uStack_138;
+  undefined4 uStack_134;
+  undefined4 auStack_130 [16];
+  undefined1 auStack_f0 [4];
+  undefined8 uStack_ec;
+  undefined4 auStack_e4 [13];
+  undefined1 uStack_b0;
+  undefined1 uStack_af;
+  undefined1 uStack_ae;
+  
+  uVar17 = 0xd;
+  uVar16 = 0x28;
+  lVar15 = 0;
+  ClearFrameBuffers__9envYModel();
+  InitLoadIndicator__Fv();
+  uVar1 = _16engLoadIndicator_pTheIndicator;
+  SetMinimalImageFilename__16engLoadIndicatorPCc(_16engLoadIndicator_pTheIndicator,0x3fed00);
+  InitMinimal__16engLoadIndicatorb(uVar1,0);
+  Activate__16engLoadIndicatorUcb(uVar1,1,0);
+  setInitialImage__4GamePCcb(0x3c4590,0x3fed00,0);
+  SetTicks__16engLoadIndicatori(uVar1,0);
+  lVar6 = LoadingFromMemCard__Fv();
+  if ((lVar6 != 0) && (lVar6 = mcgLoadSummaryDataNB__Fi(game._95444_4_), lVar6 != 0)) {
+    do {
+      lVar6 = mcgGetStatus__FR16mcgCommandResult(&puStack_1b0);
+    } while (lVar6 == 0);
+    if (((iStack_1ac != 0) && (lVar15 = mcgGetSummaryData__Fi(game._95448_4_), lVar15 != 0)) &&
+       (*(int *)lVar15 != 0)) {
+      uVar16 = (uint)*(ushort *)((int *)lVar15 + 1);
+      SetupPreLoadData__FPC20mcgGameBufferSummary(lVar15);
+      uVar17 = uVar16;
+    }
+  }
+  cVar3 = _4Game_loaded_sage_from_front_end;
+  uVar2 = game._95448_4_;
+  uVar1 = game._95444_4_;
+  init__4Game();
+  if (cVar3 != '\0') {
+    game._95444_4_ = uVar1;
+    game._95448_4_ = uVar2;
+    _4Game_loaded_sage_from_front_end = cVar3;
+  }
+  menu_init__Fv();
+  iVar7 = gLevelManager;
+  if (uVar16 != 0x28) {
+    *(uint *)(gLevelManager + 0x7c) = uVar16;
+  }
+  if ((iVar7 != 0) && (lVar15 != 0)) {
+    iVar7 = 3;
+    uStack_184 = 0x4302000042f00000;
+    uStack_134 = 0x3f800000;
+    uStack_17c = 0;
+    uStack_170 = 0;
+    uStack_16c = 0;
+    uStack_168 = 0;
+    uStack_164 = 0x3f800000;
+    uStack_160 = 0;
+    uStack_15c = 0;
+    uStack_158 = 0;
+    uStack_154 = 0x3f800000;
+    uStack_150 = 0;
+    uStack_14c = 0;
+    uStack_148 = 0;
+    uStack_144 = 0x3f800000;
+    uStack_140 = 0;
+    uStack_13c = 0;
+    uStack_138 = 0;
+    do {
+      iVar7 = iVar7 + -1;
+    } while (iVar7 != -1);
+    uStack_190 = 0;
+    puVar8 = auStack_130;
+    uStack_18c = 0x43c80000000000ff;
+    puStack_1b0 = PTR_DAT_00434fb0;
+    iVar7 = 0xf;
+    do {
+      iVar7 = iVar7 + -1;
+      *puVar8 = puStack_1b0;
+      puVar8 = puVar8 + 1;
+    } while (-1 < iVar7);
+    puVar5 = auStack_f0;
+    iVar7 = 3;
+    do {
+      *puVar5 = 0x30;
+      iVar7 = iVar7 + -1;
+      puVar5[1] = 0;
+      puVar5[2] = 0;
+      puVar5[3] = 0;
+      uStack_1a0 = 0xbe800000;
+      uStack_19c = 0x3f000000;
+      uStack_198 = 0x3e800000;
+      *(undefined8 *)(puVar5 + 4) = 0x3f000000be800000;
+      *(undefined4 *)(puVar5 + 0xc) = 0x3e800000;
+      puVar5 = puVar5 + 0x10;
+    } while (-1 < iVar7);
+    uStack_af = 0x80;
+    uStack_b0 = 0x80;
+    uStack_ae = 0;
+    LoadLevelSettings__F6eLevelR14LevelStartInfo(uVar16,&uStack_190);
+    iVar7 = (int)lVar15;
+    uStack_190 = 1;
+    if ((*(ushort *)(iVar7 + 6) & 4) == 0) {
+      uStack_18c = *(undefined8 *)(iVar7 + 8);
+      uStack_184 = *(undefined8 *)(iVar7 + 0x10);
+      uStack_17c = *(undefined4 *)(iVar7 + 0x18);
+    }
+    uStack_18c = CONCAT44(0x43c80000,(undefined4)uStack_18c);
+    uStack_ae = *(undefined1 *)(iVar7 + 0x1c);
+    puVar4 = (undefined8 *)(gLevelManager + 0x80);
+    puVar11 = (undefined8 *)&uStack_190;
+    do {
+      puVar10 = puVar11;
+      puVar9 = puVar4;
+      uVar12 = puVar10[1];
+      uVar13 = puVar10[2];
+      uVar14 = puVar10[3];
+      *puVar9 = *puVar10;
+      puVar9[1] = uVar12;
+      puVar9[2] = uVar13;
+      puVar9[3] = uVar14;
+      puVar11 = puVar10 + 4;
+      puVar4 = puVar9 + 4;
+    } while (puVar11 != (undefined8 *)&uStack_b0);
+    uVar12 = puVar10[5];
+    puVar9[4] = *puVar11;
+    puVar9[5] = uVar12;
+  }
+  game._95444_4_ = uVar1;
+  game._95448_4_ = uVar2;
+  loadLevel__F6eLevelT0(uVar17,0x28);
+  setInitialImage__4GamePCcb(0x3c4590,0x3fed00,0);
+  game._96268_4_ = 0;
+  do {
+    startLevel__F6eLevel(uVar17);
+    game._92904_4_ = 1;
+    game[0x16afa] = '\0';
+    uVar12 = runLevel__F6eLevel(uVar17);
+  } while (game[0x16afa] != '\0');
+  if ((game._92912_4_ == 0) && ((game._96364_2_ & 0x3b0) == 0)) {
+    PlayPostLevelMovie__F6eLevelT0(uVar17,uVar12);
+  }
+  if ((game._96364_2_ & 0x200) != 0) {
+    skipPreLevelMovie = 1;
+  }
+  return uVar12;
+}
+
+
+
+============================================================
+CALLER: InitGameBasics__Fv
+CALLER ENTRY: 00103f58
+TARGET: init__4Game
+CALLSITE: 00103f64
+INSTRUCTION CONTEXT:
+00103f58  addiu sp,sp,-0x10
+00103f5c  lui a0,0x3c
+00103f60  sd ra,0x0(sp)
+00103f64  jal 0x002bde60
+00103f68  _addiu a0,a0,0x4590
+00103f6c  jal 0x00161ae8
+00103f70  _nop
+00103f74  lw a0,-0x2f34(gp)
+DECOMPILED CALLER:
+
+void InitGameBasics__Fv(void)
+
+{
+  init__4Game(0x3c4590);
+  menu_init__Fv();
+  if (((gSfxManager != 0) && (*(int *)(gSfxManager + 0x10) != 0)) &&
+     (*(int *)(gSfxManager + 0x14) != 0)) {
+    load__10SfxManager15eSfxLoadContext(gSfxManager,1);
+    resetLocalData__8SpriteEd(*(undefined4 *)(gSfxManager + 0x14));
+    load__8SpriteEdPCc(*(undefined4 *)(gSfxManager + 0x14),0x3ff6f8);
+    ParseLoadedData__8SpriteEd(*(undefined4 *)(gSfxManager + 0x14));
+    loadExtraSprites__10SfxManager(gSfxManager);
+    StartTrackingTextures__15texVramManager2i(3);
+    Load__13SpriteManagerP8SpriteEd
+              (*(undefined4 *)(gSfxManager + 0x10),*(undefined4 *)(gSfxManager + 0x14));
+    StopTrackingTextures__15texVramManager2i(3);
+    post_load__10SfxManager(gSfxManager);
+  }
+  load__12SoundManagerUci(gSoundManager,0,0x26);
+  return;
+}
+
+
+
+============================================================
+CALLER: prepareNewLevel__Fv
+CALLER ENTRY: 001045f0
+TARGET: init__4Game
+CALLSITE: 00104620
+INSTRUCTION CONTEXT:
+00104610  sd s3,0x30(sp)
+00104614  sd s1,0x10(sp)
+00104618  lbu s2,-0x2e20(gp)
+0010461c  lw s3,0x74d4(s0)
+00104620  jal 0x002bde60
+00104624  _lw s1,0x74d8(s0)
+00104628  beq s2,zero,0x0010463c
+0010462c  _nop
+00104630  sw s1,0x74d8(s0)
+DECOMPILED CALLER:
+
+undefined4 prepareNewLevel__Fv(void)
+
+{
+  undefined4 uVar1;
+  undefined4 uVar2;
+  char cVar3;
+  
+  cVar3 = _4Game_loaded_sage_from_front_end;
+  uVar2 = game._95448_4_;
+  uVar1 = game._95444_4_;
+  init__4Game();
+  if (cVar3 != '\0') {
+    game._95444_4_ = uVar1;
+    game._95448_4_ = uVar2;
+    _4Game_loaded_sage_from_front_end = cVar3;
+  }
+  menu_init__Fv();
+  return 1;
+}
+
+
+
+############################################################
+TARGET FUNCTION: destroy__4Game
+ENTRY: 002be528
+NON-FUNCTION REFERENCE: Entry Point TYPE: EXTERNAL
+
+============================================================
+CALLER: ShowBootSequence__Fb
+CALLER ENTRY: 00102bc8
+TARGET: destroy__4Game
+CALLSITE: 00102c30
+INSTRUCTION CONTEXT:
+00102c20  move a0,sp
+00102c24  jal 0x002d7358
+00102c28  _addiu a1,sp,0x3e0
+00102c2c  lui a0,0x3c
+00102c30  jal 0x002be528
+00102c34  _addiu a0,a0,0x4590
+00102c38  jal 0x002e06c0
+00102c3c  _nop
+00102c40  move a0,zero
+DECOMPILED CALLER:
+
+void ShowBootSequence__Fb(long param_1)
+
+{
+  long lVar1;
+  undefined8 uVar2;
+  undefined *puVar3;
+  undefined **ppuVar4;
+  int iVar5;
+  undefined1 auStack_420 [928];
+  uint auStack_80 [4];
+  undefined1 auStack_70 [32];
+  int iStack_50;
+  undefined4 auStack_40 [4];
+  
+  if (s_playMode != 0) {
+    if (param_1 == 0) {
+      ShowNowLoadingScreen__Fv();
+    }
+    InitGameBasics__Fv();
+    __9GameShell(auStack_420);
+    auStack_80[1] = 0;
+    auStack_80[0] = (uint)(param_1 == 0);
+    Init__9GameShellRC7gsInput(auStack_420,auStack_80);
+    auStack_40[0] = 0;
+    Run__9GameShellR8gsOutput(auStack_420,auStack_40);
+    destroy__4Game(0x3c4590);
+    engReset__Fv();
+    lVar1 = memCommand__Fii(0,auStack_70);
+    if ((lVar1 != 0) && (iVar5 = iStack_50 - numAllowedHeapAllocations, 0 < iVar5)) {
+      memCommand__Fii(5,1);
+      uVar2 = Status__9sysStatus();
+      if (iVar5 == 1) {
+        puVar3 = &DAT_00434f88;
+        ppuVar4 = &PTR_DAT_00434fe8;
+      }
+      else {
+        puVar3 = (undefined *)0x434fe0;
+        ppuVar4 = (undefined **)&DAT_00434ff0;
+      }
+      WarningHold__9sysStatusPCce(uVar2,0x3fed10,iVar5,puVar3,ppuVar4);
+    }
+    ___9GameShell(auStack_420,2);
+  }
+  return;
+}
+
+
+
+============================================================
+CALLER: FinishGame__Fv
+CALLER ENTRY: 00103dc8
+TARGET: destroy__4Game
+CALLSITE: 00103ea4
+INSTRUCTION CONTEXT:
+00103e94  _move a0,s1
+00103e98  jal 0x0032bd68
+00103e9c  _nop
+00103ea0  lui a0,0x3c
+00103ea4  jal 0x002be528
+00103ea8  _addiu a0,a0,0x4590
+00103eac  jal 0x002e06c0
+00103eb0  _nop
+00103eb4  move a0,zero
+DECOMPILED CALLER:
+
+void FinishGame__Fv(void)
+
+{
+  long lVar1;
+  undefined8 uVar2;
+  undefined *puVar3;
+  undefined **ppuVar4;
+  int iVar5;
+  undefined4 uStack_cf0;
+  undefined4 uStack_cec;
+  undefined4 uStack_ce8;
+  undefined4 uStack_ce0;
+  undefined4 uStack_cdc;
+  undefined4 uStack_cd8;
+  undefined4 uStack_cd4;
+  code *pcStack_cd0;
+  undefined4 uStack_ccc;
+  undefined4 uStack_cc8;
+  undefined1 auStack_cc0 [3152];
+  undefined1 auStack_70 [32];
+  int iStack_50;
+  
+  sceGsSyncV(0);
+  ClearFrameBuffers__9envYModel();
+  ShowNowLoadingScreen__Fv();
+  InitGameBasics__Fv();
+  init__15FrontendManagerPCc(gFrontendManager,0x3ff6c0);
+  fe_spawn__15FrontendManagerPCci(gFrontendManager,0x3ff6d8,0xffffffffffffffff);
+  fe_spawn__15FrontendManagerPCci(gFrontendManager,0x3ff6e8,0xffffffffffffffff);
+  uStack_cec = 0;
+  uStack_cf0 = DAT_00435044;
+  pcStack_cd0 = FinishGameUpdateCallback__FP12SplashScreeni;
+  uStack_ce0 = 0;
+  uStack_cdc = 0;
+  uStack_cd8 = 0;
+  uStack_cd4 = 0;
+  uStack_ce8 = 0;
+  uStack_cc8 = 0;
+  uStack_ccc = 0;
+  __12SplashScreen(auStack_cc0);
+  Init__12SplashScreenRC22ssSplashScreenSettingsPC21ssStaticImageSettingsi
+            (auStack_cc0,&uStack_cf0,0,0);
+  Run__12SplashScreen(auStack_cc0);
+  ClearFrameBuffers__9envYModel();
+  destroy__4Game(0x3c4590);
+  engReset__Fv();
+  lVar1 = memCommand__Fii(0,auStack_70);
+  if ((lVar1 != 0) && (iVar5 = iStack_50 - numAllowedHeapAllocations, 0 < iVar5)) {
+    memCommand__Fii(5,1);
+    uVar2 = Status__9sysStatus();
+    if (iVar5 == 1) {
+      puVar3 = &DAT_00434f88;
+      ppuVar4 = &PTR_DAT_00434fe8;
+    }
+    else {
+      puVar3 = (undefined *)0x434fe0;
+      ppuVar4 = (undefined **)&DAT_00434ff0;
+    }
+    WarningHold__9sysStatusPCce(uVar2,0x3fed10,iVar5,puVar3,ppuVar4);
+  }
+  gcc2_compiled_(auStack_cc0,2);
+  return;
+}
+
+
+
+============================================================
+CALLER: Reset__Fv
+CALLER ENTRY: 00104440
+TARGET: destroy__4Game
+CALLSITE: 00104450
+INSTRUCTION CONTEXT:
+00104440  addiu sp,sp,-0x50
+00104444  lui a0,0x3c
+00104448  sd ra,0x40(sp)
+0010444c  addiu a0,a0,0x4590
+00104450  jal 0x002be528
+00104454  _sd s0,0x30(sp)
+00104458  jal 0x002e06c0
+0010445c  _nop
+00104460  move a0,zero
+DECOMPILED CALLER:
+
+void Reset__Fv(void)
+
+{
+  long lVar1;
+  undefined8 uVar2;
+  undefined *puVar3;
+  undefined **ppuVar4;
+  int iVar5;
+  undefined1 auStack_50 [32];
+  int iStack_30;
+  
+  destroy__4Game(0x3c4590);
+  engReset__Fv();
+  lVar1 = memCommand__Fii(0,auStack_50);
+  if ((lVar1 != 0) && (iVar5 = iStack_30 - numAllowedHeapAllocations, 0 < iVar5)) {
+    memCommand__Fii(5,1);
+    uVar2 = Status__9sysStatus();
+    if (iVar5 == 1) {
+      puVar3 = &DAT_00434f88;
+      ppuVar4 = &PTR_DAT_00434fe8;
+    }
+    else {
+      puVar3 = (undefined *)0x434fe0;
+      ppuVar4 = (undefined **)&DAT_00434ff0;
+    }
+    WarningHold__9sysStatusPCce(uVar2,0x3fed10,iVar5,puVar3,ppuVar4);
+  }
+  return;
+}
+
+
+
+============================================================
+AUDIT SUMMARY
+Target functions found: 3
+Caller callsites recovered: 8
+Decompilation failures: 
