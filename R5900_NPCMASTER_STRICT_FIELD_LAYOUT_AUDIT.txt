@@ -1,0 +1,2336 @@
+========== NPCMASTER STRICT FIELD LAYOUT AUDIT ==========
+
+Generated: 2026-11-24 10:05:56
+Input: D:\Games\MarkOfKriRecomp\R5900_NPCMASTER_CONSTRUCTION_LIFECYCLE_AUDIT.txt
+Functions analyzed: 124
+Unique function names: 124
+Proven param_1 aliases: 27
+Strict access records: 519
+
+========== FIELD OFFSET SUMMARY ==========
+
+0x1 | Accesses: 1 | Functions: 1 | Widths: 1 | Reads: 0 | Writes: 1 | Unknown widths: 0
+0x5 | Accesses: 1 | Functions: 1 | Widths: 1 | Reads: 0 | Writes: 1 | Unknown widths: 0
+0x8 | Accesses: 1 | Functions: 1 | Widths: 4 | Reads: 1 | Writes: 0 | Unknown widths: 0
+0x70 | Accesses: 199 | Functions: 59 | Widths: 4 | Reads: 195 | Writes: 4 | Unknown widths: 0
+0x74 | Accesses: 15 | Functions: 7 | Widths: 4 | Reads: 9 | Writes: 6 | Unknown widths: 0
+0x78 | Accesses: 5 | Functions: 4 | Widths: 4 | Reads: 0 | Writes: 5 | Unknown widths: 0
+0x7C | Accesses: 37 | Functions: 20 | Widths: 4 | Reads: 27 | Writes: 10 | Unknown widths: 0
+0x80 | Accesses: 37 | Functions: 18 | Widths: 4 | Reads: 31 | Writes: 6 | Unknown widths: 0
+0x84 | Accesses: 7 | Functions: 3 | Widths: 4 | Reads: 3 | Writes: 4 | Unknown widths: 0
+0x8C | Accesses: 9 | Functions: 8 | Widths: 4 | Reads: 9 | Writes: 0 | Unknown widths: 0
+0x94 | Accesses: 2 | Functions: 1 | Widths: 4 | Reads: 2 | Writes: 0 | Unknown widths: 0
+0xAC | Accesses: 31 | Functions: 8 | Widths: 4 | Reads: 16 | Writes: 15 | Unknown widths: 0
+0xB0 | Accesses: 19 | Functions: 3 | Widths: 4 | Reads: 4 | Writes: 15 | Unknown widths: 0
+0xB4 | Accesses: 20 | Functions: 5 | Widths: 4 | Reads: 15 | Writes: 5 | Unknown widths: 0
+0xB8 | Accesses: 2 | Functions: 2 | Widths: 4 | Reads: 0 | Writes: 2 | Unknown widths: 0
+0xBC | Accesses: 10 | Functions: 9 | Widths: 4 | Reads: 3 | Writes: 7 | Unknown widths: 0
+0xC0 | Accesses: 16 | Functions: 4 | Widths: 4 | Reads: 6 | Writes: 10 | Unknown widths: 0
+0xC4 | Accesses: 6 | Functions: 2 | Widths: 4 | Reads: 1 | Writes: 5 | Unknown widths: 0
+0xC8 | Accesses: 10 | Functions: 6 | Widths: 4 | Reads: 3 | Writes: 7 | Unknown widths: 0
+0xCC | Accesses: 4 | Functions: 2 | Widths: 4 | Reads: 1 | Writes: 3 | Unknown widths: 0
+0xD0 | Accesses: 3 | Functions: 1 | Widths: 4 | Reads: 1 | Writes: 2 | Unknown widths: 0
+0xD4 | Accesses: 7 | Functions: 5 | Widths: 4 | Reads: 3 | Writes: 4 | Unknown widths: 0
+0xD8 | Accesses: 4 | Functions: 4 | Widths: 4 | Reads: 1 | Writes: 3 | Unknown widths: 0
+0x13C | Accesses: 4 | Functions: 3 | Widths: 4 | Reads: 1 | Writes: 3 | Unknown widths: 0
+0x140 | Accesses: 4 | Functions: 3 | Widths: 4 | Reads: 1 | Writes: 3 | Unknown widths: 0
+0x144 | Accesses: 9 | Functions: 3 | Widths: 4 | Reads: 3 | Writes: 6 | Unknown widths: 0
+0x148 | Accesses: 5 | Functions: 3 | Widths: 4 | Reads: 0 | Writes: 5 | Unknown widths: 0
+0x14C | Accesses: 12 | Functions: 7 | Widths: 4 | Reads: 9 | Writes: 3 | Unknown widths: 0
+0x150 | Accesses: 4 | Functions: 3 | Widths: 4 | Reads: 0 | Writes: 4 | Unknown widths: 0
+0x154 | Accesses: 12 | Functions: 3 | Widths: 4 | Reads: 6 | Writes: 6 | Unknown widths: 0
+0x158 | Accesses: 4 | Functions: 1 | Widths: 4 | Reads: 2 | Writes: 2 | Unknown widths: 0
+0x15C | Accesses: 1 | Functions: 1 | Widths: 4 | Reads: 0 | Writes: 1 | Unknown widths: 0
+0x160 | Accesses: 1 | Functions: 1 | Widths: 4 | Reads: 0 | Writes: 1 | Unknown widths: 0
+0x164 | Accesses: 5 | Functions: 2 | Widths: 4 | Reads: 0 | Writes: 5 | Unknown widths: 0
+0x178 | Accesses: 8 | Functions: 5 | Widths: 4 | Reads: 6 | Writes: 2 | Unknown widths: 0
+0x17C | Accesses: 1 | Functions: 1 | Widths: 4 | Reads: 0 | Writes: 1 | Unknown widths: 0
+0x180 | Accesses: 3 | Functions: 2 | Widths: 4 | Reads: 0 | Writes: 3 | Unknown widths: 0
+
+========== FIELD ACCESS DETAILS ==========
+
+FIELD OFFSET: 0x1
+  Function: reset__9NpcMaster
+  C line: 87 | Width: 1 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined1 *)(puVar9 + 1) = 0;
+
+FIELD OFFSET: 0x5
+  Function: reset__9NpcMaster
+  C line: 86 | Width: 1 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined1 *)((int)puVar9 + 5) = 0;
+
+FIELD OFFSET: 0x8
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 40 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar1 = *(int *)(*(int *)(iVar8 + 8) + 0x10);
+
+FIELD OFFSET: 0x70
+  Function: reset__9NpcMaster
+  C line: 60 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x1c] = 0;
+  Function: assignTargetPos__9NpcMaster
+  C line: 11 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar2 + 0x70) != 0) {
+  Function: assignTargetPos__9NpcMaster
+  C line: 20 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(iVar2 + 0x70) < 2) {
+  Function: setGroupFormation__9NpcMaster
+  C line: 21 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar6 + 0x70) != 0) {
+  Function: setGroupFormation__9NpcMaster
+  C line: 27 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar1 = *(uint *)(iVar6 + 0x70);
+  Function: setGroupFormation__9NpcMaster
+  C line: 34 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar1 = *(uint *)(iVar6 + 0x70);
+  Function: assignMainEnemies__9NpcMaster
+  C line: 16 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0x70) != 0) {
+  Function: assignMainEnemies__9NpcMaster
+  C line: 69 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0x70) != 0) {
+  Function: assignMainEnemies__9NpcMaster
+  C line: 75 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar7 = *(uint *)(iVar5 + 0x70);
+  Function: assignMainEnemies__9NpcMaster
+  C line: 96 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar7 = *(uint *)(iVar5 + 0x70);
+  Function: updateAttackers__9NpcMaster
+  C line: 40 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar8 + 0x70) != 0) {
+  Function: updateAttackers__9NpcMaster
+  C line: 46 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: updateAttackers__9NpcMaster
+  C line: 49 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: updateAttackers__9NpcMaster
+  C line: 52 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: updateAttackers__9NpcMaster
+  C line: 77 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: updateAttackers__9NpcMaster
+  C line: 80 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: updateAttackers__9NpcMaster
+  C line: 102 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar8 + 0x70) != 0) {
+  Function: updateAttackers__9NpcMaster
+  C line: 108 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: updateAttackers__9NpcMaster
+  C line: 111 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: updateAttackers__9NpcMaster
+  C line: 114 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: updateAttackers__9NpcMaster
+  C line: 137 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: updateAttackers__9NpcMaster
+  C line: 140 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: assignDirAttack__9NpcMasterUi
+  C line: 28 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar8 + 0x70) != 0) {
+  Function: assignDirAttack__9NpcMasterUi
+  C line: 37 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar8 + 0x70);
+  Function: assignDirAttack__9NpcMasterUi
+  C line: 42 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar8 + 0x70);
+  Function: assignDirAttack__9NpcMasterUi
+  C line: 45 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar8 + 0x70);
+  Function: assignDirAttack__9NpcMasterUi
+  C line: 57 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar8 + 0x70);
+  Function: assignDirAttack__9NpcMasterUi
+  C line: 63 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar8 + 0x70);
+  Function: assignDirAttack__9NpcMasterUi
+  C line: 66 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar8 + 0x70);
+  Function: assignDirAttackEnemies__9NpcMaster
+  C line: 42 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar7 + 0x70) != 0) {
+  Function: assignDirAttackEnemies__9NpcMaster
+  C line: 49 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar6 < *(uint *)(iVar7 + 0x70));
+  Function: getLockDist__9NpcMaster5eLock
+  C line: 15 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar4 = *(uint *)(iVar6 + 0x70);
+  Function: getLockDist__9NpcMaster5eLock
+  C line: 54 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar4 = *(uint *)(iVar6 + 0x70);
+  Function: updateLocks__9NpcMaster
+  C line: 36 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(param_1 + 0x70) != 0) {
+  Function: updateLocks__9NpcMaster
+  C line: 46 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar4 < *(uint *)(param_1 + 0x70));
+  Function: assignFormationPos__9NpcMaster
+  C line: 41 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar9 = *(uint *)(iVar8 + 0x70);
+  Function: assignFormationPos__9NpcMaster
+  C line: 122 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar9 = *(uint *)(iVar8 + 0x70);
+  Function: assignFormationPos__9NpcMaster
+  C line: 135 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar8 + 0x70) != 0) {
+  Function: assignFormationPos__9NpcMaster
+  C line: 146 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar7 = *(uint *)(iVar8 + 0x70);
+  Function: assignFormationPos__9NpcMaster
+  C line: 156 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar7 = *(uint *)(iVar8 + 0x70);
+  Function: assignFormationPos__9NpcMaster
+  C line: 159 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar7 = *(uint *)(iVar8 + 0x70);
+  Function: assignFormationPos__9NpcMaster
+  C line: 170 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar7 = *(uint *)(iVar8 + 0x70);
+  Function: assignStaticPos__9NpcMaster
+  C line: 13 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(param_1 + 0x70) != 0) {
+  Function: assignStaticPos__9NpcMaster
+  C line: 19 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: assignStaticPos__9NpcMaster
+  C line: 22 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: assignStaticPos__9NpcMaster
+  C line: 36 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: assignStaticPos__9NpcMaster
+  C line: 39 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: assignStaticPos__9NpcMaster
+  C line: 43 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: assignStaticPos__9NpcMaster
+  C line: 47 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 38 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar8 + 0x70);
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 103 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar8 + 0x70);
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 107 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar8 + 0x70);
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 119 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar8 + 0x70);
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 161 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar8 + 0x70);
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 164 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar8 + 0x70);
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 176 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar8 + 0x70);
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 185 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar8 + 0x70);
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 188 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar8 + 0x70);
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 192 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar8 + 0x70);
+  Function: adjustForConstantAttack__9NpcMaster
+  C line: 19 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar7 = *(uint *)(iVar8 + 0x70);
+  Function: adjustForConstantAttack__9NpcMaster
+  C line: 35 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar7 = *(uint *)(iVar8 + 0x70);
+  Function: adjustForConstantAttack__9NpcMaster
+  C line: 38 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar7 = *(uint *)(iVar8 + 0x70);
+  Function: adjustForConstantAttack__9NpcMaster
+  C line: 45 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((!bVar1) && (uVar7 = 0, *(int *)(iVar8 + 0x70) != 0)) {
+  Function: adjustForConstantAttack__9NpcMaster
+  C line: 51 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar6 = *(uint *)(iVar8 + 0x70);
+  Function: adjustForConstantAttack__9NpcMaster
+  C line: 90 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar6 = *(uint *)(iVar8 + 0x70);
+  Function: npcImpeding__9NpcMasterP3Npc4eDir
+  C line: 41 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: npcImpeding__9NpcMasterP3Npc4eDir
+  C line: 59 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: npcImpeding__9NpcMasterP3Npc4eDir
+  C line: 66 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: npcImpeding__9NpcMasterP3Npc4eDir
+  C line: 96 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: groupClearArrival__9NpcMasterP3Npc
+  C line: 15 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(iVar7 + 0x70) == 0) {
+  Function: groupClearArrival__9NpcMasterP3Npc
+  C line: 28 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar4 < *(uint *)(iVar7 + 0x70));
+  Function: groupClearArrival__9NpcMasterP3Npc
+  C line: 33 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar4 = *(uint *)(iVar7 + 0x70);
+  Function: groupClearArrival__9NpcMasterP3Npc
+  C line: 46 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar4 = *(uint *)(iVar7 + 0x70);
+  Function: groupClearArrival__9NpcMasterP8SimEntry
+  C line: 17 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar8 + 0x70) != 0) {
+  Function: groupClearArrival__9NpcMasterP8SimEntry
+  C line: 27 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: groupClearArrival__9NpcMasterP8SimEntry
+  C line: 30 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: groupClearArrival__9NpcMasterP8SimEntry
+  C line: 42 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar8 + 0x70) != 0) {
+  Function: groupClearArrival__9NpcMasterP8SimEntry
+  C line: 51 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: groupClearArrival__9NpcMasterP8SimEntry
+  C line: 54 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar8 + 0x70);
+  Function: soundGong__9NpcMasterP6Mscobj
+  C line: 20 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: soundGong__9NpcMasterP6Mscobj
+  C line: 66 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: areMultipleAttackers__9NpcMaster
+  C line: 17 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(param_1 + 0x70) != 0) {
+  Function: areMultipleAttackers__9NpcMaster
+  C line: 60 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar7 < *(uint *)(param_1 + 0x70));
+  Function: initDirAttacks__9NpcMaster
+  C line: 22 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(param_1 + 0x70) != 0) {
+  Function: initDirAttacks__9NpcMaster
+  C line: 32 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar5 < *(uint *)(param_1 + 0x70));
+  Function: getValidNewDirAttackGroupID__9NpcMaster
+  C line: 17 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar7 + 0x70) != 0) {
+  Function: getValidNewDirAttackGroupID__9NpcMaster
+  C line: 24 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar7 + 0x70);
+  Function: getValidNewDirAttackGroupID__9NpcMaster
+  C line: 30 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar7 + 0x70);
+  Function: getValidNewDirAttackGroupID__9NpcMaster
+  C line: 33 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar7 + 0x70);
+  Function: getValidNewDirAttackGroupID__9NpcMaster
+  C line: 36 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(iVar7 + 0x70);
+  Function: updateStatus__9NpcMaster
+  C line: 51 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if (puVar5[0x1c] != 0) {
+  Function: updateStatus__9NpcMaster
+  C line: 57 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x1c];
+  Function: updateStatus__9NpcMaster
+  C line: 60 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x1c];
+  Function: updateStatus__9NpcMaster
+  C line: 70 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x1c];
+  Function: updateStatus__9NpcMaster
+  C line: 73 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x1c];
+  Function: updateStatus__9NpcMaster
+  C line: 105 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: for (uVar3 = 0; uVar3 < puVar5[0x1c]; uVar3 = uVar3 + 1) {
+  Function: attackerInArea__9NpcMaster
+  C line: 15 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar7 = *(uint *)(param_1 + 0x70);
+  Function: attackerInArea__9NpcMaster
+  C line: 52 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar7 = *(uint *)(param_1 + 0x70);
+  Function: updateAttackStatus__9NpcMaster
+  C line: 15 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0x70) != 0) {
+  Function: updateAttackStatus__9NpcMaster
+  C line: 21 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar5 + 0x70);
+  Function: updateAttackStatus__9NpcMaster
+  C line: 26 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar5 + 0x70);
+  Function: updateAttackStatus__9NpcMaster
+  C line: 36 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar5 + 0x70);
+  Function: enforcerCanAttack__9NpcMasterP3Npc
+  C line: 14 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar4 = *(uint *)(param_1 + 0x70);
+  Function: enforcerCanAttack__9NpcMasterP3Npc
+  C line: 26 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar4 = *(uint *)(param_1 + 0x70);
+  Function: enforcerCanAttack__9NpcMasterP3Npc
+  C line: 43 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar4 = *(uint *)(param_1 + 0x70);
+  Function: enforcerCanAttack__9NpcMasterP3Npc
+  C line: 47 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar4 = *(uint *)(param_1 + 0x70);
+  Function: allUndeadsDead__9NpcMasterUi
+  C line: 9 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar1 = *(uint *)(param_1 + 0x70);
+  Function: iSeeDeadPeople__9NpcMasterP3Npc
+  C line: 35 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(param_1 + 0x70);
+  Function: iSeeDeadPeople__9NpcMasterP3Npc
+  C line: 60 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(param_1 + 0x70);
+  Function: iSeeDeadPeople__9NpcMasterP3Npc
+  C line: 63 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(param_1 + 0x70);
+  Function: iSeeDeadPeople__9NpcMasterP3Npc
+  C line: 73 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(param_1 + 0x70);
+  Function: iSeeDeadPeople__9NpcMasterP3Npc
+  C line: 77 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(param_1 + 0x70);
+  Function: iSeeDeadPeople__9NpcMasterP3Npc
+  C line: 81 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(param_1 + 0x70);
+  Function: addGroupSims__9NpcMasterP3Npc
+  C line: 25 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(iVar11 + 0x70) != 0) {
+  Function: addGroupSims__9NpcMasterP3Npc
+  C line: 32 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar9 < *(uint *)(iVar11 + 0x70));
+  Function: updateSimData__9NpcMaster
+  C line: 31 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: (uVar10 = 0, *(int *)(iVar12 + 0x70) != 0)) {
+  Function: updateSimData__9NpcMaster
+  C line: 37 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar12 + 0x70);
+  Function: updateSimData__9NpcMaster
+  C line: 41 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar12 + 0x70);
+  Function: updateSimData__9NpcMaster
+  C line: 76 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar12 + 0x70) != 0) {
+  Function: updateSimData__9NpcMaster
+  C line: 86 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar12 + 0x70);
+  Function: updateSimData__9NpcMaster
+  C line: 89 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar12 + 0x70);
+  Function: simAllCurNPCs__9NpcMaster
+  C line: 11 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(param_1 + 0x70) != 0) {
+  Function: simAllCurNPCs__9NpcMaster
+  C line: 17 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: simAllCurNPCs__9NpcMaster
+  C line: 21 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: isCreated__9NpcMasterUi
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(param_1 + 0x70) != 0) {
+  Function: isCreated__9NpcMasterUi
+  C line: 16 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar2 < *(uint *)(param_1 + 0x70));
+  Function: allBabiesDead__9NpcMasterUi
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(param_1 + 0x70) != 0) {
+  Function: allBabiesDead__9NpcMasterUi
+  C line: 18 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar2 < *(uint *)(param_1 + 0x70));
+  Function: minebabySpawnUndeadCue__9NpcMasterUi
+  C line: 17 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)((int)param_1 + 0x70);
+  Function: isMinebabyAttacking__9NpcMasterUi
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(param_1 + 0x70) != 0) {
+  Function: isMinebabyAttacking__9NpcMasterUi
+  C line: 18 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar2 < *(uint *)(param_1 + 0x70));
+  Function: allBabiesHaveWeapons__9NpcMasterUi
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(param_1 + 0x70) != 0) {
+  Function: allBabiesHaveWeapons__9NpcMasterUi
+  C line: 18 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar2 < *(uint *)(param_1 + 0x70));
+  Function: containUndeads__9NpcMasterUi
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(param_1 + 0x70) != 0) {
+  Function: containUndeads__9NpcMasterUi
+  C line: 18 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar2 < *(uint *)(param_1 + 0x70));
+  Function: stopAllNavigation__9NpcMaster
+  C line: 10 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(param_1 + 0x70) != 0) {
+  Function: stopAllNavigation__9NpcMaster
+  C line: 22 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar4 < *(uint *)(param_1 + 0x70));
+  Function: flashAttackers__9NpcMaster
+  C line: 12 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: flashAttackers__9NpcMaster
+  C line: 24 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: containSubGroup__9NpcMasterUi
+  C line: 13 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar6 + 0x70) != 0) {
+  Function: containSubGroup__9NpcMasterUi
+  C line: 19 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar6 + 0x70);
+  Function: containSubGroup__9NpcMasterUi
+  C line: 25 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar6 + 0x70);
+  Function: setToAttack__9NpcMasterUi
+  C line: 15 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0x70) != 0) {
+  Function: setToAttack__9NpcMasterUi
+  C line: 21 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar5 + 0x70);
+  Function: setToAttack__9NpcMasterUi
+  C line: 24 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar5 + 0x70);
+  Function: setToAttack__9NpcMasterUi
+  C line: 31 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar5 + 0x70);
+  Function: noDirAttackers__9NpcMaster
+  C line: 13 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar6 + 0x70) != 0) {
+  Function: noDirAttackers__9NpcMaster
+  C line: 19 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar6 + 0x70);
+  Function: noDirAttackers__9NpcMaster
+  C line: 25 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar6 + 0x70);
+  Function: groupContainsValidDirAttackInfo__9NpcMasterUi
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(param_1 + 0x70) != 0) {
+  Function: groupContainsValidDirAttackInfo__9NpcMasterUi
+  C line: 18 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar2 < *(uint *)(param_1 + 0x70));
+  Function: getGroupID__9NpcMaster
+  C line: 18 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0x70) != 0) {
+  Function: getGroupID__9NpcMaster
+  C line: 24 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar5 + 0x70);
+  Function: getGroupID__9NpcMaster
+  C line: 34 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(iVar5 + 0x70);
+  Function: updateNpcData__9NpcMaster6eObjId
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: updateNpcData__9NpcMaster6eObjId
+  C line: 16 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: zoned__9NpcMaster
+  C line: 13 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0x70) != 0) {
+  Function: zoned__9NpcMaster
+  C line: 19 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar1 = *(uint *)(iVar5 + 0x70);
+  Function: zoned__9NpcMaster
+  C line: 28 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar1 = *(uint *)(iVar5 + 0x70);
+  Function: zoned__9NpcMaster
+  C line: 31 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar1 = *(uint *)(iVar5 + 0x70);
+  Function: groupReadyToContinue__9NpcMasterP8SimEntry
+  C line: 16 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar4 + 0x70) != 0) {
+  Function: groupReadyToContinue__9NpcMasterP8SimEntry
+  C line: 26 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar4 + 0x70);
+  Function: groupReadyToContinue__9NpcMasterP8SimEntry
+  C line: 29 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar3 = *(uint *)(iVar4 + 0x70);
+  Function: groupReadyToContinue__9NpcMasterP3Npc
+  C line: 11 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar1 = *(uint *)((int)param_1 + 0x70);
+  Function: groupReadyToStart__9NpcMasterP3Npc
+  C line: 11 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar1 = *(uint *)((int)param_1 + 0x70);
+  Function: getCurGroupNum__9NpcMasterUi
+  C line: 10 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(param_1 + 0x70) != 0) {
+  Function: getCurGroupNum__9NpcMasterUi
+  C line: 17 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar3 < *(uint *)(param_1 + 0x70));
+  Function: setGlobalAlarm__9NpcMaster
+  C line: 12 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(param_1 + 0x70) != 0) {
+  Function: setGlobalAlarm__9NpcMaster
+  C line: 28 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar4 < *(uint *)(param_1 + 0x70));
+  Function: alertGroup__9NpcMasterP3Npc
+  C line: 12 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(param_1 + 0x70);
+  Function: alertGroup__9NpcMasterP3Npc
+  C line: 31 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(param_1 + 0x70);
+  Function: alertGroup__9NpcMasterP3Npc
+  C line: 37 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar5 = *(uint *)(param_1 + 0x70);
+  Function: getNumAvailNpcs__9NpcMaster
+  C line: 13 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar4 + 0x70) != 0) {
+  Function: getNumAvailNpcs__9NpcMaster
+  C line: 22 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar5 < *(uint *)(iVar4 + 0x70));
+  Function: containStaticNpcs__9NpcMaster
+  C line: 11 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(param_1 + 0x70) != 0) {
+  Function: containStaticNpcs__9NpcMaster
+  C line: 17 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: containStaticNpcs__9NpcMaster
+  C line: 20 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: containStaticNpcs__9NpcMaster
+  C line: 28 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: containStaticNpcs__9NpcMaster
+  C line: 31 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: containMinebabies__9NpcMaster
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(param_1 + 0x70) != 0) {
+  Function: containMinebabies__9NpcMaster
+  C line: 17 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar2 < *(uint *)(param_1 + 0x70));
+  Function: getLockTime__9NpcMaster5eLock
+  C line: 10 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(param_1 + 0x70) != 0) {
+  Function: getLockTime__9NpcMaster5eLock
+  C line: 20 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar2 < *(uint *)(param_1 + 0x70));
+  Function: isFirstArcher__9NpcMasterP3Npc
+  C line: 10 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(param_1 + 0x70) != 0) {
+  Function: isFirstArcher__9NpcMasterP3Npc
+  C line: 16 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: isFirstArcher__9NpcMasterP3Npc
+  C line: 19 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: isFirstArcher__9NpcMasterP3Npc
+  C line: 23 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: getFirstArcher__9NpcMaster
+  C line: 10 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(param_1 + 0x70) != 0) {
+  Function: getFirstArcher__9NpcMaster
+  C line: 16 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: getFirstArcher__9NpcMaster
+  C line: 19 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: getFirstArcher__9NpcMaster
+  C line: 25 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0x70);
+  Function: triggerNextArcher__9NpcMasterP3Npc
+  C line: 12 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar4 = *(uint *)(param_1 + 0x70);
+  Function: triggerNextArcher__9NpcMasterP3Npc
+  C line: 26 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar4 = *(uint *)(param_1 + 0x70);
+  Function: triggerNextArcher__9NpcMasterP3Npc
+  C line: 29 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar4 = *(uint *)(param_1 + 0x70);
+  Function: triggerNextArcher__9NpcMasterP3Npc
+  C line: 36 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar4 = *(uint *)(param_1 + 0x70);
+  Function: assignTarget__9NpcMaster
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar1 = *(uint *)(param_1 + 0x70);
+  Function: updateNpcArray__9NpcMaster
+  C line: 11 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(iVar4 + 0x70) = 0;
+  Function: updateNpcArray__9NpcMaster
+  C line: 22 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar2 = *(int *)(iVar4 + 0x70);
+  Function: updateNpcArray__9NpcMaster
+  C line: 24 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(int *)(iVar4 + 0x70) = iVar2 + 1;
+
+FIELD OFFSET: 0x74
+  Function: reset__9NpcMaster
+  C line: 41 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x1d] = 0;
+  Function: setGroupFormation__9NpcMaster
+  C line: 13 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(iVar6 + 0x74) < 2) {
+  Function: setGroupFormation__9NpcMaster
+  C line: 17 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(iVar6 + 0x74) == *(uint *)(iVar6 + 0x78)) {
+  Function: setGroupFormation__9NpcMaster
+  C line: 42 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar6 + 0x74) - 1U < 7) {
+  Function: setGroupFormation__9NpcMaster
+  C line: 51 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar7 = *(int *)(iVar6 + 0x74) - 1;
+  Function: setGroupFormation__9NpcMaster
+  C line: 63 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar7 = *(int *)(iVar6 + 0x74) - 1;
+  Function: setGroupFormation__9NpcMaster
+  C line: 76 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar6 + 0x74) - 1U < 6) {
+  Function: assignMainEnemies__9NpcMaster
+  C line: 27 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0x74) == 1) {
+  Function: assignDirAttackEnemies__9NpcMaster
+  C line: 26 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((*(int *)(iVar7 + 0x150) == 0) || (*(uint *)(iVar7 + 0x74) != *(uint *)(iVar7 + 0x78))) {
+  Function: assignDirAttackEnemies__9NpcMaster
+  C line: 27 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(iVar7 + 0x74) < 2) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 31 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((*(uint *)(param_1 + 0x74) < 2) && (uVar2 = *(uint *)(param_1 + 0xb4), 2 < (int)uVar2))
+  Function: updateStatus__9NpcMaster
+  C line: 19 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if (puVar5[0x1d] != 0) goto LAB_001cc0ec;
+  Function: updateStatus__9NpcMaster
+  C line: 24 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if (puVar5[0x1d] == 0) {
+  Function: updateNpcArray__9NpcMaster
+  C line: 13 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar1 = *(undefined4 *)(iVar4 + 0x74);
+  Function: updateNpcArray__9NpcMaster
+  C line: 40 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(iVar4 + 0x74) = uVar1;
+
+FIELD OFFSET: 0x78
+  Function: reset__9NpcMaster
+  C line: 42 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x1e] = 0;
+  Function: setGroupFormation__9NpcMaster
+  C line: 17 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(iVar6 + 0x74) == *(uint *)(iVar6 + 0x78)) {
+  Function: assignDirAttackEnemies__9NpcMaster
+  C line: 26 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((*(int *)(iVar7 + 0x150) == 0) || (*(uint *)(iVar7 + 0x74) != *(uint *)(iVar7 + 0x78))) {
+  Function: updateNpcArray__9NpcMaster
+  C line: 15 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(iVar4 + 0x78) = uVar1;
+  Function: updateNpcArray__9NpcMaster
+  C line: 37 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(iVar4 + 0x78) = uVar1;
+
+FIELD OFFSET: 0x7C
+  Function: reset__9NpcMaster
+  C line: 36 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x1f] = 0;
+  Function: assignTargetPos__9NpcMaster
+  C line: 18 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar2 + 0x7c) != 0) {
+  Function: assignMainEnemies__9NpcMaster
+  C line: 17 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0x7c) == 0) {
+  Function: assignMainEnemies__9NpcMaster
+  C line: 34 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(iVar5 + 0x7c) = 0;
+  Function: assignMainEnemies__9NpcMaster
+  C line: 46 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0x7c) != 0) {
+  Function: assignMainEnemies__9NpcMaster
+  C line: 54 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(int *)(iVar5 + 0x7c) = iVar1;
+  Function: assignMainEnemies__9NpcMaster
+  C line: 57 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: (param_1,*(undefined4 *)(*(int *)(iVar5 + 0x7c) + 0x10));
+  Function: assignMainEnemies__9NpcMaster
+  C line: 79 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0x7c) != 0) {
+  Function: assignMainEnemies__9NpcMaster
+  C line: 89 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(int *)(iVar5 + 0x7c) = iVar4;
+  Function: assignMainEnemies__9NpcMaster
+  C line: 92 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: (param_1,*(undefined4 *)(*(int *)(iVar5 + 0x7c) + 0x10));
+  Function: updateAttackers__9NpcMaster
+  C line: 23 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar8 + 0x7c) == 0) {
+  Function: updateAttackers__9NpcMaster
+  C line: 29 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar5 = *(int *)(*(int *)(*(int *)(iVar8 + 0x7c) + 0x10) + 0xa50);
+  Function: updateAttackers__9NpcMaster
+  C line: 48 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: else if (*piVar9 == *(int *)(iVar8 + 0x7c)) {
+  Function: updateAttackers__9NpcMaster
+  C line: 70 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: clearMainEnemy__3Npc(*(undefined4 *)(*(int *)(iVar8 + 0x7c) + 0x10));
+  Function: updateAttackers__9NpcMaster
+  C line: 72 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(int *)(iVar8 + 0x7c) = *piVar9;
+  Function: updateAttackers__9NpcMaster
+  C line: 110 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: else if (*piVar9 == *(int *)(iVar8 + 0x7c)) {
+  Function: getDirAttackPosition__9NpcMasterP9ObjHandleUiP7Point4d
+  C line: 15 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar1 = *(int *)((int)param_1 + 0x7c);
+  Function: assignDirAttack__9NpcMasterUi
+  C line: 41 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (iVar1 == *(int *)(iVar8 + 0x7c)) {
+  Function: assignDirAttackEnemies__9NpcMaster
+  C line: 19 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar7 + 0x7c) == 0) {
+  Function: getZoneRange__9NpcMasterP9ObjHandlePfT2
+  C line: 14 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((((param_2 == *(int *)(param_1 + 0x7c)) || (param_2 == *(int *)(param_1 + 0x80))) ||
+  Function: getLockDist__9NpcMaster5eLock
+  C line: 28 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (iVar2 == *(int *)(iVar6 + 0x7c)) {
+  Function: assignFormationPos__9NpcMaster
+  C line: 34 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iStack_d0 = *(int *)(*(int *)(*(int *)(iVar8 + 0x7c) + 0x10) + 0xba8);
+  Function: assignFormationPos__9NpcMaster
+  C line: 58 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (iVar3 != *(int *)(iVar8 + 0x7c)) {
+  Function: assignFormationPos__9NpcMaster
+  C line: 68 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (iVar3 == *(int *)(iVar8 + 0x7c)) {
+  Function: assignFormationPos__9NpcMaster
+  C line: 140 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (iVar3 == *(int *)(iVar8 + 0x7c)) {
+  Function: assignFormationPos__9NpcMaster
+  C line: 145 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar8 + 8 + iVar10) == *(int *)(iVar8 + 0x7c)) {
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 61 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (iVar2 == *(int *)(iVar8 + 0x7c)) {
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 130 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (iVar1 == *(int *)(iVar8 + 0x7c)) {
+  Function: adjustForConstantAttack__9NpcMaster
+  C line: 27 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar5 = *(int *)(iVar8 + 0x7c);
+  Function: goToZone__9NpcMasterP9ObjHandle
+  C line: 30 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (param_2 == *(int *)((int)param_1 + 0x7c)) {
+  Function: areMultipleAttackers__9NpcMaster
+  C line: 27 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((iVar1 != *(int *)(param_1 + 0x7c)) && (bVar3 = true, iVar1 != *(int *)(param_1 + 0x80))
+  Function: attackerInArea__9NpcMaster
+  C line: 23 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((iVar1 != *(int *)(param_1 + 0x7c)) && (bVar3 = true, iVar1 != *(int *)(param_1 + 0x80)))
+  Function: isValidDirAttackEnemy__9NpcMasterP9ObjHandle
+  C line: 30 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (((bVar2) && (param_2 != *(int *)((int)param_1 + 0x7c))) &&
+  Function: clearMainEnemy__9NpcMaster
+  C line: 4 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0x7c) = 0;
+  Function: isDirAttacker__9NpcMasterP9ObjHandle
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: (param_2 == *(int *)(param_1 + 0x7c))) || (uVar1 = 1, param_2 == *(int *)(param_1 + 0x80))) {
+  Function: isAttacker__9NpcMasterP9ObjHandle
+  C line: 6 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((((param_2 == *(int *)(param_1 + 0x7c)) || (param_2 == *(int *)(param_1 + 0x80))) ||
+  Function: getZoneDistance__9NpcMasterP9ObjHandle
+  C line: 11 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: else if ((((param_2 == *(int *)((int)param_1 + 0x7c)) ||
+
+FIELD OFFSET: 0x80
+  Function: reset__9NpcMaster
+  C line: 37 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x20] = 0;
+  Function: assignMainEnemies__9NpcMaster
+  C line: 24 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0x80) != 0) {
+  Function: assignMainEnemies__9NpcMaster
+  C line: 35 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(iVar5 + 0x80) = 0;
+  Function: assignMainEnemies__9NpcMaster
+  C line: 49 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(int *)(iVar5 + 0x80) = iVar4;
+  Function: assignMainEnemies__9NpcMaster
+  C line: 81 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(int *)(iVar5 + 0x80) = iVar4;
+  Function: assignMainEnemies__9NpcMaster
+  C line: 85 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: (param_1,*(undefined4 *)(*(int *)(iVar5 + 0x80) + 0x10));
+  Function: updateAttackers__9NpcMaster
+  C line: 51 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: else if (*piVar9 == *(int *)(iVar8 + 0x80)) {
+  Function: updateAttackers__9NpcMaster
+  C line: 74 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar5 = *(int *)(iVar8 + 0x80);
+  Function: updateAttackers__9NpcMaster
+  C line: 87 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar5 = *(int *)(iVar8 + 0x80);
+  Function: updateAttackers__9NpcMaster
+  C line: 113 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: else if (*piVar9 == *(int *)(iVar8 + 0x80)) {
+  Function: updateAttackers__9NpcMaster
+  C line: 131 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: clearSecondaryEnemy__3Npc(*(undefined4 *)(*(int *)(iVar8 + 0x80) + 0x10));
+  Function: updateAttackers__9NpcMaster
+  C line: 133 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(int *)(iVar8 + 0x80) = *piVar9;
+  Function: assignDirAttack__9NpcMasterUi
+  C line: 44 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: else if (iVar1 == *(int *)(iVar8 + 0x80)) {
+  Function: getZoneRange__9NpcMasterP9ObjHandlePfT2
+  C line: 14 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((((param_2 == *(int *)(param_1 + 0x7c)) || (param_2 == *(int *)(param_1 + 0x80))) ||
+  Function: getLockDist__9NpcMaster5eLock
+  C line: 31 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: else if (iVar2 == *(int *)(iVar6 + 0x80)) {
+  Function: assignFormationPos__9NpcMaster
+  C line: 71 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: else if (iVar3 == *(int *)(iVar8 + 0x80)) {
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 64 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: else if (iVar2 == *(int *)(iVar8 + 0x80)) {
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 133 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: else if (iVar1 == *(int *)(iVar8 + 0x80)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 70 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (param_4 == *(int *)(param_1 + 0x80)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 90 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (param_4 == *(int *)(param_1 + 0x80)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 110 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (param_4 != *(int *)(param_1 + 0x80)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 193 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (param_4 != *(int *)(param_1 + 0x80)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 237 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (param_4 != *(int *)(param_1 + 0x80)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 267 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (param_4 != *(int *)(param_1 + 0x80)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 312 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (param_4 != *(int *)(param_1 + 0x80)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 439 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (param_4 == *(int *)(param_1 + 0x80)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 470 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (param_4 == *(int *)(param_1 + 0x80)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 511 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (param_4 == *(int *)(param_1 + 0x80)) {
+  Function: adjustForConstantAttack__9NpcMaster
+  C line: 29 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((iVar2 == iVar5) || (iVar2 == *(int *)(iVar8 + 0x80))) {
+  Function: goToZone__9NpcMasterP9ObjHandle
+  C line: 33 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: else if (param_2 == *(int *)((int)param_1 + 0x80)) {
+  Function: areMultipleAttackers__9NpcMaster
+  C line: 27 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((iVar1 != *(int *)(param_1 + 0x7c)) && (bVar3 = true, iVar1 != *(int *)(param_1 + 0x80))
+  Function: attackerInArea__9NpcMaster
+  C line: 23 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((iVar1 != *(int *)(param_1 + 0x7c)) && (bVar3 = true, iVar1 != *(int *)(param_1 + 0x80)))
+  Function: isValidDirAttackEnemy__9NpcMasterP9ObjHandle
+  C line: 31 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: (param_2 != *(int *)((int)param_1 + 0x80))) {
+  Function: clearSecondaryEnemy__9NpcMaster
+  C line: 4 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0x80) = 0;
+  Function: isDirAttacker__9NpcMasterP9ObjHandle
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: (param_2 == *(int *)(param_1 + 0x7c))) || (uVar1 = 1, param_2 == *(int *)(param_1 + 0x80))) {
+  Function: isAttacker__9NpcMasterP9ObjHandle
+  C line: 6 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((((param_2 == *(int *)(param_1 + 0x7c)) || (param_2 == *(int *)(param_1 + 0x80))) ||
+  Function: getZoneDistance__9NpcMasterP9ObjHandle
+  C line: 12 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: (param_2 == *(int *)((int)param_1 + 0x80))) ||
+
+FIELD OFFSET: 0x84
+  Function: reset__9NpcMaster
+  C line: 45 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x21] = 0;
+  Function: assignMainEnemies__9NpcMaster
+  C line: 18 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: fVar10 = *(float *)(iVar5 + 0x84);
+  Function: assignMainEnemies__9NpcMaster
+  C line: 30 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: fVar10 = *(float *)(iVar5 + 0x84);
+  Function: update__9NpcMaster
+  C line: 16 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((*(float *)(iVar1 + 0x84) != 0.0) &&
+  Function: update__9NpcMaster
+  C line: 17 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: (fVar2 = *(float *)(iVar1 + 0x84) - (float)game._95456_4_, *(float *)(iVar1 + 0x84) = fVar2,
+  Function: update__9NpcMaster
+  C line: 17 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: (fVar2 = *(float *)(iVar1 + 0x84) - (float)game._95456_4_, *(float *)(iVar1 + 0x84) = fVar2,
+  Function: update__9NpcMaster
+  C line: 19 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(iVar1 + 0x84) = 0;
+
+FIELD OFFSET: 0x8C
+  Function: reset__9NpcMaster
+  C line: 80 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar1 = puVar9[0x23];
+  Function: reset__9NpcMaster
+  C line: 82 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar1 = puVar9[0x23];
+  Function: updateSimData__9NpcMaster
+  C line: 54 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar11 = *(int *)(iVar12 + 0x8c);
+  Function: isSimmed__9NpcMasterUi
+  C line: 7 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar2 = *(int *)(param_1 + 0x8c);
+  Function: simClearGroupSyncFlags__9NpcMasterUi
+  C line: 7 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar2 = *(int *)((int)param_1 + 0x8c);
+  Function: simGetGroupContinueNum__9NpcMasterUi
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar2 = *(int *)((int)param_1 + 0x8c);
+  Function: simGetGroupArrivalNum__9NpcMasterUi
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar2 = *(int *)((int)param_1 + 0x8c);
+  Function: simGetNumInGroup__9NpcMasterUi
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar1 = *(int *)((int)param_1 + 0x8c);
+  Function: getSimEntry__9NpcMasterP3Npc
+  C line: 7 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar2 = *(int *)(param_1 + 0x8c);
+
+FIELD OFFSET: 0x94
+  Function: reset__9NpcMaster
+  C line: 79 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if (puVar9[0x25] != 0) {
+  Function: reset__9NpcMaster
+  C line: 81 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: while (deallocate__13memListBufferP7memNode(puVar9 + 0x22,uVar1), puVar9[0x25] != 0) {
+
+FIELD OFFSET: 0xAC
+  Function: reset__9NpcMaster
+  C line: 38 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x2b] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 17 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if (puVar5[0x2b] == 0) {
+  Function: updateStatus__9NpcMaster
+  C line: 21 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x2b];
+  Function: updateStatus__9NpcMaster
+  C line: 25 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = puVar5[0x2b];
+  Function: updateStatus__9NpcMaster
+  C line: 26 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2b] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 41 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2b] = 1;
+  Function: updateStatus__9NpcMaster
+  C line: 47 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x2b];
+  Function: updateStatus__9NpcMaster
+  C line: 67 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x2b];
+  Function: updateStatus__9NpcMaster
+  C line: 79 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x2b];
+  Function: updateStatus__9NpcMaster
+  C line: 109 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x2b];
+  Function: updateStatus__9NpcMaster
+  C line: 110 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2b] = 1;
+  Function: updateStatus__9NpcMaster
+  C line: 133 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2b] = 2;
+  Function: updateStatus__9NpcMaster
+  C line: 140 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2b] = 3;
+  Function: updateStatus__9NpcMaster
+  C line: 145 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2b] = 4;
+  Function: updateStatus__9NpcMaster
+  C line: 153 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2b] = 5;
+  Function: updateStatus__9NpcMaster
+  C line: 181 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x2b];
+  Function: updateStatus__9NpcMaster
+  C line: 184 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x2b];
+  Function: updateStatus__9NpcMaster
+  C line: 187 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2b] = 5;
+  Function: updateStatus__9NpcMaster
+  C line: 220 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x2b];
+  Function: updateStatus__9NpcMaster
+  C line: 223 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x2b];
+  Function: updateStatus__9NpcMaster
+  C line: 225 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2b] = 6;
+  Function: updateStatus__9NpcMaster
+  C line: 240 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x2b];
+  Function: updateStatus__9NpcMaster
+  C line: 244 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x2b];
+  Function: updateStatus__9NpcMaster
+  C line: 246 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2b] = 7;
+  Function: updateStatus__9NpcMaster
+  C line: 267 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2b] = 1;
+  Function: updateFightType__9NpcMaster
+  C line: 19 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(param_1 + 0xac) - 2U < 6) {
+  Function: positionedForFightType__9NpcMaster
+  C line: 4 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: return 1 < *(int *)(param_1 + 0xac);
+  Function: setGroupStatus__9NpcMaster12eGroupStatusb
+  C line: 13 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(int *)(param_1 + 0xac) = (int)param_2;
+  Function: isDirAttackFight__9NpcMaster
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (0 < *(int *)(param_1 + 0xac)) {
+  Function: dirAttackInProgress__9NpcMaster
+  C line: 4 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: return 2 < *(int *)(param_1 + 0xac);
+  Function: isDirAttacker__9NpcMasterP9ObjHandle
+  C line: 11 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (((lVar2 != 0) && (uVar1 = 0, 0 < *(int *)(param_1 + 0xac))) &&
+
+FIELD OFFSET: 0xB0
+  Function: reset__9NpcMaster
+  C line: 39 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x2c] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 25 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = puVar5[0x2b];
+  Function: updateStatus__9NpcMaster
+  C line: 40 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 111 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = uVar3;
+  Function: updateStatus__9NpcMaster
+  C line: 117 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if (uVar3 != puVar5[0x2c]) {
+  Function: updateStatus__9NpcMaster
+  C line: 118 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = uVar3;
+  Function: updateStatus__9NpcMaster
+  C line: 139 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = uVar3;
+  Function: updateStatus__9NpcMaster
+  C line: 143 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if (uVar3 != puVar5[0x2c]) {
+  Function: updateStatus__9NpcMaster
+  C line: 144 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = uVar3;
+  Function: updateStatus__9NpcMaster
+  C line: 150 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if (uVar3 != puVar5[0x2c]) {
+  Function: updateStatus__9NpcMaster
+  C line: 151 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = uVar3;
+  Function: updateStatus__9NpcMaster
+  C line: 172 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = 3;
+  Function: updateStatus__9NpcMaster
+  C line: 188 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = uVar3;
+  Function: updateStatus__9NpcMaster
+  C line: 192 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if (uVar3 == puVar5[0x2c]) {
+  Function: updateStatus__9NpcMaster
+  C line: 196 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = uVar3;
+  Function: updateStatus__9NpcMaster
+  C line: 226 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = uVar3;
+  Function: updateStatus__9NpcMaster
+  C line: 247 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = uVar3;
+  Function: updateStatus__9NpcMaster
+  C line: 266 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x2c] = uVar3;
+  Function: setGroupStatus__9NpcMaster12eGroupStatusb
+  C line: 11 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(int *)(param_1 + 0xb0) = iVar1;
+
+FIELD OFFSET: 0xB4
+  Function: reset__9NpcMaster
+  C line: 40 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x2d] = 0;
+  Function: setGroupFormation__9NpcMaster
+  C line: 20 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(iVar6 + 0xb4) = 0;
+  Function: setGroupFormation__9NpcMaster
+  C line: 31 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar6 + 0xb4) < iVar4) {
+  Function: setGroupFormation__9NpcMaster
+  C line: 32 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(int *)(iVar6 + 0xb4) = iVar4;
+  Function: setGroupFormation__9NpcMaster
+  C line: 40 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar4 = *(int *)(iVar6 + 0xb4);
+  Function: setGroupFormation__9NpcMaster
+  C line: 56 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(iVar6 + 0xb4) = 1;
+  Function: setGroupFormation__9NpcMaster
+  C line: 83 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(iVar6 + 0xb4) = uVar2;
+  Function: assignMainEnemies__9NpcMaster
+  C line: 21 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0xb4) < 3) {
+  Function: assignMainEnemies__9NpcMaster
+  C line: 58 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0xb4) < 3) {
+  Function: assignMainEnemies__9NpcMaster
+  C line: 93 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar5 + 0xb4) < 3) {
+  Function: assignDirAttackEnemies__9NpcMaster
+  C line: 28 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (2 < *(int *)(iVar7 + 0xb4)) goto LAB_001c8b34;
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 18 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar2 = *(uint *)(param_1 + 0xb4);
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 31 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((*(uint *)(param_1 + 0x74) < 2) && (uVar2 = *(uint *)(param_1 + 0xb4), 2 < (int)uVar2))
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 36 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: switch(*(undefined4 *)(param_1 + 0xb4)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 102 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar4 = *(int *)(param_1 + 0xb4);
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 138 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: switch(*(undefined4 *)(param_1 + 0xb4)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 259 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar4 = *(int *)(param_1 + 0xb4);
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 304 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar4 = *(int *)(param_1 + 0xb4);
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 383 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: switch(*(undefined4 *)(param_1 + 0xb4)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 489 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar4 = *(int *)(param_1 + 0xb4);
+
+FIELD OFFSET: 0xB8
+  Function: reset__9NpcMaster
+  C line: 44 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x2e] = 0;
+  Function: setGlobalAlarm__9NpcMaster
+  C line: 10 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0xb8) = 1;
+
+FIELD OFFSET: 0xBC
+  Function: reset__9NpcMaster
+  C line: 46 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x2f] = 0;
+  Function: assignDirAttack__9NpcMasterUi
+  C line: 81 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((9 < *(int *)(iVar8 + 0xbc)) && (uVar3 = 1, param_2 == 4)) {
+  Function: assignDirAttackEnemies__9NpcMaster
+  C line: 16 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar7 + 0xbc) == 0) {
+  Function: assignDirAttackEnemies__9NpcMaster
+  C line: 58 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: switch(*(undefined4 *)(iVar7 + 0xbc)) {
+  Function: getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+  C line: 16 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar3 = *(int *)(param_1 + 0xbc);
+  Function: updateStatus__9NpcMaster
+  C line: 129 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if (puVar5[0x2f] == 0) {
+  Function: setFightType__9NpcMaster10eFightType
+  C line: 4 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0xbc) = param_2;
+  Function: updateFightType__9NpcMaster
+  C line: 6 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(param_1 + 0xbc) == 0) {
+  Function: isDirAttackFight__9NpcMaster
+  C line: 9 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(param_1 + 0xbc) == 0) {
+  Function: isDirAttacker__9NpcMasterP9ObjHandle
+  C line: 12 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: (uVar1 = 1, *(int *)(param_1 + 0xbc) == 0)) {
+
+FIELD OFFSET: 0xC0
+  Function: reset__9NpcMaster
+  C line: 47 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x30] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 132 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x30] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 136 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if ((puVar5[0x34] != 0) && ((float)puVar5[0x30] < (float)puVar5[0x4f])) {
+  Function: updateStatus__9NpcMaster
+  C line: 157 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x30] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 160 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if ((float)puVar5[0x30] < 1.0) {
+  Function: updateStatus__9NpcMaster
+  C line: 197 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x30] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 200 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if ((float)puVar5[0x30] < *(float *)(uVar3 + 4)) goto LAB_001cc568;
+  Function: updateStatus__9NpcMaster
+  C line: 211 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x30] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 235 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x30] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 251 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if ((float)puVar5[0x30] < (float)puVar5[0x50]) {
+  Function: setFightType__9NpcMaster10eFightType
+  C line: 5 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0xc0) = 0;
+  Function: updateFightType__9NpcMaster
+  C line: 7 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0xc0) = 0;
+  Function: updateFightType__9NpcMaster
+  C line: 10 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: fVar1 = *(float *)(param_1 + 0xc0);
+  Function: updateFightType__9NpcMaster
+  C line: 12 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(float *)(param_1 + 0xc0) = fVar1 + (float)game._95456_4_;
+  Function: updateFightType__9NpcMaster
+  C line: 14 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: fVar1 = *(float *)(param_1 + 0xc0);
+  Function: updateFightType__9NpcMaster
+  C line: 17 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(float *)(param_1 + 0xc0) = DAT_00433528;
+
+FIELD OFFSET: 0xC4
+  Function: reset__9NpcMaster
+  C line: 48 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x31] = 0;
+  Function: updateFightType__9NpcMaster
+  C line: 20 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(float *)(param_1 + 0xc4) = *(float *)(param_1 + 0xc4) + (float)game._95456_4_;
+  Function: updateFightType__9NpcMaster
+  C line: 20 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(float *)(param_1 + 0xc4) = *(float *)(param_1 + 0xc4) + (float)game._95456_4_;
+  Function: updateFightType__9NpcMaster
+  C line: 23 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0xc4) = 0;
+  Function: updateFightType__9NpcMaster
+  C line: 25 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (DAT_0043352c <= *(float *)(param_1 + 0xc4)) {
+  Function: updateFightType__9NpcMaster
+  C line: 26 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(float *)(param_1 + 0xc4) = DAT_0043352c;
+
+FIELD OFFSET: 0xC8
+  Function: reset__9NpcMaster
+  C line: 50 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x32] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 43 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x32] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 87 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar8 = puVar5[0x32];
+  Function: updateStatus__9NpcMaster
+  C line: 95 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar8 = puVar5[0x32];
+  Function: updateStatus__9NpcMaster
+  C line: 100 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x32] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 236 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x32] = 0;
+  Function: updateFightType__9NpcMaster
+  C line: 11 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(param_1 + 200) != 0) goto LAB_001d0f3c;
+  Function: stopFightTypeTime__9NpcMasterP3Npc
+  C line: 7 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 200) = 1;
+  Function: endDirAttack__9NpcMasterP3Npc
+  C line: 7 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 200) = 0;
+  Function: clearDirAttacker__9NpcMasterP3Npc
+  C line: 6 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 200) = 0;
+
+FIELD OFFSET: 0xCC
+  Function: updateStatus__9NpcMaster
+  C line: 97 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if (((uVar8 != 0) && (0.0 < (float)puVar5[0x33])) &&
+  Function: updateStatus__9NpcMaster
+  C line: 98 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: (fVar9 = (float)puVar5[0x33] - (float)game._95456_4_, puVar5[0x33] = (uint)fVar9, fVar9 <= 0.0)
+  Function: updateStatus__9NpcMaster
+  C line: 98 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: (fVar9 = (float)puVar5[0x33] - (float)game._95456_4_, puVar5[0x33] = (uint)fVar9, fVar9 <= 0.0)
+  Function: stopFightTypeTime__9NpcMasterP3Npc
+  C line: 8 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0xcc) = 0x40c00000;
+
+FIELD OFFSET: 0xD0
+  Function: updateStatus__9NpcMaster
+  C line: 42 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x34] = 1;
+  Function: updateStatus__9NpcMaster
+  C line: 136 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if ((puVar5[0x34] != 0) && ((float)puVar5[0x30] < (float)puVar5[0x4f])) {
+  Function: updateStatus__9NpcMaster
+  C line: 237 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x34] = 0;
+
+FIELD OFFSET: 0xD4
+  Function: reset__9NpcMaster
+  C line: 51 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x35] = 0;
+  Function: initDirAttacks__9NpcMaster
+  C line: 26 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((((*(int *)(iVar2 + 0x25c8) == *(int *)(param_1 + 0xd4)) &&
+  Function: getValidNewDirAttackGroupID__9NpcMaster
+  C line: 37 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((iVar10 != *(int *)(iVar7 + 0xd8)) && (iVar10 != *(int *)(iVar7 + 0xd4))) {
+  Function: updateStatus__9NpcMaster
+  C line: 34 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x35];
+  Function: updateStatus__9NpcMaster
+  C line: 35 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x35] = (uint)lVar4;
+  Function: newGroupDirAttackMembers__9NpcMaster
+  C line: 9 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar1 = *(undefined4 *)(param_1 + 0xd4);
+  Function: newGroupDirAttackMembers__9NpcMaster
+  C line: 10 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(int *)(param_1 + 0xd4) = (int)lVar2;
+
+FIELD OFFSET: 0xD8
+  Function: reset__9NpcMaster
+  C line: 52 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x36] = 0;
+  Function: getValidNewDirAttackGroupID__9NpcMaster
+  C line: 37 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((iVar10 != *(int *)(iVar7 + 0xd8)) && (iVar10 != *(int *)(iVar7 + 0xd4))) {
+  Function: updateStatus__9NpcMaster
+  C line: 36 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x36] = uVar3;
+  Function: newGroupDirAttackMembers__9NpcMaster
+  C line: 11 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0xd8) = uVar1;
+
+FIELD OFFSET: 0x13C
+  Function: reset__9NpcMaster
+  C line: 34 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x4f] = 0;
+  Function: initDirAttacks__9NpcMaster
+  C line: 47 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0x13c) = 0;
+  Function: initDirAttacks__9NpcMaster
+  C line: 54 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(float *)(param_1 + 0x13c) = (float)(byte)puVar6[-1] * 0.5;
+  Function: updateStatus__9NpcMaster
+  C line: 136 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if ((puVar5[0x34] != 0) && ((float)puVar5[0x30] < (float)puVar5[0x4f])) {
+
+FIELD OFFSET: 0x140
+  Function: reset__9NpcMaster
+  C line: 35 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x50] = 0;
+  Function: initDirAttacks__9NpcMaster
+  C line: 48 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0x140) = 0;
+  Function: initDirAttacks__9NpcMaster
+  C line: 55 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(float *)(param_1 + 0x140) = (float)bVar1 * 0.5;
+  Function: updateStatus__9NpcMaster
+  C line: 251 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if ((float)puVar5[0x30] < (float)puVar5[0x50]) {
+
+FIELD OFFSET: 0x144
+  Function: reset__9NpcMaster
+  C line: 33 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x51] = 0;
+  Function: initDirAttacks__9NpcMaster
+  C line: 49 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0x144) = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 124 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[puVar5[0x51] * 4 + 0x37];
+  Function: updateStatus__9NpcMaster
+  C line: 127 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x53] = (uint)(puVar5 + puVar5[0x51] * 4 + 0x37);
+  Function: updateStatus__9NpcMaster
+  C line: 238 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if ((puVar5[0x51] < 4) &&
+  Function: updateStatus__9NpcMaster
+  C line: 239 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: (uVar3 = puVar5[0x51] + 1, puVar5[0x51] = uVar3, uVar3 < puVar5[0x52])) {
+  Function: updateStatus__9NpcMaster
+  C line: 239 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: (uVar3 = puVar5[0x51] + 1, puVar5[0x51] = uVar3, uVar3 < puVar5[0x52])) {
+  Function: updateStatus__9NpcMaster
+  C line: 243 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x51] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 256 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar8 = puVar5[puVar5[0x51] * 4 + 0x37];
+
+FIELD OFFSET: 0x148
+  Function: reset__9NpcMaster
+  C line: 32 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x52] = 0;
+  Function: initDirAttacks__9NpcMaster
+  C line: 50 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0x148) = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 120 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if (puVar5[0x52] == 0) {
+  Function: updateStatus__9NpcMaster
+  C line: 239 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: (uVar3 = puVar5[0x51] + 1, puVar5[0x51] = uVar3, uVar3 < puVar5[0x52])) {
+  Function: updateStatus__9NpcMaster
+  C line: 252 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: if (puVar5[0x52] == 0) {
+
+FIELD OFFSET: 0x14C
+  Function: reset__9NpcMaster
+  C line: 43 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x53] = 0;
+  Function: assignDirAttackEnemies__9NpcMaster
+  C line: 29 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar8 = *(int *)(iVar7 + 0x14c);
+  Function: assignDirAttackEnemies__9NpcMaster
+  C line: 32 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: iVar8 = *(int *)(iVar7 + 0x14c);
+  Function: assignFormationPos__9NpcMaster
+  C line: 37 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar8 + 0x14c) != 0) {
+  Function: assignFormationPos__9NpcMaster
+  C line: 38 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar11 = *(undefined4 *)(*(int *)(iVar8 + 0x14c) + 0xc);
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 102 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar8 + 0x14c) == 0) {
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 106 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uStack_c8 = *(undefined4 *)(*(int *)(iVar8 + 0x14c) + 0xc);
+  Function: updateStatus__9NpcMaster
+  C line: 127 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x53] = (uint)(puVar5 + puVar5[0x51] * 4 + 0x37);
+  Function: updateStatus__9NpcMaster
+  C line: 193 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x53];
+  Function: updateStatus__9NpcMaster
+  C line: 198 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x53];
+  Function: updateAttackStatus__9NpcMaster
+  C line: 29 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(*(int *)(iVar5 + 0x14c) + 8) <= *(uint *)(iVar1 + 0x1800)) {
+  Function: didDirAttacks__9NpcMasterP3Npc
+  C line: 4 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: return *(uint *)(*(int *)(param_1 + 0x14c) + 8) <= *(uint *)(param_2 + 0x1800);
+
+FIELD OFFSET: 0x150
+  Function: reset__9NpcMaster
+  C line: 49 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x54] = 0;
+  Function: assignDirAttackEnemies__9NpcMaster
+  C line: 26 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((*(int *)(iVar7 + 0x150) == 0) || (*(uint *)(iVar7 + 0x74) != *(uint *)(iVar7 + 0x78))) {
+  Function: assignDirAttackEnemies__9NpcMaster
+  C line: 96 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(iVar7 + 0x150) = 1;
+  Function: updateStatus__9NpcMaster
+  C line: 119 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x54] = 0;
+
+FIELD OFFSET: 0x154
+  Function: reset__9NpcMaster
+  C line: 54 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x55] = 4;
+  Function: updateStatus__9NpcMaster
+  C line: 146 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x55] = 4;
+  Function: updateStatus__9NpcMaster
+  C line: 154 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x55] = 4;
+  Function: updateStatus__9NpcMaster
+  C line: 163 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x55];
+  Function: updateStatus__9NpcMaster
+  C line: 168 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x55];
+  Function: updateStatus__9NpcMaster
+  C line: 173 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x55] = uVar3;
+  Function: updateStatus__9NpcMaster
+  C line: 186 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x55] = 4;
+  Function: updateStatus__9NpcMaster
+  C line: 201 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: setToAttack__9NpcMasterUi(param_1,puVar5[0x55]);
+  Function: updateStatus__9NpcMaster
+  C line: 202 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x55];
+  Function: updateStatus__9NpcMaster
+  C line: 207 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: uVar3 = puVar5[0x55];
+  Function: updateStatus__9NpcMaster
+  C line: 212 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x55] = uVar3;
+  Function: flashAttackers__9NpcMaster
+  C line: 18 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if ((*(uint *)(*(int *)(iVar1 + 0x10) + 0x2674) & *(uint *)(param_1 + 0x154)) != 0) {
+
+FIELD OFFSET: 0x158
+  Function: updateStatus__9NpcMaster
+  C line: 27 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x56] = 0;
+  Function: updateStatus__9NpcMaster
+  C line: 84 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: fVar9 = (float)puVar5[0x56];
+  Function: updateStatus__9NpcMaster
+  C line: 90 | Width: 4 | Direction: READ
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: fVar9 = (float)puVar5[0x56];
+  Function: updateStatus__9NpcMaster
+  C line: 93 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar5[0x56] = (uint)(fVar9 + (float)game._95456_4_);
+
+FIELD OFFSET: 0x15C
+  Function: reset__9NpcMaster
+  C line: 68 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x57] = 1;
+
+FIELD OFFSET: 0x160
+  Function: reset__9NpcMaster
+  C line: 67 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x58] = 1;
+
+FIELD OFFSET: 0x164
+  Function: reset__9NpcMaster
+  C line: 53 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x59] = 0;
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 43 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar1 + 0x25c8) == *(int *)(iVar8 + 0x164)) {
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 122 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar2 + 0x25c8) == *(int *)(iVar8 + 0x164)) {
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 179 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar1 + 0x25c8) == *(int *)(iVar8 + 0x164)) {
+  Function: assignMinebabyOnlyFormation__9NpcMaster
+  C line: 208 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(iVar1 + 0x25c8) == *(int *)(iVar8 + 0x164)) {
+
+FIELD OFFSET: 0x178
+  Function: allWeaponsTaken__9NpcMaster
+  C line: 11 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(int *)(param_1 + 0x178) != 0) {
+  Function: allWeaponsTaken__9NpcMaster
+  C line: 21 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar4 < *(uint *)(param_1 + 0x178));
+  Function: getStealWeapon__9NpcMaster
+  C line: 13 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(param_1 + 0x178) <= uVar4) {
+  Function: addStealWeapon__9NpcMaster7eWeapon
+  C line: 10 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: uVar1 = *(uint *)(param_1 + 0x178);
+  Function: addStealWeapon__9NpcMaster7eWeapon
+  C line: 33 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(uint *)(param_1 + 0x178) = uVar1 + 1;
+  Function: stealListContains__9NpcMaster7eWeapon
+  C line: 8 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (*(uint *)(param_1 + 0x178) != 0) {
+  Function: stealListContains__9NpcMaster7eWeapon
+  C line: 16 | Width: 4 | Direction: READ
+  Evidence: DIRECT DEREFERENCE
+  Expression: } while (uVar2 < *(uint *)(param_1 + 0x178));
+  Function: resetStealList__9NpcMaster
+  C line: 14 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(param_1 + 0x178) = 0;
+
+FIELD OFFSET: 0x17C
+  Function: reset__9NpcMaster
+  C line: 56 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x5f] = 0;
+
+FIELD OFFSET: 0x180
+  Function: reset__9NpcMaster
+  C line: 58 | Width: 4 | Direction: WRITE
+  Evidence: PROVEN BASE ARRAY ACCESS
+  Expression: puVar9[0x60] = 0;
+  Function: updateSimData__9NpcMaster
+  C line: 30 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: if (((*(int *)(*(int *)(iVar11 + 0x10) + 0x17f0) == 8) && (*(int *)(iVar12 + 0x180) != 8)) &&
+  Function: updateSimData__9NpcMaster
+  C line: 55 | Width: 4 | Direction: WRITE
+  Evidence: DIRECT DEREFERENCE
+  Expression: *(undefined4 *)(iVar12 + 0x180) = uVar4;
+
+========== FUNCTION INVENTORY ==========
+
+addGroupSims__9NpcMasterP3Npc
+addSimEntry__9NpcMasterP3Npc
+addSimEntry__9NpcMasterP8envEnemyUi
+addSimEntry__9NpcMasterP8SimEntry
+addStealWeapon__9NpcMaster7eWeapon
+adjustForConstantAttack__9NpcMaster
+alertGroup__9NpcMasterP3Npc
+alertTroops__9NpcMasterP3Npc
+allBabiesDead__9NpcMasterUi
+allBabiesHaveWeapons__9NpcMasterUi
+allUndeadsDead__9NpcMasterUi
+allWeaponsTaken__9NpcMaster
+areMultipleAttackers__9NpcMaster
+assignDirAttack__9NpcMasterUi
+assignDirAttackEnemies__9NpcMaster
+assignDirectTargetPos__9NpcMasterP9ObjHandle
+assignFormationPos__9NpcMaster
+assignMainEnemies__9NpcMaster
+assignMinebabyOnlyFormation__9NpcMaster
+assignStaticPos__9NpcMaster
+assignTarget__9NpcMaster
+assignTargetPos__9NpcMaster
+atSimTgtPos__9NpcMasterP8SimEntry
+attackerInArea__9NpcMaster
+canBeMainEnemy__9NpcMasterP3Npc
+clearDirAttacker__9NpcMasterP3Npc
+clearMainEnemy__9NpcMaster
+clearSecondaryEnemy__9NpcMaster
+containMinebabies__9NpcMaster
+containStaticNpcs__9NpcMaster
+containSubGroup__9NpcMasterUi
+containUndeads__9NpcMasterUi
+destroy__9NpcMaster
+didDirAttacks__9NpcMasterP3Npc
+dirAttackInProgress__9NpcMaster
+endDirAttack__9NpcMasterP3Npc
+enforcerCanAttack__9NpcMasterP3Npc
+flashAttackers__9NpcMaster
+getAttackZoneDistance__9NpcMasterP3Npc
+getAttackZoneRange__9NpcMasterP3NpcPfT2
+getCurGroupNum__9NpcMasterUi
+getDirAttackPosition__9NpcMasterP9ObjHandleUiP7Point4d
+getFirstArcher__9NpcMaster
+getGroupID__9NpcMaster
+getGroupID__9NpcMasterP8envEnemy
+getLockDist__9NpcMaster5eLock
+getLockTime__9NpcMaster5eLock
+getNumAvailNpcs__9NpcMaster
+getRelAngle__9NpcMasterUiUiP9ObjHandleUi
+getSimEntry__9NpcMasterP3Npc
+getStealWeapon__9NpcMaster
+getValidNewDirAttackGroupID__9NpcMaster
+getZoneDistance__9NpcMasterP9ObjHandle
+getZoneRange__9NpcMasterP9ObjHandlePfT2
+goToZone__9NpcMasterP9ObjHandle
+groupClearArrival__9NpcMasterP3Npc
+groupClearArrival__9NpcMasterP8SimEntry
+groupContainsValidDirAttackInfo__9NpcMasterUi
+groupReadyToContinue__9NpcMasterP3Npc
+groupReadyToContinue__9NpcMasterP8SimEntry
+groupReadyToStart__9NpcMasterP3Npc
+init__9NpcMaster
+initDirAttacks__9NpcMaster
+inZone4__9NpcMasterP3Npc
+isAttacker__9NpcMasterP9ObjHandle
+isCreated__9NpcMasterUi
+isDirAttacker__9NpcMasterP9ObjHandle
+isDirAttackFight__9NpcMaster
+iSeeDeadPeople__9NpcMasterP3Npc
+isFightTypeDone__9NpcMaster
+isFirstArcher__9NpcMasterP3Npc
+isMinebabyAttacking__9NpcMasterUi
+isSimmed__9NpcMasterUi
+isValidDirAttackEnemy__9NpcMasterP9ObjHandle
+isValidFormationEnemy__9NpcMasterP3Npc
+minebabySpawnUndeadCue__9NpcMasterUi
+newGroupDirAttackMembers__9NpcMaster
+noDirAttackers__9NpcMaster
+npcImpeding__9NpcMasterP3Npc4eDir
+outOfZone__9NpcMasterP9ObjHandle
+outsideOfZone__9NpcMasterP3Npcf
+outsideOfZone__9NpcMasterP9ObjHandle
+positionedForFightType__9NpcMaster
+removeSimEntry__9NpcMasterP8SimEntry
+reset__9NpcMaster
+resetStealList__9NpcMaster
+setFightType__9NpcMaster10eFightType
+setGlobalAlarm__9NpcMaster
+setGroupFormation__9NpcMaster
+setGroupStatus__9NpcMaster12eGroupStatusb
+setPauseTimes__9NpcMasterff
+setSimNextWaypos__9NpcMasterP8SimEntry
+setSimTargetPosToWaypos__9NpcMasterP8SimEntryUs
+setToAttack__9NpcMasterUi
+simAllCurNPCs__9NpcMaster
+simAtFirstWaypos__9NpcMasterP8SimEntryP9WayposSet
+simAtLastWaypos__9NpcMasterP8SimEntryP9WayposSet
+simClearGroupSyncFlags__9NpcMasterUi
+simGetGroupArrivalNum__9NpcMasterUi
+simGetGroupContinueNum__9NpcMasterUi
+simGetGroupID__9NpcMasterP8SimEntry
+simGetNumInGroup__9NpcMasterUi
+simGetPatrolNum__9NpcMasterP8SimEntry
+simHasCurWayposAnims__9NpcMasterP8SimEntry
+simOscillatingWaypoints__9NpcMasterP8SimEntry
+simSyncWaypoint__9NpcMasterP8SimEntry
+simWayposAnims__9NpcMasterP8SimEntry
+soundGong__9NpcMasterP6Mscobj
+stealListContains__9NpcMaster7eWeapon
+stopAllNavigation__9NpcMaster
+stopFightTypeTime__9NpcMasterP3Npc
+triggerNextArcher__9NpcMasterP3Npc
+update__9NpcMaster
+updateArchers__9NpcMaster
+updateAttackers__9NpcMaster
+updateAttackStatus__9NpcMaster
+updateFightType__9NpcMaster
+updateLocks__9NpcMaster
+updateNpcArray__9NpcMaster
+updateNpcData__9NpcMaster6eObjId
+updateSimData__9NpcMaster
+updateSimPosition__9NpcMasterP8SimEntry
+updateStatus__9NpcMaster
+zoned__9NpcMaster
+
+========== INTERPRETATION LIMITATIONS ==========
+Only aliases explicitly initialized from param_1 are followed.
+Direct dereferences and proven-base array accesses are reported.
+Pointer fields leading to other objects are not recursively treated as NpcMaster fields.
+Array accesses assume the declared pointer type stride.
+Unknown widths remain unclassified.
+This report does not establish complete class size or field boundaries.
+Field names require corroboration from initialization, writes, and call-site behavior.
