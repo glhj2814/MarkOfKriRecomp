@@ -1,0 +1,202 @@
+========== NPCMASTER RESET INITIALIZATION MAP ==========
+
+Generated: 2026-11-24 10:10:10
+Source: D:\Games\MarkOfKriRecomp\R5900_NPCMASTER_CONSTRUCTION_LIFECYCLE_AUDIT.txt
+
+========== CONSTRUCTOR EVIDENCE ==========
+
+undefined4 init__9NpcMaster(undefined8 param_1)
+
+{
+  init__13memListBufferUiUiP20memGrabAndHoldBuffer((int)param_1 + 0x88,0x60,100,0);
+  reset__9NpcMaster(param_1);
+  return 1;
+}
+
+========== LIMITATIONS ==========
+Function-name classification is heuristic.
+Offset matches are candidate expressions, not automatically proven this-relative fields.
+Register aliases and nested pointers may refer to other objects.
+Constructor and destructor behavior must be interpreted from complete function bodies.
+No class size or field boundary is inferred by this audit.
+
+========== RESET SCALAR FIELD WRITES ==========
+
+0x70 | 4 bytes | Value: 0
+0x74 | 4 bytes | Value: 0
+0x78 | 4 bytes | Value: 0
+0x7C | 4 bytes | Value: 0
+0x80 | 4 bytes | Value: 0
+0x84 | 4 bytes | Value: 0
+0xAC | 4 bytes | Value: 0
+0xB0 | 4 bytes | Value: 0
+0xB4 | 4 bytes | Value: 0
+0xB8 | 4 bytes | Value: 0
+0xBC | 4 bytes | Value: 0
+0xC0 | 4 bytes | Value: 0
+0xC4 | 4 bytes | Value: 0
+0xC8 | 4 bytes | Value: 0
+0xD4 | 4 bytes | Value: 0
+0xD8 | 4 bytes | Value: 0
+0x13C | 4 bytes | Value: 0
+0x140 | 4 bytes | Value: 0
+0x144 | 4 bytes | Value: 0
+0x148 | 4 bytes | Value: 0
+0x14C | 4 bytes | Value: 0
+0x150 | 4 bytes | Value: 0
+0x154 | 4 bytes | Value: 4
+0x15C | 4 bytes | Value: 1
+0x160 | 4 bytes | Value: 1
+0x164 | 4 bytes | Value: 0
+0x17C | 4 bytes | Value: 0
+0x180 | 4 bytes | Value: 0
+
+========== BYTE FIELD WRITES ==========
+
+Byte offset: 5 | Value: 0
+
+========== POINTER-BASED INITIALIZATION REGIONS ==========
+
+Directional attack entries
+  Base: 0xDC
+  End: 0x11F
+  Count: 5
+  Stride: 0x10
+  Evidence: Four 32-bit values per entry; reset loop writes indices 0 through 3.
+
+Directional attack entry indices
+  Base: 0x12C
+  End: 0x13F
+  Count: 5
+  Stride: 0x4
+  Evidence: Five 32-bit index values initialized to 0 through 4.
+
+Initialization group A
+  Base: 0x184
+  End: 0x18F
+  Count: 3
+  Stride: 0x4
+  Evidence: Three consecutive 32-bit values cleared.
+
+Initialization group B
+  Base: 0x190
+  End: 0x19B
+  Count: 3
+  Stride: 0x4
+  Evidence: Three consecutive 32-bit values cleared.
+
+Initialization group C
+  Base: 0x19C
+  End: 0x1A7
+  Count: 3
+  Stride: 0x4
+  Evidence: Three consecutive 32-bit values cleared.
+
+========== EMBEDDED SUBOBJECT INITIALIZATION ==========
+
+NpcMaster + 0x88
+  Passed to init__13memListBufferUiUiP20memGrabAndHoldBuffer
+  Constructor arguments: element size 0x60, capacity 100, final argument 0
+  This identifies an embedded buffer initialization location, not its complete size.
+
+NpcMaster + 0x1A8
+  reset__9NpcMaster calls init__11ExpertTable at puVar9 + 0x6A.
+  Pointer arithmetic uses 4-byte elements, giving byte offset 0x1A8.
+
+========== COMPLETE RESET FUNCTION ==========
+
+undefined4 reset__9NpcMaster(undefined8 param_1)
+
+{
+  undefined4 uVar1;
+  undefined4 *puVar2;
+  int iVar3;
+  undefined4 *puVar4;
+  uint *puVar5;
+  undefined4 *puVar6;
+  uint uVar7;
+  undefined4 *puVar8;
+  undefined4 *puVar9;
+  
+  puVar9 = (undefined4 *)param_1;
+  puVar4 = puVar9 + 0x61;
+  puVar6 = puVar9 + 100;
+  puVar8 = puVar9 + 0x67;
+  init__11ExpertTable(puVar9 + 0x6a);
+  puVar2 = puVar9 + 0x37;
+  uVar7 = 0;
+  puVar5 = puVar9 + 0x4b;
+  do {
+    puVar2[2] = 0;
+    puVar2[3] = 0;
+    *puVar5 = uVar7;
+    *puVar2 = 0;
+    uVar7 = uVar7 + 1;
+    puVar2[1] = 0;
+    puVar5 = puVar5 + 1;
+    puVar2 = puVar2 + 4;
+  } while (uVar7 < 5);
+  puVar9[0x52] = 0;
+  puVar9[0x51] = 0;
+  puVar9[0x4f] = 0;
+  puVar9[0x50] = 0;
+  puVar9[0x1f] = 0;
+  puVar9[0x20] = 0;
+  puVar9[0x2b] = 0;
+  puVar9[0x2c] = 0;
+  puVar9[0x2d] = 0;
+  puVar9[0x1d] = 0;
+  puVar9[0x1e] = 0;
+  puVar9[0x53] = 0;
+  puVar9[0x2e] = 0;
+  puVar9[0x21] = 0;
+  puVar9[0x2f] = 0;
+  puVar9[0x30] = 0;
+  puVar9[0x31] = 0;
+  puVar9[0x54] = 0;
+  puVar9[0x32] = 0;
+  puVar9[0x35] = 0;
+  puVar9[0x36] = 0;
+  puVar9[0x59] = 0;
+  puVar9[0x55] = 4;
+  resetStealList__9NpcMaster(param_1);
+  puVar9[0x5f] = 0;
+  puVar2 = puVar9 + 0x1b;
+  puVar9[0x60] = 0;
+  iVar3 = 0x19;
+  puVar9[0x1c] = 0;
+  do {
+    *puVar2 = 0;
+    iVar3 = iVar3 + -1;
+    puVar2 = puVar2 + -1;
+  } while (-1 < iVar3);
+  *puVar9 = 0;
+  puVar9[0x58] = 1;
+  puVar9[0x57] = 1;
+  uVar7 = 0;
+  do {
+    *puVar6 = 0;
+    uVar7 = uVar7 + 1;
+    *puVar4 = 0;
+    puVar6 = puVar6 + 1;
+    *puVar8 = 0;
+    puVar4 = puVar4 + 1;
+    puVar8 = puVar8 + 1;
+  } while (uVar7 < 3);
+  if (puVar9[0x25] != 0) {
+    uVar1 = puVar9[0x23];
+    while (deallocate__13memListBufferP7memNode(puVar9 + 0x22,uVar1), puVar9[0x25] != 0) {
+      uVar1 = puVar9[0x23];
+    }
+  }
+  npcai_respawn_kill_cnt = 0;
+  *(undefined1 *)((int)puVar9 + 5) = 0;
+  *(undefined1 *)(puVar9 + 1) = 0;
+  return 1;
+}
+
+========== LIMITATIONS ==========
+Scalar writes are derived from direct puVar9 indexed assignments.
+Loop regions are expanded from the observed pointer starts, strides, and loop counts.
+Embedded object sizes are not inferred from initialization addresses.
+No field names or complete class boundary are assumed.
