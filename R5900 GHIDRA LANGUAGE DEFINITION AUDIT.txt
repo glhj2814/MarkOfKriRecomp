@@ -1,0 +1,2074 @@
+========== R5900 GHIDRA LANGUAGE DEFINITION AUDIT ==========
+DATE: 2026-11-24 07:35:59
+MIPS DIRECTORY: D:\Downloads\LED_Ghidra\ghidra\ghidra_12.2_PUBLIC\Ghidra\Processors\MIPS
+
+LANGUAGE FILES FOUND: 32
+
+============================================================
+FILE: D:\Downloads\LED_Ghidra\ghidra\ghidra_12.2_PUBLIC\Ghidra\Processors\MIPS\data\languages\mips.ldefs
+MATCHES: 7
+
+LINE 158: id="MIPS:LE:64:default">
+  processorspec="mips64.pspec"
+  manualindexfile="../manuals/mipsM16.idx"
+  <description>MIPS64 64-bit addresses, little endian, with mips16e</description>
+  <compiler name="default" spec="mips64le.cspec" id="default"/>
+  <compiler name="Visual Studio" spec="mips64le.cspec" id="windows"/>
+
+LINE 177: id="MIPS:LE:64:16e">
+  processorspec="mips64_16e.pspec"
+  manualindexfile="../manuals/mipsM16.idx"
+  <description>MIPS64 64-bit addresses, little endian, in mips16e mode</description>
+  <compiler name="default" spec="mips64le.cspec" id="default"/>
+  <compiler name="Visual Studio" spec="mips64le.cspec" id="windows"/>
+
+LINE 211: id="MIPS:LE:64:micro">
+  processorspec="mips64micro.pspec"
+  manualindexfile="../manuals/mipsMic.idx"
+  <description>MIPS64 64-bit addresses, little endian, with microMIPS</description>
+  <compiler name="default" spec="mips64le.cspec" id="default"/>
+  <compiler name="Visual Studio" spec="mips64le.cspec" id="windows"/>
+
+LINE 244: id="MIPS:LE:64:R6">
+  processorspec="mips64R6.pspec"
+  manualindexfile="../manuals/mipsMic.idx"
+  <description>MIPS64 Release-6 64-bit addresses, little endian, with microMIPS</description>
+  <compiler name="default" spec="mips64le.cspec" id="default"/>
+  <compiler name="Visual Studio" spec="mips64le.cspec" id="windows"/>
+
+LINE 284: id="MIPS:LE:64:64-32addr">
+  processorspec="mips64.pspec"
+  manualindexfile="../manuals/mipsM16.idx"
+  <description>MIPS64 32-bit addresses, little endian, with mips16e</description>
+  <truncate_space space="ram" size="4"/>
+  <compiler name="default" spec="mips64_32_o64.cspec" id="default"/>
+
+LINE 307: id="MIPS:LE:64:micro64-32addr">
+  processorspec="mips64micro.pspec"
+  manualindexfile="../manuals/mipsMic.idx"
+  <description>MIPS64 32-bit addresses, little endian, with microMIPS</description>
+  <truncate_space space="ram" size="4"/>
+  <compiler name="default" spec="mips64_32_o64.cspec" id="default"/>
+
+LINE 367: id="MIPS:LE:64:64-32R6addr">
+  processorspec="mips64R6.pspec"
+  manualindexfile="../manuals/mipsMic.idx"
+  <description>MIPS64 Release-6 with 32-bit addresses, little endian, with microMIPS</description>
+  <truncate_space space="ram" size="4"/>
+  <compiler name="default" spec="mips64_32_o64.cspec" id="default"/>
+
+============================================================
+FILE: D:\Downloads\LED_Ghidra\ghidra\ghidra_12.2_PUBLIC\Ghidra\Processors\MIPS\data\languages\mips16.sinc
+MATCHES: 6
+
+LINE 721: :mult RX32, RY32				is ISA_MODE=1 & RELP=1 & ext_isjal=0 & m16_op=0b11101 & m16_rr_f=0b11000 & RX32 & RY32 {
+  }
+  
+  tmp1:8 = sext( RX32 );
+  tmp2:8 = sext( RY32 );
+  prod:8 = tmp1 * tmp2;
+
+LINE 730: :multu RX32, RY32				is ISA_MODE=1 & RELP=1 & ext_isjal=0 & m16_op=0b11101 & m16_rr_f=0b11001 & RX32 & RY32 {
+  }
+  
+  tmp1:8 = zext( RX32 );
+  tmp2:8 = zext( RY32 );
+  prod:8 = tmp1 * tmp2;
+
+LINE 747: # nop is technically a special case of a move instruction that moves 0 to 0
+  }
+  
+  :nop								is ISA_MODE=1 & RELP=1 & ext_isjal=0 & m16_op=0b01100 & m16_i8_f=0b101 & m16_i8_imm=0 & m16_ri_z=0 {}
+  
+  :or m16_rx, m16_ry					is ISA_MODE=1 & RELP=1 & ext_isjal=0 & m16_op=0b11101 & m16_rr_f=0b01101 & m16_rx & m16_ry {
+
+LINE 794: m16_ry = m16_ry << (m16_rx & 0x1f);
+  
+  :sllv m16_ry, m16_rx				is ISA_MODE=1 & RELP=1 & ext_isjal=0 & m16_op=0b11101 & m16_rr_f=0b00100 & m16_rx & m16_ry {
+  }
+  
+  :slt m16_rx, m16_ry					is ISA_MODE=1 & RELP=1 & ext_isjal=0 & m16_op=0b11101 & m16_rr_f=0b00010 & m16_rx & m16_ry {
+
+LINE 822: m16_ry = m16_ry s>> (m16_rx & 0x1f);
+  
+  :srav m16_ry, m16_rx				is ISA_MODE=1 & RELP=1 & ext_isjal=0 & m16_op=0b11101 & m16_rr_f=0b00111 & m16_rx & m16_ry {
+  }
+  
+  :srl m16_rx, m16_ry, EXT_SHIFT		is ISA_MODE=1 & RELP=1 & ext_isjal=0 & m16_op=0b00110 & m16_shft_f=0b10 & m16_rx & m16_ry & EXT_SHIFT {
+
+LINE 830: m16_ry = m16_ry >> (m16_rx & 0x1f);
+  
+  :srlv m16_ry, m16_rx				is ISA_MODE=1 & RELP=1 & ext_isjal=0 & m16_op=0b11101 & m16_rr_f=0b00110 & m16_rx & m16_ry {
+  }
+  
+  :subu RZ32, RX32, RY32			is ISA_MODE=1 & RELP=1 & ext_isjal=0 & ext_is_ext=0 & m16_op=0b11100 & m16_rrr_f=0b11 & RX32 & RY32 & RZ32 & RZ {
+
+============================================================
+FILE: D:\Downloads\LED_Ghidra\ghidra\ghidra_12.2_PUBLIC\Ghidra\Processors\MIPS\data\languages\mips32be.cspec
+MATCHES: 1
+
+LINE 57: <!-- special case: first two args are float,double, which produces a 'hole' in the
+  <consume storage="general"/>
+  </rule>
+  second word of the argument space, which must be explicitly consumed -->
+  <rule>
+  <datatype name="float" minsize="1" maxsize="4"/>
+
+============================================================
+FILE: D:\Downloads\LED_Ghidra\ghidra\ghidra_12.2_PUBLIC\Ghidra\Processors\MIPS\data\languages\mips32Instructions.sinc
+MATCHES: 75
+
+LINE 102: :cache op, OFF_BASER6           is $(AMODE) & ((prime=0x2F & REL6=0) | (prime=0x1F & REL6=1 & fct=0x25 & bit6=0)) & OFF_BASER6 & op {
+  
+  # 1011 11bb bbbo oooo iiii iiii iiii iiii
+  cacheOp(op:1, OFF_BASER6);
+  }
+  
+
+LINE 106: :cachee op, OFF_BASER6           is $(AMODE) & prime=0x1F & fct=0x1B & bit6=0 & OFF_BASER6 & op {
+  }
+  
+  cacheOp(op:1, OFF_BASER6);
+  }
+  
+
+LINE 120: # Special case of ADDU
+  }
+  
+  # 0000 0000 0000 0000 dddd d000 0010 0001
+  :clear RD                       is $(AMODE) & prime=0 & fct=0x21 & rs=0 & rt=0 & RD & sa=0    {
+  RD = 0;
+
+LINE 126: define pcodeop special2;
+  }
+  
+  
+  # 0111 00ss ssst tttt dddd daaa aaxx xyyy
+  # valid values of x and y:
+
+LINE 138: :SPECIAL2 RD, RSsrc, RTsrc, sa, fct      is $(AMODE) & prime=0x1C & sa & RD & RSsrc & RTsrc & fct {
+  # x: 6 y: 0-7
+  # x: 7 y: 0-6
+  tmp:1 = fct;
+  tmp2:1 = sa;
+  RD = special2(RSsrc, RTsrc, tmp2, tmp);
+
+LINE 141: RD = special2(RSsrc, RTsrc, tmp2, tmp);
+  tmp:1 = fct;
+  tmp2:1 = sa;
+  }
+  
+  # 0100 101c cccc cccc cccc cccc cccc cccc
+
+LINE 159: :deret                          is $(AMODE) & prime=0x10 & bit25=1 & copfill=0x0 & fct=0x1F {
+  
+  # 0100 0010 0000 0000 0000 0000 0001 1111
+  return[DEPC];
+  }
+  
+
+LINE 193: :eret                           is $(AMODE) & prime=0x10 & fct=0x18 & bit25=1 & copfill=0  {
+  
+  # 0100 0010 0000 0000 0000 0000 0001 1000
+  JXWritePC(EPC);
+  return[EPC];
+  }
+
+LINE 198: :eretnc							is $(AMODE) & prime=0x10 & fct=0x18 & bit25=1 & copfill=1  {
+  }
+  
+  JXWritePC(EPC);
+  return[EPC];
+  }
+
+LINE 204: :ext RT, RSsrc, lsb, ExtSize    is $(AMODE) & prime=0x1F & fct=0x0 & RT & RSsrc & lsb & msbd & ExtSize {
+  
+  # 0111 11ss ssst tttt mmmm mLLL LL00 0000
+  # Extract Bit Field
+  # RT = extractField(RSsrc, msbd:1, lsb:1);
+  # Note that msbd = size - 1
+
+LINE 214: :ins RT, RSsrc, lsb, InsSize    is $(AMODE) & prime=0x1F & fct=0x04 & RT & RTsrc & RSsrc & lsb & msbd & InsSize {
+  
+  # 0111 11ss ssst tttt mmmm mLLL LL00 0100
+  tmpa:$(REGSIZE) = -1;
+  tmpa = tmpa >> ($(REGSIZE) * 8 - InsSize);
+  tmpb:$(REGSIZE) = RSsrc & tmpa;
+
+LINE 245: :jalr RSsrc                     is $(AMODE) & prime=0 & fct=9 & RSsrc & rt=0 & rd=0x1F  {
+  call [pc];
+  }
+  build RSsrc;
+  JXWritePC(RSsrc);
+  ra = inst_next;
+
+LINE 261: :jalr RSsrc                     is $(AMODE) & prime=0 & fct=9 & RSsrc & rt=0 & rd=0x1F {
+  call [tmp];
+  }
+  ra = inst_next;
+  delayslot( 1 );
+  tmp:$(ADDRSIZE) = 0;
+
+LINE 279: :jalr.hb RSsrc                  is $(AMODE) & prime=0 & fct=9 & RSsrc & rt=0 & rd=0x1F & bit10=1 {
+  call [pc];
+  }
+  build RSsrc;
+  JXWritePC(RSsrc);
+  ra = inst_next;
+
+LINE 295: :jalr.hb RSsrc                  is $(AMODE) & prime=0 & fct=9 & RSsrc & rt=0 & rd=0x1F & bit10=1 {
+  call [tmp];
+  }
+  ra = inst_next;
+  delayslot( 1 );
+  tmp:$(ADDRSIZE) = 0;
+
+LINE 339: # Special case of JR
+  @endif
+  
+  # 0000 0011 1110 0000 0000 0hhh hh00 1000
+  @ifdef ISA_VARIANT
+  :jr ra                           is $(AMODE) & prime=0 & ((REL6=0 & fct=8) | (REL6=1 & fct=0x09)) & rs=0x1F & ra & rt=0 & rd=0 & sa=0    {
+
+LINE 342: :jr ra                           is $(AMODE) & prime=0 & ((REL6=0 & fct=8) | (REL6=1 & fct=0x09)) & rs=0x1F & ra & rt=0 & rd=0 & sa=0    {
+  # 0000 0011 1110 0000 0000 0hhh hh00 1000
+  @ifdef ISA_VARIANT
+  JXWritePC(ra);
+  delayslot(1);
+  return[pc];
+
+LINE 348: :jr ra                           is $(AMODE) & prime=0 & ((REL6=0 & fct=8) | (REL6=1 & fct=0x09)) & rs=0x1F & ra & rt=0 & rd=0 & sa=0    {
+  }
+  @else
+  delayslot(1);
+  return[ra];
+  }
+
+LINE 362: :lbe RT, OFF_BASER6           	is $(AMODE) & prime=0x1F & fct=0x2C & bit6=0 & OFF_BASER6 & RT {
+  }
+  
+  RT = sext(*[ram]:1 OFF_BASER6);
+  }
+  
+
+LINE 371: :lbue RT, OFF_BASER6           	is $(AMODE) & prime=0x1F & fct=0x28 & bit6=0 & OFF_BASER6 & RT {
+  }
+  
+  RT = zext( *[ram]:1 OFF_BASER6 );
+  }
+  
+
+LINE 380: :lhe RT, OFF_BASER6           	is $(AMODE) & prime=0x1F & fct=0x2D & bit6=0 & OFF_BASER6 & RT {
+  }
+  
+  RT = sext( *[ram]:2 OFF_BASER6 );
+  }
+  
+
+LINE 389: :lhue RT, OFF_BASER6           	is $(AMODE) & prime=0x1F & fct=0x29 & bit6=0 & OFF_BASER6 & RT {
+  }
+  
+  RT =  zext( *[ram]:2 OFF_BASER6 );
+  }
+  
+
+LINE 393: :lle RT, OFF_BASER6           	is $(AMODE) & prime=0x1F & fct=0x2E & bit6=0 & OFF_BASER6 & RT {
+  }
+  
+  RT = sext(*[ram]:4 OFF_BASER6);
+  }
+  
+
+LINE 402: :lwe RT, OFF_BASER6           	is $(AMODE) & prime=0x1F & fct=0x2F & bit6=0 & OFF_BASER6 & RT {
+  }
+  
+  RT = sext( *[ram]:4 OFF_BASER6 );
+  }
+  
+
+LINE 406: :lbx RD, INDEX_BASE		is $(AMODE) & prime=0x1F & RD & fct=10 & fct2=22 & INDEX_BASE {
+  }
+  
+  RD = sext(*[ram]:1 INDEX_BASE);
+  }
+  
+
+LINE 411: :lhux RD, INDEX_BASE		is $(AMODE) & prime=0x1F & RD & fct=10 & fct2=20 & INDEX_BASE {
+  
+  
+  RD = zext(*[ram]:2 INDEX_BASE);
+  }
+  
+
+LINE 416: :lwux RD, INDEX_BASE		is $(AMODE) & prime=0x1F & RD & fct=10 & fct2=16 & INDEX_BASE {
+  
+  @ifdef MIPS64
+  RD = zext(*[ram]:4 INDEX_BASE);
+  }
+  @endif
+
+LINE 438: # Special case of ADDIU
+  }
+  
+  # 0010 0100 000t tttt iiii iiii iiii iiii
+  :li RT, simmed                is $(AMODE) & prime=9 & rs=0 & RT & simmed            {
+  RT = simmed;
+
+LINE 443: # Special case of ADDU
+  RT = simmed;
+  }
+  # 0000 0000 000t tttt dddd d000 0010 0001
+  :move RD, RTsrc                 is $(AMODE) & prime=0 & fct=0x21 & rs=0 & RD & RTsrc & sa=0    {
+  RD = RTsrc;
+
+LINE 448: # Special case of ADDU
+  RD = RTsrc;
+  }
+  # 0000 00ss sss0 0000 dddd d000 0010 0001
+  :move RD, RSsrc                 is $(AMODE) & prime=0 & fct=0x21 & RSsrc & rt=0 & RD & sa=0    {
+  RD = RSsrc;
+
+LINE 510: :prefe hint, OFF_BASER6         is $(AMODE) & prime=0x1F & fct=0x23 & bit6=0 & OFF_BASER6 & hint {
+  }
+  
+  prefetch(OFF_BASER6, hint:1);
+  }
+  
+
+LINE 515: :rdhwr RT, rd_hw                is $(AMODE) & prime=0x1F & rs=0 & fct2=0 & fct=0x3B & RT & rd_hw & rd!=4 {
+  
+  # 0111 1100 000t tttt dddd d000 0011 1011
+  RT = getHWRegister(rd_hw);
+  }
+  
+
+LINE 520: :rdhwr RT, rd_hw, sel_0608      is $(AMODE) & REL6=1 & prime=0x1F & rs=0 & spec2=0 & fct=0x3B & RT & rd_hw & rd=4 & sel_0608 {
+  
+  # 0111 1100 000t tttt dddd d000 0011 1011
+  RT = getHWRegister(rd_hw, sel_0608:1);
+  }
+  
+
+LINE 540: shift:4 = RS32src & 0x1f;
+  # 0000 00ss ssst tttt dddd d000 0100 0110
+  :rotrv RD32, RT32src, RS32src         is $(AMODE) & prime=0 & zero2=0 & bit6=1 & fct=6 & RD32 & RT32src & RS32src & RD {
+  tmp1:4 = RT32src >> shift;
+  tmp2:4 = RT32src << (32 - shift);
+  RD32 = tmp1 + tmp2;
+
+LINE 554: :sbe RTsrc, OFF_BASER6          is $(AMODE) & prime=0x1F & fct=0x1C & bit6=0 & OFF_BASER6 & RTsrc {
+  }
+  
+  *[ram]:1 OFF_BASER6 = RTsrc:1;
+  }
+  
+
+LINE 558: :sce RTsrc, OFF_BASER6          is $(AMODE) & prime=0x1F & fct=0x1E & bit6=0 & OFF_BASER6 & RTsrc {
+  }
+  
+  *[ram]:4 OFF_BASER6 = RTsrc:$(SIZETO4);
+  RTsrc = 1;
+  }
+
+LINE 576: :seb RD, RTsrc                  is $(AMODE) & prime=0x1F & rs=0 & fct2=0x10 & fct=0x20 & RD & RTsrc {
+  
+  # 0111 1100 000t tttt dddd d100 0010 0000
+  RD = sext( RTsrc:1 );
+  }
+  # 0111 1100 000t tttt dddd d110 0010 0000
+
+LINE 580: :seh RD, RTsrc                  is $(AMODE) & prime=0x1F & rs=0 & fct2=0x18 & fct=0x20 & RD & RTsrc {
+  }
+  # 0111 1100 000t tttt dddd d110 0010 0000
+  RD = sext( RTsrc:2 );
+  }
+  # 1010 01bb bbbt tttt iiii iiii iiii iiii
+
+LINE 588: :she RTsrc, OFF_BASER6          is $(AMODE) & prime=0x1F & fct=0x1D & bit6=0 & OFF_BASER6 & RTsrc {
+  }
+  
+  *[ram]:2 OFF_BASER6 = RTsrc:2;
+  }
+  
+
+LINE 601: shift:4 = RS32src & 0x1f;
+  # 0000 00ss ssst tttt dddd d000 0000 0100
+  :sllv RD32, RT32src, RS32src          is $(AMODE) & prime=0 & fct=4 & RS32src & RT32src & RD32 & sa=0 & RD {
+  RD32 = RT32src << shift;
+  @ifdef MIPS64
+  RD = sext(RD32);
+
+LINE 633: shift:4 = RS32src & 0x1f;
+  # 0000 00ss ssst tttt dddd d000 0000 0111
+  :srav RD32, RT32src, RS32src          is $(AMODE) & prime=0 & fct=7 & RS32src & RT32src & RD32 & sa=0 & RD {
+  RD32 = RT32src s>> shift;
+  @ifdef MIPS64
+  RD = sext(RD32);
+
+LINE 648: shift:4 = RS32src & 0x1f;
+  # 0000 00ss ssst tttt dddd d000 0000 0110
+  :srlv RD32, RT32src, RS32src          is $(AMODE) & prime=0 & fct=6 & RS32src & RT32src & RD32 & sa=0 & RD {
+  RD32 = RT32src >> shift;
+  @ifdef MIPS64
+  RD = sext(RD32);
+
+LINE 687: :swe RTsrc, OFF_BASER6          is $(AMODE) & prime=0x1F & fct=0x1F & bit6=0 & OFF_BASER6 & RTsrc {
+  @endif
+  
+  *[ram]:4 OFF_BASER6 = RTsrc:$(SIZETO4);
+  }
+  
+
+LINE 699: :synci OFF_BASE                 is $(AMODE) & prime=1 & OFF_BASE & synci=0x1F  {
+  
+  # 0000 01bb bbb1 1111 iiii iiii iiii iiii
+  }
+  
+  # 0000 00cc cccc cccc cccc cccc cc00 1100
+
+LINE 800: :wsbh RD, RTsrc                 is $(AMODE) & prime=0x1F & format=0 & RTsrc & RD & wsbh=2 & bshfl=0x20 {
+  
+  # 0111 1100 000t tttt dddd d000 1010 0000
+  tmp1:$(REGSIZE) = RTsrc & 0xff;
+  tmp2:$(REGSIZE) = (RTsrc >> 8) & 0xff;
+  tmp3:$(REGSIZE) = (RTsrc >> 16) & 0xff;
+
+LINE 826: # Special case of daddu
+  ##     using a 64-bit chip, but really keeping things to 32-bits
+  
+  # 0000 00ss ssst tttt dddd d000 0010 1101
+  :clear RD         is $(AMODE) & prime=0 & fct=0x2D & rs=0 & rt=0 & RD & sa=0 {
+  RD = 0;
+
+LINE 865: # Special case PIC
+  }
+  
+  :bal Rel16            is $(AMODE) & REL6=0 & prime=1 & cond=0x11 & rs=0 & off16=1 & Rel16 {
+  ra = inst_next;
+  delayslot( 1 );
+
+LINE 1069: :lwle RTsrc, OFF_BASER6         is $(AMODE) & REL6=0 & prime=0x1F & fct=0x19 & bit6=0 & OFF_BASER6 & RTsrc & RT {
+  RT = sext( valOrig | valLoad );
+  }
+  shft:$(ADDRSIZE) = OFF_BASER6 & 0x3;
+  addr:$(ADDRSIZE) = OFF_BASER6 - shft;
+  valOrig:4 = RTsrc:$(SIZETO4) & (0xffffffff >> ((4-shft) * 8));
+
+LINE 1077: :lwre RTsrc, OFF_BASER6         is $(AMODE) & REL6=0 & prime=0x1F & fct=0x1A & bit6=0 & OFF_BASER6 & RTsrc & RT {
+  }
+  
+  shft:$(ADDRSIZE) = OFF_BASER6 & 0x3;
+  addr:$(ADDRSIZE) = OFF_BASER6 - shft;
+  valOrig:4 = RTsrc:$(SIZETO4) & (0xffffffff << ((shft+1) * 8));
+
+LINE 1101: :lwle RTsrc, OFF_BASER6         is $(AMODE) & REL6=0 & prime=0x1F & fct=0x19 & bit6=0 & OFF_BASER6 & RTsrc & RT {
+  RT = sext( valOrig | valLoad );
+  }
+  shft:$(ADDRSIZE) = OFF_BASER6 & 0x3;
+  addr:$(ADDRSIZE) = OFF_BASER6 - shft;
+  valOrig:4 = RTsrc:$(SIZETO4) & (0xffffffff >> ((shft+1)* 8));
+
+LINE 1109: :lwre RTsrc, OFF_BASER6         is $(AMODE) & REL6=0 & prime=0x1F & fct=0x1A & bit6=0 & OFF_BASER6 & RTsrc & RT {
+  }
+  
+  shft:$(ADDRSIZE) = OFF_BASER6 & 0x3;
+  addr:$(ADDRSIZE) = OFF_BASER6 - shft;
+  valOrig:4 = RTsrc:$(SIZETO4) & (0xffffffff << ((4-shft)* 8));
+
+LINE 1227: :mult RS32src, RT32src              is $(AMODE) & REL6=0 & prime=0 & fct=0x18 & RS32src & RT32src & zero5=0 & zero1315=0 & aclo & achi {
+  
+  # 0000 00ss ssst tttt 000a a000 0001 1000
+  tmp1:8 = sext( RS32src );
+  tmp2:8 = sext( RT32src );
+  prod:8 = tmp1 * tmp2;
+
+LINE 1237: :multu RS32src, RT32src             is $(AMODE) & REL6=0 & prime=0 & fct=0x19 & RS32src & RT32src & zero5=0 & zero1315=0 & aclo & achi {
+  
+  # 0000 00ss ssst tttt 000a a000 0001 1001
+  tmp1:8 = zext( RS32src );
+  tmp2:8 = zext( RT32src );
+  prod:8 = tmp1 * tmp2;
+
+LINE 1288: :swle RTsrc, OFF_BASER6         is $(AMODE) & REL6=0 & prime=0x1F & fct=0x21 & bit6=0 & OFF_BASER6 & RTsrc & RT {
+  *(addr) = valOrig | valStore;
+  }
+  tmpRT:4 = RTsrc:$(SIZETO4);
+  shft:$(ADDRSIZE) = OFF_BASER6 & 0x3;
+  addr:$(ADDRSIZE) = OFF_BASER6 - shft;
+
+LINE 1296: :swre RTsrc, OFF_BASER6         is $(AMODE) & REL6=0 & prime=0x1F & fct=0x22 & bit6=0 & OFF_BASER6 & RTsrc & RT {
+  *(addr) = valOrig | valStore;
+  }
+  tmpRT:4 = RTsrc:$(SIZETO4);
+  shft:$(ADDRSIZE) = OFF_BASER6 & 0x3;
+  addr:$(ADDRSIZE) = OFF_BASER6 - shft;
+
+LINE 1324: :swle RTsrc, OFF_BASER6         is $(AMODE) & REL6=0 & prime=0x1F & fct=0x21 & bit6=0 & OFF_BASER6 & RTsrc & RT {
+  *(addr) = valOrig | valStore;
+  }
+  tmpRT:4 = RTsrc:$(SIZETO4);
+  shft:$(ADDRSIZE) = OFF_BASER6 & 0x3;
+  addr:$(ADDRSIZE) = OFF_BASER6 - shft;
+
+LINE 1332: :swre RTsrc, OFF_BASER6         is $(AMODE) & REL6=0 & prime=0x1F & fct=0x22 & bit6=0 & OFF_BASER6 & RTsrc & RT {
+  *(addr) = valOrig | valStore;
+  }
+  tmpRT:4 = RTsrc:$(SIZETO4);
+  shft:$(ADDRSIZE) = OFF_BASER6 & 0x3;
+  addr:$(ADDRSIZE) = OFF_BASER6 - shft;
+
+LINE 1405: :daddi RT, RSsrc, simmed        is $(AMODE) & REL6=0 & prime=0x18 & RSsrc & RT & simmed {
+  ##     using a 64-bit chip, but really keeping things to 32-bits
+  # 0110 00ss ssst tttt iiii iiii iiii iiii
+  RT = RSsrc + simmed;
+  }
+  
+
+LINE 1419: :align RD, RS32src, RT32src, bp2 	is $(AMODE) & REL6=1 & prime=0x1F & spec3=0x2 & fct=0x20 & bp2 & RS32src & RT32src & RD {
+  }
+  
+  tmp:4 = RT32src << (8 * bp2);
+  tmp = tmp | (RS32src >> (32 - (8 * bp2)));
+  RD = sext(tmp);
+
+LINE 1425: :aluipc RSsrc, S16L16				is $(AMODE) & REL6=1 & prime=0x3B & op=0x1F & RSsrc & S16L16 {
+  }
+  
+  RSsrc = inst_start + sext(S16L16);
+  RSsrc = RSsrc & ~0xFFFF;
+  }
+
+LINE 1434: :auipc RSsrc, S16L16				is $(AMODE) & REL6=1 & prime=0x3B & op=0x1E & RSsrc & S16L16 {
+  }
+  
+  RSsrc = inst_start + sext(S16L16);
+  }
+  
+
+LINE 1528: :bnezalc RTsrc, Rel16				is $(AMODE) & REL6=1 & prime=0x18 & rs=0 & rt!=0 & RTsrc & Rel16 {
+  }
+  
+  if (RTsrc == 0) goto inst_next;
+  ra = inst_next;
+  call Rel16;
+
+LINE 1534: :bnec RSsrc, RTsrc, Rel16			is $(AMODE) & REL6=1 & prime=0x18 & rs!=0 & rs<rt & RSsrc & RTsrc & Rel16 {
+  }
+  
+  if (RSsrc != RTsrc) goto Rel16;
+  }
+  
+
+LINE 1538: :bnvc RSsrc, RTsrc, Rel16			is $(AMODE) & REL6=1 & prime=0x18 & RSsrc & RTsrc & rs32 & rt32 & Rel16 {
+  }
+  
+  tmpS:8 = sext(rs32);
+  tmpT:8 = sext(rt32);
+  tmpS = tmpS + tmpT;
+
+LINE 1584: :bitswap RD, RT32src				is $(AMODE) & REL6=1 & prime=0x1F & zero21=0 & fct2=0 & bshfl=0x20 & RT32src & RD {
+  }
+  
+  tmp:4 = bitSwap(RT32src);
+  RD = sext(tmp);
+  }
+
+LINE 1642: :jic RTsrc, simmed                                      is $(AMODE) & REL6=1 & prime=0x36 & jsub=0x00 & RTsrc & simmed & immed=0x00 & rt=0x1f {
+  }
+  
+  build RTsrc;
+  JXWritePC(ra);
+  return [pc];
+
+LINE 1658: :ll RT, OFF_BASER6                	is $(AMODE) & REL6=1 & prime=0x1F & fct=0x36 & bit6=0 & OFF_BASER6 & RT {
+  @endif
+  
+  RT = sext(*[ram]:4 OFF_BASER6);
+  }
+  
+
+LINE 1662: :llx RT, OFF_BASER6                	is $(AMODE) & REL6=1 & prime=0x1F & fct=0x36 & bit6=1 & OFF_BASER6 & RT {
+  }
+  
+  RT = sext(*[ram]:4 OFF_BASER6);
+  }
+  
+
+LINE 1666: :llxe RT, OFF_BASER6                is $(AMODE) & REL6=1 & prime=0x1F & fct=0x27 & bit6=1 & OFF_BASER6 & RT {
+  }
+  
+  RT = sext(*[ram]:4 OFF_BASER6);
+  }
+  
+
+LINE 1692: :mul RD, RS32src, RT32src           is $(AMODE) & REL6=1 & prime=0x00 & fct=0x18 & fct2=0x02 & RD & RS32src & RT32src {
+  }
+  
+  tmpS:8 = sext(RS32src);
+  tmpT:8 = sext(RT32src);
+  tmpS = tmpS * tmpT;
+
+LINE 1700: :muh RD, RS32src, RT32src           is $(AMODE) & REL6=1 & prime=0x00 & fct=0x18 & fct2=0x03 & RD & RS32src & RT32src {
+  }
+  
+  tmpS:8 = sext(RS32src);
+  tmpT:8 = sext(RT32src);
+  tmpS = tmpS * tmpT;
+
+LINE 1724: :scx RTsrc, OFF_BASER6          is $(AMODE) & REL6=1 & prime=0x1F & fct=0x26 & bit6=1 & OFF_BASER6 & RTsrc {
+  }
+  
+  *[ram]:4 OFF_BASER6 = RTsrc:$(SIZETO4);
+  }
+  
+
+LINE 1728: :scxe RTsrc, OFF_BASER6          is $(AMODE) & REL6=1 & prime=0x1F & fct=0x1E & bit6=1 & OFF_BASER6 & RTsrc {
+  }
+  
+  *[ram]:4 OFF_BASER6 = RTsrc:$(SIZETO4);
+  RTsrc = 1;
+  }
+
+LINE 1953: :save svRa^svXsregs^svAregs^svFramesize		is $(AMODE) & prime=0x1c & fct=0x1f & save=0x01 & svRa & svXsregs & svAregs & svStat & svFramesize {
+  
+  
+  tsp = sp;
+  build svAregs;
+  build svRa;
+
+LINE 1965: :restore rsRa^rsXsregs^rsStat^svFramesize	is $(AMODE) & prime=0x1c & fct=0x1f & save=0x00 & rsRa & rsXsregs & rsStat & svFramesize {
+  }
+  
+  build svFramesize;
+  
+  tmp:2 = svFramesize;
+
+============================================================
+FILE: D:\Downloads\LED_Ghidra\ghidra\ghidra_12.2_PUBLIC\Ghidra\Processors\MIPS\data\languages\mips32le.cspec
+MATCHES: 1
+
+LINE 56: <!-- special case: first two args are float,double, which produces a 'hole' in the
+  <consume storage="general"/>
+  </rule>
+  second word of the argument space, which must be explicitly consumed -->
+  <rule>
+  <datatype name="float" minsize="1" maxsize="4"/>
+
+============================================================
+FILE: D:\Downloads\LED_Ghidra\ghidra\ghidra_12.2_PUBLIC\Ghidra\Processors\MIPS\data\languages\mips64Instructions.sinc
+MATCHES: 17
+
+LINE 18: :dext RT, RSsrc, lsb, ExtSize       is $(AMODE) & prime=0x1F & fct=0x03 & RT & RSsrc & lsb & msbd & ExtSize {
+  
+  # 0111 11ss ssst tttt mmmm mLLL LL00 0011
+  val:8 = (RSsrc >> lsb);
+  val = val & (0xffffffff >> (32 - ExtSize));
+  RT = zext(val);
+
+LINE 25: :dextm RT, RSsrc, lsb, DextmSize    is $(AMODE) & prime=0x1F & fct=0x01 & RT & RSsrc & lsb & msbd & DextmSize {
+  
+  # 0111 11ss ssst tttt mmmm mLLL LL00 0001
+  val:8 = (RSsrc >> lsb);
+  val = val & (0xffffffffffffffff >> (64 - DextmSize));
+  RT = zext(val);
+
+LINE 31: :dextu RT, RSsrc, DXuPos, ExtSize   is $(AMODE) & prime=0x1F & fct=0x02 & RT & RSsrc & lsb & msbd & DXuPos & ExtSize {
+  }
+  # 0111 11ss ssst tttt mmmm mLLL LL00 0010
+  val:8 = (RSsrc >> DXuPos);
+  val = val & (0xffffffff >> (32 - ExtSize));
+  RT = zext(val);
+
+LINE 38: :dins RT, RSsrc, lsb, InsSize       is $(AMODE) & prime=0x1F & fct=0x07 & RT & RTsrc & RSsrc & lsb & msbd & InsSize {
+  
+  # 0111 11ss ssst tttt mmmm mLLL LL00 0111
+  tmpa:$(REGSIZE) = -1;
+  tmpa = tmpa >> ($(REGSIZE)*8 - InsSize);
+  tmpb:$(REGSIZE) = RSsrc & tmpa;
+
+LINE 49: :dinsm RT, RSsrc, lsb, DinsXSize    is $(AMODE) & prime=0x1F & fct=0x05 & RT & RTsrc & RSsrc & lsb & msbd & DinsXSize {
+  
+  # 0111 11ss ssst tttt mmmm mLLL LL00 0101
+  tmpa:$(REGSIZE) = -1;
+  tmpa = tmpa >> ($(REGSIZE)*8 - DinsXSize);
+  tmpb:$(REGSIZE) = RSsrc & tmpa;
+
+LINE 60: :dinsu RT, RSsrc, DXuPos, InsSize is $(AMODE) & prime=0x1F & fct=0x06 & RT & RTsrc & RSsrc & lsb & msbd & DXuPos & InsSize {
+  
+  # 0111 11ss ssst tttt mmmm mLLL LL00 0110
+  tmpa:$(REGSIZE) = -1;
+  tmpa = tmpa >> ($(REGSIZE)*8 - InsSize);
+  tmpb:$(REGSIZE) = RSsrc & tmpa;
+
+LINE 118: :dsbh RD, RTsrc                 is $(AMODE) & prime=0x1F & rs=0x0 & fct2=0x02 & fct=0x24 & RD & RTsrc {
+  
+  # 0111 1100 000t tttt dddd d000 1010 0100
+  tmp1:8 = RTsrc & 0xff;
+  tmp2:8 = (RTsrc >> 8) & 0xff;
+  tmp3:8 = (RTsrc >> 16) & 0xff;
+
+LINE 131: :dshd RD, RTsrc                 is$(AMODE) &  prime=0x1F & rs=0x0 & fct2=0x05 & fct=0x24 & RD & RTsrc {
+  }
+  # 0111 1100 000t tttt dddd d001 0110 0100
+  tmp1:8 = RTsrc & 0xffff;
+  tmp2:8 = (RTsrc >> 16) & 0xffff;
+  tmp3:8 = (RTsrc >> 32) & 0xffff;
+
+LINE 354: :dalign RD, RSsrc, RTsrc, bp3 	is $(AMODE) & REL6=1 & prime=0x1F & spec2=0x1 & fct=0x24 & bp3 & RSsrc & RTsrc & RD {
+  #
+  ####
+  tmp:8 = RTsrc << (8 * bp3);
+  tmp = tmp | (RSsrc >> (64 - (8 * bp3)));
+  RD = sext(tmp);
+
+LINE 368: :dati RSsrc, S16L48				is $(AMODE) & REL6=1 & prime=0x01 & op=0x1E & RSsrc & S16L48 {
+  }
+  
+  RSsrc = RSsrc + sext(S16L48);
+  }
+  
+
+LINE 372: :dbitswap RD, RTsrc				is $(AMODE) & REL6=1 & prime=0x1F & zero21=0 & fct2=0 & bshfl=0x24 & RTsrc & RD {
+  }
+  
+  RD = bitSwap(RTsrc);
+  }
+  
+
+LINE 376: :ddiv RD, RSsrc, RTsrc           is $(AMODE) & REL6=1 & prime=0x00 & fct=0x1E & fct2=0x02 & RD & RSsrc & RTsrc {
+  }
+  
+  RD = RSsrc s/ RTsrc;
+  }
+  
+
+LINE 380: :dmod RD, RSsrc, RTsrc           is $(AMODE) & REL6=1 & prime=0x00 & fct=0x1E & fct2=0x03 & RD & RSsrc & RTsrc {
+  }
+  
+  RD = RSsrc s% RTsrc;
+  }
+  
+
+LINE 384: :ddivu RD, RSsrc, RTsrc          is $(AMODE) & REL6=1 & prime=0x00 & fct=0x1F & fct2=0x02 & RD & RSsrc & RTsrc {
+  }
+  
+  RD = RSsrc / RTsrc;
+  }
+  
+
+LINE 388: :dmodu RD, RSsrc, RTsrc          is $(AMODE) & REL6=1 & prime=0x00 & fct=0x1F & fct2=0x03 & RD & RSsrc & RTsrc {
+  }
+  
+  RD = RSsrc % RTsrc;
+  }
+  
+
+LINE 431: :lldx RT, OFF_BASER6  			is $(AMODE) & REL6=1 & prime=0x1F & fct=0x37 & bit6=1 & OFF_BASER6 & RT {
+  }
+  
+  RT = *[ram]:8 OFF_BASER6;
+  }
+  
+
+LINE 442: :sdcx RTsrc, OFF_BASER6          is $(AMODE) & REL6=1 & prime=0x1E & fct=0x27 & bit6=1 & OFF_BASER6 & RTsrc {
+  }
+  
+  *[ram]:8 OFF_BASER6 = RTsrc;
+  }
+
+============================================================
+FILE: D:\Downloads\LED_Ghidra\ghidra\ghidra_12.2_PUBLIC\Ghidra\Processors\MIPS\data\languages\mipsfloat.sinc
+MATCHES: 13
+
+LINE 377: :alnv.PS fd, fs, ft, rs         is $(AMODE) & REL6=0 & prime=0x13 & fct=0x1E & rs & ft & fs & fd & ftD & fsD & fdD {
+  
+  # 0100 11ss ssst tttt ssss sddd dd01 1110
+  fdD = mipsFloatPS(fsD, ftD);
+  }
+  
+
+LINE 1165: # set floating point fd to the min of fs and ft, TBD special case for NaN
+  
+  :min.S fd, fs, ft	is $(AMODE) & REL6=1 & prime=0x11 & format=0x10 & cop1code=0x0 & fs & fd & ft & fct=0x1c {
+  tmp_cond:1 = fs:4 f< ft:4;
+  fd[0,32] = (fs:4 * zext(tmp_cond == 1)) | (ft:4 * zext(tmp_cond == 0) );
+  }
+
+LINE 1176: # set floating point fd to the max of fs and ft, TBD special case for NaN
+  
+  :max.S fd, fs, ft       is $(AMODE) & REL6=1 & prime=0x11 & format=0x10 & cop1code=0x0 & fs & fd & ft & fct=0x1d {
+  tmp_cond:1 = fs:4 f> ft:4;
+  fd[0,32] = (fs:4 * zext(tmp_cond == 1)) | (ft:4 * zext(tmp_cond == 0) );
+  }
+
+LINE 1186: :mina.S fd, fs, ft       is $(AMODE) & REL6=1 & prime=0x11 & format=0x10 & cop1code=0x0 & fs & fd & ft & fct=0x1e {
+  }
+  
+  # set floating point fd to the min of absolute values of fs and ft, TBD special case for NaN
+  tmp_cond:1 = abs(fs:4) f< abs(ft:4);
+  fd[0,32] = (fs:4 * zext(tmp_cond == 1)) | (ft:4 * zext(tmp_cond == 0) );
+
+LINE 1187: # set floating point fd to the min of absolute values of fs and ft, TBD special case for NaN
+  
+  :mina.S fd, fs, ft       is $(AMODE) & REL6=1 & prime=0x11 & format=0x10 & cop1code=0x0 & fs & fd & ft & fct=0x1e {
+  tmp_cond:1 = abs(fs:4) f< abs(ft:4);
+  fd[0,32] = (fs:4 * zext(tmp_cond == 1)) | (ft:4 * zext(tmp_cond == 0) );
+  }
+
+LINE 1191: :mina.D fd, fs, ft       is $(AMODE) & REL6=1 & prime=0x11 & format=0x11 & cop1code=0x0 & fs & fd & ft & fct=0x1e
+  fd[0,32] = (fs:4 * zext(tmp_cond == 1)) | (ft:4 * zext(tmp_cond == 0) );
+  }
+  & fsD & fdD & ftD {
+  tmp_cond:1 = abs(fsD) f< abs(ftD);
+  fdD = zext( (fsD * zext(tmp_cond == 1)) | (ftD * zext(tmp_cond == 0) ) );
+
+LINE 1197: :maxa.S fd, fs, ft       is $(AMODE) & REL6=1 & prime=0x11 & format=0x10 & cop1code=0x0 & fs & fd & ft & fct=0x1f {
+  }
+  
+  # set floating point fd to the max of absolute values of fs and ft, TBD special case for NaN
+  tmp_cond:1 = abs(fs:4) f> abs(ft:4);
+  fd[0,32] = (fs:4 * zext(tmp_cond == 1)) | (ft:4 * zext(tmp_cond == 0) );
+
+LINE 1198: # set floating point fd to the max of absolute values of fs and ft, TBD special case for NaN
+  
+  :maxa.S fd, fs, ft       is $(AMODE) & REL6=1 & prime=0x11 & format=0x10 & cop1code=0x0 & fs & fd & ft & fct=0x1f {
+  tmp_cond:1 = abs(fs:4) f> abs(ft:4);
+  fd[0,32] = (fs:4 * zext(tmp_cond == 1)) | (ft:4 * zext(tmp_cond == 0) );
+  }
+
+LINE 1202: :maxa.D fd, fs, ft       is $(AMODE) & REL6=1 & prime=0x11 & format=0x11 & cop1code=0x0 & fs & fd & ft & fct=0x1f
+  fd[0,32] = (fs:4 * zext(tmp_cond == 1)) | (ft:4 * zext(tmp_cond == 0) );
+  }
+  & fsD & fdD & ftD {
+  tmp_cond:1 = abs(fsD) f> abs(ftD);
+  fdD = zext( (fsD * zext(tmp_cond == 1)) | (ftD * zext(tmp_cond == 0) ) );
+
+LINE 1208: :maddf.S fd, fs, ft       is $(AMODE) & REL6=1 & prime=0x11 & format=0x10 & cop1code=0x0 & fs & fd & ft & fct=0x18 {
+  }
+  
+  # set floating point fd = fd + fs * ft, using 32-bit floating values
+  fd[0,32] = fd:4 f+ (fs:4 f* ft:4);
+  }
+
+LINE 1212: :maddf.D fd, fs, ft       is $(AMODE) & REL6=1 & prime=0x11 & format=0x11 & cop1code=0x0 & fs & fd & ft & fct=0x18
+  fd[0,32] = fd:4 f+ (fs:4 f* ft:4);
+  }
+  & fsD & fdD & ftD {
+  fdD = fdD f+ (fsD f* ftD);
+  }
+
+LINE 1227: # Set floating point register fd to fs if ft[0] == 0, else if == 1 then set fd to 0, TBD special case for NaN
+  
+  :seleqz.S fd, fs, ft       is $(AMODE) & REL6=1 & prime=0x11 & format=0x10 & cop1code=0x0 & fs & fd & ft & fct=0x14 {
+  # Note that the description of these select instructions in the MIPS manual does not properly use the C conditional operator
+  fd = zext(fs * zext(ft[0,1] == 0));
+  }
+
+LINE 1237: # set floating point register fd to fs if ft[0] == 1, else if == 0 then set fd to 0, TBD special case for NaN
+  
+  :selnez.S fd, fs, ft       is $(AMODE) & REL6=1 & prime=0x11 & format=0x10 & cop1code=0x0 & fs & fd & ft & fct=0x17 {
+  fd = zext(fs * zext(ft[0,1] == 1));
+  }
+  :selnez.D fd, fs, ft       is $(AMODE) & REL6=1 & prime=0x11 & format=0x11 & cop1code=0x0 & fs & fd & ft & fct=0x17
+
+============================================================
+FILE: D:\Downloads\LED_Ghidra\ghidra\ghidra_12.2_PUBLIC\Ghidra\Processors\MIPS\data\languages\mipsmicro.sinc
+MATCHES: 10
+
+LINE 343: EXT_CODE4A: val					is mic_imm03=0x9 [ext_off16_u = 0x1f; val = ext_off16_u; ] { export *[const]:2 val; }
+  EXT_CODE4A: val					is mic_imm03=0x7 [ext_off16_u = 0xf; val = ext_off16_u; ] { export *[const]:2 val; }
+  EXT_CODE4A: val					is mic_imm03=0x8 [ext_off16_u = 0x10; val = ext_off16_u; ] { export *[const]:2 val; }
+  EXT_CODE4A: val					is mic_imm03=0xa [ext_off16_u = 0x20; val = ext_off16_u; ] { export *[const]:2 val; }
+  EXT_CODE4A: val					is mic_imm03=0xb [ext_off16_u = 0x3f; val = ext_off16_u; ] { export *[const]:2 val; }
+  EXT_CODE4A: val					is mic_imm03=0xc [ext_off16_u = 0x40; val = ext_off16_u; ] { export *[const]:2 val; }
+
+LINE 372: EXT_CODE9: val					is mic_imm9=0x1fe [ext_off16_s = 0xfefe; val = ext_off16_s << 2; ] { export *[const]:2 val; }
+  EXT_CODE9: val					is mic_imm9=0x000 [ext_off16_s = 0x0100; val = ext_off16_s << 2; ] { export *[const]:2 val; }
+  EXT_CODE9: val					is mic_imm9=0x001 [ext_off16_s = 0x0101; val = ext_off16_s << 2; ] { export *[const]:2 val; }
+  EXT_CODE9: val					is mic_imm9=0x1ff [ext_off16_s = 0xfeff; val = ext_off16_s << 2; ] { export *[const]:2 val; }
+  EXT_CODE9: val					is mic_imm9s      [ val = mic_imm9s << 2; ] { export *[const]:2 val; }
+  
+
+LINE 373: EXT_CODE9: val					is mic_imm9=0x1ff [ext_off16_s = 0xfeff; val = ext_off16_s << 2; ] { export *[const]:2 val; }
+  EXT_CODE9: val					is mic_imm9=0x001 [ext_off16_s = 0x0101; val = ext_off16_s << 2; ] { export *[const]:2 val; }
+  EXT_CODE9: val					is mic_imm9=0x1fe [ext_off16_s = 0xfefe; val = ext_off16_s << 2; ] { export *[const]:2 val; }
+  EXT_CODE9: val					is mic_imm9s      [ val = mic_imm9s << 2; ] { export *[const]:2 val; }
+  
+  EXT_CODE9E: val					is micb_offset9s [ val = micb_offset9s << 0; ] { export *[const]:2 val; }
+
+LINE 1170: # This is a special case of sll
+  }
+  
+  :nop 										is ISA_MODE=1 & RELP=0 & mic_op=0b000000 & mic_rs32_0=0 & mic_rt32_5=0 ; micb_sa=0 & micb_axf2=0b0000000000 & micb_bit10=0 {
+  }
+  
+
+LINE 2760: :mult RS0L, RT5L   						is ISA_MODE=1 & RELP=0 & mic_op=0b000000 & REL6=0 & RT5L & RS0L ; micb_poolax=0b111100 & micb_axf=0b1000101100 {
+  }
+  
+  tmps:8 = sext(RS0L);
+  tmpt:8 = sext(RT5L);
+  tmpr:8= tmps * tmpt;
+
+LINE 2768: :multu RS0L, RT5L   					is ISA_MODE=1 & RELP=0 & mic_op=0b000000 & REL6=0 & RT5L & RS0L ; micb_poolax=0b111100 & micb_axf=0b1001101100 {
+  }
+  
+  tmps:8 = zext(RS0L);
+  tmpt:8 = zext(RT5L);
+  tmpr:8= tmps * tmpt;
+
+LINE 3608: # set floating point fd to the max of fs and ft, TBD special case for NaN
+  
+  :max.S mic_ft_5, mic_fs, micb_fd		is ISA_MODE=1 & RELP=0 & mic_op=0b010101 & REL6=1 & mic_fs & mic_ft_5 ; micb_fd & micb_fmt9=0 & micb_fxf5=0b000001011 {
+  tmp_cond:1 = mic_fs:4 f> mic_ft_5:4;
+  micb_fd = zext( (mic_fs:4 * zext(tmp_cond == 1)) | (mic_ft_5:4 * zext(tmp_cond == 0) ) );
+  }
+
+LINE 3619: # set floating point fd to the max of absolute values of fs and ft, TBD special case for NaN
+  
+  :maxa.S mic_ft_5, mic_fs, micb_fd		is ISA_MODE=1 & RELP=0 & mic_op=0b010101 & REL6=1 & mic_fs & mic_ft_5 ; micb_fd & micb_fmt9=0 & micb_fxf5=0b000101011 {
+  tmp_cond:1 = abs(mic_fs:4) f> abs(mic_ft_5:4);
+  micb_fd = zext( (mic_fs:4 * zext(tmp_cond == 1)) | (mic_ft_5:4 * zext(tmp_cond == 0) ) );
+  }
+
+LINE 3630: # set floating point fd to the min of fs and ft, TBD special case for NaN
+  
+  :min.S mic_ft_5, mic_fs, micb_fd		is ISA_MODE=1 & RELP=0 & mic_op=0b010101 & REL6=1 & mic_fs & mic_ft_5 ; micb_fd & micb_fmt9=0 & micb_fxf5=0b000000011 {
+  tmp_cond:1 = mic_fs:4 f< mic_ft_5:4;
+  micb_fd = zext( (mic_fs:4 * zext(tmp_cond == 1)) | (mic_ft_5:4 * zext(tmp_cond == 0) ) );
+  }
+
+LINE 3641: # set floating point fd to the min of absolute values of fs and ft, TBD special case for NaN
+  
+  :mina.S mic_ft_5, mic_fs, micb_fd		is ISA_MODE=1 & RELP=0 & mic_op=0b010101 & REL6=1 & mic_fs & mic_ft_5 ; micb_fd & micb_fmt9=0 & micb_fxf5=0b000100011 {
+  tmp_cond:1 = abs(mic_fs:4) f< abs(mic_ft_5:4);
+  micb_fd = zext( (mic_fs:4 * zext(tmp_cond == 1)) | (mic_ft_5:4 * zext(tmp_cond == 0) ) );
+  }
+
+============================================================
+FILE: D:\Downloads\LED_Ghidra\ghidra\ghidra_12.2_PUBLIC\Ghidra\Processors\MIPS\data\languages\mips_dsp.sinc
+MATCHES: 157
+
+LINE 98: :absq_s.ph RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0x9 & fct=0x12 {
+  
+  # ABSQ_S.PH	Purpose: Find Absolute Value of Two Fractional Halfwords
+  RD = ABSQ_S.PH(RTsrc);
+  }
+  
+
+LINE 104: :absq_s.qb RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0x1 & fct=0x12 {
+  
+  # ABSQ_S.QB	Purpose: Find Absolute Value of Four Fractional Byte Values
+  RD = ABSQ_S.QB(RTsrc);
+  }
+  
+
+LINE 110: :absq_s.w RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0x11 & fct=0x12 {
+  
+  # ABSQ_S.W	Purpose: Find Absolute Value of Fractional Word
+  RD = ABSQ_S.W(RTsrc);
+  }
+  
+
+LINE 116: :addq.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xa & fct=0x10 {
+  
+  # ADDQ[_S].PH	Purpose: Add Fractional Halfword Vectors
+  RD = ADDQ.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 120: :addq_s.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xe & fct=0x10 {
+  }
+  
+  RD = ADDQ.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 126: :addq_s.w RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x16 & fct=0x10 {
+  
+  # ADDQ_S.W	Purpose: Add Fractional Words
+  RD = ADDQ_S.W(RSsrc, RTsrc);
+  }
+  
+
+LINE 132: :addqh.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x8 & fct=0x18 {
+  
+  # ADDQH[_R].PH	Purpose: Add Fractional Halfword Vectors And Shift Right to Halve Results
+  RD = ADDQH.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 136: :addqh_r.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xa & fct=0x18 {
+  }
+  
+  RD = ADDQH.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 142: :addqh.w RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x10 & fct=0x18 {
+  
+  # ADDQH[_R].W	Purpose: Add Fractional Words And Shift Right to Halve Results
+  RD = ADDQH.W(RSsrc, RTsrc);
+  }
+  
+
+LINE 146: :addqh_r.w RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x12 & fct=0x18 {
+  }
+  
+  RD = ADDQH.W(RSsrc, RTsrc);
+  }
+  
+
+LINE 152: :addsc RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x10 & fct=0x10 {
+  
+  # ADDSC	Purpose: Add Signed Word and Set Carry Bit
+  RD = ADDSC(RSsrc, RTsrc);
+  }
+  
+
+LINE 158: :addu.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x8 & fct=0x10 {
+  
+  # ADDU[_S].PH	Purpose: Unsigned Add Integer Halfwords
+  RD = ADDU.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 162: :addu_s.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xc & fct=0x10 {
+  }
+  
+  RD = ADDU.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 168: :addu.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x0 & fct=0x10 {
+  
+  # ADDU[_S].QB	Purpose: Unsigned Add Quad Byte Vectors
+  RD = ADDU.QB(RSsrc, RTsrc);
+  }
+  
+
+LINE 172: :addu_s.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x4 & fct=0x10 {
+  }
+  
+  RD = ADDU.QB(RSsrc, RTsrc);
+  }
+  
+
+LINE 178: :addwc RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x11 & fct=0x10 {
+  
+  # ADDWC	Purpose: Add Word with Carry Bit
+  RD = ADDWC(RSsrc, RTsrc);
+  }
+  
+
+LINE 184: :adduh.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x0 & fct=0x18 {
+  
+  # ADDUH[_R].QB	Purpose: Unsigned Add Vector Quad-Bytes And Right Shift to Halve Results
+  RD = ADDUH.QB(RSsrc, RTsrc);
+  }
+  
+
+LINE 188: :adduh_r.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x2 & fct=0x18 {
+  }
+  
+  RD = ADDUH.QB(RSsrc, RTsrc);
+  }
+  
+
+LINE 194: :append RTsrc, RSsrc, sa_dsp 	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & sa_dsp & fct2=0x0 & fct=0x31 {
+  
+  # APPEND	Purpose: Left Shift and Append Bits to the LSB
+  RSval:$(REGSIZE) =  RSsrc & (2^sa_dsp-1);
+  RTsrc = (RTsrc << sa_dsp) | (RSval);
+  }
+
+LINE 201: :balign RTsrc, RSsrc, bp	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & bp & fct2=0x10 & fct=0x31 {
+  
+  # BALIGN	Purpose: Byte Align Contents from Two Registers
+  RTsrc = (RTsrc << 8*bp) | (RSsrc >> 8*(4-bp));
+  }
+  
+
+LINE 207: :bitrev RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0x1b & fct=0x12 {
+  
+  # BITREV	Purpose: Bit-Reverse Halfword
+  RD = BITREV(RTsrc);
+  }
+  
+
+LINE 214: dsp_pos:$(REGSIZE) = DSPControl & 0x1f;
+  # BPOSGE32	Purpose: Branch on Greater Than or Equal To Value 32 in DSPControl Pos Field
+  :bposge32 Rel16	is $(AMODE) & prime=0x1 & zero21=0x0 & op=0x1c & Rel16 {
+  if (dsp_pos < 32) goto inst_next;
+  delayslot(1);
+  goto Rel16;
+
+LINE 223: dsp_pos:$(REGSIZE) = DSPControl & 0x1f;
+  # no branch delay
+  :bposge32c Rel16	is $(AMODE) & prime=0x1 & zero21=0x0 & op=0x1a & Rel16 {
+  if (dsp_pos < 32) goto inst_next;
+  goto Rel16;
+  }
+
+LINE 229: :cmp.eq.ph RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero4=0x0 & fct2=0x8 & fct=0x11 {
+  
+  # CMP.cond.PH	Purpose: Compare Vectors of Signed Integer Halfword Values
+  tmp_rs:2 = RSsrc(0) & 0xffff;
+  tmp_rt:2 = RTsrc(0) & 0xffff;
+  cca:1 = (tmp_rs == tmp_rt);
+
+LINE 240: :cmp.lt.ph RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero4=0x0 & fct2=0x9 & fct=0x11 {
+  }
+  
+  tmp_rs:2 = RSsrc(0) & 0xffff;
+  tmp_rt:2 = RTsrc(0) & 0xffff;
+  cca:1 = (tmp_rs s< tmp_rt);
+
+LINE 251: :cmp.le.ph RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero4=0x0 & fct2=0xa & fct=0x11 {
+  }
+  
+  tmp_rs:2 = RSsrc(0) & 0xffff;
+  tmp_rt:2 = RTsrc(0) & 0xffff;
+  cca:1 = (tmp_rs s<= tmp_rt);
+
+LINE 264: :cmpgdu.eq.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x18 & fct=0x11 {
+  
+  # CMPGDU.cond.QB	Purpose: Compare Unsigned Vector of Four Bytes and Write Result to GPR and DSPControl
+  tmp_rs:1 = RSsrc(0) & 0xff;
+  tmp_rt:1 = RTsrc(0) & 0xff;
+  cca:$(REGSIZE) = zext(tmp_rs == tmp_rt);
+
+LINE 282: :cmpgdu.lt.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x19 & fct=0x11 {
+  }
+  
+  tmp_rs:1 = RSsrc(0) & 0xff;
+  tmp_rt:1 = RTsrc(0) & 0xff;
+  cca:$(REGSIZE) = zext(tmp_rs < tmp_rt);
+
+LINE 300: :cmpgdu.le.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x1a & fct=0x11 {
+  }
+  
+  tmp_rs:1 = RSsrc(0) & 0xff;
+  tmp_rt:1 = RTsrc(0) & 0xff;
+  cca:$(REGSIZE) = zext(tmp_rs <= tmp_rt);
+
+LINE 320: :cmpgu.eq.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x4 & fct=0x11 {
+  
+  # CMPGU.cond.QB	Purpose: Compare Vectors of Unsigned Byte Values and Write Results to a GPR
+  tmp_rs:1 = RSsrc(0) & 0xff;
+  tmp_rt:1 = RTsrc(0) & 0xff;
+  cca:1 = (tmp_rs == tmp_rt);
+
+LINE 336: :cmpgu.lt.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x5 & fct=0x11 {
+  }
+  
+  tmp_rs:1 = RSsrc(0) & 0xff;
+  tmp_rt:1 = RTsrc(0) & 0xff;
+  cca:1 = (tmp_rs < tmp_rt);
+
+LINE 352: :cmpgu.le.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x6 & fct=0x11 {
+  }
+  
+  tmp_rs:1 = RSsrc(0) & 0xff;
+  tmp_rt:1 = RTsrc(0) & 0xff;
+  cca:1 = (tmp_rs <= tmp_rt);
+
+LINE 370: :cmpu.eq.qb RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero4=0x0 & fct2=0x0 & fct=0x11 {
+  
+  # CMPU.cond.QB	Purpose: Compare Vectors of Unsigned Byte Values
+  tmp_rs:1 = RSsrc(0) & 0xff;
+  tmp_rt:1 = RTsrc(0) & 0xff;
+  cca:1 = (tmp_rs == tmp_rt);
+
+LINE 387: :cmpu.lt.qb RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero4=0x0 & fct2=0x1 & fct=0x11 {
+  }
+  
+  tmp_rs:1 = RSsrc(0) & 0xff;
+  tmp_rt:1 = RTsrc(0) & 0xff;
+  cca:1 = (tmp_rs < tmp_rt);
+
+LINE 404: :cmpu.le.qb RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero4=0x0 & fct2=0x2 & fct=0x11 {
+  }
+  
+  tmp_rs:1 = RSsrc(0) & 0xff;
+  tmp_rt:1 = RTsrc(0) & 0xff;
+  cca:1 = (tmp_rs <= tmp_rt);
+
+LINE 423: :dpa.w.ph ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x0 & fct=0x30 {
+  
+  # DPA.W.PH	Purpose: Dot Product with Accumulate on Vector Integer Halfword Elements
+  ac = DPA.W.PH(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 429: :dpaq_s.w.ph ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x4 & fct=0x30 {
+  
+  # DPAQ_S.W.PH	Purpose: Dot Product with Accumulation on Fractional Halfword Elements
+  ac = DPAQ_S.W.PH(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 435: :dpaq_sa.l.w ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0xc & fct=0x30 {
+  
+  # DPAQ_SA.L.W	Purpose: Dot Product with Accumulate on Fractional Word Element
+  ac = DPAQ_SA.L.W(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 441: :dpaqx_s.w.ph ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x18 & fct=0x30 {
+  
+  # DPAQX_S.W.PH	Purpose: Cross Dot Product with Accumulation on Fractional Halfword Elements
+  ac = DPAQX_S.W.PH(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 447: :dpaqx_sa.w.ph ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x1a & fct=0x30 {
+  
+  # DPAQX_SA.W.PH	Purpose: Cross Dot Product with Accumulation on Fractional Halfword Elements
+  ac = DPAQX_SA.W.PH(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 453: :dpau.h.qbl ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x3 & fct=0x30 {
+  
+  # DPAU.H.QBL	Purpose: Dot Product with Accumulate on Vector Unsigned Byte Elements
+  ac = DPAU.H.QBL(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 459: :dpau.h.qbr ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x7 & fct=0x30 {
+  
+  # DPAU.H.QBR	Purpose: Dot Product with Accumulate on Vector Unsigned Byte Elements
+  ac = DPAU.H.QBR(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 465: :dpax.w.ph ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x8 & fct=0x30 {
+  
+  # DPAX.W.PH	Purpose: Cross Dot Product with Accumulate on Vector Integer Halfword Elements
+  ac = DPAX.W.PH(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 471: :dps.w.ph ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x1 & fct=0x30 {
+  
+  # DPS.W.PH	Purpose: Dot Product with Subtract on Vector Integer Half-Word Elements
+  ac = DPS.W.PH(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 477: :dpsq_s.w.ph ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x5 & fct=0x30 {
+  
+  # DPSQ_S.W.PH	Purpose: Dot Product with Subtraction on Fractional Halfword Elements
+  ac = DPSQ_S.W.PH(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 483: :dpsq_sa.l.w ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0xd & fct=0x30 {
+  
+  # DPSQ_SA.L.W	Purpose: Dot Product with Subtraction on Fractional Word Element
+  ac = DPSQ_SA.L.W(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 489: :dpsqx_s.w.ph ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x19 & fct=0x30 {
+  
+  # DPSQX_S.W.PH	Purpose: Cross Dot Product with Subtraction on Fractional Halfword Elements
+  ac = DPSQX_S.W.PH(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 495: :dpsqx_sa.w.ph ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x1b & fct=0x30 {
+  
+  # DPSQX_SA.W.PH	Purpose: Cross Dot Product with Subtraction on Fractional Halfword Elements
+  ac = DPSQX_SA.W.PH(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 501: :dpsu.h.qbl ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0xb & fct=0x30 {
+  
+  # DPSU.H.QBL	Purpose: Dot Product with Subtraction on Vector Unsigned Byte Elements
+  ac = DPSU.H.QBL(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 507: :dpsu.h.qbr ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0xf & fct=0x30 {
+  
+  # DPSU.H.QBR	Purpose: Dot Product with Subtraction on Vector Unsigned Byte Elements
+  ac = DPSU.H.QBR(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 513: :dpsx.w.ph ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x9 & fct=0x30 {
+  
+  # DPSX.W.PH	Purpose: Cross Dot Product with Subtract on Vector Integer Halfword Elements
+  ac = DPSX.W.PH(ac, RSsrc, RTsrc);
+  }
+  
+
+LINE 519: :extp RT, ac, sz	is $(AMODE) & prime=0x1f & sz & RT & zero1315=0x0 & ac & fct2=0x2 & fct=0x38 {
+  
+  # EXTP	Purpose: Extract Fixed Bitfield From Arbitrary Position in Accumulator to GPR
+  RT = EXTP(ac, sz:1);
+  }
+  
+
+LINE 525: :extpdp RT, ac, sz	is $(AMODE) & prime=0x1f & sz & RT & zero1315=0x0 & ac & fct2=0xa & fct=0x38 {
+  
+  # EXTPDP	Purpose: Extract Fixed Bitfield From Arbitrary Position in Accumulator to GPR and Decrement Pos
+  RT = EXTPDP(ac, sz:1);
+  }
+  
+
+LINE 531: :extpdpv RT, ac, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RT & zero1315=0x0 & ac & fct2=0xb & fct=0x38 {
+  
+  # EXTPDPV	Purpose: Extract Variable Bitfield From Arbitrary Position in Accumulator to GPR and Decrement Pos
+  RT = EXTPDPV(ac, RSsrc);
+  }
+  
+
+LINE 537: :extpv RT, ac, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RT & zero1315=0x0 & ac & fct2=0x3 & fct=0x38 {
+  
+  # EXTPV	Purpose: Extract Variable Bitfield From Arbitrary Position in Accumulator to GPR
+  RT = EXTPV(ac, RSsrc);
+  }
+  
+
+LINE 543: :extr.w RT, ac, shift21	is $(AMODE) & prime=0x1f & shift21 & RT & zero1315=0x0 & ac & fct2=0x0 & fct=0x38 {
+  
+  # EXTR[_RS].W	Purpose: Extract Word Value With Right Shift From Accumulator to GPR
+  val:$(DREGSIZE) = ac >> shift21:1;
+  result:4 = val(0);
+  RT = zext(result);
+
+LINE 549: :extr_r.w RT, ac, shift21	is $(AMODE) & prime=0x1f & shift21 & RT & zero1315=0x0 & ac & fct2=0x4 & fct=0x38 {
+  }
+  
+  val:$(DREGSIZE) = ac >> shift21:1;
+  result:4 = val(0);
+  RT = EXTR.W(result, 1:1);
+
+LINE 555: :extr_rs.w RT, ac, shift21	is $(AMODE) & prime=0x1f & shift21 & RT & zero1315=0x0 & ac & fct2=0x6 & fct=0x38 {
+  }
+  
+  val:$(DREGSIZE) = ac >> shift21:1;
+  result:4 = val(0);
+  RT = EXTR.W(result, 2:1);
+
+LINE 563: :extr_s.h RT, ac, shift21	is $(AMODE) & prime=0x1f & shift21 & RT & zero1315=0x0 & ac & fct2=0xe & fct=0x38 {
+  
+  # EXTR_S.H	Purpose: Extract Halfword Value From Accumulator to GPR With Right Shift and Saturate
+  val:$(DREGSIZE) = ac >> shift21:1;
+  result:2 = val(0);
+  RT = EXTR_S.H(result);
+
+LINE 571: :extrv.w RT, ac, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RT & zero1315=0x0 & ac & fct2=0x1 & fct=0x38 {
+  
+  # EXTRV[_RS].W	Purpose: Extract Word Value With Variable Right Shift From Accumulator to GPR
+  shift:1 = RSsrc(0) & 0x3f;
+  val:$(DREGSIZE) = ac >> shift;
+  result:4 = val(0);
+
+LINE 578: :extrv_r.w RT, ac, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RT & zero1315=0x0 & ac & fct2=0x5 & fct=0x38 {
+  }
+  
+  shift:1 = RSsrc(0) & 0x3f;
+  val:$(DREGSIZE) = ac >> shift;
+  result:4 = val(0);
+
+LINE 585: :extrv_rs.w RT, ac, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RT & zero1315=0x0 & ac & fct2=0x7 & fct=0x38 {
+  }
+  
+  shift:1 = RSsrc(0) & 0x3f;
+  val:$(DREGSIZE) = ac >> shift;
+  result:4 = val(0);
+
+LINE 594: :extrv_s.h RT, ac, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RT & zero1315=0x0 & ac & fct2=0xf & fct=0x38 {
+  
+  # EXTRV_S.H	Purpose: Extract Halfword Value Variable From Accumulator to GPR With Right Shift and Saturate
+  shift:1 = RSsrc(0) & 0x3f;
+  val:$(DREGSIZE) = ac >> shift;
+  result:2 = val(0);
+
+LINE 603: :insv RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero4=0x0 & fct2=0x0 & fct=0xc {
+  
+  # INSV	Purpose: Insert Bit Field Variable
+  RTsrc = INSV(RTsrc, RSsrc);
+  }
+  
+
+LINE 609: :lbux RD, INDEX_BASE	is $(AMODE) & prime=0x1f & INDEX_BASE & RD & fct2=0x6 & fct=0xa {
+  
+  # LBUX	Purpose: Load Unsigned Byte Indexed
+  RD = zext(*[ram]:1 INDEX_BASE);
+  }
+  
+
+LINE 615: :ldx RD, INDEX_BASE		is $(AMODE) & prime=0x1F & RD & fct=10 & fct2=8 & INDEX_BASE {
+  @ifdef MIPS64
+  # LDX	Load Doubleword Indexed
+  RD = *[ram]:8 INDEX_BASE;
+  }
+  @endif
+
+LINE 621: :lhx RD, INDEX_BASE	is $(AMODE) & prime=0x1f & INDEX_BASE & RD & fct2=0x4 & fct=0xa {
+  
+  # LHX	Purpose: Load Halfword Indexed
+  RD = sext(*[ram]:2 INDEX_BASE);
+  }
+  
+
+LINE 627: :lwx RD, INDEX_BASE	is $(AMODE) & prime=0x1f & INDEX_BASE & RD & fct2=0x0 & fct=0xa {
+  
+  # LWX	Purpose: Load Word Indexed
+  @ifdef MIPS64
+  RD = sext(*[ram]:4 INDEX_BASE);
+  @else
+
+LINE 655: :maq_s.w.phl ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x14 & fct=0x30 {
+  
+  # MAQ_S[A].W.PHL	Purpose: Multiply with Accumulate Single Vector Fractional Halfword Element
+  ac = MAQ_S.W.PHL(RSsrc, RTsrc);
+  }
+  
+
+LINE 659: :maq_sa.w.phl ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x10 & fct=0x30 {
+  }
+  
+  ac = MAQ_S.W.PHL(RSsrc, RTsrc);
+  }
+  
+
+LINE 665: :maq_s.w.phr ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x16 & fct=0x30 {
+  
+  # MAQ_S[A].W.PHR	Purpose: Multiply with Accumulate Single Vector Fractional Halfword Element
+  ac = MAQ_S.W.PHR(RSsrc, RTsrc);
+  }
+  
+
+LINE 669: :maq_sa.w.phr ac, RSsrc, RTsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & zero1315=0x0 & ac & fct2=0x12 & fct=0x30 {
+  }
+  
+  ac = MAQ_S.W.PHR(RSsrc, RTsrc);
+  }
+  
+
+LINE 687: :modsub RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x12 & fct=0x10 {
+  
+  # MODSUB	Purpose: Modular Subtraction on an Index Value
+  decr:1 = RTsrc(0);
+  lastIdx:2 = RTsrc(1);
+  equals:1 = (RSsrc == 0);
+
+LINE 721: :mthlip RS, ac	is $(AMODE) & prime=0x1f & RS & zero1320=0x0 & ac & aclo & achi & fct2=0x1f & fct=0x38 {
+  
+  # MTHLIP	Purpose: Copy LO to HI and a GPR to LO and Increment Pos by 32
+  achi = aclo;
+  aclo = RS;
+  # increment DSPControl pos field by 32
+
+LINE 735: :mul.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xc & fct=0x18 {
+  
+  # MUL[_S].PH	Purpose: Multiply Vector Integer HalfWords to Same Size Products
+  RD = MUL.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 739: :mul_s.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xe & fct=0x18 {
+  }
+  
+  RD = MUL.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 745: :muleq_s.w.phl RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x1c & fct=0x10 {
+  
+  # MULEQ_S.W.PHL	Purpose: Multiply Vector Fractional Left Halfwords to Expanded Width Products
+  RD = MULEQ_S.W.PHL(RSsrc, RTsrc);
+  }
+  
+
+LINE 751: :muleq_s.w.phr RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x1d & fct=0x10 {
+  
+  # MULEQ_S.W.PHR	Purpose: Multiply Vector Fractional Right Halfwords to Expanded Width Products
+  RD = MULEQ_S.W.PHR(RSsrc, RTsrc);
+  }
+  
+
+LINE 757: :muleu_s.ph.qbl RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x6 & fct=0x10 {
+  
+  # MULEU_S.PH.QBL	Purpose: Multiply Unsigned Vector Left Bytes by Halfwords to Halfword Products
+  RD = MULEU_S.PH.QBL(RSsrc, RTsrc);
+  }
+  
+
+LINE 763: :muleu_s.ph.qbr RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x7 & fct=0x10 {
+  
+  # MULEU_S.PH.QBR	Purpose: Multiply Unsigned Vector Right Bytes with halfwords to Half Word Products
+  RD = MULEU_S.PH.QBR(RSsrc, RTsrc);
+  }
+  
+
+LINE 769: :mulq_rs.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x1f & fct=0x10 {
+  
+  # MULQ_RS.PH	Purpose: Multiply Vector Fractional Halfwords to Fractional Halfword Products
+  RD = MULQ_RS.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 775: :mulq_rs.w RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x17 & fct=0x18 {
+  
+  # MULQ_RS.W	Purpose: Multiply Fractional Words to Same Size Product with Saturation and Rounding
+  RD = MULQ_RS.W(RSsrc, RTsrc);
+  }
+  
+
+LINE 781: :mulq_s.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x1e & fct=0x10 {
+  
+  # MULQ_S.PH	Purpose: Multiply Vector Fractional Half-Words to Same Size Products
+  RD = MULQ_S.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 787: :mulq_s.w RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x16 & fct=0x18 {
+  
+  # MULQ_S.W	Purpose: Multiply Fractional Words to Same Size Product with Saturation
+  RD = MULQ_S.W(RSsrc, RTsrc);
+  }
+  
+
+LINE 793: :mulsa.w.ph ac, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc  & zero1315=0x0 & ac & fct2=0x2 & fct=0x30 {
+  
+  # MULSA.W.PH	Purpose: Multiply and Subtract Vector Integer Halfword Elements and Accumulate
+  ac = MULSA.W.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 799: :mulsaq_s.w.ph ac, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc  & zero1315=0x0 & ac & fct2=0x6 & fct=0x30 {
+  
+  # MULSAQ_S.W.PH	Purpose: Multiply And Subtract Vector Fractional Halfwords And Accumulate
+  ac = MULSAQ_S.W.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 804: # MULT	Purpose: Multiply Word
+  
+  
+  :mult ac, RS32src, RT32src	is $(AMODE) & prime=0x0 & RS32src & RT32src & zero1315=0x0 & ac & fct2=0x0 & fct=0x18 {
+  tmp1:$(DREGSIZE) = sext( RS32src );
+  tmp2:$(DREGSIZE) = sext( RT32src );
+
+LINE 805: :mult ac, RS32src, RT32src	is $(AMODE) & prime=0x0 & RS32src & RT32src & zero1315=0x0 & ac & fct2=0x0 & fct=0x18 {
+  
+  # MULT	Purpose: Multiply Word
+  tmp1:$(DREGSIZE) = sext( RS32src );
+  tmp2:$(DREGSIZE) = sext( RT32src );
+  ac = tmp1 * tmp2;
+
+LINE 812: # MULTU	Purpose: Multiply Unsigned Word
+  
+  
+  :multu ac, RS32src, RT32src	is $(AMODE) & prime=0x0 & RS32src & RT32src & zero1315=0x0 & ac & fct2=0x0 & fct=0x19 {
+  tmp1:$(DREGSIZE) = zext( RS32src );
+  tmp2:$(DREGSIZE) = zext( RT32src );
+
+LINE 813: :multu ac, RS32src, RT32src	is $(AMODE) & prime=0x0 & RS32src & RT32src & zero1315=0x0 & ac & fct2=0x0 & fct=0x19 {
+  
+  # MULTU	Purpose: Multiply Unsigned Word
+  tmp1:$(DREGSIZE) = zext( RS32src );
+  tmp2:$(DREGSIZE) = zext( RT32src );
+  ac = tmp1 * tmp2;
+
+LINE 821: :packrl.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xe & fct=0x11 {
+  
+  # PACKRL.PH	Purpose: Pack a Vector of Halfwords from Vector Halfword Sources
+  src1:2 = RSsrc(0);
+  src2:2 = RTsrc(2);
+  RD = zext(src1 << 16) + zext(src2);
+
+LINE 829: :pick.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xb & fct=0x11 {
+  
+  # PICK.PH	Purpose: Pick a Vector of Halfword Values Based on Condition Code Bits
+  cc24:1 = DSPControl[24,1];
+  cc25:1 = DSPControl[25,1];
+  
+
+LINE 846: :pick.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x3 & fct=0x11 {
+  
+  # PICK.QB	Purpose: Pick a Vector of Byte Values Based on Condition Code Bits
+  local cc1:1 = DSPControl[24,1];
+  local cc2:1 = DSPControl[25,1];
+  local cc3:1 = DSPControl[26,1];
+
+LINE 873: :preceq.w.phl RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0xc & fct=0x12 {
+  
+  # PRECEQ.W.PHL	Purpose: Precision Expand Fractional Halfword to Fractional Word Value
+  RD = PRECEQ.W.PHL(RTsrc);
+  }
+  
+
+LINE 879: :preceq.w.phr RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0xd & fct=0x12 {
+  
+  # PRECEQ.W.PHR	Purpose: Precision Expand Fractional Halfword to Fractional Word Value
+  RD = PRECEQ.W.PHR(RTsrc);
+  }
+  
+
+LINE 885: :precequ.ph.qbl RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0x4 & fct=0x12 {
+  
+  # PRECEQU.PH.QBL	Purpose: Precision Expand two Unsigned Bytes to Fractional Halfword Values
+  RD = PRECEQU.PH.QBL(RTsrc);
+  }
+  
+
+LINE 891: :precequ.ph.qbla RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0x6 & fct=0x12 {
+  
+  # PRECEQU.PH.QBLA	Purpose: Precision Expand two Unsigned Bytes to Fractional Halfword Values
+  RD = PRECEQU.PH.QBLA(RTsrc);
+  }
+  
+
+LINE 897: :precequ.ph.qbr RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0x5 & fct=0x12 {
+  
+  # PRECEQU.PH.QBR	Purpose: Precision Expand two Unsigned Bytes to Fractional Halfword Values
+  RD = PRECEQU.PH.QBR(RTsrc);
+  }
+  
+
+LINE 903: :precequ.ph.qbra RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0x7 & fct=0x12 {
+  
+  # PRECEQU.PH.QBRA	Purpose: Precision Expand two Unsigned Bytes to Fractional Halfword Values
+  RD = PRECEQU.PH.QBRA(RTsrc);
+  }
+  
+
+LINE 909: :preceu.ph.qbl RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0x1c & fct=0x12 {
+  
+  # PRECEU.PH.QBL	Purpose: Precision Expand Two Unsigned Bytes to Unsigned Halfword Values
+  RD = PRECEU.PH.QBL(RTsrc);
+  }
+  
+
+LINE 915: :preceu.ph.qbla RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0x1e & fct=0x12 {
+  
+  # PRECEU.PH.QBLA	Purpose: Precision Expand Two Unsigned Bytes to Unsigned Halfword Values
+  RD = PRECEU.PH.QBLA(RTsrc);
+  }
+  
+
+LINE 921: :preceu.ph.qbr RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0x1d & fct=0x12 {
+  
+  # PRECEU.PH.QBR	Purpose: Precision Expand two Unsigned Bytes to Unsigned Halfword Values
+  RD = PRECEU.PH.QBR(RTsrc);
+  }
+  
+
+LINE 927: :preceu.ph.qbra RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0x1f & fct=0x12 {
+  
+  # PRECEU.PH.QBRA	Purpose: Precision Expand Two Unsigned Bytes to Unsigned Halfword Values
+  RD = PRECEU.PH.QBRA(RTsrc);
+  }
+  
+
+LINE 933: :precr.qb.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xd & fct=0x11 {
+  
+  # PRECR.QB.PH	Purpose: Precision Reduce Four Integer Halfwords to Four Bytes
+  RD = PRECR.QB.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 939: :precr_sra.ph.w rt, rs, sa_dsp	is $(AMODE) & prime=0x1f & rs & rt & sa_dsp & fct2=0x1e & fct=0x11 {
+  
+  # PRECR_SRA[_R].PH.W	Purpose: Precision Reduce Two Integer Words to Halfwords after a Right Shift
+  PRECR_SRA.PH.W();
+  }
+  
+
+LINE 943: :precr_sra_r.ph.w rt, rs, sa_dsp	is $(AMODE) & prime=0x1f & rs & rt & sa_dsp & fct2=0x1f & fct=0x11 {
+  }
+  
+  PRECR_SRA.PH.W();
+  }
+  
+
+LINE 949: :precrq.ph.w RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x14 & fct=0x11 {
+  
+  # PRECRQ.PH.W	Purpose: Precision Reduce Fractional Words to Fractional Halfwords
+  RD = PRECRQ.PH.W(RSsrc, RTsrc);
+  }
+  
+
+LINE 955: :precrq.qb.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xc & fct=0x11 {
+  
+  # PRECRQ.QB.PH	Purpose: Precision Reduce Four Fractional Halfwords to Four Bytes
+  RD = PRECRQ.QB.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 961: :precrqu_s.qb.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xf & fct=0x11 {
+  
+  # PRECRQU_S.QB.PH	Purpose: Precision Reduce Fractional Halfwords to Unsigned Bytes With Saturation
+  RD = PRECRQU_S.QB.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 967: :precrq_rs.ph.w RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x15 & fct=0x11 {
+  
+  # PRECRQ_RS.PH.W	Purpose: Precision Reduce Fractional Words to Halfwords With Rounding and Saturation
+  RD = PRECRQ_RS.PH.W(RSsrc, RTsrc);
+  }
+  
+
+LINE 973: :prepend RT, RSsrc, sa_dsp	is $(AMODE) & prime=0x1f & RSsrc & RT & sa_dsp & fct2=0x1 & fct=0x31 {
+  
+  # PREPEND	Purpose: Right Shift and Prepend Bits to the MSB
+  shift_val:1 = sa_dsp;
+  trunc_val:1 = ($(REGSIZE) * 8) - shift_val;
+  temp:$(REGSIZE) = (RSsrc << shift_val) + (RT >> trunc_val);
+
+LINE 982: :raddu.w.qb RD, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & zero1620=0x0 & RD & fct2=0x14 & fct=0x10 {
+  
+  # RADDU.W.QB	Purpose: Unsigned Reduction Add Vector Quad Bytes
+  RD = RADDU.W.QB(RSsrc);
+  }
+  
+
+LINE 988: :rddsp RD, immed1625	is $(AMODE) & prime=0x1f & immed1625 & RD & fct2=0x12 & fct=0x38 {
+  
+  # RDDSP	Purpose: Read DSPControl Register Fields to a GPR
+  RD = DSPControl & immed1625:$(REGSIZE);
+  }
+  
+
+LINE 992: :rddsp RD	is $(AMODE) & prime=0x1f & simmed1625=0x1f & RD & fct2=0x12 & fct=0x38 {
+  }
+  
+  RD = DSPControl;
+  }
+  
+
+LINE 998: :repl.ph RD, simmed1625	is $(AMODE) & prime=0x1f & simmed1625 & RD & fct2=0xa & fct=0x12 {
+  
+  # REPL.PH	Purpose: Replicate Immediate Integer into all Vector Element Positions
+  val:2 = simmed1625;
+  repl:$(REGSIZE) = sext(val) << 16 | zext(val);
+  RD = repl;
+
+LINE 1006: :repl.qb RD, simmed1623	is $(AMODE) & prime=0x1f & zero2425=0x0 & simmed1623 & RD & fct2=0x2 & fct=0x12 {
+  
+  # REPL.QB	Purpose: Replicate Immediate Integer into all Vector Element Positions
+  byte:1 = simmed1623;
+  RD = sext((byte << 24) | (byte << 16) | (byte << 8) | (byte));
+  }
+
+LINE 1013: :replv.ph RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0xb & fct=0x12 {
+  
+  # REPLV.PH	Purpose: Replicate a Halfword into all Vector Element Positions
+  RD = REPLV.PH(RTsrc);
+  }
+  
+
+LINE 1019: :replv.qb RD, RTsrc	is $(AMODE) & prime=0x1f & zero21=0x0 & RTsrc & RD & fct2=0x3 & fct=0x12 {
+  
+  # REPLV.QB	Purpose: Replicate Byte into all Vector Element Positions
+  RD = REPLV.QB(RTsrc);
+  }
+  
+
+LINE 1025: :shilo ac, shift20	is $(AMODE) & prime=0x1f & shift20 & zero1619=0x0 & zero1315=0x0 & ac & fct2=0x1a & fct=0x38 {
+  
+  # SHILO	Purpose: Shift an Accumulator Value Leaving the Result in the Same Accumulator
+  shift_val:1 = shift20;
+  ac = (zext(shift_val s>= 0) * (ac >> shift_val)) + (zext(shift_val s< 0) * (ac << (-shift_val)));
+  }
+
+LINE 1032: :shilov ac, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & zero1620=0x0 & zero1315=0x0 & ac & fct2=0x1b & fct=0x38 {
+  
+  # SHILOV	Purpose: Variable Shift of Accumulator Value Leaving the Result in the Same Accumulator
+  shift_val:1 = RSsrc(1) & 0x7f;
+  ac = (zext(shift_val s>= 0) * (ac >> shift_val)) + (zext(shift_val s< 0) * (ac << (-shift_val)));
+  }
+
+LINE 1039: :shll.ph RD, RTsrc, sa_dsp2	is $(AMODE) & prime=0x1f & bit25=0x0 & sa_dsp2 & RTsrc & RD & fct2=0x8 & fct=0x13 {
+  
+  # SHLL[_S].PH	Purpose: Shift Left Logical Vector Pair Halfwords
+  shift_val:1 = sa_dsp2;
+  RD = SHLL.PH(RTsrc, shift_val);
+  }
+
+LINE 1044: :shll_s.ph RD, RTsrc, sa_dsp2	is $(AMODE) & prime=0x1f & bit25=0x0 & sa_dsp2 & RTsrc & RD & fct2=0xc & fct=0x13 {
+  }
+  
+  shift_val:1 = sa_dsp2;
+  RD= SHLL.PH(RTsrc, shift_val);
+  }
+
+LINE 1051: :shll.qb RD, RTsrc, sa_dsp2	is $(AMODE) & prime=0x1f & sa_dsp2 & RTsrc & RD & fct2=0x0 & fct=0x13 {
+  
+  # SHLL.QB	Purpose: Shift Left Logical Vector Quad Bytes
+  shift_val:1 = sa_dsp2;
+  RD = SHLL.QB(RTsrc, shift_val);
+  }
+
+LINE 1058: :shllv.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xa & fct=0x13 {
+  
+  # SHLLV[_S].PH	Purpose: Shift Left Logical Variable Vector Pair Halfwords
+  RD = SHLLV.PH(RTsrc, RSsrc);
+  }
+  
+
+LINE 1062: :shllv_s.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xe & fct=0x13 {
+  }
+  
+  RD = SHLLV.PH(RTsrc, RSsrc);
+  }
+  
+
+LINE 1068: :shllv.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x2 & fct=0x13 {
+  
+  # SHLLV.QB	Purpose: Shift Left Logical Variable Vector Quad Bytes
+  RD = SHLLV.QB(RTsrc, RSsrc);
+  }
+  
+
+LINE 1074: :shllv_s.w RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x16 & fct=0x13 {
+  
+  # SHLLV_S.W	Purpose: Shift Left Logical Variable Vector Word
+  RD = SHLLV_S.W(RTsrc, RSsrc);
+  }
+  
+
+LINE 1080: :shll_s.w RD, RTsrc, sa_dsp2	is $(AMODE) & prime=0x1f & sa_dsp2 & RTsrc & RD & fct2=0x14 & fct=0x13 {
+  
+  # SHLL_S.W	Purpose: Shift Left Logical Word with Saturation
+  shift_val:1 = sa_dsp2;
+  RD = SHLL_S.W(RTsrc, shift_val);
+  }
+
+LINE 1087: :shra.qb RD, RTsrc, sa_dsp2	is $(AMODE) & prime=0x1f & sa_dsp2 & RTsrc & RD & fct2=0x4 & fct=0x13 {
+  
+  # SHRA[_R].QB	Purpose: Shift Right Arithmetic Vector of Four Bytes
+  shift_val:1 = sa_dsp2;
+  RD = SHRA.QB(RTsrc, shift_val);
+  }
+
+LINE 1092: :shra_r.qb RD, RTsrc, sa_dsp2	is $(AMODE) & prime=0x1f & sa_dsp2 & RTsrc & RD & fct2=0x5 & fct=0x13 {
+  }
+  
+  shift_val:1 = sa_dsp2;
+  RD = SHRA.QB(RTsrc, shift_val);
+  }
+
+LINE 1099: :shra.ph RD, RTsrc, sa_dsp2	is $(AMODE) & prime=0x1f & bit25=0x0 & sa_dsp2 & RTsrc & RD & fct2=0x9 & fct=0x13 {
+  
+  # SHRA[_R].PH	Purpose: Shift Right Arithmetic Vector Pair Halfwords
+  shift_val:1 = sa_dsp2;
+  RD = SHRA.PH(RTsrc, shift_val);
+  }
+
+LINE 1104: :shra_r.ph RD, RTsrc, sa_dsp2	is $(AMODE) & prime=0x1f & bit25=0x0 & sa_dsp2 & RTsrc & RD & fct2=0xd & fct=0x13 {
+  }
+  
+  shift_val:1 = sa_dsp2;
+  RD = SHRA.PH(RTsrc, shift_val);
+  }
+
+LINE 1111: :shrav.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xb & fct=0x13 {
+  
+  # SHRAV[_R].PH	Purpose: Shift Right Arithmetic Variable Vector Pair Halfwords
+  RD = SHRAV.PH(RTsrc, RSsrc);
+  }
+  
+
+LINE 1115: :shrav_r.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xf & fct=0x13 {
+  }
+  
+  RD = SHRAV.PH(RTsrc, RSsrc);
+  }
+  
+
+LINE 1121: :shrav.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x6 & fct=0x13 {
+  
+  # SHRAV[_R].QB	Purpose: Shift Right Arithmetic Variable Vector of Four Bytes
+  RD = SHRAV.QB(RTsrc, RSsrc);
+  }
+  
+
+LINE 1125: :shrav_r.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x7 & fct=0x13 {
+  }
+  
+  RD = SHRAV.QB(RTsrc, RSsrc);
+  }
+  
+
+LINE 1131: :shrav_r.w RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x17 & fct=0x13 {
+  
+  # SHRAV_R.W	Purpose: Shift Right Arithmetic Variable Word with Rounding
+  RD = SHRAV_R.W(RTsrc, RSsrc);
+  }
+  
+
+LINE 1137: :shra_r.w RD, RTsrc, sa_dsp2	is $(AMODE) & prime=0x1f & sa_dsp2 & RTsrc & RD & fct2=0x15 & fct=0x13 {
+  
+  # SHRA_R.W	Purpose: Shift Right Arithmetic Word with Rounding
+  shift_val:1 = sa_dsp2;
+  RD = SHRA_R.W(RTsrc, shift_val);
+  }
+
+LINE 1144: :shrl.ph RD, RTsrc, sa_dsp2	is $(AMODE) & prime=0x1f & bit25=0x0 & sa_dsp2 & RTsrc & RD & fct2=0x19 & fct=0x13 {
+  
+  # SHRL.PH	Purpose: Shift Right Logical Two Halfwords
+  shift_val:1 = sa_dsp2;
+  RD = SHRL.PH(RTsrc, shift_val);
+  }
+
+LINE 1151: :shrl.qb RD, RTsrc, sa_dsp2	is $(AMODE) & prime=0x1f & sa_dsp2 & RTsrc & RD & fct2=0x1 & fct=0x13 {
+  
+  # SHRL.QB	Purpose: Shift Right Logical Vector Quad Bytes
+  shift_val:1 = sa_dsp2;
+  RD = SHRL.QB(RTsrc, shift_val);
+  }
+
+LINE 1158: :shrlv.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x1b & fct=0x13 {
+  
+  # SHRLV.PH	Purpose: Shift Variable Right Logical Pair of Halfwords
+  RD = SHRLV.PH(RTsrc, RSsrc);
+  }
+  
+
+LINE 1164: :shrlv.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x3 & fct=0x13 {
+  
+  # SHRLV.QB	Purpose: Shift Right Logical Variable Vector Quad Bytes
+  RD = SHRLV.QB(RTsrc, RSsrc);
+  }
+  
+
+LINE 1170: :subq.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xb & fct=0x10 {
+  
+  # SUBQ[_S].PH	Purpose: Subtract Fractional Halfword Vector
+  RD = SUBQ.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 1174: :subq_s.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xf & fct=0x10 {
+  }
+  
+  RD = SUBQ.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 1180: :subq_s.w RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x17 & fct=0x10 {
+  
+  # SUBQ_S.W	Purpose: Subtract Fractional Word
+  RD = SUBQ_S.W(RSsrc, RTsrc);
+  }
+  
+
+LINE 1186: :subqh.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x9 & fct=0x18 {
+  
+  # SUBQH[_R].PH	Purpose: Subtract Fractional Halfword Vectors And Shift Right to Halve Results
+  RD = SUBQH.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 1190: :subqh_r.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xb & fct=0x18 {
+  }
+  
+  RD = SUBQH.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 1196: :subqh.w RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x11 & fct=0x18 {
+  
+  # SUBQH[_R].W	Purpose: Subtract Fractional Words And Shift Right to Halve Results
+  RD = SUBQH.W(RSsrc, RTsrc);
+  }
+  
+
+LINE 1200: :subqh_r.w RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x13 & fct=0x18 {
+  }
+  
+  RD = SUBQH.W(RSsrc, RTsrc);
+  }
+  
+
+LINE 1206: :subu.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x9 & fct=0x10 {
+  
+  # SUBU[_S].PH	Purpose: Subtract Unsigned Integer Halfwords
+  RD = SUBU.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 1210: :subu_s.ph RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0xd & fct=0x10 {
+  }
+  
+  RD = SUBU.PH(RSsrc, RTsrc);
+  }
+  
+
+LINE 1216: :subu.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x1 & fct=0x10 {
+  
+  # SUBU[_S].QB	Purpose: Subtract Unsigned Quad Byte Vector
+  RD = SUBU.QB(RSsrc, RTsrc);
+  }
+  
+
+LINE 1220: :subu_s.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x5 & fct=0x10 {
+  }
+  
+  RD = SUBU.QB(RSsrc, RTsrc);
+  }
+  
+
+LINE 1226: :subuh.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x1 & fct=0x18 {
+  
+  # SUBUH[_R].QB	Purpose: Subtract Unsigned Bytes And Right Shift to Halve Results
+  RD = SUBUH.QB(RSsrc, RTsrc);
+  }
+  
+
+LINE 1230: :subuh_r.qb RD, RTsrc, RSsrc	is $(AMODE) & prime=0x1f & RSsrc & RTsrc & RD & fct2=0x3 & fct=0x18 {
+  }
+  
+  RD = SUBUH.QB(RSsrc, RTsrc);
+  }
+  
+
+LINE 1236: :wrdsp RSsrc, mask	is $(AMODE) & prime=0x1f & RSsrc & mask & fct2=0x13 & fct=0x38 {
+  
+  # WRDSP	Purpose: Write Fields to DSPControl Register from a GPR
+  DSPControl = (RSsrc & mask);
+  }
+  
+
+LINE 1240: :wrdsp RSsrc	is $(AMODE) & prime=0x1f & RSsrc & mask=0x1f & fct2=0x13 & fct=0x38 {
+  }
+  
+  DSPControl = RSsrc;
+  }
+
+============================================================
+FILE: D:\Downloads\LED_Ghidra\ghidra\ghidra_12.2_PUBLIC\Ghidra\Processors\MIPS\data\languages\mips_mt.sinc
+MATCHES: 3
+
+LINE 45: :fork "Thread_GPR["^RDsrc^"]", RSsrc, RTsrc is $(AMODE) & REL6=0 & prime=0x1F & zero5=0x0 & fct=0x8 & RDsrc & RSsrc & RTsrc {
+  }
+  
+  fork(RDsrc, RSsrc, RTsrc);
+  }
+  
+
+LINE 145: :yield RD, RSsrc is $(AMODE) & REL6=0 & prime=0x1F & op=0 & zero5=0x0 & fct=0x9 & RD & RSsrc {
+  
+  # Conditionally Deschedule or Deallocate the Current Thread
+  yield(RSsrc);
+  RD = RSsrc & YQMask;
+  }
+
+LINE 150: :yield RSsrc is $(AMODE) & REL6=0 & prime=0x1F & op=0 & zero5=0x0 & fct=0x9 & rd=0 & RSsrc {
+  }
+  
+  yield(RSsrc);
+  }
+
+========== AUDIT COMPLETE ==========
