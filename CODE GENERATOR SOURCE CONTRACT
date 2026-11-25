@@ -1,0 +1,566 @@
+MARK OF KRI — CODE GENERATOR SOURCE CONTRACT
+Generated: 2026-11-24 23:12:17
+Project: D:\Games\MarkOfKriRecomp
+PS2Recomp: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+
+==========================================================================================
+SOURCE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h
+==========================================================================================
+TOTAL LINES: 197
+FILE SIZE: 6238 bytes
+#ifndef PS2RECOMP_TYPES_H #define PS2RECOMP_TYPES_H  #include <string> #include <vector> #include <cstdint> #include <unordered_map> #include <map>  namespace ps2recomp {      // Instruction representation     struct Instruction     {         uint32_t address;         uint32_t opcode;         uint32_t rs;         // Source register         uint32_t rt;         // Target register         uint32_t rd;         // Destination register         uint32_t sa;         // Shift amount         uint32_t function;   // Function code for R-type instructions         uint32_t immediate;  // Immediate value for I-type instructions         uint32_t simmediate; // Sign-extended immediate value (extended to 32 bits)         uint32_t target;     // Jump target for J-type instructions         uint32_t raw;        // Raw instruction value          // Instruction type flags         bool isMMI;        // Is MMI instruction (PS2 specific)         bool isVU;         // Is VU instruction (PS2 specific)         bool isBranch;     // Is branch instruction         bool isJump;       // Is jump instruction         bool isCall;       // Is function call         bool isReturn;     // Is return instruction         bool hasDelaySlot; // Has delay slot         bool isMultimedia; // PS2-specific multimedia operations         bool isStore;      // Is store instruction         bool isLoad;       // Is load instruction          // Additional PS2-specific fields         uint8_t mmiType;        // 0=MMI0, 1=MMI1, 2=MMI2, 3=MMI3         uint8_t mmiFunction;    // Function within MMI type         uint8_t pmfhlVariation; // For PMFHL instructions         uint8_t vuFunction;     // For VU instructions          bool isMmio = false;         uint32_t mmioAddress = 0;         std::string disassembly;          struct         {             bool isVector;       // Uses vector operations             bool usesQReg;       // Uses Q register             bool usesPReg;       // Uses P register             bool modifiesMAC;    // Modifies MAC flags             uint8_t vectorField; // xyzw field mask             uint8_t fsf;         // Field select for FS reg (bits 10-11)             uint8_t ftf;         // Source Field select for FT reg (bits 8-9)         } vectorInfo;          struct         {             bool modifiesGPR;     // Modifies general purpose register             bool modifiesFPR;     // Modifies floating point register             bool modifiesVFR;     // Modifies vector float register             bool modifiesVIR;     // Modifies vector integer register             bool modifiesVIC;     // Modifies vector integer control register             bool modifiesMemory;  // Modifies memory             bool modifiesControl; // Modifies control register         } modificationInfo;          Instruction() : address(0), opcode(0), rs(0), rt(0), rd(0), sa(0), function(0),                         immediate(0), simmediate(0), target(0), raw(0),                         isMMI(false), isVU(false), isBranch(false), isJump(false), isCall(false),                         isReturn(false), hasDelaySlot(false), isMultimedia(false), isStore(false), isLoad(false),                         mmiType(0), mmiFunction(0), pmfhlVariation(0), vuFunction(0), isMmio(false), mmioAddress(0)         {             vectorInfo = {};             modificationInfo = {};         }     };      struct MemoryAccessHint     {         bool hasAddress = false;         uint32_t address = 0;     };      // Function information     struct Function     {         std::string name;         uint32_t start;         uint32_t end;         std::vector<Instruction> instructions;         std::vector<uint32_t> callers;         std::vector<uint32_t> callees;         bool isRecompiled = false;         bool isStub = false;         bool isSkipped = false;     };      // Symbol information     struct Symbol     {         std::string name;         uint32_t address;         uint32_t size;         bool isFunction;         bool isImported;         bool isExported;     };      // Section information     struct Section     {         std::string name;         uint32_t address;         uint32_t size;         uint32_t offset;         bool isCode;         bool isData;         bool isBSS;         bool isReadOnly;         uint8_t *data;     };      // Relocation information     struct Relocation     {         uint32_t offset;         uint32_t info;         uint32_t symbol;         std::string symbolName;         uint32_t type;         int32_t addend;     };      // Jump table entry     struct JumpTableEntry     {         uint32_t index;         uint32_t target;     };      // Jump table     struct JumpTable     {         uint32_t address;         uint32_t baseRegister;         std::vector<JumpTableEntry> entries;     };      // Control flow graph     struct CFGNode     {         uint32_t startAddress;         uint32_t endAddress;         std::vector<Instruction> instructions;         std::vector<uint32_t> predecessors;         std::vector<uint32_t> successors;         bool isJumpTarget;         bool hasJumpTable;         JumpTable jumpTable;     };      // Function call     struct FunctionCall     {         uint32_t callerAddress;         uint32_t calleeAddress;         std::string calleeName;     };      // Recompiler configuration     struct RecompilerConfig     {         std::string inputPath;         std::string outputPath;         std::string ghidraMapPath;         bool singleFileOutput = false;         bool lowMemoryMode = false;         uint32_t outputWorkerThreads = 0;         bool patchSyscalls = false;         bool patchCop0 = true;         bool patchCache = true;         std::vector<std::string> skipFunctions;         std::unordered_map<uint32_t, std::string> patches;         std::vector<std::string> stubImplementations;         std::vector<std::string> entryPointHints;         std::unordered_map<uint32_t, uint32_t> mmioByInstructionAddress;         std::vector<JumpTable> jumpTables;     };  } // namespace ps2recomp  #endif // PS2RECOMP_TYPES_H
+
+==========================================================================================
+SOURCE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h
+==========================================================================================
+TOTAL LINES: 208
+FILE SIZE: 11573 bytes
+#ifndef PS2RECOMP_CODE_GENERATOR_H #define PS2RECOMP_CODE_GENERATOR_H  #include <cstdint> #include <string> #include <vector> #include <map> #include <unordered_map> #include <unordered_set> #include "ps2recomp/control_flow_analyzer.h"  namespace ps2recomp { 	struct JumpTableEntry;     struct JumpTable; 	struct Instruction;     struct MemoryAccessHint; 	struct Function; 	struct Symbol; 	struct Section;     class RecompilerReporter;  	extern const std::unordered_set<std::string> kKeywords;      class CodeGenerator     {     public: 	    explicit CodeGenerator(const std::vector<Symbol> &symbols, const std::vector<Section> &sections);         ~CodeGenerator();          struct BootstrapInfo         {             bool valid = false;             uint32_t entry = 0;             uint32_t bssStart = 0;             uint32_t bssEnd = 0;             uint32_t gp = 0;             std::string entryName;         };          using AnalysisResult = ControlFlowAnalysisResult;          std::string generateFunction(const Function &function, const std::vector<Instruction> &instructions, const bool &useHeaders);         std::string generateFunctionRegistration(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs);         std::string handleBranchDelaySlots(const Instruction &branchInst, const Instruction &delaySlot,                                            const Function &function, const AnalysisResult &analysisResult);         std::string handleBranchDelaySlots(const Instruction &branchInst, const Instruction &delaySlot,                                            const Function &function, const AnalysisResult &analysisResult,                                            std::string delaySlotOverride);          void setRenamedFunctions(const std::unordered_map<uint32_t, std::string> &renames);         void setBootstrapInfo(const BootstrapInfo &info);         void setRelocationCallNames(const std::unordered_map<uint32_t, std::string> &callNames);         void setConfiguredJumpTables(const std::vector<JumpTable> &jumpTables);         void setResumeEntryTargets(const std::unordered_map<uint32_t, std::vector<uint32_t>> &resumeTargetsByOwner);         void setEmitInstructionComments(bool emitInstructionComments);         void setReporter(RecompilerReporter *reporter);          AnalysisResult collectInternalBranchTargets(const Function &function,                                                   const std::vector<Instruction> &instructions,                                                   const std::vector<Function> *allFunctions = nullptr);      public:         std::unordered_map<uint32_t, Symbol> m_symbols;         std::unordered_map<uint32_t, std::string> m_renamedFunctions;         std::unordered_map<uint32_t, std::string> m_relocationCallNames;         std::unordered_map<uint32_t, std::vector<uint32_t>> m_configJumpTableTargetsByAddress;         std::unordered_map<uint32_t, std::vector<uint32_t>> m_resumeEntryTargetsByOwner;         const std::vector<Section>& m_sections;         BootstrapInfo m_bootstrapInfo;         bool m_emitInstructionComments = true;         RecompilerReporter *m_reporter = nullptr;         std::string m_currentFunctionName;          std::string translateInstruction(const Instruction &inst);         std::string translateInstruction(const Instruction &inst, const MemoryAccessHint &memoryHint);         std::string emitUnhandledInstruction(const Instruction &inst, const std::string &message);         std::string translateMMIInstruction(const Instruction &inst);         std::string translateVUInstruction(const Instruction &inst);         std::string translateFPUInstruction(const Instruction &inst);         std::string translateCOP0Instruction(const Instruction &inst);         std::string translateRegimmInstruction(const Instruction &inst);         std::string translateSpecialInstruction(const Instruction &inst);          // MMI Translation functions         std::string translateMMI0Instruction(const Instruction &inst);         std::string translateMMI1Instruction(const Instruction &inst);         std::string translateMMI2Instruction(const Instruction &inst);         std::string translateMMI3Instruction(const Instruction &inst);         std::string translatePMFHLInstruction(const Instruction &inst);         std::string translatePMTHLInstruction(const Instruction &inst);          // Instruction Helpers         std::string translateQFSRV(const Instruction &inst);         std::string translatePMADDW(const Instruction &inst);         std::string translatePMULTW(const Instruction &inst);         std::string translatePMSUBW(const Instruction &inst);         std::string translatePEXT5(const Instruction &inst);         std::string translatePPAC5(const Instruction &inst);         std::string translatePADSBH(const Instruction &inst);         std::string translatePMSUBH(const Instruction &inst);         std::string translatePHMSBH(const Instruction &inst);         std::string translatePMADDUW(const Instruction &inst);         std::string translatePDIVW(const Instruction &inst);         std::string translatePCPYLD(const Instruction &inst);         std::string translatePMADDH(const Instruction &inst);         std::string translatePHMADH(const Instruction &inst);         std::string translatePEXEH(const Instruction &inst);         std::string translatePREVH(const Instruction &inst);         std::string translatePMULTH(const Instruction &inst);         std::string translatePDIVBW(const Instruction &inst);         std::string translatePEXEW(const Instruction &inst);         std::string translatePROT3W(const Instruction &inst);         std::string translatePMULTUW(const Instruction &inst);         std::string translatePDIVUW(const Instruction &inst);         std::string translatePCPYUD(const Instruction &inst);         std::string translatePEXCH(const Instruction &inst);         std::string translatePCPYH(const Instruction &inst);         std::string translatePEXCW(const Instruction &inst);         std::string translatePMTHI(const Instruction &inst);         std::string translatePMTLO(const Instruction &inst);          // VU instruction translations         std::string translateVU_VADD_Field(const Instruction &inst);         std::string translateVU_VSUB_Field(const Instruction &inst);         std::string translateVU_VMUL_Field(const Instruction &inst);         std::string translateVU_VMSUB_Field(const Instruction &inst);         std::string translateVU_VADDA_Field(const Instruction &inst);         std::string translateVU_VSUBA_Field(const Instruction &inst);         std::string translateVU_VMADDA_Field(const Instruction &inst);         std::string translateVU_VMSUBA_Field(const Instruction &inst);         std::string translateVU_VMULA_Field(const Instruction &inst);         std::string translateVU_VADD(const Instruction &inst);         std::string translateVU_VSUB(const Instruction &inst);         std::string translateVU_VMUL(const Instruction &inst);         std::string translateVU_VDIV(const Instruction &inst);         std::string translateVU_VSQRT(const Instruction &inst);         std::string translateVU_VRSQRT(const Instruction &inst);         std::string translateVU_VMTIR(const Instruction &inst);         std::string translateVU_VMFIR(const Instruction &inst);         std::string translateVU_VILWR(const Instruction &inst);         std::string translateVU_VISWR(const Instruction &inst);         std::string translateVU_VIADD(const Instruction &inst);         std::string translateVU_VISUB(const Instruction &inst);         std::string translateVU_VIADDI(const Instruction &inst);         std::string translateVU_VIAND(const Instruction &inst);         std::string translateVU_VIOR(const Instruction &inst);         std::string translateVU_VCALLMS(const Instruction &inst);         std::string translateVU_VCALLMSR(const Instruction &inst);         std::string translateVU_VRNEXT(const Instruction &inst);         std::string translateVU_VRGET(const Instruction &inst);         std::string translateVU_VRINIT(const Instruction &inst);         std::string translateVU_VRXOR(const Instruction &inst);         std::string translateVU_VMADD_Field(const Instruction &inst);         std::string translateVU_VMINI_Field(const Instruction &inst);         std::string translateVU_VMAX_Field(const Instruction &inst);         std::string translateVU_VMADD(const Instruction &inst);         std::string translateVU_VMADDq(const Instruction &inst);         std::string translateVU_VMADDi(const Instruction &inst);         std::string translateVU_VMAX(const Instruction &inst);         std::string translateVU_VMAXi(const Instruction &inst);         std::string translateVU_VADDA(const Instruction &inst);         std::string translateVU_VADDAq(const Instruction &inst);         std::string translateVU_VADDAi(const Instruction &inst);         std::string translateVU_VSUBA(const Instruction &inst);         std::string translateVU_VSUBAq(const Instruction &inst);         std::string translateVU_VSUBAi(const Instruction &inst);         std::string translateVU_VMADDA(const Instruction &inst);         std::string translateVU_VMADDAq(const Instruction &inst);         std::string translateVU_VMADDAi(const Instruction &inst);         std::string translateVU_VMSUBA(const Instruction &inst);         std::string translateVU_VMSUBAq(const Instruction &inst);         std::string translateVU_VMSUBAi(const Instruction &inst);         std::string translateVU_VMULA(const Instruction &inst);         std::string translateVU_VMULAq(const Instruction &inst);         std::string translateVU_VMULAi(const Instruction &inst);         std::string translateVU_VOPMULA(const Instruction &inst);         std::string translateVU_VOPMSUB(const Instruction &inst);         std::string translateVU_VMINI(const Instruction &inst);         std::string translateVU_VMINIi(const Instruction &inst);         std::string translateVU_VMSUB(const Instruction &inst);         std::string translateVU_VMSUBq(const Instruction &inst);         std::string translateVU_VMSUBi(const Instruction &inst);         std::string translateVU_VMULq(const Instruction &inst);         std::string translateVU_VMULi(const Instruction &inst);         std::string translateVU_VADDq(const Instruction &inst);         std::string translateVU_VADDi(const Instruction &inst);         std::string translateVU_VSUBq(const Instruction &inst);         std::string translateVU_VSUBi(const Instruction &inst);         std::string translateVU_VITOF(const Instruction &inst, int shift);         std::string translateVU_VFTOI(const Instruction &inst, int shift);         std::string translateVU_VLQI(const Instruction &inst);         std::string translateVU_VSQI(const Instruction &inst);         std::string translateVU_VLQD(const Instruction &inst);         std::string translateVU_VSQD(const Instruction &inst);          // Jump Table Generation         std::string generateJumpTableSwitch(const Instruction &inst, uint32_t tableAddress,                                             const std::vector<JumpTableEntry> &entries);          const Symbol *findSymbolByAddress(uint32_t address) const;         std::string getFunctionName(uint32_t address) const;         std::string sanitizeFunctionName(const std::string& name) const;     };  }  #endif // PS2RECOMP_CODE_GENERATOR_H
+
+==========================================================================================
+SOURCE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\code_generator.cpp
+==========================================================================================
+TOTAL LINES: 308
+FILE SIZE: 10542 bytes
+
+--- LINES 87-141; MATCHES: CodeGenerator::CodeGenerator ---
+   87:         if (name.size() >= 2 && name[0] == '_' && name[1] == '_')
+   88:             return true;
+   89:         if (name.size() >= 2 && name[0] == '_' && std::isupper(static_cast<unsigned char>(name[1])))
+   90:             return true;
+   91:         return false;
+   92:     }
+   93: 
+   94:     static bool isReservedCxxKeyword(const std::string &name)
+   95:     {
+   96:         return kKeywords.contains(name);
+   97:     }
+   98: 
+   99:     CodeGenerator::CodeGenerator(const std::vector<Symbol> &symbols, const std::vector<Section> &sections)
+  100:         : m_sections(sections)
+  101:     {
+  102:         for (auto &symbol : symbols)
+  103:         {
+  104:             m_symbols.emplace(symbol.address, symbol);
+  105:         }
+  106:     }
+  107: 
+  108:     void CodeGenerator::setRenamedFunctions(const std::unordered_map<uint32_t, std::string> &renames)
+  109:     {
+  110:         m_renamedFunctions = renames;
+  111:     }
+  112: 
+  113:     void CodeGenerator::setBootstrapInfo(const BootstrapInfo &info)
+  114:     {
+  115:         m_bootstrapInfo = info;
+  116:     }
+  117: 
+  118:     void CodeGenerator::setRelocationCallNames(const std::unordered_map<uint32_t, std::string> &callNames)
+  119:     {
+  120:         m_relocationCallNames = callNames;
+  121:     }
+  122: 
+  123:     void CodeGenerator::setConfiguredJumpTables(const std::vector<JumpTable> &jumpTables)
+  124:     {
+  125:         m_configJumpTableTargetsByAddress.clear();
+  126:         for (const auto &table : jumpTables)
+  127:         {
+  128:             auto &targets = m_configJumpTableTargetsByAddress[table.address];
+  129:             for (const auto &entry : table.entries)
+  130:             {
+  131:                 targets.push_back(entry.target);
+  132:             }
+  133:         }
+  134: 
+  135:         for (auto &[address, targets] : m_configJumpTableTargetsByAddress)
+  136:         {
+  137:             (void)address;
+  138:             std::sort(targets.begin(), targets.end());
+  139:             targets.erase(std::unique(targets.begin(), targets.end()), targets.end());
+  140:         }
+  141:     }
+
+--- LINES 254-308; MATCHES: collectInternalBranchTargets, generateFunction(, generateFunctionRegistration( ---
+  254:     }
+  255: 
+  256:     std::string CodeGenerator::translateMMIInstruction(const Instruction &inst)
+  257:     {
+  258:         return MmiTranslator(*this).translate(inst);
+  259:     }
+  260: 
+  261:     std::string CodeGenerator::translateVUInstruction(const Instruction &inst)
+  262:     {
+  263:         return VuTranslator(*this).translate(inst);
+  264:     }
+  265: 
+  266:     CodeGenerator::AnalysisResult CodeGenerator::collectInternalBranchTargets(
+  267:         const Function &function, const std::vector<Instruction> &instructions, const std::vector<Function> *allFunctions)
+  268:     {
+  269:         ControlFlowAnalyzer analyzer(m_sections, m_configJumpTableTargetsByAddress, m_reporter);
+  270:         return analyzer.analyze(function, instructions, allFunctions);
+  271:     }
+  272: 
+  273:     std::string ps2recomp::CodeGenerator::generateFunction(
+  274:         const Function &function,
+  275:         const std::vector<Instruction> &instructions,
+  276:         const bool &useHeaders)
+  277:     {
+  278:         FunctionEmitter emitter(*this);
+  279:         return emitter.emit(function, instructions, useHeaders);
+  280:     }
+  281: 
+  282:     std::string CodeGenerator::emitUnhandledInstruction(const Instruction &inst, const std::string &message)
+  283:     {
+  284:         if (m_reporter)
+  285:         {
+  286:             m_reporter->recordUnhandledInstruction(m_currentFunctionName, inst.address, inst.raw, message);
+  287:         }
+  288: 
+  289:         return fmt::format("throw std::runtime_error(\"{} at 0x{:X} raw=0x{:08X}\");", message, inst.address, inst.raw);
+  290:     }
+  291: 
+  292:     std::string CodeGenerator::generateFunctionRegistration(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs)
+  293:     {
+  294:         FunctionTableEmitter emitter(*this);
+  295:         return emitter.emit(functions, stubs);
+  296:     }
+  297: 
+  298:     const Symbol *CodeGenerator::findSymbolByAddress(uint32_t address) const
+  299:     {
+  300:         auto it = m_symbols.find(address);
+  301:         if (it != m_symbols.end())
+  302:         {
+  303:             return &it->second;
+  304:         }
+  305: 
+  306:         return nullptr;
+  307:     }
+  308: }
+
+==========================================================================================
+SOURCE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_emitter.cpp
+==========================================================================================
+TOTAL LINES: 239
+FILE SIZE: 9409 bytes
+#include "ps2recomp/Emitters/function_emitter.h" #include "ps2recomp/code_generator.h" #include "ps2recomp/gif_dma_kick_analyzer.h" #include "ps2recomp/instructions.h" #include "ps2recomp/r5900_decoder.h" #include "ps2recomp/recompiler_reporter.h" #include "ps2recomp/types.h"  #include <algorithm> #include <sstream> #include <stdexcept> #include <unordered_set>  namespace ps2recomp {     namespace     {         Instruction makeSyntheticDelaySlot(uint32_t address)         {             Instruction inst{};             inst.address = address;             inst.raw = 0;             inst.opcode = OPCODE_SPECIAL;             inst.function = SPECIAL_SLL;             return inst;         }     }      FunctionEmitter::FunctionEmitter(CodeGenerator &codeGenerator)         : m_codeGenerator(codeGenerator)     {     }      std::string FunctionEmitter::emit(         const Function &function,         const std::vector<Instruction> &instructions,         bool useHeaders)     {         CodeGenerator &cg = m_codeGenerator;         std::stringstream ss;         cg.m_currentFunctionName = function.name;          if (useHeaders)         {             ss << "#include <stdexcept>\n";             ss << "#include \"ps2_runtime_macros.h\"\n";             ss << "#include \"ps2_runtime.h\"\n";             ss << "#include <ps2_recompiled_functions.h>\n";             ss << "#include <ps2_recompiled_stubs.h>\n\n";             ss << "#include \"ps2_syscalls.h\"\n";             ss << "#include \"ps2_stubs.h\"\n\n";             ss << "#ifdef PS2_FUNCTION_LOG_TRACKER\n";             ss << "#include \"ps2_log.h\"\n";             ss << "#endif\n\n";         }          CodeGenerator::AnalysisResult analysisResult = cg.collectInternalBranchTargets(function, instructions);         std::vector<uint32_t> resumeTargets(analysisResult.resumeEntryPoints.begin(),                                             analysisResult.resumeEntryPoints.end());         auto resumeIt = cg.m_resumeEntryTargetsByOwner.find(function.start);         if (resumeIt != cg.m_resumeEntryTargetsByOwner.end())         {             resumeTargets.insert(resumeTargets.end(), resumeIt->second.begin(), resumeIt->second.end());         }         std::sort(resumeTargets.begin(), resumeTargets.end());         resumeTargets.erase(std::unique(resumeTargets.begin(), resumeTargets.end()), resumeTargets.end());         for (uint32_t target : resumeTargets)         {             analysisResult.entryPoints.insert(target);         }          const std::unordered_set<uint32_t> &internalTargets = analysisResult.entryPoints;         ConstantRegisterState constantRegisters;         GifDmaKickPlan gifDmaKickPlan{};         ss << "// Function: " << function.name << "\n";         ss << "// Address: 0x" << std::hex << function.start << " - 0x" << function.end << std::dec << "\n";          std::string sanitizedName = cg.getFunctionName(function.start);         if (sanitizedName.empty())         {             std::stringstream nameBuilder;             nameBuilder << "Errorfunc_" << std::hex << function.start;             sanitizedName = nameBuilder.str();         }          ss << "void " << sanitizedName << "(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {\n";         ss << "#ifdef PS2_FUNCTION_LOG_TRACKER\n";         ss << "    PS_LOG_ENTRY(\"" << sanitizedName << "\");\n";         ss << "#endif\n";         ss << "\n";         if (!resumeTargets.empty())         {             ss << "    switch (ctx->pc) {\n";             for (uint32_t target : resumeTargets)             {                 ss << "        case 0x" << std::hex << target << "u: goto label_" << target << ";\n"                    << std::dec;             }             ss << "        default: break;\n";             ss << "    }\n\n";         }         ss << "    ctx->pc = 0x" << std::hex << function.start << "u;\n"            << std::dec;         ss << "\n";          bool lastInstructionWasControlFlow = false;          for (size_t i = 0; i < instructions.size(); ++i)         {             const Instruction &inst = instructions[i];             lastInstructionWasControlFlow = inst.hasDelaySlot;              if (internalTargets.contains(inst.address))             {                 constantRegisters.clear();                 ss << "label_" << std::hex << inst.address << std::dec << ":\n";             }              if (cg.m_emitInstructionComments)             {                 ss << "    // 0x" << std::hex << inst.address << ": 0x" << inst.raw << std::dec;                 std::string disassembly = R5900Decoder::disassembleInstruction(inst);                 if (!disassembly.empty())                 {                     ss << "  " << disassembly;                 }                 ss << "\n";             }              try             {                 if (inst.hasDelaySlot)                 {                     const bool hasDecodedDelaySlot =                         i + 1 < instructions.size() &&                         instructions[i + 1].address == inst.address + 4u;                      Instruction syntheticDelaySlot{};                     const Instruction *delaySlot = nullptr;                     if (hasDecodedDelaySlot)                     {                         delaySlot = &instructions[i + 1];                     }                     else                     {                         syntheticDelaySlot = makeSyntheticDelaySlot(inst.address + 4u);                         delaySlot = &syntheticDelaySlot;                     }                      if (hasDecodedDelaySlot && internalTargets.contains(delaySlot->address))                     {                         ss << "label_" << std::hex << delaySlot->address << std::dec << ":\n";                     }                      if (gifDmaKickPlan.valid &&                         gifDmaKickPlan.completesInDelaySlot &&                         gifDmaKickPlan.branchIndex == i &&                         hasDecodedDelaySlot)                     {                         ss << cg.handleBranchDelaySlots(                             inst,                             *delaySlot,                             function,                             analysisResult,                             gifDmaDelaySlotOverride(*delaySlot, gifDmaKickPlan, cg.m_emitInstructionComments));                         gifDmaKickPlan = {};                     }                     else                     {                         ss << cg.handleBranchDelaySlots(inst, *delaySlot, function, analysisResult);                     }                      if (hasDecodedDelaySlot)                     {                         ++i; // Skip delay slot instruction (handled inside branch logic)                     }                     constantRegisters.clear();                 }                 else                 {                     if (!gifDmaKickPlan.valid)                     {                         gifDmaKickPlan = tryBuildGifDmaKickPlan(instructions, i, constantRegisters, internalTargets);                     }                      if (gifDmaKickPlan.suppresses(i))                     {                         const size_t slot = gifDmaKickPlan.slotFor(i);                         emitGifDmaCapture(ss, gifDmaKickPlan, slot, "    ");                          if (gifDmaKickPlan.completesAt(i))                         {                             ss << "    ctx->pc = 0x" << std::hex << inst.address << "u;\n"                                << std::dec;                             ss << "    " << gifDmaKickCall(gifDmaKickPlan) << "\n";                             gifDmaKickPlan = {};                         }                          updateConstantRegisters(inst, constantRegisters);                         continue;                     }                      ss << "    ctx->pc = 0x" << std::hex << inst.address << "u;\n"                        << std::dec;                     const MemoryAccessHint memoryHint = resolveMemoryAccessHint(inst, constantRegisters);                     ss << "    " << cg.translateInstruction(inst, memoryHint);                     if (inst.isMmio)                     {                         ss << " // MMIO: 0x" << std::hex << inst.mmioAddress << std::dec;                     }                     ss << "\n";                      updateConstantRegisters(inst, constantRegisters);                 }             }             catch (const std::exception &e)             {                 if (cg.m_reporter)                 {                     std::ostringstream msg;                     msg << "translation failed: " << e.what() << " raw=0x" << std::hex << inst.raw;                     cg.m_reporter->errorAt("codegen", function.name, inst.address, msg.str());                 }                  throw;             }         }          // Fallthrough with no terminating branch: publish the next PC so the EE dispatcher does not re-enter this function.         if (!instructions.empty() && !lastInstructionWasControlFlow)         {             ss << "    ctx->pc = 0x" << std::hex << function.end << "u;\n"                << std::dec;         }          ss << "}\n";         return ss.str();     } }
+
+==========================================================================================
+SOURCE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_analyzer.cpp
+==========================================================================================
+TOTAL LINES: 500
+FILE SIZE: 21863 bytes
+
+--- LINES 27-81; MATCHES: isBranch ---
+   27:             case OPCODE_SPECIAL:
+   28:             case OPCODE_MMI:
+   29:                 return inst.rd == reg;
+   30:             case OPCODE_JAL:
+   31:                 return reg == 31u;
+   32:             default:
+   33:                 return inst.rt == reg;
+   34:             }
+   35:         }
+   36: 
+   37:         // The delay slot of a branch-likely only runs when the branch is taken, so it cannot change a
+   38:         // register on the fall-through path that reaches the jump-table load.
+   39:         bool isBranchLikely(const Instruction &inst)
+   40:         {
+   41:             switch (inst.opcode)
+   42:             {
+   43:             case OPCODE_BEQL:
+   44:             case OPCODE_BNEL:
+   45:             case OPCODE_BLEZL:
+   46:             case OPCODE_BGTZL:
+   47:                 return true;
+   48:             case OPCODE_REGIMM:
+   49:                 return inst.rt == REGIMM_BLTZL || inst.rt == REGIMM_BGEZL ||
+   50:                        inst.rt == REGIMM_BLTZALL || inst.rt == REGIMM_BGEZALL;
+   51:             default:
+   52:                 return false;
+   53:             }
+   54:         }
+   55:     }
+   56: 
+   57:     ControlFlowAnalyzer::ControlFlowAnalyzer(
+   58:         const std::vector<Section> &sections,
+   59:         const std::unordered_map<uint32_t, std::vector<uint32_t>> &configuredJumpTableTargetsByAddress,
+   60:         RecompilerReporter *reporter)
+   61:         : m_sections(sections),
+   62:           m_configJumpTableTargetsByAddress(configuredJumpTableTargetsByAddress),
+   63:           m_reporter(reporter)
+   64:     {
+   65:     }
+   66: 
+   67:     ControlFlowAnalysisResult ControlFlowAnalyzer::analyze(
+   68:         const Function &function,
+   69:         const std::vector<Instruction> &instructions,
+   70:         const std::vector<Function> *allFunctions) const
+   71:     {
+   72:         ControlFlowAnalysisResult result;
+   73:         std::unordered_set<uint32_t> instructionAddresses;
+   74:         instructionAddresses.reserve(instructions.size());
+   75:         bool hasIndirectRegisterJump = false;
+   76:         std::vector<const Instruction *> indirectJumps;
+   77: 
+   78:         auto isExecutableAddress = [&](uint32_t address) -> bool
+   79:         {
+   80:             for (const auto &section : m_sections)
+   81:             {
+
+--- LINES 180-234; MATCHES: isBranch ---
+  180: 
+  181:         for (const auto &inst : instructions)
+  182:         {
+  183:             // A guest-installed syscall handler runs as a separate invocation,
+  184:             // so the scheduler resumes this thread at syscall+4 and needs an
+  185:             // entry point there. +4, not +8: syscall has no delay slot.
+  186:             if (inst.opcode == OPCODE_SPECIAL && inst.function == SPECIAL_SYSCALL)
+  187:             {
+  188:                 queueResumeEntryTarget(inst.address + 4u);
+  189:             }
+  190: 
+  191:             bool isStaticJump = (inst.opcode == OPCODE_J || inst.opcode == OPCODE_JAL);
+  192:             if (inst.isBranch && inst.opcode != OPCODE_J && inst.opcode != OPCODE_JAL)
+  193:             {
+  194:                 const int32_t offsetBytes = (static_cast<int32_t>(static_cast<int16_t>(inst.simmediate)) << 2);
+  195:                 const uint32_t target = static_cast<uint32_t>(
+  196:                     static_cast<int64_t>(inst.address + 4u) + static_cast<int64_t>(offsetBytes));
+  197: 
+  198:                 if (target >= function.start && target < function.end &&
+  199:                     instructionAddresses.contains(target))
+  200:                 {
+  201:                     result.entryPoints.insert(target);
+  202:                     queueLoopResumeEntryTarget(target, inst.address);
+  203:                 }
+  204:                 else
+  205:                 {
+  206:                     queueExternalEntryTarget(target);
+  207:                 }
+  208:             }
+  209:             else if (isStaticJump)
+  210:             {
+  211:                 uint32_t target = buildAbsoluteJumpTarget(inst.address, inst.target);
+  212:                 if (target >= function.start && target < function.end &&
+  213:                     instructionAddresses.contains(target))
+  214:                 {
+  215:                     result.entryPoints.insert(target);
+  216:                     queueLoopResumeEntryTarget(target, inst.address);
+  217: 
+  218:                     if (inst.opcode == OPCODE_JAL)
+  219:                     {
+  220:                         queueResumeEntryTarget(inst.address + 8u);
+  221:                     }
+  222:                 }
+  223:                 else
+  224:                 {
+  225:                     queueExternalEntryTarget(target);
+  226: 
+  227:                     if (inst.opcode == OPCODE_JAL)
+  228:                     {
+  229:                         queueResumeEntryTarget(inst.address + 8u);
+  230:                     }
+  231:                 }
+  232:             }
+  233:         }
+  234: 
+
+--- LINES 389-443; MATCHES: isBranch ---
+  389:                                 // an instruction writes the index register, so a compare on an older value is
+  390:                                 // never taken as the bound. Start at the SLL: the index register is often
+  391:                                 // reused for the table base after it.
+  392:                                 for (int i = sllIndex - 1; i >= 0 && i >= sllIndex - kJumpTableBoundSearchLimit; --i)
+  393:                                 {
+  394:                                     const auto &inst = instructions[i];
+  395:                                     if ((inst.opcode == OPCODE_SLTIU || inst.opcode == OPCODE_SLTI) && inst.rs == unshiftedIndexReg)
+  396:                                     {
+  397:                                         numCases = inst.immediate;
+  398:                                         break;
+  399:                                     }
+  400:                                     if (writesGpr(inst, unshiftedIndexReg) &&
+  401:                                         !(i > 0 && isBranchLikely(instructions[i - 1])))
+  402:                                     {
+  403:                                         break;
+  404:                                     }
+  405:                                 }
+  406:                             }
+  407: 
+  408:                             if (!foundTable && numCases > 0 && numCases <= 1000)
+  409:                             {
+  410:                                 const Section *rodata = nullptr;
+  411:                                 for (const auto &sec : m_sections)
+  412:                                 {
+  413:                                     if (tableAddress >= sec.address && tableAddress < sec.address + sec.size)
+  414:                                     {
+  415:                                         rodata = &sec;
+  416:                                         break;
+  417:                                     }
+  418:                                 }
+  419: 
+  420:                                 if (rodata && rodata->data)
+  421:                                 {
+  422:                                     std::vector<uint32_t> jrTargets;
+  423:                                     bool validJumpTable = true;
+  424:                                     std::unordered_set<uint32_t> uniqueTargets;
+  425:                                     for (uint32_t i = 0; i < numCases; ++i)
+  426:                                     {
+  427:                                         uint32_t addr = tableAddress + i * 4;
+  428:                                         if (addr >= rodata->address && addr + 4 <= rodata->address + rodata->size)
+  429:                                         {
+  430:                                             uint32_t target = 0;
+  431:                                             std::memcpy(&target, rodata->data + (addr - rodata->address), 4);
+  432:                                             if (target >= function.start && target < function.end && instructionAddresses.contains(target))
+  433:                                             {
+  434:                                                 if (!uniqueTargets.contains(target))
+  435:                                                 {
+  436:                                                     jrTargets.push_back(target);
+  437:                                                     uniqueTargets.insert(target);
+  438:                                                 }
+  439:                                             }
+  440:                                             else
+  441:                                             {
+  442:                                                 queueExternalEntryTarget(target);
+  443:                                             }
+
+==========================================================================================
+SOURCE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\instruction_translator.cpp
+==========================================================================================
+TOTAL LINES: 359
+FILE SIZE: 19746 bytes
+
+--- LINES 158-250; MATCHES: OPCODE_SLTIU, OPCODE_ANDI, OPCODE_LH, OPCODE_LW, OPCODE_LBU, OPCODE_LH, OPCODE_LW, OPCODE_SB, OPCODE_SW, OPCODE_LW, OPCODE_SW ---
+  158:                 "{{ uint32_t tmp; bool ov; "
+  159:                 "ADD32_OV(GPR_U32(ctx, {}), (int32_t){}, tmp, ov); "
+  160:                 "if (ov) runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+  161:                 "else SET_GPR_S32(ctx, {}, (int32_t)tmp); }}",
+  162:                 inst.rs, inst.simmediate, inst.rt);
+  163: 
+  164:         case OPCODE_ADDIU:
+  165:             if (inst.rt == 0)
+  166:                 return "// NOP (addiu $zero, ...)";
+  167:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ADD32(GPR_U32(ctx, {}), {}));", inst.rt, inst.rs, inst.simmediate);
+  168:         case OPCODE_SLTI:
+  169:             return fmt::format("SET_GPR_U64(ctx, {}, ((int64_t)GPR_S64(ctx, {}) < (int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+  170:         case OPCODE_SLTIU:
+  171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+  172:         case OPCODE_ANDI:
+  173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  174:         case OPCODE_ORI:
+  175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  176:         case OPCODE_XORI:
+  177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  178:         case OPCODE_LUI:
+  179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+  180:         case OPCODE_LB:
+  181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  182:         case OPCODE_LH:
+  183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  184:         case OPCODE_LW:
+  185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  186:         case OPCODE_LBU:
+  187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  188:         case OPCODE_LHU:
+  189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  190:         case OPCODE_LWU:
+  191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  192:         case OPCODE_SB:
+  193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+  194:         case OPCODE_SH:
+  195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+  196:         case OPCODE_SW:
+  197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+  198:         case OPCODE_LQ:
+  199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  200:         case OPCODE_SQ:
+  201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+  202:         case OPCODE_LD:
+  203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  204:         case OPCODE_SD:
+  205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+  206:         case OPCODE_LWC1:
+  207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+  208:         case OPCODE_SWC1:
+  209:             return fmt::format(
+  210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+  211:                 inst.rt,
+  212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+  213:         case OPCODE_LDC2:
+  214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  215:         case OPCODE_SDC2:
+  216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+  217:         case OPCODE_DADDI:
+  218:             return fmt::format(
+  219:                 "{{ int64_t src = (int64_t)GPR_S64(ctx, {}); "
+  220:                 "int64_t imm = (int64_t)(int32_t){}; "
+  221:                 "int64_t res = src + imm; "
+  222:                 "if (((src ^ imm) >= 0) && ((src ^ res) < 0)) "
+  223:                 "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+  224:                 "else SET_GPR_S64(ctx, {}, res); }}",
+  225:                 inst.rs, inst.simmediate, inst.rt);
+  226:         case OPCODE_DADDIU:
+  227:             return fmt::format(
+  228:                 "SET_GPR_S64(ctx, {}, (int64_t)GPR_S64(ctx, {}) + (int64_t)(int32_t){});",
+  229:                 inst.rt, inst.rs, inst.simmediate);
+  230:         case OPCODE_J:
+  231:             return fmt::format("// J 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+  232:         case OPCODE_JAL:
+  233:             return fmt::format("// JAL 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+  234:         case OPCODE_BEQ:
+  235:         case OPCODE_BNE:
+  236:         case OPCODE_BLEZ:
+  237:         case OPCODE_BGTZ:
+  238:         case OPCODE_BEQL:
+  239:         case OPCODE_BNEL:
+  240:         case OPCODE_BLEZL:
+  241:         case OPCODE_BGTZL:
+  242:             return fmt::format("// Likely branch instruction at 0x{:X} - Handled by branch logic", inst.address);
+  243: 
+  244:         case OPCODE_LDL:
+  245:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+  246:                                "uint32_t aligned_addr = addr & ~7u; "
+  247:                                "uint32_t offset = addr & 7u; "
+  248:                                "uint64_t mem = {}; "
+  249:                                "uint32_t shift = (7u - offset) << 3; "
+  250:                                "uint64_t keepMask = (shift == 0) ? 0ull : ((1ull << shift) - 1ull); "
+
+--- LINES 252-343; MATCHES: OPCODE_LW, OPCODE_LW, OPCODE_SW, OPCODE_SW ---
+  252:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, inst.rt);
+  253: 
+  254:         case OPCODE_LDR:
+  255:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+  256:                                "uint32_t aligned_addr = addr & ~7u; "
+  257:                                "uint32_t offset = addr & 7u; "
+  258:                                "uint64_t mem = {}; "
+  259:                                "uint32_t shift = offset << 3; "
+  260:                                "uint64_t keepMask = (offset == 0) ? 0ull : (0xFFFFFFFFFFFFFFFFull << ((8u - offset) << 3)); "
+  261:                                "SET_GPR_U64(ctx, {}, (GPR_U64(ctx, {}) & keepMask) | (mem >> shift)); }}",
+  262:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, inst.rt);
+  263: 
+  264:         case OPCODE_LWL:
+  265:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+  266:                                "uint32_t aligned_addr = addr & ~3u; "
+  267:                                "uint32_t offset = addr & 3u; "
+  268:                                "uint32_t mem = {}; "
+  269:                                "uint32_t shift = (3u - offset) << 3; "
+  270:                                "uint32_t keepMask = (shift == 0) ? 0u : ((1u << shift) - 1u); "
+  271:                                "uint32_t merged = (GPR_U32(ctx, {}) & keepMask) | (mem << shift); "
+  272:                                "SET_GPR_S32(ctx, {}, (int32_t)merged); }}",
+  273:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"), inst.rt, inst.rt);
+  274: 
+  275:         case OPCODE_LWR:
+  276:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+  277:                                "uint32_t aligned_addr = addr & ~3u; "
+  278:                                "uint32_t offset = addr & 3u; "
+  279:                                "uint32_t mem = {}; "
+  280:                                "uint32_t shift = offset << 3; "
+  281:                                "uint32_t keepMask = (offset == 0) ? 0u : (0xFFFFFFFFu << ((4u - offset) << 3)); "
+  282:                                "uint32_t merged32 = (GPR_U32(ctx, {}) & keepMask) | (mem >> shift); "
+  283:                                "uint64_t merged64 = (GPR_U64(ctx, {}) & 0xFFFFFFFF00000000ull) | (uint64_t)merged32; "
+  284:                                "if (offset == 0) merged64 = (uint64_t)(int64_t)(int32_t)merged32; "
+  285:                                "SET_GPR_U64(ctx, {}, merged64); }}",
+  286:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"),
+  287:                                inst.rt, inst.rt, inst.rt);
+  288: 
+  289:         case OPCODE_SWL:
+  290:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+  291:                                "uint32_t aligned_addr = addr & ~3u; "
+  292:                                "uint32_t offset = addr & 3u; "
+  293:                                "uint32_t shift = (3u - offset) << 3; "
+  294:                                "uint32_t mask = 0xFFFFFFFFu >> shift; "
+  295:                                "uint32_t old_data = {}; "
+  296:                                "uint32_t val = GPR_U32(ctx, {}); "
+  297:                                "uint32_t new_data = (old_data & ~mask) | ((val >> shift) & mask); "
+  298:                                "{}; }}",
+  299:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"), inst.rt, genWrite(32, "aligned_addr", "new_data"));
+  300: 
+  301:         case OPCODE_SWR:
+  302:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+  303:                                "uint32_t aligned_addr = addr & ~3u; "
+  304:                                "uint32_t offset = addr & 3u; "
+  305:                                "uint32_t shift = offset << 3; "
+  306:                                "uint32_t mask = 0xFFFFFFFFu << shift; "
+  307:                                "uint32_t old_data = {}; "
+  308:                                "uint32_t val = GPR_U32(ctx, {}); "
+  309:                                "uint32_t new_data = (old_data & ~mask) | ((val << shift) & mask); "
+  310:                                "{}; }}",
+  311:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"), inst.rt, genWrite(32, "aligned_addr", "new_data"));
+  312: 
+  313:         case OPCODE_SDL:
+  314:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+  315:                                "uint32_t aligned_addr = addr & ~7u; "
+  316:                                "uint32_t offset = addr & 7u; "
+  317:                                "uint32_t shift = (7u - offset) << 3; "
+  318:                                "uint64_t mask = 0xFFFFFFFFFFFFFFFFull >> shift; "
+  319:                                "uint64_t old_data = {}; "
+  320:                                "uint64_t val = GPR_U64(ctx, {}); "
+  321:                                "uint64_t new_data = (old_data & ~mask) | ((val >> shift) & mask); "
+  322:                                "{}; }}",
+  323:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, genWrite(64, "aligned_addr", "new_data"));
+  324: 
+  325:         case OPCODE_SDR:
+  326:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+  327:                                "uint32_t aligned_addr = addr & ~7u; "
+  328:                                "uint32_t offset = addr & 7u; "
+  329:                                "uint32_t shift = offset << 3; "
+  330:                                "uint64_t mask = 0xFFFFFFFFFFFFFFFFull << shift; "
+  331:                                "uint64_t old_data = {}; "
+  332:                                "uint64_t val = GPR_U64(ctx, {}); "
+  333:                                "uint64_t new_data = (old_data & ~mask) | ((val << shift) & mask); "
+  334:                                "{}; }}",
+  335:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, genWrite(64, "aligned_addr", "new_data"));
+  336:         case OPCODE_CACHE:
+  337:             return "// CACHE instruction (ignored)";
+  338:         case OPCODE_PREF:
+  339:             return "// PREF instruction (ignored)";
+  340:         case OPCODE_LL:
+  341:             return fmt::format(
+  342:                 "{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+  343:                 "SET_GPR_S32(ctx, {}, (int32_t)READ32(addr)); "
+
+==========================================================================================
+SELECTED FUNCTION MANIFEST INPUT
+==========================================================================================
+PATH: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_CONTROLLED_TEST_MANIFEST_20261124_230706.csv
+"Priority","Name","Entry","InstructionCount","Start","End","Features","Role","TestPlan","DiscoverySource"
+"1","addSpirit__6PlayerP9ObjHandle","0021acd0","13","0021acd0","0021ad00","MEMORY+ARITHMETIC+BRANCH_OR_JUMP+SHIFT","Branch and mixed-width memory operations","Exercise conditional paths, byte and word stores, and branch delay slots.","MARK_OF_KRI_MULTIFUNCTION_CANDIDATES_20261124_224040.csv"
+"2","SetViewArea__14DisplayEnvInfoUiUi","002bdcb8","11","002bdcb8","002bdce0","MEMORY+ARITHMETIC+BRANCH_OR_JUMP+SHIFT","Conditional move and memory operations","Exercise signed halfword load, conditional move, word stores, and JR delay-slot store.","MARK_OF_KRI_MULTIFUNCTION_CANDIDATES_20261124_224040.csv"
+"3","GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","13","0034da50","0034da80","MEMORY+ARITHMETIC+BRANCH_OR_JUMP+SHIFT","Integer arithmetic and conditional moves","Exercise signed comparisons, MOVN, arithmetic shifts, multiplication, and return delay slot.","MARK_OF_KRI_MULTIFUNCTION_CANDIDATES_20261124_224040.csv"
+
+PATH: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_CONTROLLED_TEST_INSTRUCTIONS_20261124_230706.csv
+"Function","Entry","Address","Bytes","RawBytes","Mnemonic","Instruction"
+"addSpirit__6PlayerP9ObjHandle","0021acd0","0021acd0","4","301C8390","lbu","lbu v1,0x1c30(a0)"
+"addSpirit__6PlayerP9ObjHandle","0021acd0","0021acd4","4","FF006630","andi","andi a2,v1,0xff"
+"addSpirit__6PlayerP9ObjHandle","0021acd0","0021acd8","4","0400C22C","sltiu","sltiu v0,a2,0x4"
+"addSpirit__6PlayerP9ObjHandle","0021acd0","0021acdc","4","03004014","bne","bne v0,zero,0x0021acec"
+"addSpirit__6PlayerP9ObjHandle","0021acd0","0021ace0","4","01006324","_addiu","_addiu v1,v1,0x1"
+"addSpirit__6PlayerP9ObjHandle","0021acd0","0021ace4","4","0800E003","jr","jr ra"
+"addSpirit__6PlayerP9ObjHandle","0021acd0","0021ace8","4","2D100000","_move","_move v0,zero"
+"addSpirit__6PlayerP9ObjHandle","0021acd0","0021acec","4","80100600","sll","sll v0,a2,0x2"
+"addSpirit__6PlayerP9ObjHandle","0021acd0","0021acf0","4","21108200","addu","addu v0,a0,v0"
+"addSpirit__6PlayerP9ObjHandle","0021acd0","0021acf4","4","301C83A0","sb","sb v1,0x1c30(a0)"
+"addSpirit__6PlayerP9ObjHandle","0021acd0","0021acf8","4","381C45AC","sw","sw a1,0x1c38(v0)"
+"addSpirit__6PlayerP9ObjHandle","0021acd0","0021acfc","4","0800E003","jr","jr ra"
+"addSpirit__6PlayerP9ObjHandle","0021acd0","0021ad00","4","01000224","_li","_li v0,0x1"
+"SetViewArea__14DisplayEnvInfoUiUi","002bdcb8","002bdcb8","4","04008284","lh","lh v0,0x4(a0)"
+"SetViewArea__14DisplayEnvInfoUiUi","002bdcb8","002bdcbc","4","42180600","srl","srl v1,a2,0x1"
+"SetViewArea__14DisplayEnvInfoUiUi","002bdcb8","002bdcc0","4","200080AC","sw","sw zero,0x20(a0)"
+"SetViewArea__14DisplayEnvInfoUiUi","002bdcb8","002bdcc4","4","01004238","xori","xori v0,v0,0x1"
+"SetViewArea__14DisplayEnvInfoUiUi","002bdcb8","002bdcc8","4","2C0085AC","sw","sw a1,0x2c(a0)"
+"SetViewArea__14DisplayEnvInfoUiUi","002bdcb8","002bdccc","4","0B18C200","movn","movn v1,a2,v0"
+"SetViewArea__14DisplayEnvInfoUiUi","002bdcb8","002bdcd0","4","080085AC","sw","sw a1,0x8(a0)"
+"SetViewArea__14DisplayEnvInfoUiUi","002bdcb8","002bdcd4","4","280083AC","sw","sw v1,0x28(a0)"
+"SetViewArea__14DisplayEnvInfoUiUi","002bdcb8","002bdcd8","4","0C0083AC","sw","sw v1,0xc(a0)"
+"SetViewArea__14DisplayEnvInfoUiUi","002bdcb8","002bdcdc","4","0800E003","jr","jr ra"
+"SetViewArea__14DisplayEnvInfoUiUi","002bdcb8","002bdce0","4","240080AC","_sw","_sw zero,0x24(a0)"
+"GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","0034da50","4","1800878C","lw","lw a3,0x18(a0)"
+"GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","0034da54","4","FFFF0624","li","li a2,-0x1"
+"GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","0034da58","4","1400858C","lw","lw a1,0x14(a0)"
+"GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","0034da5c","4","2A20C700","slt","slt a0,a2,a3"
+"GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","0034da60","4","0F00E324","addiu","addiu v1,a3,0xf"
+"GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","0034da64","4","0F00A224","addiu","addiu v0,a1,0xf"
+"GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","0034da68","4","2A30C500","slt","slt a2,a2,a1"
+"GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","0034da6c","4","0B10A600","movn","movn v0,a1,a2"
+"GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","0034da70","4","0B18E400","movn","movn v1,a3,a0"
+"GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","0034da74","4","03110200","sra","sra v0,v0,0x4"
+"GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","0034da78","4","03190300","sra","sra v1,v1,0x4"
+"GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","0034da7c","4","0800E003","jr","jr ra"
+"GetVoDataSizeInMacroBlocks__8movVoBuf","0034da50","0034da80","4","18104300","_mult","_mult v0,v0,v1"
