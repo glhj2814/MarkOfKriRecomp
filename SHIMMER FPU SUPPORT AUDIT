@@ -1,0 +1,790 @@
+MARK OF KRI - SHIMMER FPU SUPPORT AUDIT
+Generated: 2026-11-25 14:04:17
+PS2Recomp source: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+
+===== SOURCE ROOT: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp =====
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:72: OPCODE_COP1 = 0x11, // Coprocessor 1 (FPU) instructions (see Cop1Format)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:109: OPCODE_LWC1 = 0x31, // Load Word to Coprocessor 1 (FPU)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:118: OPCODE_SWC1 = 0x39, // Store Word from Coprocessor 1 (FPU)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:439: // COP1 (FPU) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP1
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:440: enum Cop1Format
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:442: COP1_MF = 0x00, // Move From FPU Register
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:443: COP1_CF = 0x02, // Move From FPU Control Register
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:444: COP1_MT = 0x04, // Move To FPU Register
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:445: COP1_CT = 0x06, // Move To FPU Control Register
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:446: COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:448: COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:449: COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:451: COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:452: COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:455: // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:456: enum Cop1FunctionsS
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:458: COP1_S_ADD = 0x00,  // ADD.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:459: COP1_S_SUB = 0x01,  // SUB.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:460: COP1_S_MUL = 0x02,  // MUL.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:461: COP1_S_DIV = 0x03,  // DIV.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:462: COP1_S_SQRT = 0x04, // SQRT.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:463: COP1_S_ABS = 0x05,  // ABS.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:464: COP1_S_MOV = 0x06,  // MOV.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:465: COP1_S_NEG = 0x07,  // NEG.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:467: COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:468: COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:469: COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:470: COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:471: COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:472: COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:473: COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:474: COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:477: COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:478: COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:479: COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:480: COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:481: COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:482: COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:483: COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:484: COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:487: COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:488: COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:489: COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:492: COP1_S_MAX = 0x28, // MAX.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:493: COP1_S_MIN = 0x29, // MIN.S
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:495: COP1_S_C_F = 0x30,    // C.F.S (False)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:496: COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:497: COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:498: COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:499: COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:500: COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:501: COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:502: COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:503: COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:504: COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:505: COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:506: COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:507: COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:508: COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:509: COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:510: COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:513: // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:514: enum Cop1FunctionsW
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:516: COP1_W_CVT_S = 0x20, // CVT.S.W (Convert Word Integer to Single Float)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:522: // COP1 BC Condition Field ('fmt' or 'rt' field, bits 20-16) for COP1_BC Format
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:523: enum Cop1BranchCondition
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:525: COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:526: COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:527: COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:528: COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\r5900_decoder.h:45: void decodeCOP1(Instruction &inst) const;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h:64: bool modifiesFPR;     // Modifies floating point register
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h:65: bool modifiesVFR;     // Modifies vector float register
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:68: (m_branchInst.opcode == OPCODE_COP1 && m_branchInst.rs == COP1_BC &&
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:69: (m_branchInst.rt == COP1_BC_BCFL || m_branchInst.rt == COP1_BC_BCTL)) ||
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:430: case OPCODE_COP1:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:431: if (m_branchInst.rs == COP1_BC)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:434: return (bcCond == COP1_BC_BCF || bcCond == COP1_BC_BCFL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:28: case COP1_MF:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:30: case COP1_MT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:32: case COP1_CF:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:38: case COP1_CT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:44: case COP1_BC:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:46: case COP1_S:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:49: case COP1_S_ADD:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:51: case COP1_S_SUB:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:53: case COP1_S_MUL:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:55: case COP1_S_DIV:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:60: case COP1_S_SQRT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:63: case COP1_S_ABS:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:65: case COP1_S_MOV:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:67: case COP1_S_NEG:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:69: case COP1_S_ROUND_W:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:71: case COP1_S_TRUNC_W:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:73: case COP1_S_CEIL_W:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:75: case COP1_S_FLOOR_W:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:77: case COP1_S_CVT_W:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:79: case COP1_S_RSQRT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:82: case COP1_S_ADDA:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:84: case COP1_S_SUBA:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:86: case COP1_S_MULA:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:88: case COP1_S_MADD:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:90: case COP1_S_MSUB:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:92: case COP1_S_MADDA:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:94: case COP1_S_MSUBA:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:96: case COP1_S_MAX:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:98: case COP1_S_MIN:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:100: case COP1_S_C_F:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:102: case COP1_S_C_UN:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:104: case COP1_S_C_EQ:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:106: case COP1_S_C_UEQ:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:108: case COP1_S_C_OLT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:110: case COP1_S_C_ULT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:112: case COP1_S_C_OLE:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:114: case COP1_S_C_ULE:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:116: case COP1_S_C_SF:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:118: case COP1_S_C_NGLE:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:120: case COP1_S_C_SEQ:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:122: case COP1_S_C_NGL:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:124: case COP1_S_C_LT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:125: return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:126: case COP1_S_C_NGE:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:128: case COP1_S_C_LE:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:130: case COP1_S_C_NGT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:135: case COP1_W:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:138: case COP1_W_CVT_S:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\gif_dma_kick_analyzer.cpp:148: case OPCODE_LWC1:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\gif_dma_kick_analyzer.cpp:155: case OPCODE_SWC1:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\instruction_translator.cpp:150: case OPCODE_COP1:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\instruction_translator.cpp:206: case OPCODE_LWC1:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\instruction_translator.cpp:208: case OPCODE_SWC1:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:94: inst.modificationInfo.modifiesFPR = false;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:143: inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:802: void R5900Decoder::decodeCOP1(Instruction &inst) const
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:805: if (format == COP1_MF || format == COP1_CF)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:810: else if (format == COP1_BC)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:816: else if (format == COP1_S || format == COP1_W || format == COP1_L)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:818: inst.modificationInfo.modifiesFPR = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:820: if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+
+===== SOURCE ROOT: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime =====
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:174: X(fprintf)                                \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:218: X(vfprintf)                               \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:642: X(sceSynthesizerTvfProcI)                 \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:643: X(sceSynthesizerTvfProcNI)                \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:74: __m128 vu0_vf[32];        // VU0 vector float registers
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:76: float vu0_q;              // VU0 Q register (quotient)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:77: float vu0_p;              // VU0 P register (EFU result)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:78: float vu0_i;              // VU0 I register (integer value)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:105: float vu0_cf[4]; // VU0 FMAC control floating-point registers
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:142: // FPU registers (COP1)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:903: // FPU (COP1) operations
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:938: #define FPU_C_LT_S(a, b) ((float)(a) < (float)(b))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_audio_stream.cpp:228: std::fprintf(stderr, "[audio] PS2X_AUDIO_CAPTURE: cannot open '%s' for writing\n", path);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:420: std::fprintf(stderr,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:104: std::fprintf(stderr, "[gsstats] prims/s point=%.0f line=%.0f tri=%.0f tristrip=%.0f trifan=%.0f sprite=%.0f textured=%.0f alone=%.0f\n",
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:114: std::fprintf(stderr, "[gsstats] batches %s/s=%.1f prims/batch=%.1f boxpx/batch=%.0f\n", batchNames[i], batches * perSec,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:124: std::fprintf(stderr, "[gsstats] flushes/s%s\n", flushes.c_str());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:125: std::fprintf(stderr, "[gsstats] tracked starts/s self=%.1f cross=%.1f; last: fbp=%u fpsm=0x%x zbp=%u zpsm=0x%x tbp0=%u tpsm=0x%x prim=%u\n",
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:128: std::fprintf(stderr, "[gsstats] Mpx/s box=%.2f inside=%.2f written=%.2f texsamples=%.2f bigbox=%.2f biginside=%.2f undo=%.2f\n",
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:139: std::fprintf(stderr, "[gsstats] gs-thread time%s\n", times.c_str());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1039: if (!eventCondition(flag->bits, bits, mode))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1067: if (eventCondition(flag->bits, bits, mode))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1978: if (!eventCondition(flag.bits, wait.bits, wait.mode))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Audio.cpp:618: void sceSynthesizerTvfProcI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Audio.cpp:620: TODO_NAMED("sceSynthesizerTvfProcI", rdram, ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Audio.cpp:623: void sceSynthesizerTvfProcNI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Audio.cpp:625: TODO_NAMED("sceSynthesizerTvfProcNI", rdram, ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Audio.h:93: void sceSynthesizerTvfProcI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Audio.h:94: void sceSynthesizerTvfProcNI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:48: // Guest newlib snprintf/vsprintf format through vfprintf into a stack FILE flagged __SSTR.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:842: void fprintf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:853: ret = std::fprintf(fp, "%s", rendered.c_str());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:857: std::cerr << "fprintf error: Invalid file handle or format address."
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:1153: void vfprintf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:1165: ret = std::fprintf(fp, "%s", rendered.c_str());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:1175: std::cerr << "vfprintf error: Invalid file handle or format address."
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.h:35: void fprintf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.h:60: void vfprintf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+
+===== R5900 CONTEXT DEFINITIONS =====
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\libdwarf-src\src\bin\dwarfdump\dd_pe_cputype.h:32: {"MIPSFPU", 0x0366},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\libdwarf-src\src\bin\dwarfdump\dd_pe_cputype.h:33: {"MIPSFPU16", 0x0466},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1350: enum class VfpuControl {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1351: R4000ALLEGREX_VFPUCONTROL_VFPU_PFXS,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1352: R4000ALLEGREX_VFPUCONTROL_VFPU_PFXT,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1353: R4000ALLEGREX_VFPUCONTROL_VFPU_PFXD,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1354: R4000ALLEGREX_VFPUCONTROL_VFPU_CC,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1355: R4000ALLEGREX_VFPUCONTROL_VFPU_INF4,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1356: R4000ALLEGREX_VFPUCONTROL_VFPU_RSV5,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1357: R4000ALLEGREX_VFPUCONTROL_VFPU_RSV6,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1358: R4000ALLEGREX_VFPUCONTROL_VFPU_REV,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1359: R4000ALLEGREX_VFPUCONTROL_VFPU_RCX0,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1360: R4000ALLEGREX_VFPUCONTROL_VFPU_RCX1,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1361: R4000ALLEGREX_VFPUCONTROL_VFPU_RCX2,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1362: R4000ALLEGREX_VFPUCONTROL_VFPU_RCX3,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1363: R4000ALLEGREX_VFPUCONTROL_VFPU_RCX4,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1364: R4000ALLEGREX_VFPUCONTROL_VFPU_RCX5,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1365: R4000ALLEGREX_VFPUCONTROL_VFPU_RCX6,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1366: R4000ALLEGREX_VFPUCONTROL_VFPU_RCX7,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1367: R4000ALLEGREX_VFPUCONTROL_144,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1368: R4000ALLEGREX_VFPUCONTROL_145,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1369: R4000ALLEGREX_VFPUCONTROL_146,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1370: R4000ALLEGREX_VFPUCONTROL_147,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1371: R4000ALLEGREX_VFPUCONTROL_148,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1372: R4000ALLEGREX_VFPUCONTROL_149,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1373: R4000ALLEGREX_VFPUCONTROL_150,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1374: R4000ALLEGREX_VFPUCONTROL_151,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1375: R4000ALLEGREX_VFPUCONTROL_152,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1376: R4000ALLEGREX_VFPUCONTROL_153,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1377: R4000ALLEGREX_VFPUCONTROL_154,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1378: R4000ALLEGREX_VFPUCONTROL_155,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1379: R4000ALLEGREX_VFPUCONTROL_156,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1380: R4000ALLEGREX_VFPUCONTROL_157,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1381: R4000ALLEGREX_VFPUCONTROL_158,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1382: R4000ALLEGREX_VFPUCONTROL_159,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1383: R4000ALLEGREX_VFPUCONTROL_160,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1384: R4000ALLEGREX_VFPUCONTROL_161,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1385: R4000ALLEGREX_VFPUCONTROL_162,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1386: R4000ALLEGREX_VFPUCONTROL_163,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1387: R4000ALLEGREX_VFPUCONTROL_164,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1388: R4000ALLEGREX_VFPUCONTROL_165,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1389: R4000ALLEGREX_VFPUCONTROL_166,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1390: R4000ALLEGREX_VFPUCONTROL_167,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1391: R4000ALLEGREX_VFPUCONTROL_168,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1392: R4000ALLEGREX_VFPUCONTROL_169,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1393: R4000ALLEGREX_VFPUCONTROL_170,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1394: R4000ALLEGREX_VFPUCONTROL_171,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1395: R4000ALLEGREX_VFPUCONTROL_172,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1396: R4000ALLEGREX_VFPUCONTROL_173,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1397: R4000ALLEGREX_VFPUCONTROL_174,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1398: R4000ALLEGREX_VFPUCONTROL_175,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1399: R4000ALLEGREX_VFPUCONTROL_176,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1400: R4000ALLEGREX_VFPUCONTROL_177,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1401: R4000ALLEGREX_VFPUCONTROL_178,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1402: R4000ALLEGREX_VFPUCONTROL_179,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1403: R4000ALLEGREX_VFPUCONTROL_180,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1404: R4000ALLEGREX_VFPUCONTROL_181,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1405: R4000ALLEGREX_VFPUCONTROL_182,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1406: R4000ALLEGREX_VFPUCONTROL_183,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1407: R4000ALLEGREX_VFPUCONTROL_184,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1408: R4000ALLEGREX_VFPUCONTROL_185,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1409: R4000ALLEGREX_VFPUCONTROL_186,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1410: R4000ALLEGREX_VFPUCONTROL_187,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1411: R4000ALLEGREX_VFPUCONTROL_188,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1412: R4000ALLEGREX_VFPUCONTROL_189,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1413: R4000ALLEGREX_VFPUCONTROL_190,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1414: R4000ALLEGREX_VFPUCONTROL_191,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1415: R4000ALLEGREX_VFPUCONTROL_192,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1416: R4000ALLEGREX_VFPUCONTROL_193,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1417: R4000ALLEGREX_VFPUCONTROL_194,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1418: R4000ALLEGREX_VFPUCONTROL_195,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1419: R4000ALLEGREX_VFPUCONTROL_196,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1420: R4000ALLEGREX_VFPUCONTROL_197,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1421: R4000ALLEGREX_VFPUCONTROL_198,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1422: R4000ALLEGREX_VFPUCONTROL_199,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1423: R4000ALLEGREX_VFPUCONTROL_200,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1424: R4000ALLEGREX_VFPUCONTROL_201,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1425: R4000ALLEGREX_VFPUCONTROL_202,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1426: R4000ALLEGREX_VFPUCONTROL_203,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1427: R4000ALLEGREX_VFPUCONTROL_204,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1428: R4000ALLEGREX_VFPUCONTROL_205,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1429: R4000ALLEGREX_VFPUCONTROL_206,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1430: R4000ALLEGREX_VFPUCONTROL_207,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1431: R4000ALLEGREX_VFPUCONTROL_208,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1432: R4000ALLEGREX_VFPUCONTROL_209,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1433: R4000ALLEGREX_VFPUCONTROL_210,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1434: R4000ALLEGREX_VFPUCONTROL_211,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1435: R4000ALLEGREX_VFPUCONTROL_212,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1436: R4000ALLEGREX_VFPUCONTROL_213,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1437: R4000ALLEGREX_VFPUCONTROL_214,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1438: R4000ALLEGREX_VFPUCONTROL_215,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1439: R4000ALLEGREX_VFPUCONTROL_216,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1440: R4000ALLEGREX_VFPUCONTROL_217,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1441: R4000ALLEGREX_VFPUCONTROL_218,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1442: R4000ALLEGREX_VFPUCONTROL_219,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1443: R4000ALLEGREX_VFPUCONTROL_220,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1444: R4000ALLEGREX_VFPUCONTROL_221,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1445: R4000ALLEGREX_VFPUCONTROL_222,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1446: R4000ALLEGREX_VFPUCONTROL_223,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1447: R4000ALLEGREX_VFPUCONTROL_224,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1448: R4000ALLEGREX_VFPUCONTROL_225,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1449: R4000ALLEGREX_VFPUCONTROL_226,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1450: R4000ALLEGREX_VFPUCONTROL_227,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1451: R4000ALLEGREX_VFPUCONTROL_228,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1452: R4000ALLEGREX_VFPUCONTROL_229,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1453: R4000ALLEGREX_VFPUCONTROL_230,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1454: R4000ALLEGREX_VFPUCONTROL_231,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1455: R4000ALLEGREX_VFPUCONTROL_232,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1456: R4000ALLEGREX_VFPUCONTROL_233,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1457: R4000ALLEGREX_VFPUCONTROL_234,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1458: R4000ALLEGREX_VFPUCONTROL_235,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1459: R4000ALLEGREX_VFPUCONTROL_236,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1460: R4000ALLEGREX_VFPUCONTROL_237,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1461: R4000ALLEGREX_VFPUCONTROL_238,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1462: R4000ALLEGREX_VFPUCONTROL_239,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1463: R4000ALLEGREX_VFPUCONTROL_240,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1464: R4000ALLEGREX_VFPUCONTROL_241,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1465: R4000ALLEGREX_VFPUCONTROL_242,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1466: R4000ALLEGREX_VFPUCONTROL_243,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1467: R4000ALLEGREX_VFPUCONTROL_244,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1468: R4000ALLEGREX_VFPUCONTROL_245,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1469: R4000ALLEGREX_VFPUCONTROL_246,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1470: R4000ALLEGREX_VFPUCONTROL_247,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1471: R4000ALLEGREX_VFPUCONTROL_248,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1472: R4000ALLEGREX_VFPUCONTROL_249,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1473: R4000ALLEGREX_VFPUCONTROL_250,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1474: R4000ALLEGREX_VFPUCONTROL_251,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1475: R4000ALLEGREX_VFPUCONTROL_252,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1476: R4000ALLEGREX_VFPUCONTROL_253,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1477: R4000ALLEGREX_VFPUCONTROL_254,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1478: R4000ALLEGREX_VFPUCONTROL_255,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1482: R4000ALLEGREX_VCONSTANT_VFPU_HUGE,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1483: R4000ALLEGREX_VCONSTANT_VFPU_SQRT2,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1484: R4000ALLEGREX_VCONSTANT_VFPU_SQRT1_2,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1485: R4000ALLEGREX_VCONSTANT_VFPU_2_SQRTPI,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1486: R4000ALLEGREX_VCONSTANT_VFPU_2_PI,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1487: R4000ALLEGREX_VCONSTANT_VFPU_1_PI,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1488: R4000ALLEGREX_VCONSTANT_VFPU_PI_4,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1489: R4000ALLEGREX_VCONSTANT_VFPU_PI_2,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1490: R4000ALLEGREX_VCONSTANT_VFPU_PI,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1491: R4000ALLEGREX_VCONSTANT_VFPU_E,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1492: R4000ALLEGREX_VCONSTANT_VFPU_LOG2E,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1493: R4000ALLEGREX_VCONSTANT_VFPU_LOG10E,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1494: R4000ALLEGREX_VCONSTANT_VFPU_LN2,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1495: R4000ALLEGREX_VCONSTANT_VFPU_LN10,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1496: R4000ALLEGREX_VCONSTANT_VFPU_2PI,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1497: R4000ALLEGREX_VCONSTANT_VFPU_PI_6,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1498: R4000ALLEGREX_VCONSTANT_VFPU_LOG10TWO,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1499: R4000ALLEGREX_VCONSTANT_VFPU_LOG2TEN,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\cplusplus\include\generated\Registers_enum_classes.hpp:1500: R4000ALLEGREX_VCONSTANT_VFPU_SQRT3_2,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\analysis\RabbitizerTrackedRegisterState.h:80: void RabbitizerTrackedRegisterState_fprint(const RabbitizerTrackedRegisterState *self, FILE* outFile);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1345: const RabbitizerRegisterDescriptor RabbitizerRegister_R4000AllegrexVfpuControl_Descriptors[] = {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1346: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_PFXS] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1347: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_PFXT] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1348: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_PFXD] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1349: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_CC] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1350: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_INF4] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1351: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RSV5] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1352: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RSV6] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1353: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_REV] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1354: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX0] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1355: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX1] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1356: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX2] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1357: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX3] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1358: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX4] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1359: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX5] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1360: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX6] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1361: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX7] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1362: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_144] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1363: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_145] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1364: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_146] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1365: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_147] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1366: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_148] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1367: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_149] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1368: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_150] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1369: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_151] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1370: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_152] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1371: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_153] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1372: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_154] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1373: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_155] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1374: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_156] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1375: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_157] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1376: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_158] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1377: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_159] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1378: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_160] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1379: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_161] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1380: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_162] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1381: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_163] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1382: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_164] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1383: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_165] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1384: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_166] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1385: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_167] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1386: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_168] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1387: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_169] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1388: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_170] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1389: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_171] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1390: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_172] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1391: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_173] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1392: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_174] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1393: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_175] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1394: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_176] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1395: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_177] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1396: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_178] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1397: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_179] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1398: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_180] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1399: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_181] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1400: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_182] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1401: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_183] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1402: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_184] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1403: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_185] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1404: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_186] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1405: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_187] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1406: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_188] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1407: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_189] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1408: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_190] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1409: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_191] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1410: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_192] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1411: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_193] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1412: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_194] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1413: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_195] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1414: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_196] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1415: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_197] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1416: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_198] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1417: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_199] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1418: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_200] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1419: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_201] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1420: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_202] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1421: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_203] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1422: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_204] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1423: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_205] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1424: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_206] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1425: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_207] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1426: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_208] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1427: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_209] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1428: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_210] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1429: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_211] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1430: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_212] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1431: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_213] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1432: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_214] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1433: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_215] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1434: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_216] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1435: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_217] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1436: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_218] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1437: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_219] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1438: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_220] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1439: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_221] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1440: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_222] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1441: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_223] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1442: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_224] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1443: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_225] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1444: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_226] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1445: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_227] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1446: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_228] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1447: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_229] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1448: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_230] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1449: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_231] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1450: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_232] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1451: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_233] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1452: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_234] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1453: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_235] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1454: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_236] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1455: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_237] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1456: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_238] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1457: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_239] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1458: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_240] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1459: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_241] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1460: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_242] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1461: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_243] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1462: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_244] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1463: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_245] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1464: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_246] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1465: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_247] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1466: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_248] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1467: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_249] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1468: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_250] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1469: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_251] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1470: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_252] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1471: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_253] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1472: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_254] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1473: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_255] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1477: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_HUGE] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1478: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_SQRT2] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1479: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_SQRT1_2] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1480: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_2_SQRTPI] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1481: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_2_PI] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1482: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_1_PI] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1483: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_PI_4] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1484: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_PI_2] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1485: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_PI] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1486: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_E] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1487: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LOG2E] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1488: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LOG10E] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1489: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LN2] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1490: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LN10] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1491: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_2PI] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1492: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_PI_6] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1493: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LOG10TWO] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1494: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LOG2TEN] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\RegisterDescriptor_Descriptors_arrays.h:1495: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_SQRT3_2] = { 0 },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1345: typedef enum RabbitizerRegister_R4000AllegrexVfpuControl {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1346: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_PFXS,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1347: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_PFXT,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1348: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_PFXD,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1349: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_CC,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1350: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_INF4,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1351: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RSV5,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1352: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RSV6,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1353: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_REV,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1354: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX0,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1355: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX1,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1356: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX2,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1357: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX3,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1358: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX4,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1359: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX5,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1360: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX6,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1361: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX7,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1362: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_144,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1363: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_145,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1364: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_146,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1365: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_147,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1366: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_148,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1367: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_149,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1368: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_150,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1369: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_151,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1370: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_152,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1371: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_153,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1372: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_154,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1373: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_155,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1374: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_156,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1375: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_157,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1376: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_158,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1377: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_159,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1378: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_160,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1379: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_161,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1380: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_162,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1381: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_163,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1382: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_164,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1383: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_165,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1384: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_166,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1385: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_167,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1386: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_168,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1387: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_169,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1388: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_170,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1389: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_171,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1390: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_172,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1391: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_173,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1392: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_174,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1393: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_175,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1394: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_176,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1395: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_177,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1396: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_178,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1397: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_179,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1398: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_180,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1399: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_181,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1400: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_182,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1401: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_183,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1402: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_184,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1403: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_185,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1404: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_186,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1405: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_187,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1406: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_188,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1407: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_189,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1408: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_190,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1409: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_191,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1410: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_192,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1411: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_193,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1412: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_194,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1413: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_195,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1414: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_196,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1415: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_197,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1416: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_198,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1417: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_199,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1418: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_200,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1419: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_201,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1420: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_202,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1421: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_203,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1422: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_204,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1423: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_205,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1424: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_206,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1425: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_207,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1426: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_208,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1427: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_209,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1428: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_210,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1429: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_211,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1430: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_212,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1431: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_213,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1432: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_214,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1433: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_215,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1434: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_216,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1435: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_217,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1436: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_218,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1437: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_219,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1438: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_220,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1439: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_221,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1440: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_222,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1441: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_223,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1442: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_224,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1443: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_225,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1444: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_226,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1445: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_227,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1446: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_228,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1447: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_229,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1448: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_230,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1449: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_231,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1450: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_232,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1451: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_233,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1452: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_234,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1453: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_235,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1454: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_236,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1455: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_237,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1456: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_238,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1457: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_239,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1458: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_240,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1459: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_241,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1460: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_242,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1461: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_243,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1462: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_244,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1463: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_245,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1464: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_246,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1465: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_247,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1466: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_248,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1467: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_249,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1468: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_250,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1469: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_251,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1470: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_252,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1471: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_253,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1472: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_254,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1473: RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_255,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1474: } RabbitizerRegister_R4000AllegrexVfpuControl;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1477: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_HUGE,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1478: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_SQRT2,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1479: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_SQRT1_2,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1480: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_2_SQRTPI,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1481: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_2_PI,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1482: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_1_PI,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1483: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_PI_4,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1484: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_PI_2,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1485: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_PI,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1486: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_E,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1487: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LOG2E,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1488: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LOG10E,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1489: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LN2,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1490: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LN10,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1491: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_2PI,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1492: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_PI_6,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1493: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LOG10TWO,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1494: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LOG2TEN,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_enums.h:1495: RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_SQRT3_2,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1345: const char *RabbitizerRegister_R4000AllegrexVfpuControl_Names[][2] = {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1346: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_PFXS] = { "$" "128", "VFPU_PFXS" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1347: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_PFXT] = { "$" "129", "VFPU_PFXT" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1348: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_PFXD] = { "$" "130", "VFPU_PFXD" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1349: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_CC] = { "$" "131", "VFPU_CC" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1350: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_INF4] = { "$" "132", "VFPU_INF4" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1351: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RSV5] = { "$" "133", "VFPU_RSV5" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1352: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RSV6] = { "$" "134", "VFPU_RSV6" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1353: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_REV] = { "$" "135", "VFPU_REV" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1354: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX0] = { "$" "136", "VFPU_RCX0" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1355: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX1] = { "$" "137", "VFPU_RCX1" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1356: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX2] = { "$" "138", "VFPU_RCX2" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1357: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX3] = { "$" "139", "VFPU_RCX3" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1358: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX4] = { "$" "140", "VFPU_RCX4" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1359: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX5] = { "$" "141", "VFPU_RCX5" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1360: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX6] = { "$" "142", "VFPU_RCX6" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1361: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_VFPU_RCX7] = { "$" "143", "VFPU_RCX7" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1362: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_144] = { "$" "144", "$" "144" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1363: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_145] = { "$" "145", "$" "145" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1364: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_146] = { "$" "146", "$" "146" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1365: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_147] = { "$" "147", "$" "147" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1366: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_148] = { "$" "148", "$" "148" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1367: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_149] = { "$" "149", "$" "149" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1368: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_150] = { "$" "150", "$" "150" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1369: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_151] = { "$" "151", "$" "151" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1370: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_152] = { "$" "152", "$" "152" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1371: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_153] = { "$" "153", "$" "153" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1372: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_154] = { "$" "154", "$" "154" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1373: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_155] = { "$" "155", "$" "155" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1374: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_156] = { "$" "156", "$" "156" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1375: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_157] = { "$" "157", "$" "157" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1376: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_158] = { "$" "158", "$" "158" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1377: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_159] = { "$" "159", "$" "159" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1378: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_160] = { "$" "160", "$" "160" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1379: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_161] = { "$" "161", "$" "161" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1380: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_162] = { "$" "162", "$" "162" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1381: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_163] = { "$" "163", "$" "163" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1382: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_164] = { "$" "164", "$" "164" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1383: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_165] = { "$" "165", "$" "165" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1384: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_166] = { "$" "166", "$" "166" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1385: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_167] = { "$" "167", "$" "167" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1386: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_168] = { "$" "168", "$" "168" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1387: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_169] = { "$" "169", "$" "169" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1388: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_170] = { "$" "170", "$" "170" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1389: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_171] = { "$" "171", "$" "171" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1390: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_172] = { "$" "172", "$" "172" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1391: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_173] = { "$" "173", "$" "173" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1392: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_174] = { "$" "174", "$" "174" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1393: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_175] = { "$" "175", "$" "175" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1394: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_176] = { "$" "176", "$" "176" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1395: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_177] = { "$" "177", "$" "177" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1396: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_178] = { "$" "178", "$" "178" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1397: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_179] = { "$" "179", "$" "179" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1398: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_180] = { "$" "180", "$" "180" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1399: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_181] = { "$" "181", "$" "181" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1400: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_182] = { "$" "182", "$" "182" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1401: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_183] = { "$" "183", "$" "183" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1402: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_184] = { "$" "184", "$" "184" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1403: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_185] = { "$" "185", "$" "185" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1404: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_186] = { "$" "186", "$" "186" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1405: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_187] = { "$" "187", "$" "187" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1406: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_188] = { "$" "188", "$" "188" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1407: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_189] = { "$" "189", "$" "189" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1408: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_190] = { "$" "190", "$" "190" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1409: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_191] = { "$" "191", "$" "191" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1410: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_192] = { "$" "192", "$" "192" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1411: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_193] = { "$" "193", "$" "193" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1412: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_194] = { "$" "194", "$" "194" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1413: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_195] = { "$" "195", "$" "195" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1414: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_196] = { "$" "196", "$" "196" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1415: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_197] = { "$" "197", "$" "197" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1416: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_198] = { "$" "198", "$" "198" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1417: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_199] = { "$" "199", "$" "199" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1418: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_200] = { "$" "200", "$" "200" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1419: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_201] = { "$" "201", "$" "201" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1420: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_202] = { "$" "202", "$" "202" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1421: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_203] = { "$" "203", "$" "203" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1422: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_204] = { "$" "204", "$" "204" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1423: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_205] = { "$" "205", "$" "205" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1424: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_206] = { "$" "206", "$" "206" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1425: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_207] = { "$" "207", "$" "207" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1426: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_208] = { "$" "208", "$" "208" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1427: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_209] = { "$" "209", "$" "209" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1428: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_210] = { "$" "210", "$" "210" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1429: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_211] = { "$" "211", "$" "211" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1430: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_212] = { "$" "212", "$" "212" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1431: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_213] = { "$" "213", "$" "213" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1432: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_214] = { "$" "214", "$" "214" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1433: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_215] = { "$" "215", "$" "215" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1434: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_216] = { "$" "216", "$" "216" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1435: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_217] = { "$" "217", "$" "217" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1436: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_218] = { "$" "218", "$" "218" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1437: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_219] = { "$" "219", "$" "219" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1438: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_220] = { "$" "220", "$" "220" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1439: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_221] = { "$" "221", "$" "221" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1440: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_222] = { "$" "222", "$" "222" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1441: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_223] = { "$" "223", "$" "223" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1442: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_224] = { "$" "224", "$" "224" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1443: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_225] = { "$" "225", "$" "225" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1444: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_226] = { "$" "226", "$" "226" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1445: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_227] = { "$" "227", "$" "227" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1446: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_228] = { "$" "228", "$" "228" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1447: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_229] = { "$" "229", "$" "229" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1448: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_230] = { "$" "230", "$" "230" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1449: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_231] = { "$" "231", "$" "231" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1450: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_232] = { "$" "232", "$" "232" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1451: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_233] = { "$" "233", "$" "233" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1452: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_234] = { "$" "234", "$" "234" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1453: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_235] = { "$" "235", "$" "235" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1454: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_236] = { "$" "236", "$" "236" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1455: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_237] = { "$" "237", "$" "237" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1456: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_238] = { "$" "238", "$" "238" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1457: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_239] = { "$" "239", "$" "239" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1458: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_240] = { "$" "240", "$" "240" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1459: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_241] = { "$" "241", "$" "241" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1460: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_242] = { "$" "242", "$" "242" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1461: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_243] = { "$" "243", "$" "243" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1462: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_244] = { "$" "244", "$" "244" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1463: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_245] = { "$" "245", "$" "245" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1464: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_246] = { "$" "246", "$" "246" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1465: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_247] = { "$" "247", "$" "247" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1466: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_248] = { "$" "248", "$" "248" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1467: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_249] = { "$" "249", "$" "249" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1468: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_250] = { "$" "250", "$" "250" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1469: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_251] = { "$" "251", "$" "251" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1470: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_252] = { "$" "252", "$" "252" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1471: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_253] = { "$" "253", "$" "253" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1472: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_254] = { "$" "254", "$" "254" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1473: [RABBITIZER_REG_R4000ALLEGREX_VFPUCONTROL_255] = { "$" "255", "$" "255" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1477: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_HUGE] = { "$" "1", "VFPU_HUGE" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1478: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_SQRT2] = { "$" "2", "VFPU_SQRT2" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1479: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_SQRT1_2] = { "$" "3", "VFPU_SQRT1_2" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1480: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_2_SQRTPI] = { "$" "4", "VFPU_2_SQRTPI" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1481: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_2_PI] = { "$" "5", "VFPU_2_PI" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1482: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_1_PI] = { "$" "6", "VFPU_1_PI" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1483: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_PI_4] = { "$" "7", "VFPU_PI_4" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1484: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_PI_2] = { "$" "8", "VFPU_PI_2" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1485: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_PI] = { "$" "9", "VFPU_PI" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1486: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_E] = { "$" "10", "VFPU_E" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1487: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LOG2E] = { "$" "11", "VFPU_LOG2E" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1488: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LOG10E] = { "$" "12", "VFPU_LOG10E" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1489: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LN2] = { "$" "13", "VFPU_LN2" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1490: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LN10] = { "$" "14", "VFPU_LN10" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1491: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_2PI] = { "$" "15", "VFPU_2PI" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1492: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_PI_6] = { "$" "16", "VFPU_PI_6" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1493: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LOG10TWO] = { "$" "17", "VFPU_LOG10TWO" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1494: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_LOG2TEN] = { "$" "18", "VFPU_LOG2TEN" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\generated\Registers_Names_arrays.h:1495: [RABBITIZER_REG_R4000ALLEGREX_VCONSTANT_VFPU_SQRT3_2] = { "$" "19", "VFPU_SQRT3_2" },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\instructions\RabbitizerRegister.h:76: const char *RabbitizerRegister_getNameR4000AllegrexVfpuControl(uint8_t regValue);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\instructions\RabbitizerRegister.h:124: const RabbitizerRegisterDescriptor *RabbitizerRegister_getDescriptor_R4000AllegrexVfpuControl(uint8_t regValue);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include\instructions\RabbitizerRegisterDescriptor.h:63: extern const RabbitizerRegisterDescriptor RabbitizerRegister_R4000AllegrexVfpuControl_Descriptors[];
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\gs\gs_cpu_backend.h:9: #include <condition_variable>
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\gs\gs_cpu_backend.h:377: mutable std::condition_variable m_queueReady;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\gs\gs_cpu_backend.h:378: mutable std::condition_variable m_queueProgress;
+
+===== GENERATED FUNCTION FPU USAGE =====
