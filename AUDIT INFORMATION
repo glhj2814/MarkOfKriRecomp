@@ -1,0 +1,1063 @@
+
+==========================================================================================
+AUDIT INFORMATION
+==========================================================================================
+Generated: 2026-11-25 16:50:50
+Source root: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+
+==========================================================================================
+FILE: ps2xRecomp\src\lib\fpu_translator.cpp
+==========================================================================================
+    1: #include "ps2recomp/Translators/fpu_translator.h"
+    2: #include "ps2recomp/code_generator.h"
+    3: #include "ps2recomp/codegen_helpers.h"
+    4: #include "ps2recomp/instructions.h"
+    5: #include "ps2recomp/types.h"
+    6: 
+    7: #include <fmt/format.h>
+    8: #include <sstream>
+    9: #include <cmath>
+   10: 
+   11: namespace ps2recomp
+   12: {
+   13:     FpuTranslator::FpuTranslator(CodeGenerator &codeGenerator)
+   14:         : m_codeGenerator(codeGenerator)
+   15:     {
+   16:     }
+   17: 
+   18:     std::string FpuTranslator::translate(const Instruction &inst)
+   19:     {
+   20:         uint8_t format = inst.rs; // Format field
+   21:         uint32_t ft = inst.rt;    // FPU source register
+   22:         uint32_t fs = inst.rd;    // FPU source register
+   23:         uint32_t fd = inst.sa;    // FPU destination register
+   24:         uint32_t function = inst.function;
+   25: 
+   26:         switch (format)
+   27:         {
+   28:         case COP1_MF:
+   29:             return fmt::format("{{ uint32_t bits; std::memcpy(&bits, &ctx->f[{}], sizeof(bits)); SET_GPR_U32(ctx, {}, bits); }}", fs, ft);
+   30:         case COP1_MT:
+   31:             return fmt::format("{{ uint32_t bits = GPR_U32(ctx, {}); std::memcpy(&ctx->f[{}], &bits, sizeof(bits)); }}", ft, fs);
+   32:         case COP1_CF:
+   33:             if (fs == 31)
+   34:                 return fmt::format("SET_GPR_U32(ctx, {}, ctx->fcr31);", ft); // FCR31 contains status/control
+   35:             if (fs == 0)
+   36:                 return fmt::format("SET_GPR_U32(ctx, {}, 0x00000000);", ft); // FCR0 is the FPU implementation register
+   37:             return fmt::format("SET_GPR_U32(ctx, {}, 0); // Unimplemented FCR{}", ft, fs);
+   38:         case COP1_CT:
+   39:             if (fs == 31)
+   40:                 return fmt::format("ctx->fcr31 = GPR_U32(ctx, {}) & 0x0183FFFF;", ft);
+   41:             else
+   42:                 return fmt::format("// CTC1 to FCR{} ignored", fs);
+   43:             return "";
+   44:         case COP1_BC:
+   45:             return "// FPU branch instruction - handled elsewhere";
+   46:         case COP1_S:
+   47:             switch (function)
+   48:             {
+   49:             case COP1_S_ADD:
+   50:                 return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+   51:             case COP1_S_SUB:
+   52:                 return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+   53:             case COP1_S_MUL:
+   54:                 return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+   55:             case COP1_S_DIV:
+   56:                 // The EE has no Inf/NaN: x/0 gives +-max (sign of fs xor ft), see ps2_fdiv.
+   57:                 return fmt::format("{{ if (ctx->f[{}] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ "
+   58:                                    "ctx->f[{}] = FPU_DIV_S(ctx->f[{}], ctx->f[{}]); }}",
+   59:                                    ft, fd, fs, ft);
+   60:             case COP1_S_SQRT:
+   61:                 // The R5900 encodes SQRT.S as fd, ft (fs is zero), unlike MIPS-I's fd, fs.
+   62:                 return fmt::format("ctx->f[{}] = FPU_SQRT_S(ctx->f[{}]);", fd, ft);
+   63:             case COP1_S_ABS:
+   64:                 return fmt::format("ctx->f[{}] = FPU_ABS_S(ctx->f[{}]);", fd, fs);
+   65:             case COP1_S_MOV:
+   66:                 return fmt::format("ctx->f[{}] = FPU_MOV_S(ctx->f[{}]);", fd, fs);
+   67:             case COP1_S_NEG:
+   68:                 return fmt::format("ctx->f[{}] = FPU_NEG_S(ctx->f[{}]);", fd, fs);
+   69:             case COP1_S_ROUND_W:
+   70:                 return fmt::format("{{ int32_t tmp = FPU_ROUND_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+   71:             case COP1_S_TRUNC_W:
+   72:                 return fmt::format("{{ int32_t tmp = FPU_TRUNC_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+   73:             case COP1_S_CEIL_W:
+   74:                 return fmt::format("{{ int32_t tmp = FPU_CEIL_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+   75:             case COP1_S_FLOOR_W:
+   76:                 return fmt::format("{{ int32_t tmp = FPU_FLOOR_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+   77:             case COP1_S_CVT_W:
+   78:                 return fmt::format("{{ int32_t tmp = FPU_CVT_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+   79:             case COP1_S_RSQRT:
+   80:                 // RSQRT.S fd, fs, ft computes fs / sqrt(ft), not 1 / sqrt(fs).
+   81:                 return fmt::format("ctx->f[{}] = FPU_RSQRT_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+   82:             case COP1_S_ADDA:
+   83:                 return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+   84:             case COP1_S_SUBA:
+   85:                 return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+   86:             case COP1_S_MULA:
+   87:                 return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+   88:             case COP1_S_MADD:
+   89:                 return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+   90:             case COP1_S_MSUB:
+   91:                 return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+   92:             case COP1_S_MADDA:
+   93:                 return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+   94:             case COP1_S_MSUBA:
+   95:                 return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+   96:             case COP1_S_MAX:
+   97:                 return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+   98:             case COP1_S_MIN:
+   99:                 return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  100:             case COP1_S_C_F:
+  101:                 return fmt::format("ctx->fcr31 &= ~0x800000;");
+  102:             case COP1_S_C_UN:
+  103:                 return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  104:             case COP1_S_C_EQ:
+  105:                 return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  106:             case COP1_S_C_UEQ:
+  107:                 return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  108:             case COP1_S_C_OLT:
+  109:                 return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  110:             case COP1_S_C_ULT:
+  111:                 return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  112:             case COP1_S_C_OLE:
+  113:                 return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  114:             case COP1_S_C_ULE:
+  115:                 return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  116:             case COP1_S_C_SF:
+  117:                 return fmt::format("ctx->fcr31 &= ~0x800000;");
+  118:             case COP1_S_C_NGLE:
+  119:                 return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  120:             case COP1_S_C_SEQ:
+  121:                 return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  122:             case COP1_S_C_NGL:
+  123:                 return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  124:             case COP1_S_C_LT:
+  125:                 return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  126:             case COP1_S_C_NGE:
+  127:                 return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  128:             case COP1_S_C_LE:
+  129:                 return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  130:             case COP1_S_C_NGT:
+  131:                 return fmt::format("ctx->fcr31 = (FPU_C_NGT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  132:             default:
+  133:                 return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.S instruction: function 0x{:X}", function));
+  134:             }
+  135:         case COP1_W:
+  136:             switch (function)
+  137:             {
+  138:             case COP1_W_CVT_S:
+  139:                 return fmt::format("{{ int32_t tmp; std::memcpy(&tmp, &ctx->f[{}], sizeof(tmp)); ctx->f[{}] = FPU_CVT_S_W(tmp); }}", fs, fd);
+  140:             default:
+  141:                 return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.W instruction: function 0x{:X}", function));
+  142:             }
+  143:         default:
+  144:             return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU instruction: format 0x{:X}, function 0x{:X}", format, function));
+  145:         }
+  146:     }
+  147: 
+  148: }
+
+==========================================================================================
+SEARCH CONTEXT: ps2xRecomp\src\lib\r5900_decoder.cpp
+==========================================================================================
+--- Line 802 ---
+  790:         else if (format == COP0_CO && inst.function == COP0_CO_ERET)
+  791:         {
+  792:             inst.isReturn = true;
+  793:             inst.hasDelaySlot = false;
+  794:         } // ERET is special
+  795:         else if (format == COP0_BC)
+  796:         {
+  797:             inst.isBranch = true;
+  798:             inst.hasDelaySlot = true;
+  799:         }
+  800:     }
+  801: 
+  802:     void R5900Decoder::decodeCOP1(Instruction &inst) const
+  803:     {
+  804:         uint8_t format = inst.rs;
+  805:         if (format == COP1_MF || format == COP1_CF)
+  806:         {
+  807:             if (inst.rt != 0)
+  808:                 inst.modificationInfo.modifiesGPR = true;
+  809:         }
+  810:         else if (format == COP1_BC)
+  811:         {
+  812:             inst.isBranch = true;
+  813:             inst.hasDelaySlot = true;
+  814:             inst.modificationInfo.modifiesControl = true;
+  815:         }
+  816:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  817:         {
+  818:             inst.modificationInfo.modifiesFPR = true;
+  819:         }
+  820:         if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  821:         {
+  822:             inst.modificationInfo.modifiesControl = true;
+  823:         } // FCR31
+  824:     }
+  825: 
+  826:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  827:     {
+--- Line 805 ---
+  793:             inst.hasDelaySlot = false;
+  794:         } // ERET is special
+  795:         else if (format == COP0_BC)
+  796:         {
+  797:             inst.isBranch = true;
+  798:             inst.hasDelaySlot = true;
+  799:         }
+  800:     }
+  801: 
+  802:     void R5900Decoder::decodeCOP1(Instruction &inst) const
+  803:     {
+  804:         uint8_t format = inst.rs;
+  805:         if (format == COP1_MF || format == COP1_CF)
+  806:         {
+  807:             if (inst.rt != 0)
+  808:                 inst.modificationInfo.modifiesGPR = true;
+  809:         }
+  810:         else if (format == COP1_BC)
+  811:         {
+  812:             inst.isBranch = true;
+  813:             inst.hasDelaySlot = true;
+  814:             inst.modificationInfo.modifiesControl = true;
+  815:         }
+  816:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  817:         {
+  818:             inst.modificationInfo.modifiesFPR = true;
+  819:         }
+  820:         if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  821:         {
+  822:             inst.modificationInfo.modifiesControl = true;
+  823:         } // FCR31
+  824:     }
+  825: 
+  826:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  827:     {
+  828:         uint8_t format = inst.rs;
+  829:         inst.isVU = true;
+  830:         inst.isMultimedia = true;
+--- Line 810 ---
+  798:             inst.hasDelaySlot = true;
+  799:         }
+  800:     }
+  801: 
+  802:     void R5900Decoder::decodeCOP1(Instruction &inst) const
+  803:     {
+  804:         uint8_t format = inst.rs;
+  805:         if (format == COP1_MF || format == COP1_CF)
+  806:         {
+  807:             if (inst.rt != 0)
+  808:                 inst.modificationInfo.modifiesGPR = true;
+  809:         }
+  810:         else if (format == COP1_BC)
+  811:         {
+  812:             inst.isBranch = true;
+  813:             inst.hasDelaySlot = true;
+  814:             inst.modificationInfo.modifiesControl = true;
+  815:         }
+  816:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  817:         {
+  818:             inst.modificationInfo.modifiesFPR = true;
+  819:         }
+  820:         if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  821:         {
+  822:             inst.modificationInfo.modifiesControl = true;
+  823:         } // FCR31
+  824:     }
+  825: 
+  826:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  827:     {
+  828:         uint8_t format = inst.rs;
+  829:         inst.isVU = true;
+  830:         inst.isMultimedia = true;
+  831: 
+  832:         switch (format)
+  833:         {
+  834:         case COP2_QMFC2:
+  835:         case COP2_CFC2:
+--- Line 816 ---
+  804:         uint8_t format = inst.rs;
+  805:         if (format == COP1_MF || format == COP1_CF)
+  806:         {
+  807:             if (inst.rt != 0)
+  808:                 inst.modificationInfo.modifiesGPR = true;
+  809:         }
+  810:         else if (format == COP1_BC)
+  811:         {
+  812:             inst.isBranch = true;
+  813:             inst.hasDelaySlot = true;
+  814:             inst.modificationInfo.modifiesControl = true;
+  815:         }
+  816:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  817:         {
+  818:             inst.modificationInfo.modifiesFPR = true;
+  819:         }
+  820:         if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  821:         {
+  822:             inst.modificationInfo.modifiesControl = true;
+  823:         } // FCR31
+  824:     }
+  825: 
+  826:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  827:     {
+  828:         uint8_t format = inst.rs;
+  829:         inst.isVU = true;
+  830:         inst.isMultimedia = true;
+  831: 
+  832:         switch (format)
+  833:         {
+  834:         case COP2_QMFC2:
+  835:         case COP2_CFC2:
+  836:             if (inst.rt != 0)
+  837:                 inst.modificationInfo.modifiesGPR = true;
+  838:             break;
+  839:         case COP2_QMTC2:
+  840:             inst.modificationInfo.modifiesVFR = true;
+  841:             break; // Modifies VU state
+--- Line 820 ---
+  808:                 inst.modificationInfo.modifiesGPR = true;
+  809:         }
+  810:         else if (format == COP1_BC)
+  811:         {
+  812:             inst.isBranch = true;
+  813:             inst.hasDelaySlot = true;
+  814:             inst.modificationInfo.modifiesControl = true;
+  815:         }
+  816:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  817:         {
+  818:             inst.modificationInfo.modifiesFPR = true;
+  819:         }
+  820:         if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  821:         {
+  822:             inst.modificationInfo.modifiesControl = true;
+  823:         } // FCR31
+  824:     }
+  825: 
+  826:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  827:     {
+  828:         uint8_t format = inst.rs;
+  829:         inst.isVU = true;
+  830:         inst.isMultimedia = true;
+  831: 
+  832:         switch (format)
+  833:         {
+  834:         case COP2_QMFC2:
+  835:         case COP2_CFC2:
+  836:             if (inst.rt != 0)
+  837:                 inst.modificationInfo.modifiesGPR = true;
+  838:             break;
+  839:         case COP2_QMTC2:
+  840:             inst.modificationInfo.modifiesVFR = true;
+  841:             break; // Modifies VU state
+  842:         case COP2_CTC2:
+  843:             inst.modificationInfo.modifiesControl = true;
+  844:             break; // Modifies VU control state
+  845:         case COP2_BC:
+
+==========================================================================================
+SEARCH CONTEXT: ps2xRecomp\src\lib\instruction_translator.cpp
+==========================================================================================
+--- Line 206 ---
+  196:         case OPCODE_SW:
+  197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+  198:         case OPCODE_LQ:
+  199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  200:         case OPCODE_SQ:
+  201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+  202:         case OPCODE_LD:
+  203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  204:         case OPCODE_SD:
+  205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+  206:         case OPCODE_LWC1:
+  207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+  208:         case OPCODE_SWC1:
+  209:             return fmt::format(
+  210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+  211:                 inst.rt,
+  212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+  213:         case OPCODE_LDC2:
+  214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  215:         case OPCODE_SDC2:
+  216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+  217:         case OPCODE_DADDI:
+  218:             return fmt::format(
+  219:                 "{{ int64_t src = (int64_t)GPR_S64(ctx, {}); "
+  220:                 "int64_t imm = (int64_t)(int32_t){}; "
+  221:                 "int64_t res = src + imm; "
+  222:                 "if (((src ^ imm) >= 0) && ((src ^ res) < 0)) "
+  223:                 "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+  224:                 "else SET_GPR_S64(ctx, {}, res); }}",
+  225:                 inst.rs, inst.simmediate, inst.rt);
+  226:         case OPCODE_DADDIU:
+  227:             return fmt::format(
+  228:                 "SET_GPR_S64(ctx, {}, (int64_t)GPR_S64(ctx, {}) + (int64_t)(int32_t){});",
+--- Line 207 ---
+  197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+  198:         case OPCODE_LQ:
+  199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  200:         case OPCODE_SQ:
+  201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+  202:         case OPCODE_LD:
+  203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  204:         case OPCODE_SD:
+  205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+  206:         case OPCODE_LWC1:
+  207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+  208:         case OPCODE_SWC1:
+  209:             return fmt::format(
+  210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+  211:                 inst.rt,
+  212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+  213:         case OPCODE_LDC2:
+  214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  215:         case OPCODE_SDC2:
+  216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+  217:         case OPCODE_DADDI:
+  218:             return fmt::format(
+  219:                 "{{ int64_t src = (int64_t)GPR_S64(ctx, {}); "
+  220:                 "int64_t imm = (int64_t)(int32_t){}; "
+  221:                 "int64_t res = src + imm; "
+  222:                 "if (((src ^ imm) >= 0) && ((src ^ res) < 0)) "
+  223:                 "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+  224:                 "else SET_GPR_S64(ctx, {}, res); }}",
+  225:                 inst.rs, inst.simmediate, inst.rt);
+  226:         case OPCODE_DADDIU:
+  227:             return fmt::format(
+  228:                 "SET_GPR_S64(ctx, {}, (int64_t)GPR_S64(ctx, {}) + (int64_t)(int32_t){});",
+  229:                 inst.rt, inst.rs, inst.simmediate);
+--- Line 210 ---
+  200:         case OPCODE_SQ:
+  201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+  202:         case OPCODE_LD:
+  203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  204:         case OPCODE_SD:
+  205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+  206:         case OPCODE_LWC1:
+  207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+  208:         case OPCODE_SWC1:
+  209:             return fmt::format(
+  210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+  211:                 inst.rt,
+  212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+  213:         case OPCODE_LDC2:
+  214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  215:         case OPCODE_SDC2:
+  216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+  217:         case OPCODE_DADDI:
+  218:             return fmt::format(
+  219:                 "{{ int64_t src = (int64_t)GPR_S64(ctx, {}); "
+  220:                 "int64_t imm = (int64_t)(int32_t){}; "
+  221:                 "int64_t res = src + imm; "
+  222:                 "if (((src ^ imm) >= 0) && ((src ^ res) < 0)) "
+  223:                 "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+  224:                 "else SET_GPR_S64(ctx, {}, res); }}",
+  225:                 inst.rs, inst.simmediate, inst.rt);
+  226:         case OPCODE_DADDIU:
+  227:             return fmt::format(
+  228:                 "SET_GPR_S64(ctx, {}, (int64_t)GPR_S64(ctx, {}) + (int64_t)(int32_t){});",
+  229:                 inst.rt, inst.rs, inst.simmediate);
+  230:         case OPCODE_J:
+  231:             return fmt::format("// J 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+  232:         case OPCODE_JAL:
+
+==========================================================================================
+FILE: ps2xRuntime\include\ps2_runtime_macros.h
+==========================================================================================
+  180: 
+  181: inline float ps2_from_double(double d)
+  182: {
+  183:     const double magnitude = std::fabs(d);
+  184:     const uint32_t sign = std::signbit(d) ? PS2_FLOAT_SIGN_MASK : 0u;
+  185:     if (magnitude >= 0x1p129)
+  186:         return std::bit_cast<float>(sign | PS2_FLOAT_MAX_BITS);
+  187:     if (magnitude < 0x1p-126)
+  188:         return std::bit_cast<float>(sign);
+  189:     if (magnitude >= 0x1p128)
+  190:     {
+  191:         // Convert one exponent lower, then put the exponent back as 255.
+  192:         const uint32_t b = std::bit_cast<uint32_t>(static_cast<float>(d * 0.5));
+  193:         if ((b & PS2_FLOAT_EXP_MASK) == PS2_FLOAT_EXP_MASK)
+  194:             return std::bit_cast<float>(sign | PS2_FLOAT_MAX_BITS);
+  195:         return std::bit_cast<float>(b + 0x00800000u);
+  196:     }
+  197:     // A value that rounds up to 2^128 comes out as the host's Inf pattern, which is 2^128 on the PS2.
+  198:     return static_cast<float>(d);
+  199: }
+  200: 
+  201: PS2_FLOAT_NOINLINE inline float ps2_fadd_slow(float a, float b)
+  202: {
+  203:     // Zero operands and results end up here too; the host result is right for them.
+  204:     const float r = a + b;
+  205:     if (!(ps2_fspecial(a) | ps2_fspecial(b) | ps2_fspecial(r)))
+  206:         return r;
+  207:     return ps2_from_double(ps2_to_double(a) + ps2_to_double(b));
+  208: }
+  209: 
+  210: PS2_FLOAT_NOINLINE inline float ps2_fsub_slow(float a, float b)
+  211: {
+  212:     // Zero operands and results end up here too; the host result is right for them.
+  213:     const float r = a - b;
+  214:     if (!(ps2_fspecial(a) | ps2_fspecial(b) | ps2_fspecial(r)))
+  215:         return r;
+  216:     return ps2_from_double(ps2_to_double(a) - ps2_to_double(b));
+  217: }
+  218: 
+  219: PS2_FLOAT_NOINLINE inline float ps2_fmul_slow(float a, float b)
+  220: {
+  221:     // Zero operands and results end up here too; the host result is right for them.
+  222:     const float r = a * b;
+  223:     if (!(ps2_fspecial(a) | ps2_fspecial(b) | ps2_fspecial(r)))
+  224:         return r;
+  225:     return ps2_from_double(ps2_to_double(a) * ps2_to_double(b));
+  226: }
+  227: 
+  228: // A zero divisor gives +-max with the sign of fs xor ft.
+  229: PS2_FLOAT_NOINLINE inline float ps2_fdiv_slow(float a, float b)
+  230: {
+  231:     const uint32_t ua = std::bit_cast<uint32_t>(a);
+  232:     const uint32_t ub = std::bit_cast<uint32_t>(b);
+  233:     if ((ub & PS2_FLOAT_EXP_MASK) == 0u)
+  234:         return std::bit_cast<float>(((ua ^ ub) & PS2_FLOAT_SIGN_MASK) | PS2_FLOAT_MAX_BITS);
+  235:     const float r = a / b;
+  236:     if (!(ps2_fspecial(a) | ps2_fspecial(b) | ps2_fspecial(r)))
+  237:         return r;
+  238:     return ps2_from_double(ps2_to_double(a) / ps2_to_double(b));
+  239: }
+  240: 
+  241: // sqrt(|ft|); the result is never negative, sqrt(-0) is +0.
+  242: PS2_FLOAT_NOINLINE inline float ps2_fsqrt_slow(float a)
+  243: {
+  244:     if ((std::bit_cast<uint32_t>(a) & PS2_FLOAT_EXP_MASK) == 0u)
+  245:         return 0.0f;
+  246:     return ps2_from_double(std::sqrt(std::fabs(ps2_to_double(a))));
+  247: }
+  248: 
+  249: // fs / sqrt(|ft|). The sign of ft is ignored everywhere, so a zero ft gives +-max with the sign of fs alone.
+  250: PS2_FLOAT_NOINLINE inline float ps2_frsqrt_slow(float a, float b)
+  251: {
+  252:     if ((std::bit_cast<uint32_t>(b) & PS2_FLOAT_EXP_MASK) == 0u)
+  253:         return std::bit_cast<float>((std::bit_cast<uint32_t>(a) & PS2_FLOAT_SIGN_MASK) | PS2_FLOAT_MAX_BITS);
+  254:     // The root is rounded to a float before the division, as on the hardware.
+  255:     const float root = ps2_from_double(std::sqrt(std::fabs(ps2_to_double(b))));
+  256:     return ps2_from_double(ps2_to_double(a) / static_cast<double>(root));
+  257: }
+  258: 
+  259: // True when a, b and the host result r are all normal numbers, so r is also the PS2 result.
+  260: inline bool ps2_fall_normal(float a, float b, float r)
+  261: {
+  262:     // Doubling drops the sign; adding one exponent step wraps exponent 255 round to 0 next to exponent 0.
+  263:     const uint32_t sa = std::bit_cast<uint32_t>(a) * 2u + 0x01000000u;
+  264:     const uint32_t sb = std::bit_cast<uint32_t>(b) * 2u + 0x01000000u;
+  265:     const uint32_t sr = std::bit_cast<uint32_t>(r) * 2u + 0x01000000u;
+  266:     uint32_t lowest = sa < sb ? sa : sb;
+  267:     lowest = lowest < sr ? lowest : sr;
+  268:     return lowest >= 0x02000000u;
+  269: }
+  270: 
+  271: // The same test on the result alone. An exponent-255 operand always leaves exponent 255 in the host result
+  272: // of an addition, subtraction or multiplication (Inf or NaN), so this finds those operands as well.
+  273: inline bool ps2_fnormal(float r)
+  274: {
+  275:     return (std::bit_cast<uint32_t>(r) * 2u + 0x01000000u) >= 0x02000000u;
+  276: }
+  277: 
+  278: inline float ps2_fadd(float a, float b)
+  279: {
+  280:     const float r = a + b;
+  281:     return ps2_fnormal(r) ? r : ps2_fadd_slow(a, b);
+  282: }
+  283: 
+  284: inline float ps2_fsub(float a, float b)
+  285: {
+  286:     const float r = a - b;
+  287:     return ps2_fnormal(r) ? r : ps2_fsub_slow(a, b);
+  288: }
+  289: 
+  290: inline float ps2_fmul(float a, float b)
+  291: {
+  292:     const float r = a * b;
+  293:     return ps2_fnormal(r) ? r : ps2_fmul_slow(a, b);
+  294: }
+  295: 
+  296: inline float ps2_fdiv(float a, float b)
+  297: {
+  298:     const float r = a / b;
+  299:     return ps2_fall_normal(a, b, r) ? r : ps2_fdiv_slow(a, b);
+  300: }
+  301: 
+  302: inline float ps2_fsqrt(float a)
+  303: {
+  304:     const float r = std::sqrt(a);
+  305:     return ps2_fall_normal(a, a, r) ? r : ps2_fsqrt_slow(a);
+  306: }
+  307: 
+  308: inline float ps2_frsqrt(float a, float b)
+  309: {
+  310:     const float r = a / std::sqrt(b);
+  311:     return ps2_fall_normal(a, b, r) ? r : ps2_frsqrt_slow(a, b);
+  312: }
+  313: 
+  314: enum class Ps2VecOp
+  315: {
+  316:     Add,
+  317:     Sub,
+  318:     Mul
+  319: };
+  320: 
+  321: // Lane by lane through the scalar helpers; only reached when a result lane has exponent 255.
+  322: PS2_FLOAT_NOINLINE inline __m128 ps2_vslow(__m128 a, __m128 b, Ps2VecOp op)
+  323: {
+  324:     alignas(16) float la[4], lb[4], lr[4];
+  325:     _mm_store_ps(la, a);
+
+==========================================================================================
+FILE: ps2xRuntime\include\ps2_runtime_macros.h
+==========================================================================================
+  890:     ctx->lo = (ctx->lo & 0xFFFFFFFF00000000ull) | words[0];
+  891:     ctx->hi = (ctx->hi & 0xFFFFFFFF00000000ull) | words[1];
+  892:     ctx->lo1 = (ctx->lo1 & 0xFFFFFFFF00000000ull) | words[2];
+  893:     ctx->hi1 = (ctx->hi1 & 0xFFFFFFFF00000000ull) | words[3];
+  894: }
+  895: 
+  896: #define PS2_PMFHL_LW(ctx) ps2_pmfhl(ctx, 0)
+  897: #define PS2_PMFHL_UW(ctx) ps2_pmfhl(ctx, 1)
+  898: #define PS2_PMFHL_SLW(ctx) ps2_pmfhl(ctx, 2)
+  899: #define PS2_PMFHL_LH(ctx) ps2_pmfhl(ctx, 3)
+  900: #define PS2_PMFHL_SH(ctx) ps2_pmfhl(ctx, 4)
+  901: #define PS2_PMTHL_LW(ctx, value) ps2_pmthl_lw(ctx, value)
+  902: 
+  903: // FPU (COP1) operations
+  904: #define FPU_SET_ACC(ctx, res) (ctx->f_acc = res)
+  905: #define FPU_ADD_S(a, b) ps2_fadd((float)(a), (float)(b))
+  906: #define FPU_SUB_S(a, b) ps2_fsub((float)(a), (float)(b))
+  907: #define FPU_MUL_S(a, b) ps2_fmul((float)(a), (float)(b))
+  908: #define FPU_DIV_S(a, b) ps2_fdiv((float)(a), (float)(b))
+  909: #define FPU_RSQRT_S(a, b) ps2_frsqrt((float)(a), (float)(b))
+  910: #define FPU_SQRT_S(a) ps2_fsqrt((float)(a))
+  911: #define FPU_ABS_S(a) fabsf((float)(a))
+  912: #define FPU_MOV_S(a) ((float)(a))
+  913: #define FPU_NEG_S(a) (-(float)(a))
+  914: #define FPU_ROUND_L_S(a) ((int64_t)roundf((float)(a)))
+  915: #define FPU_TRUNC_L_S(a) ((int64_t)(float)(a))
+
+==========================================================================================
+FILE: ps2xRuntime\include\ps2_runtime.h
+==========================================================================================
+  125:     uint32_t cop0_debug;
+  126:     uint32_t cop0_perf;
+  127:     uint32_t cop0_taglo;
+  128:     uint32_t cop0_taghi;
+  129:     uint32_t cop0_errorepc;
+  130: 
+  131:     // LL/SC reservation state (not part of COP0 Status bits).
+  132:     uint32_t llbit;
+  133:     uint32_t lladdr;
+  134: 
+  135:     // Delay slot state tracking
+  136:     bool in_delay_slot;
+  137:     uint32_t branch_pc;
+  138: 
+  139:     // COP2 control registers (VU0 integer + control)
+  140:     uint32_t cop2_ccr[32];
+  141: 
+  142:     // FPU registers (COP1)
+  143:     float f[32];
+  144:     float f_acc;    // FPU accumulator
+  145:     uint32_t fcr31; // Control/status register
+  146: 
+  147:     R5900Context()
+  148:     {
+  149:         std::memset(this, 0, sizeof(*this));
+  150: 
+  151:         // Initialize VU0 registers
+  152:         vu0_q = 1.0f; // Q register usually initialized to 1.0
+  153: 
+  154:         // Reset COP0 registers
+  155:         cop0_random = 47; // Start at maximum value
+
+==========================================================================================
+FILE: ps2xTest\src\ps2_float_semantics_tests.cpp
+==========================================================================================
+    1: #include "MiniTest.h"
+    2: #include "ps2recomp/code_generator.h"
+    3: #include "ps2recomp/instructions.h"
+    4: #include "ps2recomp/types.h"
+    5: #include "ps2_runtime_macros.h"
+    6: 
+    7: #include <cmath>
+    8: #include <cstdint>
+    9: #include <cstdio>
+   10: #include <cstring>
+   11: #include <limits>
+   12: #include <string>
+   13: 
+   14: using namespace ps2recomp;
+   15: 
+   16: namespace
+   17: {
+   18:     constexpr uint32_t kPlusMax = 0x7FFFFFFFu;
+   19:     constexpr uint32_t kMinusMax = 0xFFFFFFFFu;
+   20:     // 2^128: the host's +Inf pattern, an ordinary number on the PS2.
+   21:     constexpr uint32_t kTwoPow128 = 0x7F800000u;
+   22: 
+   23:     uint32_t bitsOf(float f)
+   24:     {
+   25:         uint32_t b;
+   26:         std::memcpy(&b, &f, sizeof(b));
+   27:         return b;
+   28:     }
+   29: 
+   30:     float floatOf(uint32_t b)
+   31:     {
+   32:         float f;
+   33:         std::memcpy(&f, &b, sizeof(f));
+   34:         return f;
+   35:     }
+   36: 
+   37:     Instruction makeCop1S(uint32_t function, uint8_t fd, uint8_t fs, uint8_t ft)
+   38:     {
+   39:         Instruction inst{};
+   40:         inst.opcode = OPCODE_COP1;
+   41:         inst.rs = COP1_S;
+   42:         inst.rt = ft;
+   43:         inst.rd = fs;
+   44:         inst.sa = fd;
+   45:         inst.function = function;
+   46:         return inst;
+   47:     }
+   48: 
+   49:     uint32_t laneBits(__m128 v, int lane)
+   50:     {
+   51:         float lanes[4];
+   52:         _mm_storeu_ps(lanes, v);
+   53:         return bitsOf(lanes[lane]);
+   54:     }
+   55: 
+   56:     struct HardwareVector
+   57:     {
+   58:         const char *op;
+   59:         uint32_t fs;
+   60:         uint32_t ft;
+   61:         uint32_t result;
+   62:         // 0: must match exactly.
+   63:         // 1: the hardware does not round to nearest (ADD.S and MUL.S drop the low bits, the divide unit has its
+   64:         //    own rule); rounding is not emulated, so the row differs in the last mantissa bit.
+   65:         // 2: an ADD.S/SUB.S/MUL.S operand has exponent 0 and a non-zero mantissa. The hardware reads it as
+   66:         //    zero; the fast path does not look for it. Not checked.
+   67:         int known;
+   68:     };
+   69: 
+   70:     const HardwareVector kHardwareVectors[] = {
+   71: #include "ps2_float_hw_vectors.inc"
+   72:     };
+   73: 
+   74:     uint32_t runHardwareOp(const HardwareVector &v)
+   75:     {
+   76:         const float fs = floatOf(v.fs);
+   77:         const float ft = floatOf(v.ft);
+   78:         const std::string op = v.op;
+   79:         if (op == "add")
+   80:             return bitsOf(FPU_ADD_S(fs, ft));
+   81:         if (op == "sub")
+   82:             return bitsOf(FPU_SUB_S(fs, ft));
+   83:         if (op == "mul")
+   84:             return bitsOf(FPU_MUL_S(fs, ft));
+   85:         if (op == "div")
+   86:             return bitsOf(FPU_DIV_S(fs, ft));
+   87:         if (op == "sqrt")
+   88:             return bitsOf(FPU_SQRT_S(fs));
+   89:         return bitsOf(FPU_RSQRT_S(fs, ft));
+   90:     }
+   91: 
+   92:     std::string describe(const HardwareVector &v, uint32_t got)
+   93:     {
+   94:         char text[160];
+   95:         std::snprintf(text, sizeof(text), "%s %08x, %08x: PS2 gives %08x, got %08x", v.op, v.fs, v.ft, v.result, got);
+   96:         return text;
+   97:     }
+   98: }
+   99: 
+  100: void register_ps2_float_semantics_tests()
+  101: {
+  102:     MiniTest::Case("PS2FloatSemantics", [](TestCase &tc)
+  103:     {
+  104:         tc.Run("FPU results match the PS2 hardware results from ps2autotests", [](TestCase &t)
+  105:         {
+  106:             for (const HardwareVector &v : kHardwareVectors)
+  107:             {
+  108:                 if (v.known == 2)
+  109:                     continue;
+  110:                 const uint32_t got = runHardwareOp(v);
+  111:                 if (v.known == 1)
+  112:                 {
+  113:                     const uint32_t distance = got > v.result ? got - v.result : v.result - got;
+  114:                     t.IsTrue(distance == 1u, describe(v, got));
+  115:                 }
+  116:                 else
+  117:                 {
+  118:                     t.Equals(got, v.result, describe(v, got));
+  119:                 }
+  120:             }
+  121:         });
+  122: 
+  123:         tc.Run("exponent 255 is an ordinary exponent, not Inf or NaN", [](TestCase &t)
+  124:         {
+  125:             const float twoPow128 = floatOf(kTwoPow128);
+  126:             t.Equals(bitsOf(FPU_ADD_S(twoPow128, 0.0f)), kTwoPow128, "2^128 + 0 should stay 2^128");
+  127:             t.Equals(bitsOf(FPU_MUL_S(twoPow128, 0.5f)), 0x7F000000u, "2^128 * 0.5 should be 2^127");
+  128:             t.Equals(bitsOf(FPU_MUL_S(floatOf(0x7F000000u), 2.0f)), kTwoPow128, "2^127 * 2 should be 2^128, not saturated");
+  129:             t.Equals(bitsOf(FPU_ADD_S(floatOf(0x7F000000u), floatOf(0x7F000000u))), kTwoPow128, "2^127 + 2^127 should be 2^128");
+  130:             t.Equals(bitsOf(FPU_SUB_S(floatOf(0x7FC00000u), twoPow128)), 0x7F000000u, "1.5*2^128 - 2^128 should be 2^127");
+  131:             t.Equals(bitsOf(FPU_DIV_S(floatOf(0x7FC00000u), 3.0f)), 0x7F000000u, "1.5*2^128 / 3 should be 2^127");
+  132:             t.Equals(bitsOf(FPU_SQRT_S(twoPow128)), 0x5F800000u, "sqrt(2^128) should be 2^64");
+  133:         });
+  134: 
+  135:         tc.Run("FPU results saturate at 0x7FFFFFFF and flush below 2^-126", [](TestCase &t)
+  136:         {
+  137:             const float maxf = floatOf(kPlusMax);
+  138:             const float minf = floatOf(kMinusMax);
+  139:             t.Equals(bitsOf(FPU_ADD_S(maxf, maxf)), kPlusMax, "max + max should saturate to +max");
+  140:             t.Equals(bitsOf(FPU_ADD_S(minf, minf)), kMinusMax, "-max + -max should saturate to -max");
+  141:             t.Equals(bitsOf(FPU_SUB_S(maxf, minf)), kPlusMax, "max - (-max) should saturate to +max");
+  142:             t.Equals(bitsOf(FPU_MUL_S(maxf, 2.0f)), kPlusMax, "max * 2 should saturate to +max");
+  143:             t.Equals(bitsOf(FPU_MUL_S(maxf, -2.0f)), kMinusMax, "max * -2 should saturate to -max");
+  144:             t.Equals(bitsOf(FPU_DIV_S(maxf, 0.5f)), kPlusMax, "max / 0.5 should saturate to +max");
+  145:             t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00800000u), 0.5f)), 0x00000000u, "2^-126 * 0.5 should flush to +0");
+  146:             t.Equals(bitsOf(FPU_MUL_S(floatOf(0x80800000u), 0.5f)), 0x80000000u, "-2^-126 * 0.5 should flush to -0");
+  147:             t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00000001u), 1.0f)), 0x00000000u, "a result with exponent 0 should flush to +0");
+  148:             t.Equals(bitsOf(FPU_ADD_S(1.0f, 2.0f)), bitsOf(3.0f), "ordinary addition should be unchanged");
+  149:             t.Equals(bitsOf(FPU_MUL_S(1.5f, 4.0f)), bitsOf(6.0f), "ordinary multiplication should be unchanged");
+  150:         });
+  151: 
+  152:         tc.Run("FPU DIV.S by zero gives +-max with the sign of fs xor ft", [](TestCase &t)
+  153:         {
+  154:             t.Equals(bitsOf(FPU_DIV_S(1.0f, 0.0f)), kPlusMax, "1/+0 should be +max");
+  155:             t.Equals(bitsOf(FPU_DIV_S(-1.0f, 0.0f)), kMinusMax, "-1/+0 should be -max");
+  156:             t.Equals(bitsOf(FPU_DIV_S(1.0f, -0.0f)), kMinusMax, "1/-0 should be -max");
+  157:             t.Equals(bitsOf(FPU_DIV_S(-1.0f, -0.0f)), kPlusMax, "-1/-0 should be +max");
+  158:             t.Equals(bitsOf(FPU_DIV_S(0.0f, 0.0f)), kPlusMax, "0/0 should be +max");
+  159:             t.Equals(bitsOf(FPU_DIV_S(1.0f, floatOf(0x00000001u))), kPlusMax, "an exponent-0 divisor should count as zero");
+  160:             t.Equals(bitsOf(FPU_DIV_S(6.0f, 3.0f)), bitsOf(2.0f), "ordinary division should be unchanged");
+  161:         });
+  162: 
+  163:         tc.Run("FPU RSQRT.S computes fs / sqrt(|ft|) and takes the sign of fs alone on a zero ft", [](TestCase &t)
+  164:         {
+  165:             t.Equals(bitsOf(FPU_RSQRT_S(4.0f, 16.0f)), bitsOf(1.0f), "4 / sqrt(16) should be 1");
+  166:             t.Equals(bitsOf(FPU_RSQRT_S(1.0f, 4.0f)), bitsOf(0.5f), "1 / sqrt(4) should be 0.5");
+  167:             t.Equals(bitsOf(FPU_RSQRT_S(1.0f, -4.0f)), bitsOf(0.5f), "the sign of the radicand should be ignored");
+  168:             t.Equals(bitsOf(FPU_RSQRT_S(2.0f, 0.0f)), kPlusMax, "x / sqrt(+0) should be +max");
+  169:             t.Equals(bitsOf(FPU_RSQRT_S(2.0f, -0.0f)), kPlusMax, "x / sqrt(-0) should be +max: the sign of ft is ignored");
+  170:             t.Equals(bitsOf(FPU_RSQRT_S(-2.0f, 0.0f)), kMinusMax, "-x / sqrt(+0) should be -max");
+  171:             t.Equals(bitsOf(FPU_RSQRT_S(-2.0f, -0.0f)), kMinusMax, "-x / sqrt(-0) should be -max");
+  172:         });
+  173: 
+  174:         tc.Run("FPU SQRT.S takes the square root of the magnitude", [](TestCase &t)
+  175:         {
+  176:             t.Equals(bitsOf(FPU_SQRT_S(16.0f)), bitsOf(4.0f), "sqrt(16) should be 4");
+  177:             t.Equals(bitsOf(FPU_SQRT_S(-16.0f)), bitsOf(4.0f), "sqrt(-16) should be 4");
+  178:             t.Equals(bitsOf(FPU_SQRT_S(-0.0f)), bitsOf(0.0f), "sqrt(-0) should be +0");
+  179:         });
+  180: 
+  181:         tc.Run("VU vector ADD/SUB/MUL follow the same rules in every lane", [](TestCase &t)
+  182:         {
+  183:             // _mm_set_ps lists lanes 3..0
+  184:             const __m128 a = _mm_set_ps(1.0f, floatOf(kTwoPow128), floatOf(kMinusMax), floatOf(kPlusMax));
+  185:             const __m128 b = _mm_set_ps(2.0f, 1.0f, floatOf(kMinusMax), floatOf(kPlusMax));
+  186: 
+  187:             const __m128 sum = PS2_VADD(a, b);
+  188:             t.Equals(laneBits(sum, 0), kPlusMax, "lane 0: max + max should saturate to +max");
+  189:             t.Equals(laneBits(sum, 1), kMinusMax, "lane 1: -max + -max should saturate to -max");
+  190:             t.Equals(laneBits(sum, 2), kTwoPow128, "lane 2: 2^128 + 1 should stay 2^128");
+  191:             t.Equals(laneBits(sum, 3), bitsOf(3.0f), "lane 3: 1 + 2 should be 3");
+  192: 
+  193:             const __m128 diff = PS2_VSUB(a, b);
+  194:             t.Equals(laneBits(diff, 0), bitsOf(0.0f), "lane 0: max - max should be 0");
+  195:             t.Equals(laneBits(diff, 2), kTwoPow128, "lane 2: 2^128 - 1 should stay 2^128");
+  196:             t.Equals(laneBits(diff, 3), bitsOf(-1.0f), "lane 3: 1 - 2 should be -1");
+  197: 
+  198:             const __m128 prod = PS2_VMUL(a, b);
+  199:             t.Equals(laneBits(prod, 0), kPlusMax, "lane 0: max * max should saturate to +max");
+  200:             t.Equals(laneBits(prod, 1), kPlusMax, "lane 1: -max * -max should saturate to +max");
+  201:             t.Equals(laneBits(prod, 2), kTwoPow128, "lane 2: 2^128 * 1 should stay 2^128");
+  202:             t.Equals(laneBits(prod, 3), bitsOf(2.0f), "lane 3: 1 * 2 should be 2");
+  203: 
+  204:             const __m128 tiny = _mm_set_ps(1.0f, floatOf(0x80800000u), floatOf(0x00800000u), 3.0f);
+  205:             const __m128 half = _mm_set1_ps(0.5f);
+  206:             const __m128 flushed = PS2_VMUL(tiny, half);
+  207:             t.Equals(laneBits(flushed, 0), bitsOf(1.5f), "lane 0: 3 * 0.5 should be 1.5");
+  208:             t.Equals(laneBits(flushed, 1), 0x00000000u, "lane 1: 2^-126 * 0.5 should flush to +0");
+  209:             t.Equals(laneBits(flushed, 2), 0x80000000u, "lane 2: -2^-126 * 0.5 should flush to -0");
+  210:             t.Equals(laneBits(flushed, 3), bitsOf(0.5f), "lane 3: 1 * 0.5 should be 0.5");
+  211:         });
+  212: 
+  213:         tc.Run("DIV.S and RSQRT.S translate to the PS2 semantics helpers", [](TestCase &t)
+  214:         {
+  215:             CodeGenerator gen({}, {});
+  216: 
+  217:             // fd = f2, fs = f3, ft = f4 (all distinct so a wrong operand shows up)
+  218:             const std::string div = gen.translateInstruction(makeCop1S(COP1_S_DIV, 2, 3, 4));
+  219:             t.IsTrue(div.find("ctx->f[2] = FPU_DIV_S(ctx->f[3], ctx->f[4])") != std::string::npos,
+  220:                      "DIV.S should write fs / ft to fd but got: " + div);
+  221:             t.IsTrue(div.find("INFINITY") == std::string::npos, "DIV.S must not produce IEEE infinity but got: " + div);
+  222: 
+  223:             const std::string rsqrt = gen.translateInstruction(makeCop1S(COP1_S_RSQRT, 2, 3, 4));
+  224:             t.IsTrue(rsqrt.find("ctx->f[2] = FPU_RSQRT_S(ctx->f[3], ctx->f[4])") != std::string::npos,
+  225:                      "RSQRT.S should compute fs / sqrt(ft) but got: " + rsqrt);
+  226:         });
+  227:     });
+  228: }
+
+==========================================================================================
+FILE: ps2xTest\src\code_generator_tests.cpp
+==========================================================================================
+ 1010:             Instruction ctc1{};
+ 1011:             ctc1.opcode = OPCODE_COP1;
+ 1012:             ctc1.rs = COP1_CT;
+ 1013:             ctc1.rt = 4;
+ 1014:             ctc1.rd = 31;
+ 1015: 
+ 1016:             std::string ctc1Code = gen.translateInstruction(ctc1);
+ 1017:             printGeneratedCode("FCR access uses CFC1/CTC1 (CTC1)", ctc1Code);
+ 1018:             t.IsTrue(ctc1Code.find("ctx->fcr31 = GPR_U32(ctx, 4) & 0x0183FFFF") != std::string::npos,
+ 1019:                      "CTC1 FCR31 should mask and write fcr31");
+ 1020:             t.IsTrue(ctc1Code.find("ignored") == std::string::npos, "CTC1 FCR31 should not be ignored");
+ 1021:         });
+ 1022: 
+ 1023:         tc.Run("SQRT.S reads its operand from ft", [](TestCase &t) {
+ 1024:             CodeGenerator gen({}, {});
+ 1025: 
+ 1026:             // 0x46160504: sqrt.s $f20, $f22 as the EE encodes it, with the fs field zero.
+ 1027:             Instruction sqrt{};
+ 1028:             sqrt.opcode = OPCODE_COP1;
+ 1029:             sqrt.rs = COP1_S;
+ 1030:             sqrt.rt = 22;
+ 1031:             sqrt.rd = 0;
+ 1032:             sqrt.sa = 20;
+ 1033:             sqrt.function = COP1_S_SQRT;
+ 1034: 
+ 1035:             std::string code = gen.translateInstruction(sqrt);
+ 1036:             printGeneratedCode("SQRT.S reads its operand from ft", code);
+ 1037:             t.IsTrue(code.find("ctx->f[20] = FPU_SQRT_S(ctx->f[22])") != std::string::npos,
+ 1038:                      "SQRT.S should take the square root of ft into fd");
+ 1039:         });
+ 1040: 
+ 1041:         tc.Run("VU CFC2/CTC2 access VI registers directly", [](TestCase& t)
+ 1042:             {
+ 1043:                 CodeGenerator gen({}, {});
+ 1044: 
+ 1045:                 Instruction cfc2{};
+
+==========================================================================================
+BUILD AND TEST DISCOVERY
+==========================================================================================
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xAnalyzer\CMakeFiles\_CMakeLTOTest-C\bin
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xAnalyzer/CMakeFiles/_CMakeLTOTest-C/bin
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xAnalyzer\CMakeFiles\_CMakeLTOTest-CXX\bin
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xAnalyzer/CMakeFiles/_CMakeLTOTest-CXX/bin
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xRecomp\CMakeFiles\_CMakeLTOTest-C\bin
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xRecomp/CMakeFiles/_CMakeLTOTest-C/bin
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xRecomp\CMakeFiles\_CMakeLTOTest-CXX\bin
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xRecomp/CMakeFiles/_CMakeLTOTest-CXX/bin
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xRuntime\CMakeFiles\_CMakeLTOTest-C\bin
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xRuntime/CMakeFiles/_CMakeLTOTest-C/bin
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xRuntime\CMakeFiles\_CMakeLTOTest-CXX\bin
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xRuntime/CMakeFiles/_CMakeLTOTest-CXX/bin
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xStudio\CMakeFiles\_CMakeLTOTest-C\bin
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xStudio/CMakeFiles/_CMakeLTOTest-C/bin
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xStudio\CMakeFiles\_CMakeLTOTest-CXX\bin
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xStudio/CMakeFiles/_CMakeLTOTest-CXX/bin
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xTest\CMakeFiles\_CMakeLTOTest-C\bin
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xTest/CMakeFiles/_CMakeLTOTest-C/bin
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xTest\CMakeFiles\_CMakeLTOTest-CXX\bin
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xTest/CMakeFiles/_CMakeLTOTest-CXX/bin
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\elfio-subbuild
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/elfio-subbuild
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\fmt-subbuild
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/fmt-subbuild
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\imgui-subbuild
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/imgui-subbuild
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\imgui_club-subbuild
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/imgui_club-subbuild
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\imgui_colortextedit-subbuild
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/imgui_colortextedit-subbuild
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\imgui_file_dialog-subbuild
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/imgui_file_dialog-subbuild
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\libdwarf-subbuild
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/libdwarf-subbuild
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\nlohmann_json-subbuild
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/nlohmann_json-subbuild
+
+Total Tests: 0
+BUILD DIRECTORY: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-subbuild
+CTest available: D:\Downloads\Microsoft Visual Studio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\ctest.exe
+Test project D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/rabbitizer-subbuild
+
+Total Tests: 0
+
+TEST EXECUTABLE DISCOVERY
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\libdwarf-src\test\testobjLE32PE.exe
+
+==========================================================================================
+END OF REPORT
+==========================================================================================
+Read-only source inspection. No tests were executed.
+No source or build files were modified.
