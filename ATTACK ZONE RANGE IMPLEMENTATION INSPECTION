@@ -1,0 +1,2137 @@
+MARK OF KRI — ATTACK ZONE RANGE IMPLEMENTATION INSPECTION
+Generated: 2026-11-25 15:58:42
+Project: D:\Games\MarkOfKriRecomp
+New isolated workspace target: D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution
+No existing source files are modified by this inspection.
+
+==============================================================================
+ATTACK ZONE FUNCTION — ADDRESS, INSTRUCTIONS, AND SEMANTICS
+PATH: D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_EVIDENCE_20261125_155026.txt
+==============================================================================
+---
+     2: Started: 2026-11-25 15:50:26
+     3: Target: getAttackZoneRange
+     4: Guest address: 0x001D20C8
+     5: Expected instruction count: 14
+     6: 
+     7: SEARCHING: D:\Games\MarkOfKriRecomp\ps2recomp_evaluation
+---
+    19:     23: 3. Update__9Shimmer2Df | Entry=002d6850 | Instructions=10 | Features=BRANCH_OR_JUMP
+    20:     24: 4. Load__7envGridPv | Entry=003208a0 | Instructions=12 | Features=BRANCH_OR_JUMP
+    21:     25: 5. getAttackZoneRange__9NpcMasterP3NpcPfT2 | Entry=001d20c8 | Instructions=14 | Features=MEMORY+BRANCH_OR_JUMP
+    22:     26: 6. doorReset__FP6Mscobj | Entry=001f0078 | Instructions=16 | Features=MEMORY+BRANCH_OR_JUMP
+    23:     27: 7. DIntr | Entry=00392e40 | Instructions=18 | Features=ARITHMETIC+BRANCH_OR_JUMP
+    24:     28: 8. Init__10gsBackdropi | Entry=002dc180 | Instructions=20 | Features=MEMORY+BRANCH_OR_JUMP
+---
+    47:     58: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED Update__9Shimmer2Df @ 0x002D6850 instructions=10 (GhidraScript)  
+    48:     59: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED Load__7envGridPv @ 0x003208A0 instructions=12 (GhidraScript)  
+    49:     60: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED getAttackZoneRange__9NpcMasterP3NpcPfT2 @ 0x001D20C8 instructions=14 (GhidraScript)  
+    50:     61: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED doorReset__FP6Mscobj @ 0x001F0078 instructions=16 (GhidraScript)  
+    51:     62: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED DIntr @ 0x00392E40 instructions=18 (GhidraScript)  
+    52:     63: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED Init__10gsBackdropi @ 0x002DC180 instructions=20 (GhidraScript)  
+---
+    83:     48: getAttackZoneRange__9NpcMasterP3NpcPfT2
+    84:     49: ================================================================
+    85:     50: Entry=001d20c8 | Expected instructions=14 | Actual records=0 | Features=MEMORY+BRANCH_OR_JUMP
+    86:     51: 
+    87:     52: WARNING: No instruction records found for this function.
+    88:     53: 
+---
+   105: MATCH 4
+   106: File: D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_generation\MARK_OF_KRI_NEXT_SLICE_INSTRUCTION_INSPECTION_20261125_111236.txt
+   107: Pattern: 001d20c8
+   108: Line: 50
+   109:     42: WARNING: No instruction records found for this function.
+   110:     43: 
+---
+   115:     48: getAttackZoneRange__9NpcMasterP3NpcPfT2
+   116:     49: ================================================================
+   117:     50: Entry=001d20c8 | Expected instructions=14 | Actual records=0 | Features=MEMORY+BRANCH_OR_JUMP
+   118:     51: 
+   119:     52: WARNING: No instruction records found for this function.
+   120:     53: 
+---
+   177:    120: 
+   178:    121: FUNCTION: getAttackZoneRange__9NpcMasterP3NpcPfT2
+   179:    122: Entry: 0x001d20c8
+   180:    123: Expected instructions: 14
+   181:    124: Extracted instructions: 14
+   182:    125: Features from candidate discovery: MEMORY+BRANCH_OR_JUMP
+   183:    126: 
+   184:    127: 001D20C8 | 8CA30014 | lw | LOAD | lw v1,0x14(a1)
+   185:    128: 001D20CC | 24020047 | li | OTHER | li v0,0x47
+   186:    129: 001D20D0 | 54620007 | bnel | OTHER | bnel v1,v0,0x001d20f0
+   187:    130: 001D20D4 | C4A026E4 | _lwc1 | OTHER | _lwc1 f0,0x26e4(a1)
+   188:    131: 001D20D8 | 3C014130 | lui | INTEGER_ALU | lui at,0x4130
+   189:    132: 001D20DC | 44810000 | mtc1 | FPU | mtc1 at,f0
+   190:    133: 001D20E0 | 00000000 | nop | OTHER | nop
+---
+   193:    136: 001D20EC | E4C00000 | _swc1 | OTHER | _swc1 f0,0x0(a2)
+   194:    137: 001D20F0 | E4C00000 | swc1 | STORE+FPU | swc1 f0,0x0(a2)
+   195:    138: 001D20F4 | C4A126E8 | lwc1 | LOAD+FPU | lwc1 f1,0x26e8(a1)
+   196:    139: 001D20F8 | 03E00008 | jr | BRANCH_OR_JUMP | jr ra
+   197:    140: 001D20FC | E4E10000 | _swc1 | OTHER | _swc1 f1,0x0(a3)
+   198:    141: 
+---
+   200: MATCH 7
+   201: File: D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\next_slice_semantic_inspection\MARK_OF_KRI_NEXT_SLICE_SEMANTIC_INSPECTION_20261125_112113.txt
+   202: Pattern: 001d20c8
+   203: Line: 122
+   204:    114:   OTHER = 10
+   205:    115: Overall semantic risk: LOW
+---
+   210:    120: 
+   211:    121: FUNCTION: getAttackZoneRange__9NpcMasterP3NpcPfT2
+   212:    122: Entry: 0x001d20c8
+   213:    123: Expected instructions: 14
+   214:    124: Extracted instructions: 14
+   215:    125: Features from candidate discovery: MEMORY+BRANCH_OR_JUMP
+   216:    126: 
+   217:    127: 001D20C8 | 8CA30014 | lw | LOAD | lw v1,0x14(a1)
+   218:    128: 001D20CC | 24020047 | li | OTHER | li v0,0x47
+   219:    129: 001D20D0 | 54620007 | bnel | OTHER | bnel v1,v0,0x001d20f0
+   220:    130: 001D20D4 | C4A026E4 | _lwc1 | OTHER | _lwc1 f0,0x26e4(a1)
+   221:    131: 001D20D8 | 3C014130 | lui | INTEGER_ALU | lui at,0x4130
+   222:    132: 001D20DC | 44810000 | mtc1 | FPU | mtc1 at,f0
+   223:    133: 001D20E0 | 00000000 | nop | OTHER | nop
+---
+   226:    136: 001D20EC | E4C00000 | _swc1 | OTHER | _swc1 f0,0x0(a2)
+   227:    137: 001D20F0 | E4C00000 | swc1 | STORE+FPU | swc1 f0,0x0(a2)
+   228:    138: 001D20F4 | C4A126E8 | lwc1 | LOAD+FPU | lwc1 f1,0x26e8(a1)
+   229:    139: 001D20F8 | 03E00008 | jr | BRANCH_OR_JUMP | jr ra
+   230:    140: 001D20FC | E4E10000 | _swc1 | OTHER | _swc1 f1,0x0(a3)
+   231:    141: 
+---
+   234: MATCH 8
+   235: File: D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\next_slice_semantic_inspection\MARK_OF_KRI_NEXT_SLICE_SEMANTIC_INSPECTION_20261125_112113.txt
+   236: Pattern: 001d20c8
+   237: Line: 127
+   238:    119: ------------------------------------------------------------
+   239:    120: 
+   240:    121: FUNCTION: getAttackZoneRange__9NpcMasterP3NpcPfT2
+   241:    122: Entry: 0x001d20c8
+   242:    123: Expected instructions: 14
+   243:    124: Extracted instructions: 14
+   244:    125: Features from candidate discovery: MEMORY+BRANCH_OR_JUMP
+   245:    126: 
+   246:    127: 001D20C8 | 8CA30014 | lw | LOAD | lw v1,0x14(a1)
+   247:    128: 001D20CC | 24020047 | li | OTHER | li v0,0x47
+   248:    129: 001D20D0 | 54620007 | bnel | OTHER | bnel v1,v0,0x001d20f0
+   249:    130: 001D20D4 | C4A026E4 | _lwc1 | OTHER | _lwc1 f0,0x26e4(a1)
+   250:    131: 001D20D8 | 3C014130 | lui | INTEGER_ALU | lui at,0x4130
+   251:    132: 001D20DC | 44810000 | mtc1 | FPU | mtc1 at,f0
+   252:    133: 001D20E0 | 00000000 | nop | OTHER | nop
+---
+   255:    136: 001D20EC | E4C00000 | _swc1 | OTHER | _swc1 f0,0x0(a2)
+   256:    137: 001D20F0 | E4C00000 | swc1 | STORE+FPU | swc1 f0,0x0(a2)
+   257:    138: 001D20F4 | C4A126E8 | lwc1 | LOAD+FPU | lwc1 f1,0x26e8(a1)
+   258:    139: 001D20F8 | 03E00008 | jr | BRANCH_OR_JUMP | jr ra
+   259:    140: 001D20FC | E4E10000 | _swc1 | OTHER | _swc1 f1,0x0(a3)
+   260:    141: 
+---
+   278:    307: 5. Init__10gsBackdropi | Entry 0x002dc180 | Instructions=20 | Risk=LOW-MEDIUM | Calls=0 | Features=MEMORY+BRANCH_OR_JUMP
+   279:    308: 6. Update__9Shimmer2Df | Entry 0x002d6850 | Instructions=10 | Risk=HIGH | Calls=0 | Features=BRANCH_OR_JUMP
+   280:    309: 7. getAttackZoneRange__9NpcMasterP3NpcPfT2 | Entry 0x001d20c8 | Instructions=14 | Risk=HIGH | Calls=0 | Features=MEMORY+BRANCH_OR_JUMP
+   281:    310: 8. DIntr | Entry 0x00392e40 | Instructions=18 | Risk=HIGH | Calls=0 | Features=ARITHMETIC+BRANCH_OR_JUMP
+   282:    311: 
+   283:    312: === FINAL INSPECTION RESULT ===
+---
+   305:   1619: "distToSluggoSqr__3Npc","001c6e20","001c6e20","001c6e57",14,56,false,false
+   306:   1620: "getSimEntry__9NpcMasterP3Npc","001d03c8","001d03c8","001d03ff",14,56,false,false
+   307:   1621: "getAttackZoneRange__9NpcMasterP3NpcPfT2","001d20c8","001d20c8","001d20ff",14,56,false,false
+   308:   1622: "hasSingleMainWaypoint__9WayposSet","001d3848","001d3848","001d387f",14,56,false,false
+   309:   1623: "getSubsetStartPos__9WayposSetUi","001d3988","001d3988","001d39bf",14,56,false,false
+   310:   1624: "isRavenAtPerch__Fv","001e18f0","001e18f0","001e1927",14,56,false,false
+---
+   339:    819: "training2_getSingleStealthInitialTargetPos__FP7Point4d","001b49b8",10,"001b49b8","001b49dc",198,"MEMORY+BRANCH_OR_JUMP"
+   340:    820: "getSimEntry__9NpcMasterP3Npc","001d03c8",14,"001d03c8","001d03fc",198,"MEMORY+BRANCH_OR_JUMP"
+   341:    821: "getAttackZoneRange__9NpcMasterP3NpcPfT2","001d20c8",14,"001d20c8","001d20fc",198,"MEMORY+BRANCH_OR_JUMP"
+   342:    822: "hasSingleMainWaypoint__9WayposSet","001d3848",14,"001d3848","001d387c",198,"MEMORY+BRANCH_OR_JUMP"
+   343:    823: "changePlayer1TextureSet__6Spiriti","001e2e40",10,"001e2e40","001e2e64",198,"MEMORY+BRANCH_OR_JUMP"
+   344:    824: "isEquivalent__16SpiritZoomTargetRC16SpiritZoomTarget","001e35b0",14,"001e35b0","001e35e4",198,"MEMORY+BRANCH_OR_JUMP"
+---
+   370:      4: "Update__9Shimmer2Df","002d6850","10","002d6850","002d6874","98","BRANCH_OR_JUMP"
+   371:      5: "Load__7envGridPv","003208a0","12","003208a0","003208cc","100","BRANCH_OR_JUMP"
+   372:      6: "getAttackZoneRange__9NpcMasterP3NpcPfT2","001d20c8","14","001d20c8","001d20fc","198","MEMORY+BRANCH_OR_JUMP"
+   373:      7: "doorReset__FP6Mscobj","001f0078","16","001f0078","001f00b4","196","MEMORY+BRANCH_OR_JUMP"
+   374:      8: "DIntr","00392e40","18","00392e40","00392e84","194","ARITHMETIC+BRANCH_OR_JUMP"
+   375:      9: "Init__10gsBackdropi","002dc180","20","002dc180","002dc1cc","192","MEMORY+BRANCH_OR_JUMP"
+---
+   387:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+   388:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+   389:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   390:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   391:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   392:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   393:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   394:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   395:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   396:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   397:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   398:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   399:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   400:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   401:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   402:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   403:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   404:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   405:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   420:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+   421:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+   422:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   423:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   424:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   425:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   426:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   427:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   428:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   429:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   430:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   431:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   432:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   433:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   434:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   435:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   436:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   437:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   438:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   453:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+   454:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+   455:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   456:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   457:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   458:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   459:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   460:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   461:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   462:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   463:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   464:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   465:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   466:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   467:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   468:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   469:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   470:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   471:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   486:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+   487:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+   488:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   489:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   490:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   491:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   492:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   493:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   494:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   495:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   496:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   497:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   498:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   499:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   500:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   501:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   502:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   503:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   504:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   519:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+   520:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+   521:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   522:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   523:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   524:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   525:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   526:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   527:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   528:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   529:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   530:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   531:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   532:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   533:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   534:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   535:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   536:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   537:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   552:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+   553:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+   554:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   555:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   556:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   557:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   558:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   559:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   560:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   561:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   562:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   563:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   564:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   565:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   566:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   567:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   568:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   569:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   570:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   585:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+   586:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+   587:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   588:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   589:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   590:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   591:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   592:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   593:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   594:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   595:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   596:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   597:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   598:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   599:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   600:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   601:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   602:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   603:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   618: Line: 45
+   619:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+   620:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   621:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   622:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   623:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   624:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   625:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   626:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   627:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   628:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   629:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   630:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   631:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   632:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   633:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   634:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   635:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   636:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   651: Pattern: getAttackZoneRange
+   652: Line: 46
+   653:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   654:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   655:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   656:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   657:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   658:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   659:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   660:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   661:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   662:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   663:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   664:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   665:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   666:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   667:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   668:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   669:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   685: Pattern: getAttackZoneRange
+   686: Line: 47
+   687:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   688:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   689:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   690:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   691:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   692:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   693:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   694:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   695:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   696:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   697:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   698:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   699:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   700:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   701:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   702:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   719: Pattern: getAttackZoneRange
+   720: Line: 48
+   721:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   722:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   723:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   724:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   725:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   726:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   727:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   728:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   729:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   730:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   731:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   732:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   733:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   734:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   735:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   753: Pattern: getAttackZoneRange
+   754: Line: 49
+   755:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   756:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   757:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   758:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   759:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   760:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   761:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   762:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   763:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   764:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   765:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   766:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   767:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   768:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   787: Pattern: getAttackZoneRange
+   788: Line: 50
+   789:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   790:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   791:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   792:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   793:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   794:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   795:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   796:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   797:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   798:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   799:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   800:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   801:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   821: Pattern: getAttackZoneRange
+   822: Line: 51
+   823:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   824:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   825:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   826:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   827:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   828:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   829:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   830:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   831:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   832:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   833:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   834:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   864:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+   865:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+   866:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   867:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   868:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   869:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   870:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   871:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   872:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   873:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   874:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   875:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   876:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   877:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   878:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   879:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   880:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   881:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   882:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   897:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+   898:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+   899:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   900:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   901:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   902:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   903:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   904:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   905:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   906:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   907:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   908:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   909:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   910:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   911:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   912:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   913:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   914:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   915:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   930:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+   931:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+   932:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   933:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   934:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   935:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   936:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   937:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   938:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   939:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   940:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   941:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   942:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   943:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   944:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   945:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   946:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   947:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   948:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   963:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+   964:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+   965:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   966:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+   967:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+   968:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+   969:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+   970:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+   971:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+   972:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+   973:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+   974:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+   975:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+   976:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+   977:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+   978:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+   979:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+   980:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+   981:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+   996:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+   997:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+   998:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+   999:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+  1000:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+  1001:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+  1002:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+  1003:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+  1004:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+  1005:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+  1006:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+  1007:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+  1008:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+  1009:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+  1010:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+  1011:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+  1012:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+  1013:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+  1014:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+  1029:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+  1030:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+  1031:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+  1032:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+  1033:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+  1034:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+  1035:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+  1036:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+  1037:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+  1038:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+  1039:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+  1040:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+  1041:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+  1042:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+  1043:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+  1044:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+  1045:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+  1046:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+  1047:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+  1062:     36: "Load__7envGridPv",003208A0,003208C8,4,"03E00008","jr","jr ra"
+  1063:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+  1064:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+  1065:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+  1066:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+  1067:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+  1068:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+  1069:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+  1070:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+  1071:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+  1072:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+  1073:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+  1074:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+  1075:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+  1076:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+  1077:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+  1078:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+  1079:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+  1080:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+  1095: Line: 45
+  1096:     37: "Load__7envGridPv",003208A0,003208CC,4,"24020001","_li","_li v0,0x1"
+  1097:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+  1098:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+  1099:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+  1100:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+  1101:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+  1102:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+  1103:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+  1104:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+  1105:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+  1106:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+  1107:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+  1108:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+  1109:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+  1110:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+  1111:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+  1112:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+  1113:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+  1128: Pattern: getAttackZoneRange
+  1129: Line: 46
+  1130:     38: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20C8,4,"8CA30014","lw","lw v1,0x14(a1)"
+  1131:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+  1132:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+  1133:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+  1134:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+  1135:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+  1136:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+  1137:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+  1138:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+  1139:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+  1140:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+  1141:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+  1142:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+  1143:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+  1144:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+  1145:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+  1146:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+  1162: Pattern: getAttackZoneRange
+  1163: Line: 47
+  1164:     39: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20CC,4,"24020047","li","li v0,0x47"
+  1165:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+  1166:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+  1167:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+  1168:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+  1169:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+  1170:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+  1171:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+  1172:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+  1173:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+  1174:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+  1175:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+  1176:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+  1177:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+  1178:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+  1179:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+  1196: Pattern: getAttackZoneRange
+  1197: Line: 48
+  1198:     40: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D0,4,"54620007","bnel","bnel v1,v0,0x001d20f0"
+  1199:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+  1200:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+  1201:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+  1202:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+  1203:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+  1204:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+  1205:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+  1206:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+  1207:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+  1208:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+  1209:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+  1210:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+  1211:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+  1212:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+  1230: Pattern: getAttackZoneRange
+  1231: Line: 49
+  1232:     41: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D4,4,"C4A026E4","_lwc1","_lwc1 f0,0x26e4(a1)"
+  1233:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+  1234:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+  1235:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+  1236:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+  1237:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+  1238:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+  1239:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+  1240:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+  1241:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+  1242:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+  1243:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+  1244:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+  1245:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+  1264: Pattern: getAttackZoneRange
+  1265: Line: 50
+  1266:     42: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20D8,4,"3C014130","lui","lui at,0x4130"
+  1267:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+  1268:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+  1269:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+  1270:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+  1271:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+  1272:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+  1273:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+  1274:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+  1275:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+  1276:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+  1277:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+  1278:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+  1298: Pattern: getAttackZoneRange
+  1299: Line: 51
+  1300:     43: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20DC,4,"44810000","mtc1","mtc1 at,f0"
+  1301:     44: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E0,4,"00000000","nop","nop"
+  1302:     45: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E4,4,"E4E00000","swc1","swc1 f0,0x0(a3)"
+  1303:     46: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20E8,4,"03E00008","jr","jr ra"
+  1304:     47: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20EC,4,"E4C00000","_swc1","_swc1 f0,0x0(a2)"
+  1305:     48: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F0,4,"E4C00000","swc1","swc1 f0,0x0(a2)"
+  1306:     49: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F4,4,"C4A126E8","lwc1","lwc1 f1,0x26e8(a1)"
+  1307:     50: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20F8,4,"03E00008","jr","jr ra"
+  1308:     51: "getAttackZoneRange__9NpcMasterP3NpcPfT2",001D20C8,001D20FC,4,"E4E10000","_swc1","_swc1 f1,0x0(a3)"
+  1309:     52: "doorReset__FP6Mscobj",001F0078,001F0078,4,"24030002","li","li v1,0x2"
+  1310:     53: "doorReset__FP6Mscobj",001F0078,001F007C,4,"8C850014","lw","lw a1,0x14(a0)"
+  1311:     54: "doorReset__FP6Mscobj",001F0078,001F0080,4,"0000302D","move","move a2,zero"
+---
+  1340:     60: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED Update__9Shimmer2Df @ 0x002D6850 instructions=10 (GhidraScript)  
+  1341:     61: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED Load__7envGridPv @ 0x003208A0 instructions=12 (GhidraScript)  
+  1342:     62: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED getAttackZoneRange__9NpcMasterP3NpcPfT2 @ 0x001D20C8 instructions=14 (GhidraScript)  
+  1343:     63: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED doorReset__FP6Mscobj @ 0x001F0078 instructions=16 (GhidraScript)  
+  1344:     64: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED DIntr @ 0x00392E40 instructions=18 (GhidraScript)  
+  1345:     65: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED Init__10gsBackdropi @ 0x002DC180 instructions=20 (GhidraScript)  
+---
+  1374:     46: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED Update__9Shimmer2Df @ 0x002D6850 instructions=10 (GhidraScript)  
+  1375:     47: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED Load__7envGridPv @ 0x003208A0 instructions=12 (GhidraScript)  
+  1376:     48: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED getAttackZoneRange__9NpcMasterP3NpcPfT2 @ 0x001D20C8 instructions=14 (GhidraScript)  
+  1377:     49: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED doorReset__FP6Mscobj @ 0x001F0078 instructions=16 (GhidraScript)  
+  1378:     50: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED DIntr @ 0x00392E40 instructions=18 (GhidraScript)  
+  1379:     51: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED Init__10gsBackdropi @ 0x002DC180 instructions=20 (GhidraScript)  
+---
+  1395:     46: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED Update__9Shimmer2Df @ 0x002D6850 instructions=10 (GhidraScript)  
+  1396:     47: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED Load__7envGridPv @ 0x003208A0 instructions=12 (GhidraScript)  
+  1397:     48: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED getAttackZoneRange__9NpcMasterP3NpcPfT2 @ 0x001D20C8 instructions=14 (GhidraScript)  
+  1398:     49: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED doorReset__FP6Mscobj @ 0x001F0078 instructions=16 (GhidraScript)  
+  1399:     50: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED DIntr @ 0x00392E40 instructions=18 (GhidraScript)  
+  1400:     51: INFO  MarkOfKriNextSliceInstructionExtraction.java> EXTRACTED Init__10gsBackdropi @ 0x002DC180 instructions=20 (GhidraScript)  
+
+==============================================================================
+HARNESS TEMPLATE — GENERATOR, EXECUTION, AND RUNTIME CONTRACT
+PATH: D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_HARNESS_TEMPLATES_20261125_155214.txt
+==============================================================================
+---
+     7: DIRECTORY: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution
+     8: 
+     9: FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp
+    10: SIZE: 4536
+    11:     1: #include <ps2recomp/code_generator.h>
+    12:     2: #include <ps2recomp/r5900_decoder.h>
+---
+   167:     4: ===== LAST 150 LOG LINES =====
+   168:     5: [0/2] Re-checking globbed directories...
+   169:     6: [1/3] Building CXX object CMakeFiles\markofkri_shimmer_codegen.dir\D_\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp.obj
+   170:     7: FAILED: [code=2] CMakeFiles/markofkri_shimmer_codegen.dir/D_/Games/MarkOfKriRecomp/native/tests/recomp/shimmer_codegen_execution/shimmer_codegen.cpp.obj 
+   171:     8: "D:\Downloads\Microsoft Visual Studio\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\cl.exe"  /nologo /TP -DLIBDWARF_STATIC -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\elfio-src -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\libdwarf-src\src\lib\libdwarf -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\fmt-src\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\toml11-src\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\tables -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\tables\tables /DWIN32 /D_WINDOWS /EHsc /Zi /O2 /Ob1 /DNDEBUG -std:c++20 -MD /utf-8 /Zc:preprocessor /showIncludes /FoCMakeFiles\markofkri_shimmer_codegen.dir\D_\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp.obj /FdCMakeFiles\markofkri_shimmer_codegen.dir\ /FS -c D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp
+   172:     9: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp/code_generator.h(4): fatal error C1083: Cannot open include file: 'cstdint': No such file or directory
+   173:    10: ninja: build stopped: subcommand failed.
+   174:    11: 
+   175:    12: 
+   176:    13: ===== ERROR/WARNING MATCHES =====
+   177:    14: FAILED: [code=2] CMakeFiles/markofkri_shimmer_codegen.dir/D_/Games/MarkOfKriRecomp/native/tests/recomp/shimmer_codegen_execution/shimmer_codegen.cpp.obj 
+   178:    15: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp/code_generator.h(4): fatal error C1083: Cannot open include file: 'cstdint': No such file or directory
+   179:    16: ninja: build stopped: subcommand failed.
+   180: 
+---
+   187:     5: PS2Recomp library SHA256 before: 603F9E01E73531E2ACF2C0D1B0A53526DA367820E482D1251CD7B2F2C98A622E
+   188:     6: 
+   189:     7: Generator source: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp
+   190:     8: Generator source SHA256: 21E74C0B120C22ABB2D8E6916C12F5F431267D6EBE0EE21FF295D206AB3DE4D6
+   191:     9: 
+   192:    10: ===== BUILD OUTPUT =====
+---
+   229:    47: ===== SHIMMER GENERATOR BUILD =====
+   230:    48: [0/2] Re-checking globbed directories...
+   231:    49: [1/3] Building CXX object CMakeFiles\markofkri_shimmer_codegen.dir\D_\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp.obj
+   232:    50: [2/3] Linking CXX executable {CMAKE_BINARY_DIR}\shimmer_bin\markofkri_shimmer_codegen.exe
+   233:    51: 
+   234:    52: SHIMMER_GENERATOR_BUILD_SUCCESS
+   235:    53: 
+   236:    54: CMake Deprecation Warning at D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-src/CMakeLists.txt:25 (cmake_policy):
+   237:    55:   The OLD behavior for policy CMP0127 will be removed from a future version
+   238:    56:   of CMake.
+   239:    57: 
+---
+   292:    35: -- Build files have been written to: D:/Games/MarkOfKriRecomp/native/build/ps2recomp_minimal_fixed_20261125_123608
+   293:    36: 
+   294:    37: CMake Deprecation Warning at D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-src/CMakeLists.txt:25 (cmake_policy):
+   295:    38:   The OLD behavior for policy CMP0127 will be removed from a future version
+   296:    39:   of CMake.
+   297:    40: 
+---
+   314:    57: ----- OUTPUT BEGIN -----
+   315:    58: [0/2] Re-checking globbed directories...
+   316:    59: [1/3] Building CXX object CMakeFiles\markofkri_shimmer_codegen.dir\D_\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp.obj
+   317:    60: FAILED: [code=2] CMakeFiles/markofkri_shimmer_codegen.dir/D_/Games/MarkOfKriRecomp/native/tests/recomp/shimmer_codegen_execution/shimmer_codegen.cpp.obj 
+   318:    61: "D:\Downloads\Microsoft Visual Studio\VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64\cl.exe"  /nologo /TP -DLIBDWARF_STATIC -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\elfio-src -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\libdwarf-src\src\lib\libdwarf -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\fmt-src\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\toml11-src\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\tables -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\_deps\rabbitizer-src\tables\tables /DWIN32 /D_WINDOWS /EHsc /Zi /O2 /Ob1 /DNDEBUG -std:c++20 -MD /utf-8 /Zc:preprocessor /showIncludes /FoCMakeFiles\markofkri_shimmer_codegen.dir\D_\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp.obj /FdCMakeFiles\markofkri_shimmer_codegen.dir\ /FS -c D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp
+   319:    62: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp/code_generator.h(4): fatal error C1083: Cannot open include file: 'cstdint': No such file or directory
+   320:    63: ninja: build stopped: subcommand failed.
+   321:    64: 
+---
+   339:    11: )
+   340:    12: 
+   341:    13: set(RUNTIME_BOUNDARY
+   342:    14:     "D:/Games/MarkOfKriRecomp/native/tests/recomp/real_function_runtime_boundary.cpp"
+   343:    15: )
+   344:    16: 
+   345:    17: add_executable(markofkri_shimmer_fpu_execution
+   346:    18:     "D:/Games/MarkOfKriRecomp/native/tests/recomp/shimmer_fpu_execution/shimmer_fpu_execution_test.cpp"
+   347:    19:     "\"
+   348:    20:     "\"
+---
+   356:    28: )
+   357:    29: 
+   358:    30: target_link_libraries(markofkri_shimmer_fpu_execution PRIVATE
+   359:    31:     "D:/Games/MarkOfKriRecomp/native/build/ps2recomp_minimal_fixed_20261125_123608/ps2xRecomp/ps2_recomp_lib.lib"
+   360:    32: )
+   361:    33: 
+---
+   384:     6: set(CMAKE_CXX_EXTENSIONS OFF)
+   385:     7: 
+   386:     8: add_executable(markofkri_shimmer_fpu_execution
+   387:     9:     shimmer_fpu_execution_test.cpp
+   388:    10:     "D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_Update__9Shimmer2Df.cpp.Replace('\','/')"
+   389:    11:     "D:\Games\MarkOfKriRecomp\native\tests\recomp\real_function_runtime_boundary.cpp.Replace('\','/')"
+   390:    12: )
+   391:    13: 
+   392:    14: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/include")
+---
+   397:    19: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/src/lib")
+   398:    20: 
+   399:    21: target_link_libraries(markofkri_shimmer_fpu_execution PRIVATE "D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\ps2xRecomp\ps2_recomp_lib.lib.Replace('\','/')")
+   400:    22: 
+   401:    23: if(MSVC)
+   402:    24:     target_compile_definitions(markofkri_shimmer_fpu_execution PRIVATE NOMINMAX)
+---
+   414:     7: set(CMAKE_CXX_EXTENSIONS OFF)
+   415:     8: 
+   416:     9: add_executable(markofkri_shimmer_fpu_execution
+   417:    10:     "D:/Games/MarkOfKriRecomp/native/tests/recomp/shimmer_fpu_execution/shimmer_fpu_execution_test.cpp"
+   418:    11:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/shimmer_codegen_execution/MARK_OF_KRI_Update__9Shimmer2Df.cpp"
+   419:    12:     "D:/Games/MarkOfKriRecomp/native/tests/recomp/real_function_runtime_boundary.cpp"
+   420:    13: )
+   421:    14: 
+   422:    15: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE
+---
+   428:    21: )
+   429:    22: 
+   430:    23: target_link_libraries(markofkri_shimmer_fpu_execution PRIVATE
+   431:    24:     "D:/Games/MarkOfKriRecomp/native/build/ps2recomp_minimal_fixed_20261125_123608/ps2xRecomp/ps2_recomp_lib.lib"
+   432:    25: )
+   433:    26: 
+---
+   457:     7: set(CMAKE_CXX_EXTENSIONS OFF)
+   458:     8: 
+   459:     9: add_executable(markofkri_shimmer_fpu_execution
+   460:    10:     "D:/Games/MarkOfKriRecomp/native/tests/recomp/shimmer_fpu_execution/shimmer_fpu_execution_test.cpp"
+   461:    11:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/shimmer_codegen_execution/MARK_OF_KRI_Update__9Shimmer2Df.cpp"
+   462:    12:     "D:/Games/MarkOfKriRecomp/native/tests/recomp/real_function_runtime_boundary.cpp"
+   463:    13: )
+   464:    14: 
+   465:    15: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE
+---
+   467:    17: )
+   468:    18: 
+   469:    19: target_link_libraries(markofkri_shimmer_fpu_execution PRIVATE
+   470:    20:     "D:/Games/MarkOfKriRecomp/native/build/ps2recomp_minimal_fixed_20261125_123608/ps2xRecomp/ps2_recomp_lib.lib"
+   471:    21: )
+   472:    22: 
+---
+   486:    36: )
+   487: 
+   488: FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\CMakeLists.txt
+   489: SIZE: 1932
+   490:     1: cmake_minimum_required(VERSION 3.25)
+   491:     2: project(markofkri_shimmer_fpu_execution LANGUAGES CXX)
+---
+   495:     6: set(CMAKE_CXX_EXTENSIONS OFF)
+   496:     7: 
+   497:     8: add_executable(markofkri_shimmer_fpu_execution
+   498:     9:     shimmer_fpu_execution_test.cpp
+   499:    10:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/shimmer_codegen_execution/MARK_OF_KRI_Update__9Shimmer2Df.cpp"
+   500:    11:     "D:/Games/MarkOfKriRecomp/native/tests/recomp/real_function_runtime_boundary.cpp"
+   501:    12: )
+   502:    13: 
+   503:    14: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/include")
+---
+   510:    21: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/include")
+   511:    22: 
+   512:    23: target_link_libraries(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/native/build/ps2recomp_minimal_fixed_20261125_123608/ps2xRecomp/ps2_recomp_lib.lib")
+   513:    24: 
+   514:    25: if(MSVC)
+   515:    26:     target_compile_definitions(markofkri_shimmer_fpu_execution PRIVATE NOMINMAX)
+---
+   598:     8: #include "PS2Runtime.h"
+   599:     9: 
+   600:    10: extern void Update__9Shimmer2Df(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+   601:    11: 
+   602:    12: static void setFpr32(R5900Context& ctx, int index, uint32_t bits)
+   603:    13: {
+   604:    14:     std::memcpy(&ctx.f[index], &bits, sizeof(bits));
+   605:    15: }
+   606:    16: 
+   607:    17: static uint32_t getFpr32(const R5900Context& ctx, int index)
+   608:    18: {
+   609:    19:     uint32_t bits = 0;
+   610:    20:     std::memcpy(&bits, &ctx.f[index], sizeof(bits));
+---
+   659:    69:     std::memset(rdram, 0, RDRAM_SIZE);
+   660:    70: 
+   661:    71:     R5900Context ctx{};
+   662:    72: 
+   663:    73:     setFpr32(ctx, 12, f12Bits);
+   664:    74: 
+---
+   779:     9: #include "ps2_runtime_macros.h"
+   780:    10: 
+   781:    11: extern void Update__9Shimmer2Df(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+   782:    12: 
+   783:    13: static void setFpr32(R5900Context& ctx, int index, uint32_t bits)
+   784:    14: {
+   785:    15:     std::memcpy(&ctx.f[index], &bits, sizeof(bits));
+   786:    16: }
+   787:    17: 
+   788:    18: static uint32_t getFpr32(const R5900Context& ctx, int index)
+   789:    19: {
+   790:    20:     uint32_t bits = 0;
+   791:    21:     std::memcpy(&bits, &ctx.f[index], sizeof(bits));
+---
+   862:    92:     runFastWrite32Probe(rdram);
+   863:    93: 
+   864:    94:         R5900Context ctx{};
+   865:    95: 
+   866:    96:     // $a0 points at the synthetic object base used by the SWC1 test.
+   867:    97:     // The generated guest instruction stores to $a0 + 0x24.
+---
+   979: DIRECTORY: D:\Games\MarkOfKriRecomp\native\tests\recomp\Load_envGrid_execution_20261125_153935
+   980: 
+   981: FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\Load_envGrid_execution_20261125_153935\src\envgrid_runtime_boundary.cpp
+   982: SIZE: 2037
+   983:     1: #include <cstring>
+   984:     2: #include <cstdint>
+---
+   988:     6: // Test-only boundary. This function must never be called by this test,
+   989:     7: // because its guest address is verified to be ordinary RDRAM.
+   990:     8: void PS2Runtime::Store32(
+   991:     9:     uint8_t*,
+   992:    10:     R5900Context*,
+   993:    11:     uint32_t,
+   994:    12:     uint32_t)
+   995:    13: {
+   996:    14:     std::cerr << "ERROR: unexpected PS2Runtime::Store32 invocation\n";
+   997:    15:     std::abort();
+   998:    16: }
+   999:    17: 
+  1000:    18: uint8_t PS2Runtime::Load8(
+  1001:    19:     uint8_t* rdram,
+  1002:    20:     R5900Context*,
+  1003:    21:     uint32_t vaddr)
+  1004:    22: {
+  1005:    23:     return rdram[vaddr];
+---
+  1008:    26: uint16_t PS2Runtime::Load16(
+  1009:    27:     uint8_t* rdram,
+  1010:    28:     R5900Context*,
+  1011:    29:     uint32_t vaddr)
+  1012:    30: {
+  1013:    31:     return static_cast<uint16_t>(
+---
+  1017:    35: }
+  1018:    36: 
+  1019:    37: uint32_t PS2Runtime::Load32(
+  1020:    38:     uint8_t* rdram,
+  1021:    39:     R5900Context*,
+  1022:    40:     uint32_t vaddr)
+  1023:    41: {
+  1024:    42:     return
+---
+  1031:    49: void PS2Runtime::Store8(
+  1032:    50:     uint8_t* rdram,
+  1033:    51:     R5900Context*,
+  1034:    52:     uint32_t vaddr,
+  1035:    53:     uint8_t value)
+  1036:    54: {
+---
+  1044:    62:  * Special hardware addresses are rejected rather than silently emulated.
+  1045:    63:  */
+  1046:    64: uint64_t PS2Runtime::Load64(uint8_t* rdram, R5900Context*, uint32_t address)
+  1047:    65: {
+  1048:    66:     constexpr uint32_t RDRAM_SIZE = 32u * 1024u * 1024u;
+  1049:    67: 
+---
+  1056:    74: }
+  1057:    75: 
+  1058:    76: void PS2Runtime::Store64(uint8_t* rdram, R5900Context*, uint32_t address, uint64_t value)
+  1059:    77: {
+  1060:    78:     constexpr uint32_t RDRAM_SIZE = 32u * 1024u * 1024u;
+  1061:    79: 
+---
+  1204:     8: #include "ps2_runtime.h"
+  1205:     9: 
+  1206:    10: void Load__7envGridPv(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  1207:    11: 
+  1208:    12: namespace
+  1209:    13: {
+---
+  1214:    18:     constexpr uint8_t SENTINEL = 0xCDu;
+  1215:    19: 
+  1216:    20:     void SetGpr(R5900Context& ctx, uint32_t index, uint64_t value)
+  1217:    21:     {
+  1218:    22:         ctx.r[index] = _mm_set_epi64x(0, static_cast<int64_t>(value));
+  1219:    23:     }
+  1220:    24: 
+  1221:    25:     uint64_t GetGpr(const R5900Context& ctx, uint32_t index)
+  1222:    26:     {
+  1223:    27:         return static_cast<uint64_t>(_mm_cvtsi128_si64(ctx.r[index]));
+  1224:    28:     }
+---
+  1233:    37:     {
+  1234:    38:         std::vector<uint8_t> rdram(RDRAM_SIZE, SENTINEL);
+  1235:    39:         R5900Context ctx{};
+  1236:    40: 
+  1237:    41:         const uint32_t object = OBJECT_BASE;
+  1238:    42:         SetGpr(ctx, 4, object);
+---
+  1256:    60:     {
+  1257:    61:         std::vector<uint8_t> rdram(RDRAM_SIZE, SENTINEL);
+  1258:    62:         R5900Context ctx{};
+  1259:    63: 
+  1260:    64:         const uint32_t object = OBJECT_BASE + destinationAlignment;
+  1261:    65:         const uint32_t source = SOURCE_BASE + sourceAlignment;
+---
+  1330: DIRECTORY: D:\Games\MarkOfKriRecomp\native\tests\recomp
+  1331: 
+  1332: FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt
+  1333: SIZE: 4234
+  1334:     1: add_executable(markofkri_codegen_smoke
+  1335:     2:     "${CMAKE_CURRENT_LIST_DIR}/code_generator_smoke.cpp"
+  1336:     3: )
+  1337:     4: 
+  1338:     5: target_link_libraries(markofkri_codegen_smoke
+  1339:     6:     PRIVATE
+  1340:     7:         ps2_recomp_lib
+  1341:     8: )
+---
+  1398:    65: )
+  1399:    66: # MARK_OF_KRI_REAL_FUNCTION_EXECUTION_TARGET
+  1400:    67: add_executable(markofkri_real_function_execution_test
+  1401:    68:     "D:/Games/MarkOfKriRecomp/native/tests/recomp/real_function_execution_test.cpp"
+  1402:    69:     "D:/Games/MarkOfKriRecomp/native/tests/recomp/real_function_runtime_boundary.cpp"
+  1403:    70:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+  1404:    71: )
+  1405:    72: 
+---
+  1415:    82: # MARK_OF_KRI_MULTIFUNCTION_CODEGEN_TARGET
+  1416:    83: # Uses the real PS2Recomp decoder to populate instruction metadata.
+  1417:    84: add_executable(markofkri_multifunction_codegen
+  1418:    85:     "${CMAKE_CURRENT_LIST_DIR}/multifunction_codegen.cpp"
+  1419:    86: )
+  1420:    87: 
+  1421:    88: target_link_libraries(markofkri_multifunction_codegen
+  1422:    89:     PRIVATE
+  1423:    90:         ps2_recomp_lib
+  1424:    91: )
+---
+  1629:     5: 
+  1630:     6: #include "ps2_runtime.h"
+  1631:     7: static uint32_t harnessGetGprU32(const R5900Context& ctx, int index)
+  1632:     8: {
+  1633:     9:     return static_cast<uint32_t>(_mm_cvtsi128_si64(ctx.r[index]));
+  1634:    10: }
+  1635:    11: 
+  1636:    12: static void harnessSetGprU32(R5900Context& ctx, int index, uint32_t value)
+  1637:    13: {
+  1638:    14:     ctx.r[index] = _mm_set_epi64x(0, static_cast<int64_t>(static_cast<uint64_t>(value)));
+  1639:    15: }
+---
+  1642:    18: extern void addSpirit__6PlayerP9ObjHandle(
+  1643:    19:     uint8_t* rdram,
+  1644:    20:     R5900Context* ctx,
+  1645:    21:     PS2Runtime* runtime);
+  1646:    22: 
+  1647:    23: extern void SetViewArea__14DisplayEnvInfoUiUi(
+  1648:    24:     uint8_t* rdram,
+  1649:    25:     R5900Context* ctx,
+  1650:    26:     PS2Runtime* runtime);
+  1651:    27: 
+  1652:    28: extern void GetVoDataSizeInMacroBlocks__8movVoBuf(
+  1653:    29:     uint8_t* rdram,
+  1654:    30:     R5900Context* ctx,
+  1655:    31:     PS2Runtime* runtime);
+  1656:    32: 
+  1657:    33: static int failures = 0;
+---
+  1703:    79: }
+  1704:    80: 
+  1705:    81: static void clearContext(R5900Context& ctx)
+  1706:    82: {
+  1707:    83:     std::memset(&ctx, 0, sizeof(ctx));
+  1708:    84: }
+---
+  1721:    97:     const uint32_t handle = 0x12345678;
+  1722:    98: 
+  1723:    99:     R5900Context ctx{};
+  1724:   100: 
+  1725:   101:     // ---------------------------------------------------------------------
+  1726:   102:     // Path A: count = 3.
+---
+  1823:   199:     const uint32_t a2 = 0x00000010;
+  1824:   200: 
+  1825:   201:     R5900Context ctx{};
+  1826:   202: 
+  1827:   203:     // ---------------------------------------------------------------------
+  1828:   204:     // Path A:
+  1829:   205:     // LH(+4) = 1
+  1830:   206:     // XORI 1 -> 0
+  1831:   207:     // MOVN is NOT executed.
+  1832:   208:     // V1 remains A2 >> 1 = 8.
+  1833:   209:     // ---------------------------------------------------------------------
+  1834:   210: 
+---
+  1896:     8: void resetGrabMode__6Camera(
+  1897:     9:     uint8_t* rdram,
+  1898:    10:     R5900Context* ctx,
+  1899:    11:     PS2Runtime* runtime
+  1900:    12: );
+  1901:    13: 
+---
+  1910:    22: 
+  1911:    23:     std::vector<uint8_t> rdram(rdramSize, 0);
+  1912:    24:     R5900Context ctx;
+  1913:    25: 
+  1914:    26:     ctx.r[4] = _mm_set_epi64x(0, static_cast<int64_t>(a0));
+  1915:    27:     ctx.r[2] = _mm_set_epi64x(0, static_cast<int64_t>(initialV0));
+---
+  1929:    41: 
+  1930:    42:     // The ordinary-RAM path must not dereference the runtime pointer.
+  1931:    43:     // The test-only Store32 boundary aborts if the hardware path is taken.
+  1932:    44:     resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+  1933:    45: 
+  1934:    46:     uint32_t actualMemory = 0;
+---
+  1990:   102: }
+  1991: 
+  1992: FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\real_function_runtime_boundary.cpp
+  1993: SIZE: 1168
+  1994:     1: #include <ps2_runtime.h>
+  1995:     2: #include <cstdlib>
+---
+  1997:     4: // Test-only boundary. This function must never be called by this test,
+  1998:     5: // because its guest address is verified to be ordinary RDRAM.
+  1999:     6: void PS2Runtime::Store32(
+  2000:     7:     uint8_t*,
+  2001:     8:     R5900Context*,
+  2002:     9:     uint32_t,
+  2003:    10:     uint32_t)
+  2004:    11: {
+  2005:    12:     std::cerr << "ERROR: unexpected PS2Runtime::Store32 invocation\n";
+  2006:    13:     std::abort();
+  2007:    14: }
+  2008:    15: 
+  2009:    16: uint8_t PS2Runtime::Load8(
+  2010:    17:     uint8_t* rdram,
+  2011:    18:     R5900Context*,
+  2012:    19:     uint32_t vaddr)
+  2013:    20: {
+  2014:    21:     return rdram[vaddr];
+---
+  2017:    24: uint16_t PS2Runtime::Load16(
+  2018:    25:     uint8_t* rdram,
+  2019:    26:     R5900Context*,
+  2020:    27:     uint32_t vaddr)
+  2021:    28: {
+  2022:    29:     return static_cast<uint16_t>(
+---
+  2026:    33: }
+  2027:    34: 
+  2028:    35: uint32_t PS2Runtime::Load32(
+  2029:    36:     uint8_t* rdram,
+  2030:    37:     R5900Context*,
+  2031:    38:     uint32_t vaddr)
+  2032:    39: {
+  2033:    40:     return
+---
+  2040:    47: void PS2Runtime::Store8(
+  2041:    48:     uint8_t* rdram,
+  2042:    49:     R5900Context*,
+  2043:    50:     uint32_t vaddr,
+  2044:    51:     uint8_t value)
+  2045:    52: {
+---
+  2225:     4: #include "ps2_runtime.h"
+  2226:     5: 
+  2227:     6: extern void doorReset__FP6Mscobj(uint8_t*, R5900Context*, PS2Runtime*);
+  2228:     7: 
+  2229:     8: static int failures = 0;
+  2230:     9: 
+  2231:    10: static uint32_t getGpr(const R5900Context& ctx, int index)
+  2232:    11: {
+  2233:    12:     return static_cast<uint32_t>(_mm_cvtsi128_si64(ctx.r[index]));
+  2234:    13: }
+  2235:    14: 
+  2236:    15: static void setGpr(R5900Context& ctx, int index, uint32_t value)
+  2237:    16: {
+  2238:    17:     ctx.r[index] = _mm_set_epi64x(
+  2239:    18:         0,
+---
+  2282:    61:     std::memset(rdram, 0, 0x20000);
+  2283:    62: 
+  2284:    63:     R5900Context ctx{};
+  2285:    64:     ctx.pc = 0x001F0078;
+  2286:    65: 
+  2287:    66:     setGpr(ctx, 4, objectBase);
+---
+  2355:   134: }
+  2356: 
+  2357: FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\doorReset_execution_20261125_133945\src\doorReset_runtime_boundary.cpp
+  2358: SIZE: 893
+  2359:     1: #include <ps2_runtime.h>
+  2360:     2: #include <cstdint>
+---
+  2362:     4: #include <iostream>
+  2363:     5: 
+  2364:     6: uint32_t PS2Runtime::Load32(
+  2365:     7:     uint8_t* rdram,
+  2366:     8:     R5900Context*,
+  2367:     9:     uint32_t address)
+  2368:    10: {
+  2369:    11:     return
+---
+  2376:    18: void PS2Runtime::Store8(
+  2377:    19:     uint8_t* rdram,
+  2378:    20:     R5900Context*,
+  2379:    21:     uint32_t address,
+  2380:    22:     uint8_t value)
+  2381:    23: {
+---
+  2383:    25: }
+  2384:    26: 
+  2385:    27: void PS2Runtime::Store32(
+  2386:    28:     uint8_t* rdram,
+  2387:    29:     R5900Context*,
+  2388:    30:     uint32_t address,
+  2389:    31:     uint32_t value)
+  2390:    32: {
+---
+  2743:    15: RDRAM: 32 MiB
+  2744:    16: Function: Init__10gsBackdropi @ 0x002DC180
+  2745:    17: === EXECUTE GENERATED GAME FUNCTION ===
+  2746:    18: [PASS] SW clears object field +0x00
+  2747:    19: [PASS] SW clears object field +0x04
+  2748:    20: [PASS] SW clears lower word at +0x08
+---
+  2781:    53: RESULT: INIT BACKDROP REAL-FUNCTION EXECUTION PASSED
+  2782: 
+  2783: FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\initBackdrop_execution_20261125_135231\src\initBackdrop_64bit_runtime_boundary.cpp
+  2784: SIZE: 524
+  2785:     1: #include <ps2_runtime.h>
+  2786:     2: #include <cstdint>
+---
+  2790:     6: uint64_t PS2Runtime::Load64(
+  2791:     7:     uint8_t*,
+  2792:     8:     R5900Context*,
+  2793:     9:     uint32_t address)
+  2794:    10: {
+  2795:    11:     std::cerr << "ERROR: unexpected PS2Runtime::Load64 at 0x"
+---
+  2800:    16: void PS2Runtime::Store64(
+  2801:    17:     uint8_t*,
+  2802:    18:     R5900Context*,
+  2803:    19:     uint32_t address,
+  2804:    20:     uint64_t)
+  2805:    21: {
+---
+  2818:     6: #include "ps2_runtime.h"
+  2819:     7: 
+  2820:     8: extern void Init__10gsBackdropi(uint8_t*, R5900Context*, PS2Runtime*);
+  2821:     9: 
+  2822:    10: static int failures = 0;
+  2823:    11: static int checks = 0;
+  2824:    12: 
+  2825:    13: static uint32_t getGpr32(const R5900Context& ctx, int index)
+  2826:    14: {
+  2827:    15:     return static_cast<uint32_t>(_mm_cvtsi128_si64(ctx.r[index]));
+  2828:    16: }
+  2829:    17: 
+  2830:    18: static uint64_t getGpr64(const R5900Context& ctx, int index)
+  2831:    19: {
+  2832:    20:     return static_cast<uint64_t>(_mm_cvtsi128_si64(ctx.r[index]));
+  2833:    21: }
+  2834:    22: 
+  2835:    23: static void setGpr32(R5900Context& ctx, int index, uint32_t value)
+  2836:    24: {
+  2837:    25:     ctx.r[index] = _mm_set_epi64x(
+  2838:    26:         0,
+---
+  2889:    77:     rdram[objectBase + 0x0F] = 0xA1;
+  2890:    78: 
+  2891:    79:     R5900Context ctx{};
+  2892:    80:     ctx.pc = 0x002DC180u;
+  2893:    81:     setGpr32(ctx, 4, objectBase);
+  2894:    82:     setGpr32(ctx, 5, a1Value);
+  2895:    83:     setGpr32(ctx, 31, returnAddress);
+  2896:    84: 
+  2897:    85:     std::printf("\n=== EXECUTE GENERATED GAME FUNCTION ===\n");
+  2898:    86:     Init__10gsBackdropi(rdram, &ctx, nullptr);
+  2899:    87: 
+  2900:    88:     check(read32(rdram, objectBase + 0x00) == 0,
+---
+  2979:   167: }
+  2980: 
+  2981: FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\CMakeLists.txt
+  2982: SIZE: 747
+  2983:     1: cmake_minimum_required(VERSION 3.24)
+  2984:     2: 
+---
+  2992:    10: )
+  2993:    11: 
+  2994:    12: add_executable(
+  2995:    13:     markofkri_next_two_function_codegen
+  2996:    14:     src/next_two_function_codegen.cpp
+  2997:    15: )
+---
+  3011:    29: )
+  3012:    30: 
+  3013:    31: target_link_libraries(
+  3014:    32:     markofkri_next_two_function_codegen
+  3015:    33:     PRIVATE
+  3016:    34:     ps2xRecomp
+---
+  3682:     8: extern void allowLockMode__6Camerab(
+  3683:     9:     uint8_t* rdram,
+  3684:    10:     R5900Context* ctx,
+  3685:    11:     PS2Runtime* runtime);
+  3686:    12: 
+  3687:    13: extern void anmcmd_exitHeader__Fv(
+  3688:    14:     uint8_t* rdram,
+  3689:    15:     R5900Context* ctx,
+  3690:    16:     PS2Runtime* runtime);
+  3691:    17: 
+  3692:    18: static int failures = 0;
+  3693:    19: static int checks = 0;
+  3694:    20: 
+  3695:    21: static uint32_t getGprU32(const R5900Context& ctx, int index)
+  3696:    22: {
+  3697:    23:     return static_cast<uint32_t>(_mm_cvtsi128_si64(ctx.r[index]));
+  3698:    24: }
+  3699:    25: 
+  3700:    26: static void setGprU32(R5900Context& ctx, int index, uint32_t value)
+  3701:    27: {
+  3702:    28:     ctx.r[index] = _mm_set_epi64x(
+  3703:    29:         0,
+---
+  3747:    73:     clearMemory(rdram);
+  3748:    74: 
+  3749:    75:     R5900Context ctx{};
+  3750:    76:     std::memset(&ctx, 0, sizeof(ctx));
+  3751:    77: 
+  3752:    78:     setGprU32(ctx, 4, a0);
+---
+  3777:   103:     check(
+  3778:   104:         ctx.branch_pc == expectedBranchPc,
+  3779:   105:         "branch_pc identifies the executed JR");
+  3780:   106: 
+  3781:   107:     check(
+  3782:   108:         !ctx.in_delay_slot,
+---
+  3796:   122:     clearMemory(rdram);
+  3797:   123: 
+  3798:   124:     R5900Context ctx{};
+  3799:   125:     std::memset(&ctx, 0, sizeof(ctx));
+  3800:   126: 
+  3801:   127:     setGprU32(ctx, 28, gp);
+---
+  4434:     5: #include "ps2_syscalls.h"
+  4435:     6: 
+  4436:     7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1f0078u;
+  4437:     8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1f007cu;
+  4438:     9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+  4439:    10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+  4440:    11: 
+  4441:    12: namespace {
+  4442:    13: struct GeneratedFunctionTableInitializer {
+  4443:    14:     GeneratedFunctionTableInitializer() {
+  4444:    15:         g_ps2RecompiledFunctionTable[0] = doorReset__FP6Mscobj; // 0x1f0078
+  4445:    16:     }
+  4446:    17: };
+  4447:    18: static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+---
+  4457:     5: #include "ps2_syscalls.h"
+  4458:     6: 
+  4459:     7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x2dc180u;
+  4460:     8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x2dc184u;
+  4461:     9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+  4462:    10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+  4463:    11: 
+  4464:    12: namespace {
+  4465:    13: struct GeneratedFunctionTableInitializer {
+  4466:    14:     GeneratedFunctionTableInitializer() {
+  4467:    15:         g_ps2RecompiledFunctionTable[0] = Init__10gsBackdropi; // 0x2dc180
+  4468:    16:     }
+  4469:    17: };
+  4470:    18: static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+---
+  4480:     5: #include "ps2_syscalls.h"
+  4481:     6: 
+  4482:     7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x0u;
+  4483:     8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x0u;
+  4484:     9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 0u;
+  4485:    10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+  4486:    11: 
+  4487:    12: namespace {
+  4488:    13: struct GeneratedFunctionTableInitializer {
+---
+  4501:     5: #include "ps2_syscalls.h"
+  4502:     6: 
+  4503:     7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x21acd0u;
+  4504:     8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x34da54u;
+  4505:     9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 314209u;
+  4506:    10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[314209u] = {};
+  4507:    11: 
+  4508:    12: namespace {
+  4509:    13: struct GeneratedFunctionTableInitializer {
+  4510:    14:     GeneratedFunctionTableInitializer() {
+  4511:    15:         g_ps2RecompiledFunctionTable[0] = addSpirit__6PlayerP9ObjHandle; // 0x21acd0
+  4512:    16:         g_ps2RecompiledFunctionTable[166906] = SetViewArea__14DisplayEnvInfoUiUi; // 0x2bdcb8
+  4513:    17:         g_ps2RecompiledFunctionTable[314208] = GetVoDataSizeInMacroBlocks__8movVoBuf; // 0x34da50
+  4514:    18:     }
+  4515:    19: };
+  4516:    20: static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+---
+  4526:     5: #include "ps2_syscalls.h"
+  4527:     6: 
+  4528:     7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1161a0u;
+  4529:     8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x19c8c4u;
+  4530:     9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 137673u;
+  4531:    10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[137673u] = {};
+  4532:    11: 
+  4533:    12: namespace {
+  4534:    13: struct GeneratedFunctionTableInitializer {
+  4535:    14:     GeneratedFunctionTableInitializer() {
+  4536:    15:         g_ps2RecompiledFunctionTable[0] = allowLockMode__6Camerab; // 0x1161a0
+  4537:    16:         g_ps2RecompiledFunctionTable[137672] = anmcmd_exitHeader__Fv; // 0x19c8c0
+  4538:    17:     }
+  4539:    18: };
+  4540:    19: static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+---
+  4550:     5: #include "ps2_syscalls.h"
+  4551:     6: 
+  4552:     7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x2d6850u;
+  4553:     8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x2d6854u;
+  4554:     9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+  4555:    10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+  4556:    11: 
+  4557:    12: namespace {
+  4558:    13: struct GeneratedFunctionTableInitializer {
+  4559:    14:     GeneratedFunctionTableInitializer() {
+  4560:    15:         g_ps2RecompiledFunctionTable[0] = Update__9Shimmer2Df; // 0x2d6850
+  4561:    16:     }
+  4562:    17: };
+  4563:    18: static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+
+==============================================================================
+KNOWN-GOOD SHIMMER GENERATOR SOURCE
+PATH: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp
+==============================================================================
+LINE COUNT: 150
+     1: #include <ps2recomp/code_generator.h>
+     2: #include <ps2recomp/r5900_decoder.h>
+     3: #include <ps2recomp/types.h>
+     4: #include <cstdint>
+     5: #include <filesystem>
+     6: #include <fstream>
+     7: #include <iostream>
+     8: #include <map>
+     9: #include <string>
+    10: #include <vector>
+    11: 
+    12: using namespace ps2recomp;
+    13: 
+    14: struct RawInstructionRecord {
+    15:     uint32_t address;
+    16:     uint32_t raw;
+    17: };
+    18: 
+    19: int main(int argc, char** argv)
+    20: {
+    21:     if (argc != 2) {
+    22:         std::cerr << "Usage: shimmer_codegen <output-directory>\n";
+    23:         return 2;
+    24:     }
+    25: 
+    26:     const RawInstructionRecord records[] = {
+    27:         { 0x002D6850u, 0x44800000u },
+    28:         { 0x002D6854u, 0x00000000u },
+    29:         { 0x002D6858u, 0x460C0034u },
+    30:         { 0x002D685Cu, 0x00000000u },
+    31:         { 0x002D6860u, 0x45000003u },
+    32:         { 0x002D6864u, 0x00000000u },
+    33:         { 0x002D6868u, 0x03E00008u },
+    34:         { 0x002D686Cu, 0xE48C0024u },
+    35:         { 0x002D6870u, 0x03E00008u },
+    36:         { 0x002D6874u, 0xE4800024u }
+    37:     };
+    38: 
+    39:     const std::filesystem::path outputDirectory(argv[1]);
+    40:     std::error_code filesystemError;
+    41:     std::filesystem::create_directories(outputDirectory, filesystemError);
+    42:     if (filesystemError) {
+    43:         std::cerr << "Could not create output directory: "
+    44:                   << filesystemError.message() << "\n";
+    45:         return 3;
+    46:     }
+    47: 
+    48:     Symbol symbol{};
+    49:     symbol.name = "Update__9Shimmer2Df";
+    50:     symbol.address = 0x002D6850u;
+    51:     symbol.size = 0x28u;
+    52:     symbol.isFunction = true;
+    53:     symbol.isImported = false;
+    54:     symbol.isExported = false;
+    55: 
+    56:     Function function{};
+    57:     function.name = "Update__9Shimmer2Df";
+    58:     function.start = 0x002D6850u;
+    59:     function.end = 0x002D6878u;
+    60:     function.isRecompiled = true;
+    61:     function.isStub = false;
+    62:     function.isSkipped = false;
+    63: 
+    64:     R5900Decoder decoder;
+    65:     std::vector<Instruction> decoded;
+    66:     decoded.reserve(sizeof(records) / sizeof(records[0]));
+    67: 
+    68:     size_t branches = 0;
+    69:     size_t jumps = 0;
+    70:     size_t delaySlots = 0;
+    71: 
+    72:     for (const auto& raw : records) {
+    73:         Instruction instruction = decoder.decodeInstruction(raw.address, raw.raw);
+    74: 
+    75:         if (instruction.isBranch) ++branches;
+    76:         if (instruction.isJump) ++jumps;
+    77:         if (instruction.hasDelaySlot) ++delaySlots;
+    78: 
+    79:         std::cout << "[INSTRUCTION] address=0x" << std::hex
+    80:                   << instruction.address
+    81:                   << " raw=0x" << instruction.raw
+    82:                   << " branch=" << instruction.isBranch
+    83:                   << " jump=" << instruction.isJump
+    84:                   << " delay=" << instruction.hasDelaySlot
+    85:                   << " | " << instruction.disassembly
+    86:                   << std::dec << "\n";
+    87: 
+    88:         decoded.push_back(std::move(instruction));
+    89:     }
+    90: 
+    91:     std::vector<Symbol> symbols{ symbol };
+    92:     std::vector<Section> sections;
+    93:     std::vector<Function> functions{ function };
+    94: 
+    95:     CodeGenerator generator(symbols, sections);
+    96:     generator.setEmitInstructionComments(true);
+    97: 
+    98:     const std::string generated =
+    99:         generator.generateFunction(function, decoded, true);
+   100: 
+   101:     if (generated.empty()) {
+   102:         std::cerr << "[FAIL] Generator returned empty source.\n";
+   103:         return 4;
+   104:     }
+   105: 
+   106:     const auto sourcePath =
+   107:         outputDirectory / "MARK_OF_KRI_Update__9Shimmer2Df.cpp";
+   108: 
+   109:     std::ofstream source(sourcePath, std::ios::binary);
+   110:     if (!source) {
+   111:         std::cerr << "[FAIL] Cannot write generated function.\n";
+   112:         return 5;
+   113:     }
+   114: 
+   115:     source << generated << "\n";
+   116:     source.close();
+   117: 
+   118:     if (!source) {
+   119:         std::cerr << "[FAIL] Generated source write failed.\n";
+   120:         return 6;
+   121:     }
+   122: 
+   123:     std::map<uint32_t, std::string> stubs;
+   124:     const std::string registration =
+   125:         generator.generateFunctionRegistration(functions, stubs);
+   126: 
+   127:     const auto registrationPath =
+   128:         outputDirectory / "MARK_OF_KRI_SHIMMER_REGISTRATION.cpp";
+   129: 
+   130:     std::ofstream registrationFile(registrationPath, std::ios::binary);
+   131:     if (!registrationFile || registration.empty()) {
+   132:         std::cerr << "[FAIL] Registration generation failed.\n";
+   133:         return 7;
+   134:     }
+   135: 
+   136:     registrationFile << registration << "\n";
+   137:     registrationFile.close();
+   138: 
+   139:     std::cout << "[PASS] Generated function: " << sourcePath.string()
+   140:               << " (" << generated.size() << " bytes)\n";
+   141:     std::cout << "[PASS] Generated registration: "
+   142:               << registrationPath.string() << "\n";
+   143:     std::cout << "[SUMMARY] instructions=" << decoded.size()
+   144:               << " branches=" << branches
+   145:               << " jumps=" << jumps
+   146:               << " delay-slots=" << delaySlots << "\n";
+   147:     std::cout << "RESULT: SHIMMER CODE GENERATION PASSED\n";
+   148: 
+   149:     return 0;
+   150: }
+
+==============================================================================
+SHIMMER WORKSPACE CMAKE SOURCE
+PATH: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\CMakeLists.txt
+==============================================================================
+LINE COUNT: 28
+     1: cmake_minimum_required(VERSION 3.25)
+     2: project(markofkri_shimmer_fpu_execution LANGUAGES CXX)
+     3: 
+     4: set(CMAKE_CXX_STANDARD 20)
+     5: set(CMAKE_CXX_STANDARD_REQUIRED ON)
+     6: set(CMAKE_CXX_EXTENSIONS OFF)
+     7: 
+     8: add_executable(markofkri_shimmer_fpu_execution
+     9:     shimmer_fpu_execution_test.cpp
+    10:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/shimmer_codegen_execution/MARK_OF_KRI_Update__9Shimmer2Df.cpp"
+    11:     "D:/Games/MarkOfKriRecomp/native/tests/recomp/real_function_runtime_boundary.cpp"
+    12: )
+    13: 
+    14: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/include")
+    15: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/src/lib/Kernel")
+    16: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/src")
+    17: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/src/lib")
+    18: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xIOP/include")
+    19: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRecomp/src")
+    20: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRecomp/src/lib")
+    21: target_include_directories(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/include")
+    22: 
+    23: target_link_libraries(markofkri_shimmer_fpu_execution PRIVATE "D:/Games/MarkOfKriRecomp/native/build/ps2recomp_minimal_fixed_20261125_123608/ps2xRecomp/ps2_recomp_lib.lib")
+    24: 
+    25: if(MSVC)
+    26:     target_compile_definitions(markofkri_shimmer_fpu_execution PRIVATE NOMINMAX)
+    27:     target_compile_options(markofkri_shimmer_fpu_execution PRIVATE /EHsc /W3)
+    28: endif()
+
+==============================================================================
+SHIMMER HARNESS OR GENERATED SOURCE TEMPLATE
+PATH: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\shimmer_fpu_execution_test.before_ps2runtime_repair_20261125_150127.cpp
+==============================================================================
+LINE COUNT: 177
+     1: #include <cstdint>
+     2: #include <cstdio>
+     3: #include <cstring>
+     4: #include <cmath>
+     5: #include <immintrin.h>
+     6: 
+     7: #include "ps2_stubs.h"
+     8: #include "PS2Runtime.h"
+     9: 
+    10: extern void Update__9Shimmer2Df(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+    11: 
+    12: static void setFpr32(R5900Context& ctx, int index, uint32_t bits)
+    13: {
+    14:     std::memcpy(&ctx.f[index], &bits, sizeof(bits));
+    15: }
+    16: 
+    17: static uint32_t getFpr32(const R5900Context& ctx, int index)
+    18: {
+    19:     uint32_t bits = 0;
+    20:     std::memcpy(&bits, &ctx.f[index], sizeof(bits));
+    21:     return bits;
+    22: }
+    23: 
+    24: static uint32_t read32(uint8_t* memory, uint32_t address)
+    25: {
+    26:     uint32_t value = 0;
+    27:     std::memcpy(&value, memory + address, sizeof(value));
+    28:     return value;
+    29: }
+    30: 
+    31: static void write32(uint8_t* memory, uint32_t address, uint32_t value)
+    32: {
+    33:     std::memcpy(memory + address, &value, sizeof(value));
+    34: }
+    35: 
+    36: static float bitsToFloat(uint32_t bits)
+    37: {
+    38:     float value = 0.0f;
+    39:     std::memcpy(&value, &bits, sizeof(value));
+    40:     return value;
+    41: }
+    42: 
+    43: static bool check(bool condition, const char* label, int& failures)
+    44: {
+    45:     if (condition)
+    46:     {
+    47:         std::printf("[PASS] %s\n", label);
+    48:         return true;
+    49:     }
+    50: 
+    51:     std::printf("[FAIL] %s\n", label);
+    52:     ++failures;
+    53:     return false;
+    54: }
+    55: 
+    56: static bool runCase(
+    57:     const char* name,
+    58:     uint32_t f12Bits,
+    59:     uint32_t expectedMemory,
+    60:     uint32_t expectedFcr31Condition)
+    61: {
+    62:     constexpr uint32_t RDRAM_SIZE = 32u * 1024u * 1024u;
+    63:     constexpr uint32_t OBJECT_BASE = 0x1000u;
+    64:     constexpr uint32_t TARGET_OFFSET = 0x24u;
+    65:     constexpr uint32_t TARGET_ADDRESS = OBJECT_BASE + TARGET_OFFSET;
+    66:     constexpr uint32_t SENTINEL = 0xDEADBEEFu;
+    67: 
+    68:     uint8_t* rdram = new uint8_t[RDRAM_SIZE];
+    69:     std::memset(rdram, 0, RDRAM_SIZE);
+    70: 
+    71:     R5900Context ctx{};
+    72: 
+    73:     setFpr32(ctx, 12, f12Bits);
+    74: 
+    75:     write32(rdram, TARGET_ADDRESS, SENTINEL);
+    76: 
+    77:     // The generated function only requires the CPU context for this test.
+    78:     // The tested SWC1 paths operate on ordinary RDRAM.
+    79:     Update__9Shimmer2Df(rdram, &ctx, nullptr);
+    80: 
+    81:     const uint32_t stored = read32(rdram, TARGET_ADDRESS);
+    82:     const uint32_t f0Bits = getFpr32(ctx, 0);
+    83: 
+    84:     int failures = 0;
+    85: 
+    86:     std::printf("\n===== %s =====\n", name);
+    87:     std::printf("F12 bits:       0x%08X\n", f12Bits);
+    88:     std::printf("F12 float:      %.9g\n", bitsToFloat(f12Bits));
+    89:     std::printf("Stored value:   0x%08X\n", stored);
+    90:     std::printf("Expected value: 0x%08X\n", expectedMemory);
+    91:     std::printf("F0 bits:        0x%08X\n", f0Bits);
+    92:     std::printf("FCR31:          0x%08X\n", ctx.fcr31);
+    93: 
+    94:     check(
+    95:         stored == expectedMemory,
+    96:         "SWC1 produced expected memory result",
+    97:         failures);
+    98: 
+    99:     check(
+   100:         f0Bits == 0u,
+   101:         "F0 contains zero after generated MTC1",
+   102:         failures);
+   103: 
+   104:     const uint32_t condition =
+   105:         ctx.fcr31 & 0x00800000u;
+   106: 
+   107:     check(
+   108:         condition == expectedFcr31Condition,
+   109:         "COP1 condition flag matches C.OLT.S result",
+   110:         failures);
+   111: 
+   112:     delete[] rdram;
+   113: 
+   114:     return failures == 0;
+   115: }
+   116: 
+   117: int main()
+   118: {
+   119:     std::printf("MARK OF KRI - SHIMMER FPU REAL FUNCTION EXECUTION\n");
+   120:     std::printf("Function: Update__9Shimmer2Df\n");
+   121:     std::printf("Entry:    0x002D6850\n");
+   122:     std::printf("Tests:    positive / zero / negative F12\n");
+   123: 
+   124:     int failures = 0;
+   125: 
+   126:     // +1.0f:
+   127:     // F0 < F12 is true.
+   128:     // BC1F is NOT taken.
+   129:     // Delay-slot SWC1 stores F12.
+   130:     if (!runCase(
+   131:         "POSITIVE F12",
+   132:         0x3F800000u,
+   133:         0x3F800000u,
+   134:         0x00800000u))
+   135:     {
+   136:         ++failures;
+   137:     }
+   138: 
+   139:     // +0.0f:
+   140:     // F0 < F12 is false.
+   141:     // BC1F is taken.
+   142:     // Target delay-slot SWC1 stores F0 = 0.
+   143:     if (!runCase(
+   144:         "ZERO F12",
+   145:         0x00000000u,
+   146:         0x00000000u,
+   147:         0x00000000u))
+   148:     {
+   149:         ++failures;
+   150:     }
+   151: 
+   152:     // -1.0f:
+   153:     // F0 < F12 is false.
+   154:     // BC1F is taken.
+   155:     // Target delay-slot SWC1 stores F0 = 0.
+   156:     if (!runCase(
+   157:         "NEGATIVE F12",
+   158:         0xBF800000u,
+   159:         0x00000000u,
+   160:         0x00000000u))
+   161:     {
+   162:         ++failures;
+   163:     }
+   164: 
+   165:     std::printf("\n============================================================\n");
+   166: 
+   167:     if (failures == 0)
+   168:     {
+   169:         std::printf("RESULT: SHIMMER FPU EXECUTION PASSED\n");
+   170:         std::printf("ALL CASES PASSED\n");
+   171:         return 0;
+   172:     }
+   173: 
+   174:     std::printf("RESULT: SHIMMER FPU EXECUTION FAILED\n");
+   175:     std::printf("FAILURES: %d\n", failures);
+   176:     return 1;
+   177: }
+
+==============================================================================
+SHIMMER HARNESS OR GENERATED SOURCE TEMPLATE
+PATH: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\shimmer_fpu_execution_test.cpp
+==============================================================================
+LINE COUNT: 207
+     1: #include <cstdint>
+     2: #include <cstdio>
+     3: #include <cstring>
+     4: #include <cmath>
+     5: #include <immintrin.h>
+     6: 
+     7: #include "ps2_stubs.h"
+     8: #include "ps2_runtime.h"
+     9: #include "ps2_runtime_macros.h"
+    10: 
+    11: extern void Update__9Shimmer2Df(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+    12: 
+    13: static void setFpr32(R5900Context& ctx, int index, uint32_t bits)
+    14: {
+    15:     std::memcpy(&ctx.f[index], &bits, sizeof(bits));
+    16: }
+    17: 
+    18: static uint32_t getFpr32(const R5900Context& ctx, int index)
+    19: {
+    20:     uint32_t bits = 0;
+    21:     std::memcpy(&bits, &ctx.f[index], sizeof(bits));
+    22:     return bits;
+    23: }
+    24: 
+    25: static uint32_t read32(uint8_t* memory, uint32_t address)
+    26: {
+    27:     uint32_t value = 0;
+    28:     std::memcpy(&value, memory + address, sizeof(value));
+    29:     return value;
+    30: }
+    31: 
+    32: static void write32(uint8_t* memory, uint32_t address, uint32_t value)
+    33: {
+    34:     std::memcpy(memory + address, &value, sizeof(value));
+    35: }
+    36: 
+    37: static void runFastWrite32Probe(uint8_t* rdram)
+    38: {
+    39:     constexpr uint32_t ADDRESS = 0x1024u;
+    40:     constexpr uint32_t VALUE = 0x12345678u;
+    41: 
+    42:     std::printf("\n===== FAST_WRITE32 DIRECT PROBE =====\n");
+    43:     std::printf("Address:        0x%08X\n", ADDRESS);
+    44:     std::printf("Before:         0x%08X\n", read32(rdram, ADDRESS));
+    45: 
+    46:     Ps2FastWrite32(rdram, ADDRESS, VALUE);
+    47: 
+    48:     std::printf("After:          0x%08X\n", read32(rdram, ADDRESS));
+    49:     std::printf("Expected:       0x%08X\n", VALUE);
+    50:     std::printf(
+    51:         "Direct result:  %s\n",
+    52:         read32(rdram, ADDRESS) == VALUE ? "PASS" : "FAIL");
+    53: 
+    54:     std::printf(
+    55:         "SpecialAddress: %s\n",
+    56:         PS2Runtime::isSpecialAddress(ADDRESS) ? "TRUE" : "FALSE");
+    57: }
+    58: static float bitsToFloat(uint32_t bits)
+    59: {
+    60:     float value = 0.0f;
+    61:     std::memcpy(&value, &bits, sizeof(value));
+    62:     return value;
+    63: }
+    64: 
+    65: static bool check(bool condition, const char* label, int& failures)
+    66: {
+    67:     if (condition)
+    68:     {
+    69:         std::printf("[PASS] %s\n", label);
+    70:         return true;
+    71:     }
+    72: 
+    73:     std::printf("[FAIL] %s\n", label);
+    74:     ++failures;
+    75:     return false;
+    76: }
+    77: 
+    78: static bool runCase(
+    79:     const char* name,
+    80:     uint32_t f12Bits,
+    81:     uint32_t expectedMemory,
+    82:     uint32_t expectedFcr31Condition)
+    83: {
+    84:     constexpr uint32_t RDRAM_SIZE = 32u * 1024u * 1024u;
+    85:     constexpr uint32_t OBJECT_BASE = 0x1000u;
+    86:     constexpr uint32_t TARGET_OFFSET = 0x24u;
+    87:     constexpr uint32_t TARGET_ADDRESS = OBJECT_BASE + TARGET_OFFSET;
+    88:     constexpr uint32_t SENTINEL = 0xDEADBEEFu;
+    89: 
+    90:     uint8_t* rdram = new uint8_t[RDRAM_SIZE];
+    91:     std::memset(rdram, 0, RDRAM_SIZE);
+    92:     runFastWrite32Probe(rdram);
+    93: 
+    94:         R5900Context ctx{};
+    95: 
+    96:     // $a0 points at the synthetic object base used by the SWC1 test.
+    97:     // The generated guest instruction stores to $a0 + 0x24.
+    98:     {
+    99:         const uint64_t a0Value = OBJECT_BASE;
+   100:         ctx.r[4] = _mm_set_epi64x(0, static_cast<int64_t>(a0Value));
+   101:     }
+   102: 
+   103:     setFpr32(ctx, 12, f12Bits);
+   104: 
+   105:     write32(rdram, TARGET_ADDRESS, SENTINEL);
+   106: 
+   107:     // The generated function only requires the CPU context for this test.
+   108:     // The tested SWC1 paths operate on ordinary RDRAM.
+   109:     Update__9Shimmer2Df(rdram, &ctx, nullptr);
+   110: 
+   111:     const uint32_t stored = read32(rdram, TARGET_ADDRESS);
+   112:     const uint32_t f0Bits = getFpr32(ctx, 0);
+   113: 
+   114:     int failures = 0;
+   115: 
+   116:     std::printf("\n===== %s =====\n", name);
+   117:     std::printf("F12 bits:       0x%08X\n", f12Bits);
+   118:     std::printf("F12 float:      %.9g\n", bitsToFloat(f12Bits));
+   119:     std::printf("Stored value:   0x%08X\n", stored);
+   120:     std::printf("Expected value: 0x%08X\n", expectedMemory);
+   121:     std::printf("F0 bits:        0x%08X\n", f0Bits);
+   122:     std::printf("FCR31:          0x%08X\n", ctx.fcr31);
+   123: 
+   124:     check(
+   125:         stored == expectedMemory,
+   126:         "SWC1 produced expected memory result",
+   127:         failures);
+   128: 
+   129:     check(
+   130:         f0Bits == 0u,
+   131:         "F0 contains zero after generated MTC1",
+   132:         failures);
+   133: 
+   134:     const uint32_t condition =
+   135:         ctx.fcr31 & 0x00800000u;
+   136: 
+   137:     check(
+   138:         condition == expectedFcr31Condition,
+   139:         "COP1 condition flag matches C.OLT.S result",
+   140:         failures);
+   141: 
+   142:     delete[] rdram;
+   143: 
+   144:     return failures == 0;
+   145: }
+   146: 
+   147: int main()
+   148: {
+   149:     std::printf("MARK OF KRI - SHIMMER FPU REAL FUNCTION EXECUTION\n");
+   150:     std::printf("Function: Update__9Shimmer2Df\n");
+   151:     std::printf("Entry:    0x002D6850\n");
+   152:     std::printf("Tests:    positive / zero / negative F12\n");
+   153: 
+   154:     int failures = 0;
+   155: 
+   156:     // +1.0f:
+   157:     // F0 < F12 is true.
+   158:     // BC1F is NOT taken.
+   159:     // Delay-slot SWC1 stores F12.
+   160:     if (!runCase(
+   161:         "POSITIVE F12",
+   162:         0x3F800000u,
+   163:         0x3F800000u,
+   164:         0x00800000u))
+   165:     {
+   166:         ++failures;
+   167:     }
+   168: 
+   169:     // +0.0f:
+   170:     // F0 < F12 is false.
+   171:     // BC1F is taken.
+   172:     // Target delay-slot SWC1 stores F0 = 0.
+   173:     if (!runCase(
+   174:         "ZERO F12",
+   175:         0x00000000u,
+   176:         0x00000000u,
+   177:         0x00000000u))
+   178:     {
+   179:         ++failures;
+   180:     }
+   181: 
+   182:     // -1.0f:
+   183:     // F0 < F12 is false.
+   184:     // BC1F is taken.
+   185:     // Target delay-slot SWC1 stores F0 = 0.
+   186:     if (!runCase(
+   187:         "NEGATIVE F12",
+   188:         0xBF800000u,
+   189:         0x00000000u,
+   190:         0x00000000u))
+   191:     {
+   192:         ++failures;
+   193:     }
+   194: 
+   195:     std::printf("\n============================================================\n");
+   196: 
+   197:     if (failures == 0)
+   198:     {
+   199:         std::printf("RESULT: SHIMMER FPU EXECUTION PASSED\n");
+   200:         std::printf("ALL CASES PASSED\n");
+   201:         return 0;
+   202:     }
+   203: 
+   204:     std::printf("RESULT: SHIMMER FPU EXECUTION FAILED\n");
+   205:     std::printf("FAILURES: %d\n", failures);
+   206:     return 1;
+   207: }
+
+==============================================================================
+SHIMMER HARNESS OR GENERATED SOURCE TEMPLATE
+PATH: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp
+==============================================================================
+LINE COUNT: 20
+     1: #include "ps2_runtime.h"
+     2: #include <ps2_recompiled_functions.h>
+     3: #include "ps2_stubs.h"
+     4: #include <ps2_recompiled_stubs.h>
+     5: #include "ps2_syscalls.h"
+     6: 
+     7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x2d6850u;
+     8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x2d6854u;
+     9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+    10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+    11: 
+    12: namespace {
+    13: struct GeneratedFunctionTableInitializer {
+    14:     GeneratedFunctionTableInitializer() {
+    15:         g_ps2RecompiledFunctionTable[0] = Update__9Shimmer2Df; // 0x2d6850
+    16:     }
+    17: };
+    18: static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+    19: }
+    20: 
+
+==============================================================================
+SHIMMER HARNESS OR GENERATED SOURCE TEMPLATE
+PATH: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_Update__9Shimmer2Df.cpp
+==============================================================================
+LINE COUNT: 87
+     1: #include <stdexcept>
+     2: #include "ps2_runtime_macros.h"
+     3: #include "ps2_runtime.h"
+     4: #include <ps2_recompiled_functions.h>
+     5: #include <ps2_recompiled_stubs.h>
+     6: 
+     7: #include "ps2_syscalls.h"
+     8: #include "ps2_stubs.h"
+     9: 
+    10: #ifdef PS2_FUNCTION_LOG_TRACKER
+    11: #include "ps2_log.h"
+    12: #endif
+    13: 
+    14: // Function: Update__9Shimmer2Df
+    15: // Address: 0x2d6850 - 0x2d6878
+    16: void Update__9Shimmer2Df(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+    17: #ifdef PS2_FUNCTION_LOG_TRACKER
+    18:     PS_LOG_ENTRY("Update__9Shimmer2Df");
+    19: #endif
+    20: 
+    21:     ctx->pc = 0x2d6850u;
+    22: 
+    23:     // 0x2d6850: 0x44800000  mtc1        $zero, $f0
+    24:     ctx->pc = 0x2d6850u;
+    25:     { uint32_t bits = GPR_U32(ctx, 0); std::memcpy(&ctx->f[0], &bits, sizeof(bits)); }
+    26:     // 0x2d6854: 0x0  nop
+    27:     ctx->pc = 0x2d6854u;
+    28:     // NOP
+    29:     // 0x2d6858: 0x460c0034  c.lt.s      $f0, $f12
+    30:     ctx->pc = 0x2d6858u;
+    31:     ctx->fcr31 = (FPU_C_OLT_S(ctx->f[0], ctx->f[12])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+    32:     // 0x2d685c: 0x0  nop
+    33:     ctx->pc = 0x2d685cu;
+    34:     // NOP
+    35:     // 0x2d6860: 0x45000003  bc1f        . + 4 + (0x3 << 2)
+    36:     ctx->pc = 0x2D6860u;
+    37:     {
+    38:         const bool branch_taken_0x2d6860 = (!(ctx->fcr31 & 0x800000));
+    39:         if (branch_taken_0x2d6860) {
+    40:             ctx->pc = 0x2D6870u;
+    41:             goto label_2d6870;
+    42:         }
+    43:     }
+    44:     ctx->pc = 0x2D6868u;
+    45:     // 0x2d6868: 0x3e00008  jr          $ra
+    46:     ctx->pc = 0x2D6868u;
+    47:     {
+    48:         const uint32_t jumpTarget = GPR_U32(ctx, 31);
+    49:         ctx->pc = 0x2D686Cu;
+    50:         ctx->in_delay_slot = true;
+    51:         ctx->branch_pc = 0x2D6868u;
+    52:         // 0x2d686c: 0xe48c0024  swc1        $f12, 0x24($a0) (Delay Slot)
+    53:         { float f = ctx->f[12]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); WRITE32(ADD32(GPR_U32(ctx, 4), 36), bits); }
+    54:         ctx->in_delay_slot = false;
+    55:         ctx->pc = jumpTarget;
+    56:         #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+    57:         (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x2D6868u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+    58:         return;
+    59:         #else
+    60:         ctx->pc = jumpTarget;
+    61:         return;
+    62:         #endif
+    63:     }
+    64:     ctx->pc = 0x2D6870u;
+    65: label_2d6870:
+    66:     // 0x2d6870: 0x3e00008  jr          $ra
+    67:     ctx->pc = 0x2D6870u;
+    68:     {
+    69:         const uint32_t jumpTarget = GPR_U32(ctx, 31);
+    70:         ctx->pc = 0x2D6874u;
+    71:         ctx->in_delay_slot = true;
+    72:         ctx->branch_pc = 0x2D6870u;
+    73:         // 0x2d6874: 0xe4800024  swc1        $f0, 0x24($a0) (Delay Slot)
+    74:         { float f = ctx->f[0]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); WRITE32(ADD32(GPR_U32(ctx, 4), 36), bits); }
+    75:         ctx->in_delay_slot = false;
+    76:         ctx->pc = jumpTarget;
+    77:         #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+    78:         (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x2D6870u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+    79:         return;
+    80:         #else
+    81:         ctx->pc = jumpTarget;
+    82:         return;
+    83:         #endif
+    84:     }
+    85:     ctx->pc = 0x2D6878u;
+    86: }
+    87: 
