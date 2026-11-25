@@ -1,0 +1,2029 @@
+MARK OF KRI - SHIMMER FPU CONTEXT LAYOUT
+Generated: 2026-11-25 14:36:55
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h
+LINE 72: OPCODE_COP1 = 0x11, // Coprocessor 1 (FPU) instructions (see Cop1Format)
+  BEFORE: OPCODE_LUI = 0x0F,   // Load Upper Immediate
+  BEFORE: 
+  BEFORE: OPCODE_COP0 = 0x10, // Coprocessor 0 instructions (see Cop0Format)
+  AFTER:  OPCODE_COP2 = 0x12, // Coprocessor 2 (VU0 Macro) instructions (see Cop2Format)
+  AFTER:  OPCODE_COP3 = 0x13, // Unused on PS2
+  AFTER:  
+  AFTER:  OPCODE_BEQL = 0x14,  // Branch on Equal Likely
+  AFTER:  OPCODE_BNEL = 0x15,  // Branch on Not Equal Likely
+
+LINE 118: OPCODE_SWC1 = 0x39, // Store Word from Coprocessor 1 (FPU)
+  BEFORE: OPCODE_LD = 0x37,   // Load Doubleword
+  BEFORE: 
+  BEFORE: OPCODE_SC = 0x38,   // Store Conditional Word, maybe omitted/unused?
+  AFTER:  OPCODE_SWC2 = 0x3A, // SWC2 - Store Word from Coprocessor 2, maybe omitted/unused
+  AFTER:  OPCODE_SCD = 0x3C,  // SCD - Store Conditional Doubleword, maybe omitted/unused?
+  AFTER:  OPCODE_SDC1 = 0x3D, // SDC1 - Store Doubleword from Coprocessor 1, FPU is single-precision
+  AFTER:  OPCODE_SDC2 = 0x3E, // PS2 specific Store Quadword from Coprocessor 2 (VU0) - Overrides standard MIPS SDC2
+  AFTER:  OPCODE_SD = 0x3F,   // Store Doubleword
+
+LINE 439: // COP1 (FPU) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP1
+  BEFORE: COP0_REG_ERROREPC = 30 // Error exception program counter
+  BEFORE: };
+  BEFORE: 
+  AFTER:  enum Cop1Format
+  AFTER:  {
+  AFTER:  COP1_MF = 0x00, // Move From FPU Register
+  AFTER:  COP1_CF = 0x02, // Move From FPU Control Register
+  AFTER:  COP1_MT = 0x04, // Move To FPU Register
+
+LINE 440: enum Cop1Format
+  BEFORE: };
+  BEFORE: 
+  BEFORE: // COP1 (FPU) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP1
+  AFTER:  {
+  AFTER:  COP1_MF = 0x00, // Move From FPU Register
+  AFTER:  COP1_CF = 0x02, // Move From FPU Control Register
+  AFTER:  COP1_MT = 0x04, // Move To FPU Register
+  AFTER:  COP1_CT = 0x06, // Move To FPU Control Register
+
+LINE 442: COP1_MF = 0x00, // Move From FPU Register
+  BEFORE: // COP1 (FPU) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP1
+  BEFORE: enum Cop1Format
+  BEFORE: {
+  AFTER:  COP1_CF = 0x02, // Move From FPU Control Register
+  AFTER:  COP1_MT = 0x04, // Move To FPU Register
+  AFTER:  COP1_CT = 0x06, // Move To FPU Control Register
+  AFTER:  COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  AFTER:  
+
+LINE 443: COP1_CF = 0x02, // Move From FPU Control Register
+  BEFORE: enum Cop1Format
+  BEFORE: {
+  BEFORE: COP1_MF = 0x00, // Move From FPU Register
+  AFTER:  COP1_MT = 0x04, // Move To FPU Register
+  AFTER:  COP1_CT = 0x06, // Move To FPU Control Register
+  AFTER:  COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  AFTER:  
+  AFTER:  COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+
+LINE 444: COP1_MT = 0x04, // Move To FPU Register
+  BEFORE: {
+  BEFORE: COP1_MF = 0x00, // Move From FPU Register
+  BEFORE: COP1_CF = 0x02, // Move From FPU Control Register
+  AFTER:  COP1_CT = 0x06, // Move To FPU Control Register
+  AFTER:  COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  AFTER:  
+  AFTER:  COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  AFTER:  COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+
+LINE 445: COP1_CT = 0x06, // Move To FPU Control Register
+  BEFORE: COP1_MF = 0x00, // Move From FPU Register
+  BEFORE: COP1_CF = 0x02, // Move From FPU Control Register
+  BEFORE: COP1_MT = 0x04, // Move To FPU Register
+  AFTER:  COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  AFTER:  
+  AFTER:  COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  AFTER:  COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  AFTER:  
+
+LINE 446: COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  BEFORE: COP1_CF = 0x02, // Move From FPU Control Register
+  BEFORE: COP1_MT = 0x04, // Move To FPU Register
+  BEFORE: COP1_CT = 0x06, // Move To FPU Control Register
+  AFTER:  
+  AFTER:  COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  AFTER:  COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  AFTER:  
+  AFTER:  COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+
+LINE 448: COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  BEFORE: COP1_CT = 0x06, // Move To FPU Control Register
+  BEFORE: COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  BEFORE: 
+  AFTER:  COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  AFTER:  
+  AFTER:  COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+  AFTER:  COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+  AFTER:  };
+
+LINE 449: COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  BEFORE: COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  BEFORE: 
+  BEFORE: COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  AFTER:  
+  AFTER:  COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+  AFTER:  COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+  AFTER:  };
+  AFTER:  
+
+LINE 451: COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+  BEFORE: COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  BEFORE: COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  BEFORE: 
+  AFTER:  COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+  AFTER:  };
+  AFTER:  
+  AFTER:  // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+  AFTER:  enum Cop1FunctionsS
+
+LINE 452: COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+  BEFORE: COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  BEFORE: 
+  BEFORE: COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+  AFTER:  };
+  AFTER:  
+  AFTER:  // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+  AFTER:  enum Cop1FunctionsS
+  AFTER:  {
+
+LINE 455: // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+  BEFORE: COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+  BEFORE: };
+  BEFORE: 
+  AFTER:  enum Cop1FunctionsS
+  AFTER:  {
+  AFTER:  COP1_S_ADD = 0x00,  // ADD.S
+  AFTER:  COP1_S_SUB = 0x01,  // SUB.S
+  AFTER:  COP1_S_MUL = 0x02,  // MUL.S
+
+LINE 456: enum Cop1FunctionsS
+  BEFORE: };
+  BEFORE: 
+  BEFORE: // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+  AFTER:  {
+  AFTER:  COP1_S_ADD = 0x00,  // ADD.S
+  AFTER:  COP1_S_SUB = 0x01,  // SUB.S
+  AFTER:  COP1_S_MUL = 0x02,  // MUL.S
+  AFTER:  COP1_S_DIV = 0x03,  // DIV.S
+
+LINE 458: COP1_S_ADD = 0x00,  // ADD.S
+  BEFORE: // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+  BEFORE: enum Cop1FunctionsS
+  BEFORE: {
+  AFTER:  COP1_S_SUB = 0x01,  // SUB.S
+  AFTER:  COP1_S_MUL = 0x02,  // MUL.S
+  AFTER:  COP1_S_DIV = 0x03,  // DIV.S
+  AFTER:  COP1_S_SQRT = 0x04, // SQRT.S
+  AFTER:  COP1_S_ABS = 0x05,  // ABS.S
+
+LINE 459: COP1_S_SUB = 0x01,  // SUB.S
+  BEFORE: enum Cop1FunctionsS
+  BEFORE: {
+  BEFORE: COP1_S_ADD = 0x00,  // ADD.S
+  AFTER:  COP1_S_MUL = 0x02,  // MUL.S
+  AFTER:  COP1_S_DIV = 0x03,  // DIV.S
+  AFTER:  COP1_S_SQRT = 0x04, // SQRT.S
+  AFTER:  COP1_S_ABS = 0x05,  // ABS.S
+  AFTER:  COP1_S_MOV = 0x06,  // MOV.S
+
+LINE 460: COP1_S_MUL = 0x02,  // MUL.S
+  BEFORE: {
+  BEFORE: COP1_S_ADD = 0x00,  // ADD.S
+  BEFORE: COP1_S_SUB = 0x01,  // SUB.S
+  AFTER:  COP1_S_DIV = 0x03,  // DIV.S
+  AFTER:  COP1_S_SQRT = 0x04, // SQRT.S
+  AFTER:  COP1_S_ABS = 0x05,  // ABS.S
+  AFTER:  COP1_S_MOV = 0x06,  // MOV.S
+  AFTER:  COP1_S_NEG = 0x07,  // NEG.S
+
+LINE 461: COP1_S_DIV = 0x03,  // DIV.S
+  BEFORE: COP1_S_ADD = 0x00,  // ADD.S
+  BEFORE: COP1_S_SUB = 0x01,  // SUB.S
+  BEFORE: COP1_S_MUL = 0x02,  // MUL.S
+  AFTER:  COP1_S_SQRT = 0x04, // SQRT.S
+  AFTER:  COP1_S_ABS = 0x05,  // ABS.S
+  AFTER:  COP1_S_MOV = 0x06,  // MOV.S
+  AFTER:  COP1_S_NEG = 0x07,  // NEG.S
+  AFTER:  
+
+LINE 462: COP1_S_SQRT = 0x04, // SQRT.S
+  BEFORE: COP1_S_SUB = 0x01,  // SUB.S
+  BEFORE: COP1_S_MUL = 0x02,  // MUL.S
+  BEFORE: COP1_S_DIV = 0x03,  // DIV.S
+  AFTER:  COP1_S_ABS = 0x05,  // ABS.S
+  AFTER:  COP1_S_MOV = 0x06,  // MOV.S
+  AFTER:  COP1_S_NEG = 0x07,  // NEG.S
+  AFTER:  
+  AFTER:  COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+
+LINE 463: COP1_S_ABS = 0x05,  // ABS.S
+  BEFORE: COP1_S_MUL = 0x02,  // MUL.S
+  BEFORE: COP1_S_DIV = 0x03,  // DIV.S
+  BEFORE: COP1_S_SQRT = 0x04, // SQRT.S
+  AFTER:  COP1_S_MOV = 0x06,  // MOV.S
+  AFTER:  COP1_S_NEG = 0x07,  // NEG.S
+  AFTER:  
+  AFTER:  COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+
+LINE 464: COP1_S_MOV = 0x06,  // MOV.S
+  BEFORE: COP1_S_DIV = 0x03,  // DIV.S
+  BEFORE: COP1_S_SQRT = 0x04, // SQRT.S
+  BEFORE: COP1_S_ABS = 0x05,  // ABS.S
+  AFTER:  COP1_S_NEG = 0x07,  // NEG.S
+  AFTER:  
+  AFTER:  COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+
+LINE 465: COP1_S_NEG = 0x07,  // NEG.S
+  BEFORE: COP1_S_SQRT = 0x04, // SQRT.S
+  BEFORE: COP1_S_ABS = 0x05,  // ABS.S
+  BEFORE: COP1_S_MOV = 0x06,  // MOV.S
+  AFTER:  
+  AFTER:  COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+
+LINE 467: COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  BEFORE: COP1_S_MOV = 0x06,  // MOV.S
+  BEFORE: COP1_S_NEG = 0x07,  // NEG.S
+  BEFORE: 
+  AFTER:  COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  AFTER:  COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+
+LINE 468: COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  BEFORE: COP1_S_NEG = 0x07,  // NEG.S
+  BEFORE: 
+  BEFORE: COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  AFTER:  COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  AFTER:  COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+
+LINE 469: COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  BEFORE: 
+  BEFORE: COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  BEFORE: COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  AFTER:  COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  AFTER:  COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  AFTER:  COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+
+LINE 470: COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  BEFORE: COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  BEFORE: COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  BEFORE: COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  AFTER:  COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  AFTER:  COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  AFTER:  COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  AFTER:  
+
+LINE 471: COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  BEFORE: COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  BEFORE: COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  BEFORE: COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  AFTER:  COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  AFTER:  COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  AFTER:  
+  AFTER:  // --- Additional Arithmetic/Functions (from FPU.S table) ---
+
+LINE 472: COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  BEFORE: COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  BEFORE: COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  BEFORE: COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  AFTER:  COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  AFTER:  COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  AFTER:  
+  AFTER:  // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  AFTER:  COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+
+LINE 473: COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  BEFORE: COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  BEFORE: COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  BEFORE: COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  AFTER:  COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  AFTER:  
+  AFTER:  // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  AFTER:  COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  AFTER:  COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+
+LINE 474: COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  BEFORE: COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  BEFORE: COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  BEFORE: COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  AFTER:  
+  AFTER:  // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  AFTER:  COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  AFTER:  COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  AFTER:  COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+
+LINE 477: COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  BEFORE: COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  BEFORE: 
+  BEFORE: // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  AFTER:  COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  AFTER:  COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  AFTER:  COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  AFTER:  COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  AFTER:  COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+
+LINE 478: COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  BEFORE: 
+  BEFORE: // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  BEFORE: COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  AFTER:  COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  AFTER:  COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  AFTER:  COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  AFTER:  COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  AFTER:  COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+
+LINE 479: COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  BEFORE: // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  BEFORE: COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  BEFORE: COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  AFTER:  COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  AFTER:  COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  AFTER:  COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  AFTER:  COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  AFTER:  COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+
+LINE 480: COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  BEFORE: COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  BEFORE: COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  BEFORE: COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  AFTER:  COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  AFTER:  COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  AFTER:  COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  AFTER:  COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  AFTER:  
+
+LINE 481: COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  BEFORE: COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  BEFORE: COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  BEFORE: COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  AFTER:  COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  AFTER:  COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  AFTER:  COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  AFTER:  
+  AFTER:  // --- Conversions (from FPU.S table) ---
+
+LINE 482: COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  BEFORE: COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  BEFORE: COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  BEFORE: COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  AFTER:  COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  AFTER:  COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  AFTER:  
+  AFTER:  // --- Conversions (from FPU.S table) ---
+  AFTER:  COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+
+LINE 483: COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  BEFORE: COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  BEFORE: COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  BEFORE: COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  AFTER:  COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  AFTER:  
+  AFTER:  // --- Conversions (from FPU.S table) ---
+  AFTER:  COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  AFTER:  COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+
+LINE 484: COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  BEFORE: COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  BEFORE: COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  BEFORE: COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  AFTER:  
+  AFTER:  // --- Conversions (from FPU.S table) ---
+  AFTER:  COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  AFTER:  COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  AFTER:  COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+
+LINE 487: COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  BEFORE: COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  BEFORE: 
+  BEFORE: // --- Conversions (from FPU.S table) ---
+  AFTER:  COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  AFTER:  COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  
+  AFTER:  // --- Min/Max (from FPU.S table) ---
+  AFTER:  COP1_S_MAX = 0x28, // MAX.S
+
+LINE 488: COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  BEFORE: 
+  BEFORE: // --- Conversions (from FPU.S table) ---
+  BEFORE: COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  AFTER:  COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+  AFTER:  
+  AFTER:  // --- Min/Max (from FPU.S table) ---
+  AFTER:  COP1_S_MAX = 0x28, // MAX.S
+  AFTER:  COP1_S_MIN = 0x29, // MIN.S
+
+LINE 489: COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+  BEFORE: // --- Conversions (from FPU.S table) ---
+  BEFORE: COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  BEFORE: COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  AFTER:  
+  AFTER:  // --- Min/Max (from FPU.S table) ---
+  AFTER:  COP1_S_MAX = 0x28, // MAX.S
+  AFTER:  COP1_S_MIN = 0x29, // MIN.S
+  AFTER:  
+
+LINE 492: COP1_S_MAX = 0x28, // MAX.S
+  BEFORE: COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+  BEFORE: 
+  BEFORE: // --- Min/Max (from FPU.S table) ---
+  AFTER:  COP1_S_MIN = 0x29, // MIN.S
+  AFTER:  
+  AFTER:  COP1_S_C_F = 0x30,    // C.F.S (False)
+  AFTER:  COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  AFTER:  COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+
+LINE 493: COP1_S_MIN = 0x29, // MIN.S
+  BEFORE: 
+  BEFORE: // --- Min/Max (from FPU.S table) ---
+  BEFORE: COP1_S_MAX = 0x28, // MAX.S
+  AFTER:  
+  AFTER:  COP1_S_C_F = 0x30,    // C.F.S (False)
+  AFTER:  COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  AFTER:  COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  AFTER:  COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+
+LINE 495: COP1_S_C_F = 0x30,    // C.F.S (False)
+  BEFORE: COP1_S_MAX = 0x28, // MAX.S
+  BEFORE: COP1_S_MIN = 0x29, // MIN.S
+  BEFORE: 
+  AFTER:  COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  AFTER:  COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  AFTER:  COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  AFTER:  COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  AFTER:  COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+
+LINE 496: COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  BEFORE: COP1_S_MIN = 0x29, // MIN.S
+  BEFORE: 
+  BEFORE: COP1_S_C_F = 0x30,    // C.F.S (False)
+  AFTER:  COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  AFTER:  COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  AFTER:  COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  AFTER:  COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  AFTER:  COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+
+LINE 497: COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  BEFORE: 
+  BEFORE: COP1_S_C_F = 0x30,    // C.F.S (False)
+  BEFORE: COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  AFTER:  COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  AFTER:  COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  AFTER:  COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  AFTER:  COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  AFTER:  COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+
+LINE 498: COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  BEFORE: COP1_S_C_F = 0x30,    // C.F.S (False)
+  BEFORE: COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  BEFORE: COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  AFTER:  COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  AFTER:  COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  AFTER:  COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  AFTER:  COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  AFTER:  COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+
+LINE 499: COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  BEFORE: COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  BEFORE: COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  BEFORE: COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  AFTER:  COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  AFTER:  COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  AFTER:  COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  AFTER:  COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  AFTER:  COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+
+LINE 500: COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  BEFORE: COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  BEFORE: COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  BEFORE: COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  AFTER:  COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  AFTER:  COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  AFTER:  COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  AFTER:  COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  AFTER:  COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+
+LINE 501: COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  BEFORE: COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  BEFORE: COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  BEFORE: COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  AFTER:  COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  AFTER:  COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  AFTER:  COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  AFTER:  COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  AFTER:  COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+
+LINE 502: COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  BEFORE: COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  BEFORE: COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  BEFORE: COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  AFTER:  COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  AFTER:  COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  AFTER:  COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  AFTER:  COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  AFTER:  COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+
+LINE 503: COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  BEFORE: COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  BEFORE: COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  BEFORE: COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  AFTER:  COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  AFTER:  COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  AFTER:  COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  AFTER:  COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  AFTER:  COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+
+LINE 504: COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  BEFORE: COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  BEFORE: COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  BEFORE: COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  AFTER:  COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  AFTER:  COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  AFTER:  COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  AFTER:  COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  AFTER:  COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+
+LINE 505: COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  BEFORE: COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  BEFORE: COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  BEFORE: COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  AFTER:  COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  AFTER:  COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  AFTER:  COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  AFTER:  COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  AFTER:  COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+
+LINE 506: COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  BEFORE: COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  BEFORE: COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  BEFORE: COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  AFTER:  COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  AFTER:  COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  AFTER:  COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  AFTER:  COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  AFTER:  };
+
+LINE 507: COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  BEFORE: COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  BEFORE: COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  BEFORE: COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  AFTER:  COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  AFTER:  COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  AFTER:  COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  AFTER:  };
+  AFTER:  
+
+LINE 508: COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  BEFORE: COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  BEFORE: COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  BEFORE: COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  AFTER:  COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  AFTER:  COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  AFTER:  };
+  AFTER:  
+  AFTER:  // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+
+LINE 509: COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  BEFORE: COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  BEFORE: COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  BEFORE: COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  AFTER:  COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  AFTER:  };
+  AFTER:  
+  AFTER:  // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+  AFTER:  enum Cop1FunctionsW
+
+LINE 510: COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  BEFORE: COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  BEFORE: COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  BEFORE: COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  AFTER:  };
+  AFTER:  
+  AFTER:  // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+  AFTER:  enum Cop1FunctionsW
+  AFTER:  {
+
+LINE 513: // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+  BEFORE: COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  BEFORE: };
+  BEFORE: 
+  AFTER:  enum Cop1FunctionsW
+  AFTER:  {
+  AFTER:  COP1_W_CVT_S = 0x20, // CVT.S.W (Convert Word Integer to Single Float)
+  AFTER:  // 0x21 --- (Standard MIPS: CVT.D.W - requires double-precision)
+  AFTER:  // 0x24 --- (Standard MIPS: CVT.W.W - Nop?)
+
+LINE 514: enum Cop1FunctionsW
+  BEFORE: };
+  BEFORE: 
+  BEFORE: // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+  AFTER:  {
+  AFTER:  COP1_W_CVT_S = 0x20, // CVT.S.W (Convert Word Integer to Single Float)
+  AFTER:  // 0x21 --- (Standard MIPS: CVT.D.W - requires double-precision)
+  AFTER:  // 0x24 --- (Standard MIPS: CVT.W.W - Nop?)
+  AFTER:  // 0x25 --- (Standard MIPS: CVT.L.W - requires 64-bit int dest)
+
+LINE 516: COP1_W_CVT_S = 0x20, // CVT.S.W (Convert Word Integer to Single Float)
+  BEFORE: // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+  BEFORE: enum Cop1FunctionsW
+  BEFORE: {
+  AFTER:  // 0x21 --- (Standard MIPS: CVT.D.W - requires double-precision)
+  AFTER:  // 0x24 --- (Standard MIPS: CVT.W.W - Nop?)
+  AFTER:  // 0x25 --- (Standard MIPS: CVT.L.W - requires 64-bit int dest)
+  AFTER:  };
+  AFTER:  
+
+LINE 522: // COP1 BC Condition Field ('fmt' or 'rt' field, bits 20-16) for COP1_BC Format
+  BEFORE: // 0x25 --- (Standard MIPS: CVT.L.W - requires 64-bit int dest)
+  BEFORE: };
+  BEFORE: 
+  AFTER:  enum Cop1BranchCondition
+  AFTER:  {
+  AFTER:  COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  AFTER:  COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  AFTER:  COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+
+LINE 523: enum Cop1BranchCondition
+  BEFORE: };
+  BEFORE: 
+  BEFORE: // COP1 BC Condition Field ('fmt' or 'rt' field, bits 20-16) for COP1_BC Format
+  AFTER:  {
+  AFTER:  COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  AFTER:  COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  AFTER:  COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  AFTER:  COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+
+LINE 525: COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  BEFORE: // COP1 BC Condition Field ('fmt' or 'rt' field, bits 20-16) for COP1_BC Format
+  BEFORE: enum Cop1BranchCondition
+  BEFORE: {
+  AFTER:  COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  AFTER:  COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  AFTER:  COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  AFTER:  };
+  AFTER:  
+
+LINE 526: COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  BEFORE: enum Cop1BranchCondition
+  BEFORE: {
+  BEFORE: COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  AFTER:  COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  AFTER:  COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  AFTER:  };
+  AFTER:  
+  AFTER:  // COP2 (VU0 Macro) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP2
+
+LINE 527: COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  BEFORE: {
+  BEFORE: COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  BEFORE: COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  AFTER:  COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  AFTER:  };
+  AFTER:  
+  AFTER:  // COP2 (VU0 Macro) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP2
+  AFTER:  enum Cop2Format
+
+LINE 528: COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  BEFORE: COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  BEFORE: COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  BEFORE: COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  AFTER:  };
+  AFTER:  
+  AFTER:  // COP2 (VU0 Macro) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP2
+  AFTER:  enum Cop2Format
+  AFTER:  {
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\r5900_decoder.h
+LINE 45: void decodeCOP1(Instruction &inst) const;
+  BEFORE: void decodeRegimm(Instruction &inst) const;
+  BEFORE: 
+  BEFORE: void decodeCOP0(Instruction& inst) const;
+  AFTER:  void decodeCOP2(Instruction &inst) const;
+  AFTER:  
+  AFTER:  void decodeMMI(Instruction &inst) const;
+  AFTER:  void decodeMMI0(Instruction &inst) const;
+  AFTER:  void decodeMMI1(Instruction &inst) const;
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h
+LINE 64: bool modifiesFPR;     // Modifies floating point register
+  BEFORE: struct
+  BEFORE: {
+  BEFORE: bool modifiesGPR;     // Modifies general purpose register
+  AFTER:  bool modifiesVFR;     // Modifies vector float register
+  AFTER:  bool modifiesVIR;     // Modifies vector integer register
+  AFTER:  bool modifiesVIC;     // Modifies vector integer control register
+  AFTER:  bool modifiesMemory;  // Modifies memory
+  AFTER:  bool modifiesControl; // Modifies control register
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp
+LINE 68: (m_branchInst.opcode == OPCODE_COP1 && m_branchInst.rs == COP1_BC &&
+  BEFORE: (m_branchInst.opcode == OPCODE_REGIMM &&
+  BEFORE: (m_branchInst.rt == REGIMM_BLTZL || m_branchInst.rt == REGIMM_BGEZL ||
+  BEFORE: m_branchInst.rt == REGIMM_BLTZALL || m_branchInst.rt == REGIMM_BGEZALL)) ||
+  AFTER:  (m_branchInst.rt == COP1_BC_BCFL || m_branchInst.rt == COP1_BC_BCTL)) ||
+  AFTER:  (m_branchInst.opcode == OPCODE_COP2 && m_branchInst.rs == COP2_BC &&
+  AFTER:  (m_branchInst.rt == COP2_BC_BCFL || m_branchInst.rt == COP2_BC_BCTL)));
+  AFTER:  }
+  AFTER:  
+
+LINE 69: (m_branchInst.rt == COP1_BC_BCFL || m_branchInst.rt == COP1_BC_BCTL)) ||
+  BEFORE: (m_branchInst.rt == REGIMM_BLTZL || m_branchInst.rt == REGIMM_BGEZL ||
+  BEFORE: m_branchInst.rt == REGIMM_BLTZALL || m_branchInst.rt == REGIMM_BGEZALL)) ||
+  BEFORE: (m_branchInst.opcode == OPCODE_COP1 && m_branchInst.rs == COP1_BC &&
+  AFTER:  (m_branchInst.opcode == OPCODE_COP2 && m_branchInst.rs == COP2_BC &&
+  AFTER:  (m_branchInst.rt == COP2_BC_BCFL || m_branchInst.rt == COP2_BC_BCTL)));
+  AFTER:  }
+  AFTER:  
+  AFTER:  std::vector<uint32_t> ControlFlowEmitter::resolvedLocalIndirectTargets() const
+
+LINE 430: case OPCODE_COP1:
+  BEFORE: default:
+  BEFORE: return "false";
+  BEFORE: }
+  AFTER:  if (m_branchInst.rs == COP1_BC)
+  AFTER:  {
+  AFTER:  const uint8_t bcCond = static_cast<uint8_t>(m_branchInst.rt);
+  AFTER:  return (bcCond == COP1_BC_BCF || bcCond == COP1_BC_BCFL)
+  AFTER:  ? "!(ctx->fcr31 & 0x800000)"
+
+LINE 431: if (m_branchInst.rs == COP1_BC)
+  BEFORE: return "false";
+  BEFORE: }
+  BEFORE: case OPCODE_COP1:
+  AFTER:  {
+  AFTER:  const uint8_t bcCond = static_cast<uint8_t>(m_branchInst.rt);
+  AFTER:  return (bcCond == COP1_BC_BCF || bcCond == COP1_BC_BCFL)
+  AFTER:  ? "!(ctx->fcr31 & 0x800000)"
+  AFTER:  : "(ctx->fcr31 & 0x800000)";
+
+LINE 434: return (bcCond == COP1_BC_BCF || bcCond == COP1_BC_BCFL)
+  BEFORE: if (m_branchInst.rs == COP1_BC)
+  BEFORE: {
+  BEFORE: const uint8_t bcCond = static_cast<uint8_t>(m_branchInst.rt);
+  AFTER:  ? "!(ctx->fcr31 & 0x800000)"
+  AFTER:  : "(ctx->fcr31 & 0x800000)";
+  AFTER:  }
+  AFTER:  break;
+  AFTER:  case OPCODE_COP2:
+
+LINE 435: ? "!(ctx->fcr31 & 0x800000)"
+  BEFORE: {
+  BEFORE: const uint8_t bcCond = static_cast<uint8_t>(m_branchInst.rt);
+  BEFORE: return (bcCond == COP1_BC_BCF || bcCond == COP1_BC_BCFL)
+  AFTER:  : "(ctx->fcr31 & 0x800000)";
+  AFTER:  }
+  AFTER:  break;
+  AFTER:  case OPCODE_COP2:
+  AFTER:  if (m_branchInst.rs == COP2_BC)
+
+LINE 436: : "(ctx->fcr31 & 0x800000)";
+  BEFORE: const uint8_t bcCond = static_cast<uint8_t>(m_branchInst.rt);
+  BEFORE: return (bcCond == COP1_BC_BCF || bcCond == COP1_BC_BCFL)
+  BEFORE: ? "!(ctx->fcr31 & 0x800000)"
+  AFTER:  }
+  AFTER:  break;
+  AFTER:  case OPCODE_COP2:
+  AFTER:  if (m_branchInst.rs == COP2_BC)
+  AFTER:  {
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp
+LINE 28: case COP1_MF:
+  BEFORE: 
+  BEFORE: switch (format)
+  BEFORE: {
+  AFTER:  return fmt::format("{{ uint32_t bits; std::memcpy(&bits, &ctx->f[{}], sizeof(bits)); SET_GPR_U32(ctx, {}, bits); }}", fs, ft);
+  AFTER:  case COP1_MT:
+  AFTER:  return fmt::format("{{ uint32_t bits = GPR_U32(ctx, {}); std::memcpy(&ctx->f[{}], &bits, sizeof(bits)); }}", ft, fs);
+  AFTER:  case COP1_CF:
+  AFTER:  if (fs == 31)
+
+LINE 30: case COP1_MT:
+  BEFORE: {
+  BEFORE: case COP1_MF:
+  BEFORE: return fmt::format("{{ uint32_t bits; std::memcpy(&bits, &ctx->f[{}], sizeof(bits)); SET_GPR_U32(ctx, {}, bits); }}", fs, ft);
+  AFTER:  return fmt::format("{{ uint32_t bits = GPR_U32(ctx, {}); std::memcpy(&ctx->f[{}], &bits, sizeof(bits)); }}", ft, fs);
+  AFTER:  case COP1_CF:
+  AFTER:  if (fs == 31)
+  AFTER:  return fmt::format("SET_GPR_U32(ctx, {}, ctx->fcr31);", ft); // FCR31 contains status/control
+  AFTER:  if (fs == 0)
+
+LINE 32: case COP1_CF:
+  BEFORE: return fmt::format("{{ uint32_t bits; std::memcpy(&bits, &ctx->f[{}], sizeof(bits)); SET_GPR_U32(ctx, {}, bits); }}", fs, ft);
+  BEFORE: case COP1_MT:
+  BEFORE: return fmt::format("{{ uint32_t bits = GPR_U32(ctx, {}); std::memcpy(&ctx->f[{}], &bits, sizeof(bits)); }}", ft, fs);
+  AFTER:  if (fs == 31)
+  AFTER:  return fmt::format("SET_GPR_U32(ctx, {}, ctx->fcr31);", ft); // FCR31 contains status/control
+  AFTER:  if (fs == 0)
+  AFTER:  return fmt::format("SET_GPR_U32(ctx, {}, 0x00000000);", ft); // FCR0 is the FPU implementation register
+  AFTER:  return fmt::format("SET_GPR_U32(ctx, {}, 0); // Unimplemented FCR{}", ft, fs);
+
+LINE 34: return fmt::format("SET_GPR_U32(ctx, {}, ctx->fcr31);", ft); // FCR31 contains status/control
+  BEFORE: return fmt::format("{{ uint32_t bits = GPR_U32(ctx, {}); std::memcpy(&ctx->f[{}], &bits, sizeof(bits)); }}", ft, fs);
+  BEFORE: case COP1_CF:
+  BEFORE: if (fs == 31)
+  AFTER:  if (fs == 0)
+  AFTER:  return fmt::format("SET_GPR_U32(ctx, {}, 0x00000000);", ft); // FCR0 is the FPU implementation register
+  AFTER:  return fmt::format("SET_GPR_U32(ctx, {}, 0); // Unimplemented FCR{}", ft, fs);
+  AFTER:  case COP1_CT:
+  AFTER:  if (fs == 31)
+
+LINE 38: case COP1_CT:
+  BEFORE: if (fs == 0)
+  BEFORE: return fmt::format("SET_GPR_U32(ctx, {}, 0x00000000);", ft); // FCR0 is the FPU implementation register
+  BEFORE: return fmt::format("SET_GPR_U32(ctx, {}, 0); // Unimplemented FCR{}", ft, fs);
+  AFTER:  if (fs == 31)
+  AFTER:  return fmt::format("ctx->fcr31 = GPR_U32(ctx, {}) & 0x0183FFFF;", ft);
+  AFTER:  else
+  AFTER:  return fmt::format("// CTC1 to FCR{} ignored", fs);
+  AFTER:  return "";
+
+LINE 40: return fmt::format("ctx->fcr31 = GPR_U32(ctx, {}) & 0x0183FFFF;", ft);
+  BEFORE: return fmt::format("SET_GPR_U32(ctx, {}, 0); // Unimplemented FCR{}", ft, fs);
+  BEFORE: case COP1_CT:
+  BEFORE: if (fs == 31)
+  AFTER:  else
+  AFTER:  return fmt::format("// CTC1 to FCR{} ignored", fs);
+  AFTER:  return "";
+  AFTER:  case COP1_BC:
+  AFTER:  return "// FPU branch instruction - handled elsewhere";
+
+LINE 44: case COP1_BC:
+  BEFORE: else
+  BEFORE: return fmt::format("// CTC1 to FCR{} ignored", fs);
+  BEFORE: return "";
+  AFTER:  return "// FPU branch instruction - handled elsewhere";
+  AFTER:  case COP1_S:
+  AFTER:  switch (function)
+  AFTER:  {
+  AFTER:  case COP1_S_ADD:
+
+LINE 46: case COP1_S:
+  BEFORE: return "";
+  BEFORE: case COP1_BC:
+  BEFORE: return "// FPU branch instruction - handled elsewhere";
+  AFTER:  switch (function)
+  AFTER:  {
+  AFTER:  case COP1_S_ADD:
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  case COP1_S_SUB:
+
+LINE 49: case COP1_S_ADD:
+  BEFORE: case COP1_S:
+  BEFORE: switch (function)
+  BEFORE: {
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  case COP1_S_SUB:
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  case COP1_S_MUL:
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+
+LINE 51: case COP1_S_SUB:
+  BEFORE: {
+  BEFORE: case COP1_S_ADD:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  case COP1_S_MUL:
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  case COP1_S_DIV:
+  AFTER:  // The EE has no Inf/NaN: x/0 gives +-max (sign of fs xor ft), see ps2_fdiv.
+
+LINE 53: case COP1_S_MUL:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  BEFORE: case COP1_S_SUB:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  case COP1_S_DIV:
+  AFTER:  // The EE has no Inf/NaN: x/0 gives +-max (sign of fs xor ft), see ps2_fdiv.
+  AFTER:  return fmt::format("{{ if (ctx->f[{}] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ "
+  AFTER:  "ctx->f[{}] = FPU_DIV_S(ctx->f[{}], ctx->f[{}]); }}",
+
+LINE 55: case COP1_S_DIV:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  BEFORE: case COP1_S_MUL:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  // The EE has no Inf/NaN: x/0 gives +-max (sign of fs xor ft), see ps2_fdiv.
+  AFTER:  return fmt::format("{{ if (ctx->f[{}] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ "
+  AFTER:  "ctx->f[{}] = FPU_DIV_S(ctx->f[{}], ctx->f[{}]); }}",
+  AFTER:  ft, fd, fs, ft);
+  AFTER:  case COP1_S_SQRT:
+
+LINE 57: return fmt::format("{{ if (ctx->f[{}] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ "
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  BEFORE: case COP1_S_DIV:
+  BEFORE: // The EE has no Inf/NaN: x/0 gives +-max (sign of fs xor ft), see ps2_fdiv.
+  AFTER:  "ctx->f[{}] = FPU_DIV_S(ctx->f[{}], ctx->f[{}]); }}",
+  AFTER:  ft, fd, fs, ft);
+  AFTER:  case COP1_S_SQRT:
+  AFTER:  // The R5900 encodes SQRT.S as fd, ft (fs is zero), unlike MIPS-I's fd, fs.
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_SQRT_S(ctx->f[{}]);", fd, ft);
+
+LINE 60: case COP1_S_SQRT:
+  BEFORE: return fmt::format("{{ if (ctx->f[{}] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ "
+  BEFORE: "ctx->f[{}] = FPU_DIV_S(ctx->f[{}], ctx->f[{}]); }}",
+  BEFORE: ft, fd, fs, ft);
+  AFTER:  // The R5900 encodes SQRT.S as fd, ft (fs is zero), unlike MIPS-I's fd, fs.
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_SQRT_S(ctx->f[{}]);", fd, ft);
+  AFTER:  case COP1_S_ABS:
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_ABS_S(ctx->f[{}]);", fd, fs);
+  AFTER:  case COP1_S_MOV:
+
+LINE 63: case COP1_S_ABS:
+  BEFORE: case COP1_S_SQRT:
+  BEFORE: // The R5900 encodes SQRT.S as fd, ft (fs is zero), unlike MIPS-I's fd, fs.
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_SQRT_S(ctx->f[{}]);", fd, ft);
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_ABS_S(ctx->f[{}]);", fd, fs);
+  AFTER:  case COP1_S_MOV:
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_MOV_S(ctx->f[{}]);", fd, fs);
+  AFTER:  case COP1_S_NEG:
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_NEG_S(ctx->f[{}]);", fd, fs);
+
+LINE 65: case COP1_S_MOV:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_SQRT_S(ctx->f[{}]);", fd, ft);
+  BEFORE: case COP1_S_ABS:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_ABS_S(ctx->f[{}]);", fd, fs);
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_MOV_S(ctx->f[{}]);", fd, fs);
+  AFTER:  case COP1_S_NEG:
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_NEG_S(ctx->f[{}]);", fd, fs);
+  AFTER:  case COP1_S_ROUND_W:
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_ROUND_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+
+LINE 67: case COP1_S_NEG:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_ABS_S(ctx->f[{}]);", fd, fs);
+  BEFORE: case COP1_S_MOV:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_MOV_S(ctx->f[{}]);", fd, fs);
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_NEG_S(ctx->f[{}]);", fd, fs);
+  AFTER:  case COP1_S_ROUND_W:
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_ROUND_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  case COP1_S_TRUNC_W:
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_TRUNC_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+
+LINE 69: case COP1_S_ROUND_W:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_MOV_S(ctx->f[{}]);", fd, fs);
+  BEFORE: case COP1_S_NEG:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_NEG_S(ctx->f[{}]);", fd, fs);
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_ROUND_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  case COP1_S_TRUNC_W:
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_TRUNC_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  case COP1_S_CEIL_W:
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_CEIL_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+
+LINE 71: case COP1_S_TRUNC_W:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_NEG_S(ctx->f[{}]);", fd, fs);
+  BEFORE: case COP1_S_ROUND_W:
+  BEFORE: return fmt::format("{{ int32_t tmp = FPU_ROUND_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_TRUNC_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  case COP1_S_CEIL_W:
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_CEIL_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  case COP1_S_FLOOR_W:
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_FLOOR_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+
+LINE 73: case COP1_S_CEIL_W:
+  BEFORE: return fmt::format("{{ int32_t tmp = FPU_ROUND_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  BEFORE: case COP1_S_TRUNC_W:
+  BEFORE: return fmt::format("{{ int32_t tmp = FPU_TRUNC_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_CEIL_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  case COP1_S_FLOOR_W:
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_FLOOR_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  case COP1_S_CVT_W:
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_CVT_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+
+LINE 75: case COP1_S_FLOOR_W:
+  BEFORE: return fmt::format("{{ int32_t tmp = FPU_TRUNC_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  BEFORE: case COP1_S_CEIL_W:
+  BEFORE: return fmt::format("{{ int32_t tmp = FPU_CEIL_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_FLOOR_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  case COP1_S_CVT_W:
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_CVT_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  case COP1_S_RSQRT:
+  AFTER:  // RSQRT.S fd, fs, ft computes fs / sqrt(ft), not 1 / sqrt(fs).
+
+LINE 77: case COP1_S_CVT_W:
+  BEFORE: return fmt::format("{{ int32_t tmp = FPU_CEIL_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  BEFORE: case COP1_S_FLOOR_W:
+  BEFORE: return fmt::format("{{ int32_t tmp = FPU_FLOOR_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  return fmt::format("{{ int32_t tmp = FPU_CVT_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  case COP1_S_RSQRT:
+  AFTER:  // RSQRT.S fd, fs, ft computes fs / sqrt(ft), not 1 / sqrt(fs).
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_RSQRT_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  case COP1_S_ADDA:
+
+LINE 79: case COP1_S_RSQRT:
+  BEFORE: return fmt::format("{{ int32_t tmp = FPU_FLOOR_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  BEFORE: case COP1_S_CVT_W:
+  BEFORE: return fmt::format("{{ int32_t tmp = FPU_CVT_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  AFTER:  // RSQRT.S fd, fs, ft computes fs / sqrt(ft), not 1 / sqrt(fs).
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_RSQRT_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  case COP1_S_ADDA:
+  AFTER:  return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  AFTER:  case COP1_S_SUBA:
+
+LINE 82: case COP1_S_ADDA:
+  BEFORE: case COP1_S_RSQRT:
+  BEFORE: // RSQRT.S fd, fs, ft computes fs / sqrt(ft), not 1 / sqrt(fs).
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_RSQRT_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  AFTER:  case COP1_S_SUBA:
+  AFTER:  return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  AFTER:  case COP1_S_MULA:
+  AFTER:  return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+
+LINE 84: case COP1_S_SUBA:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_RSQRT_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  BEFORE: case COP1_S_ADDA:
+  BEFORE: return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  AFTER:  return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  AFTER:  case COP1_S_MULA:
+  AFTER:  return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  AFTER:  case COP1_S_MADD:
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+
+LINE 86: case COP1_S_MULA:
+  BEFORE: return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  BEFORE: case COP1_S_SUBA:
+  BEFORE: return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  AFTER:  return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  AFTER:  case COP1_S_MADD:
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+  AFTER:  case COP1_S_MSUB:
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+
+LINE 88: case COP1_S_MADD:
+  BEFORE: return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  BEFORE: case COP1_S_MULA:
+  BEFORE: return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+  AFTER:  case COP1_S_MSUB:
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+  AFTER:  case COP1_S_MADDA:
+  AFTER:  return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+
+LINE 90: case COP1_S_MSUB:
+  BEFORE: return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  BEFORE: case COP1_S_MADD:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+  AFTER:  return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+  AFTER:  case COP1_S_MADDA:
+  AFTER:  return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+  AFTER:  case COP1_S_MSUBA:
+  AFTER:  return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+
+LINE 92: case COP1_S_MADDA:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+  BEFORE: case COP1_S_MSUB:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+  AFTER:  return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+  AFTER:  case COP1_S_MSUBA:
+  AFTER:  return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+  AFTER:  case COP1_S_MAX:
+  AFTER:  return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+
+LINE 94: case COP1_S_MSUBA:
+  BEFORE: return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+  BEFORE: case COP1_S_MADDA:
+  BEFORE: return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+  AFTER:  return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+  AFTER:  case COP1_S_MAX:
+  AFTER:  return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  case COP1_S_MIN:
+  AFTER:  return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+
+LINE 96: case COP1_S_MAX:
+  BEFORE: return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+  BEFORE: case COP1_S_MSUBA:
+  BEFORE: return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+  AFTER:  return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  case COP1_S_MIN:
+  AFTER:  return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  case COP1_S_C_F:
+  AFTER:  return fmt::format("ctx->fcr31 &= ~0x800000;");
+
+LINE 98: case COP1_S_MIN:
+  BEFORE: return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+  BEFORE: case COP1_S_MAX:
+  BEFORE: return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  case COP1_S_C_F:
+  AFTER:  return fmt::format("ctx->fcr31 &= ~0x800000;");
+  AFTER:  case COP1_S_C_UN:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 100: case COP1_S_C_F:
+  BEFORE: return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  BEFORE: case COP1_S_MIN:
+  BEFORE: return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 &= ~0x800000;");
+  AFTER:  case COP1_S_C_UN:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_EQ:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 101: return fmt::format("ctx->fcr31 &= ~0x800000;");
+  BEFORE: case COP1_S_MIN:
+  BEFORE: return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  BEFORE: case COP1_S_C_F:
+  AFTER:  case COP1_S_C_UN:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_EQ:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_UEQ:
+
+LINE 102: case COP1_S_C_UN:
+  BEFORE: return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  BEFORE: case COP1_S_C_F:
+  BEFORE: return fmt::format("ctx->fcr31 &= ~0x800000;");
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_EQ:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_UEQ:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 103: return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_F:
+  BEFORE: return fmt::format("ctx->fcr31 &= ~0x800000;");
+  BEFORE: case COP1_S_C_UN:
+  AFTER:  case COP1_S_C_EQ:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_UEQ:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_OLT:
+
+LINE 104: case COP1_S_C_EQ:
+  BEFORE: return fmt::format("ctx->fcr31 &= ~0x800000;");
+  BEFORE: case COP1_S_C_UN:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_UEQ:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_OLT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 105: return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_UN:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_EQ:
+  AFTER:  case COP1_S_C_UEQ:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_OLT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_ULT:
+
+LINE 106: case COP1_S_C_UEQ:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_EQ:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_OLT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_ULT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 107: return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_EQ:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_UEQ:
+  AFTER:  case COP1_S_C_OLT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_ULT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_OLE:
+
+LINE 108: case COP1_S_C_OLT:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_UEQ:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_ULT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_OLE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 109: return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_UEQ:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_OLT:
+  AFTER:  case COP1_S_C_ULT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_OLE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_ULE:
+
+LINE 110: case COP1_S_C_ULT:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_OLT:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_OLE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_ULE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 111: return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_OLT:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_ULT:
+  AFTER:  case COP1_S_C_OLE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_ULE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_SF:
+
+LINE 112: case COP1_S_C_OLE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_ULT:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_ULE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_SF:
+  AFTER:  return fmt::format("ctx->fcr31 &= ~0x800000;");
+
+LINE 113: return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_ULT:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_OLE:
+  AFTER:  case COP1_S_C_ULE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_SF:
+  AFTER:  return fmt::format("ctx->fcr31 &= ~0x800000;");
+  AFTER:  case COP1_S_C_NGLE:
+
+LINE 114: case COP1_S_C_ULE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_OLE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_SF:
+  AFTER:  return fmt::format("ctx->fcr31 &= ~0x800000;");
+  AFTER:  case COP1_S_C_NGLE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 115: return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_OLE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_ULE:
+  AFTER:  case COP1_S_C_SF:
+  AFTER:  return fmt::format("ctx->fcr31 &= ~0x800000;");
+  AFTER:  case COP1_S_C_NGLE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_SEQ:
+
+LINE 116: case COP1_S_C_SF:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_ULE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 &= ~0x800000;");
+  AFTER:  case COP1_S_C_NGLE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_SEQ:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 117: return fmt::format("ctx->fcr31 &= ~0x800000;");
+  BEFORE: case COP1_S_C_ULE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_SF:
+  AFTER:  case COP1_S_C_NGLE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_SEQ:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_NGL:
+
+LINE 118: case COP1_S_C_NGLE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_SF:
+  BEFORE: return fmt::format("ctx->fcr31 &= ~0x800000;");
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_SEQ:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_NGL:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 119: return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_SF:
+  BEFORE: return fmt::format("ctx->fcr31 &= ~0x800000;");
+  BEFORE: case COP1_S_C_NGLE:
+  AFTER:  case COP1_S_C_SEQ:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_NGL:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_LT:
+
+LINE 120: case COP1_S_C_SEQ:
+  BEFORE: return fmt::format("ctx->fcr31 &= ~0x800000;");
+  BEFORE: case COP1_S_C_NGLE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_NGL:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_LT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 121: return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_NGLE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_SEQ:
+  AFTER:  case COP1_S_C_NGL:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_LT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_NGE:
+
+LINE 122: case COP1_S_C_NGL:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_SEQ:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_LT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_NGE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 123: return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_SEQ:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_NGL:
+  AFTER:  case COP1_S_C_LT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_NGE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_LE:
+
+LINE 124: case COP1_S_C_LT:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_NGL:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_NGE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_LE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 125: return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_NGL:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_LT:
+  AFTER:  case COP1_S_C_NGE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_LE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_NGT:
+
+LINE 126: case COP1_S_C_NGE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_LT:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_LE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_NGT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+LINE 127: return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_LT:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_NGE:
+  AFTER:  case COP1_S_C_LE:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_NGT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  default:
+
+LINE 128: case COP1_S_C_LE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_NGE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  case COP1_S_C_NGT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  default:
+  AFTER:  return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.S instruction: function 0x{:X}", function));
+
+LINE 129: return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_NGE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_LE:
+  AFTER:  case COP1_S_C_NGT:
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  default:
+  AFTER:  return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.S instruction: function 0x{:X}", function));
+  AFTER:  }
+
+LINE 130: case COP1_S_C_NGT:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_LE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  return fmt::format("ctx->fcr31 = (FPU_C_NGT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  AFTER:  default:
+  AFTER:  return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.S instruction: function 0x{:X}", function));
+  AFTER:  }
+  AFTER:  case COP1_W:
+
+LINE 131: return fmt::format("ctx->fcr31 = (FPU_C_NGT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_LE:
+  BEFORE: return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+  BEFORE: case COP1_S_C_NGT:
+  AFTER:  default:
+  AFTER:  return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.S instruction: function 0x{:X}", function));
+  AFTER:  }
+  AFTER:  case COP1_W:
+  AFTER:  switch (function)
+
+LINE 135: case COP1_W:
+  BEFORE: default:
+  BEFORE: return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.S instruction: function 0x{:X}", function));
+  BEFORE: }
+  AFTER:  switch (function)
+  AFTER:  {
+  AFTER:  case COP1_W_CVT_S:
+  AFTER:  return fmt::format("{{ int32_t tmp; std::memcpy(&tmp, &ctx->f[{}], sizeof(tmp)); ctx->f[{}] = FPU_CVT_S_W(tmp); }}", fs, fd);
+  AFTER:  default:
+
+LINE 138: case COP1_W_CVT_S:
+  BEFORE: case COP1_W:
+  BEFORE: switch (function)
+  BEFORE: {
+  AFTER:  return fmt::format("{{ int32_t tmp; std::memcpy(&tmp, &ctx->f[{}], sizeof(tmp)); ctx->f[{}] = FPU_CVT_S_W(tmp); }}", fs, fd);
+  AFTER:  default:
+  AFTER:  return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.W instruction: function 0x{:X}", function));
+  AFTER:  }
+  AFTER:  default:
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\gif_dma_kick_analyzer.cpp
+LINE 155: case OPCODE_SWC1:
+  BEFORE: case OPCODE_SW:
+  BEFORE: case OPCODE_SQ:
+  BEFORE: case OPCODE_SD:
+  AFTER:  case OPCODE_SDC2:
+  AFTER:  return true;
+  AFTER:  default:
+  AFTER:  return false;
+  AFTER:  }
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\instruction_translator.cpp
+LINE 150: case OPCODE_COP1:
+  BEFORE: return m_codeGenerator.translateRegimmInstruction(inst);
+  BEFORE: case OPCODE_COP0:
+  BEFORE: return m_codeGenerator.translateCOP0Instruction(inst);
+  AFTER:  return m_codeGenerator.translateFPUInstruction(inst);
+  AFTER:  case OPCODE_COP2:
+  AFTER:  return m_codeGenerator.translateVUInstruction(inst);
+  AFTER:  case OPCODE_ADDI:
+  AFTER:  if (inst.rt == 0)
+
+LINE 208: case OPCODE_SWC1:
+  BEFORE: return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+  BEFORE: case OPCODE_LWC1:
+  BEFORE: return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+  AFTER:  return fmt::format(
+  AFTER:  "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+  AFTER:  inst.rt,
+  AFTER:  genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+  AFTER:  case OPCODE_LDC2:
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+LINE 1941: ss << "struct R5900Context;\n";
+  BEFORE: ss << "#define PS2_RECOMPILED_FUNCTIONS_H\n\n";
+  BEFORE: 
+  BEFORE: ss << "#include <cstdint>\n\n";
+  AFTER:  ss << "class PS2Runtime;\n\n";
+  AFTER:  
+  AFTER:  for (const auto &function : m_functions)
+  AFTER:  {
+  AFTER:  if (!shouldGenerateCodeForFunction(function))
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp
+LINE 94: inst.modificationInfo.modifiesFPR = false;
+  BEFORE: inst.vectorInfo.vectorField = 0xF; // All fields (xyzw)
+  BEFORE: 
+  BEFORE: inst.modificationInfo.modifiesGPR = false;
+  AFTER:  inst.modificationInfo.modifiesVFR = false;
+  AFTER:  inst.modificationInfo.modifiesVIR = false;
+  AFTER:  inst.modificationInfo.modifiesVIC = false;
+  AFTER:  inst.modificationInfo.modifiesMemory = false;
+  AFTER:  inst.modificationInfo.modifiesControl = false;
+
+LINE 143: inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  BEFORE: }
+  BEFORE: inst.modificationInfo.modifiesGPR = modifiesGpr;
+  BEFORE: 
+  AFTER:  RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  AFTER:  RabbitizerInstrDescriptor_modifiesFd(desc);
+  AFTER:  
+  AFTER:  inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  AFTER:  inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+
+LINE 802: void R5900Decoder::decodeCOP1(Instruction &inst) const
+  BEFORE: }
+  BEFORE: }
+  BEFORE: 
+  AFTER:  {
+  AFTER:  uint8_t format = inst.rs;
+  AFTER:  if (format == COP1_MF || format == COP1_CF)
+  AFTER:  {
+  AFTER:  if (inst.rt != 0)
+
+LINE 805: if (format == COP1_MF || format == COP1_CF)
+  BEFORE: void R5900Decoder::decodeCOP1(Instruction &inst) const
+  BEFORE: {
+  BEFORE: uint8_t format = inst.rs;
+  AFTER:  {
+  AFTER:  if (inst.rt != 0)
+  AFTER:  inst.modificationInfo.modifiesGPR = true;
+  AFTER:  }
+  AFTER:  else if (format == COP1_BC)
+
+LINE 810: else if (format == COP1_BC)
+  BEFORE: if (inst.rt != 0)
+  BEFORE: inst.modificationInfo.modifiesGPR = true;
+  BEFORE: }
+  AFTER:  {
+  AFTER:  inst.isBranch = true;
+  AFTER:  inst.hasDelaySlot = true;
+  AFTER:  inst.modificationInfo.modifiesControl = true;
+  AFTER:  }
+
+LINE 816: else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  BEFORE: inst.hasDelaySlot = true;
+  BEFORE: inst.modificationInfo.modifiesControl = true;
+  BEFORE: }
+  AFTER:  {
+  AFTER:  inst.modificationInfo.modifiesFPR = true;
+  AFTER:  }
+  AFTER:  if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  AFTER:  {
+
+LINE 818: inst.modificationInfo.modifiesFPR = true;
+  BEFORE: }
+  BEFORE: else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  BEFORE: {
+  AFTER:  }
+  AFTER:  if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  AFTER:  {
+  AFTER:  inst.modificationInfo.modifiesControl = true;
+  AFTER:  } // FCR31
+
+LINE 820: if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  BEFORE: {
+  BEFORE: inst.modificationInfo.modifiesFPR = true;
+  BEFORE: }
+  AFTER:  {
+  AFTER:  inst.modificationInfo.modifiesControl = true;
+  AFTER:  } // FCR31
+  AFTER:  }
+  AFTER:  
+
+LINE 823: } // FCR31
+  BEFORE: if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  BEFORE: {
+  BEFORE: inst.modificationInfo.modifiesControl = true;
+  AFTER:  }
+  AFTER:  
+  AFTER:  void R5900Decoder::decodeCOP2(Instruction &inst) const
+  AFTER:  {
+  AFTER:  uint8_t format = inst.rs;
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\tools\ghidra\ExportPS2Functions.java
+LINE 125: "fabs", "fclose", "fflush", "floor", "fopen", "fprintf",
+  BEFORE: "__malloc_lock", "__malloc_unlock",
+  BEFORE: "abs", "__ieee754_rem_pio2f", "__kernel_cosf", "__kernel_sinf", "atan", "atan2",
+  BEFORE: "calloc", "ceil", "close", "cos", "exit", "exp",
+  AFTER:  "fread", "free", "fseek", "fstat", "ftell", "fwrite",
+  AFTER:  "getpid", "log", "log10", "lseek", "malloc", "memalign", "memclr", "memchr",
+  AFTER:  "memcmp", "memcpy", "memmove", "memset", "open", "pow",
+  AFTER:  "printf", "puts", "rand", "read", "realloc", "sin",
+  AFTER:  "snprintf", "sprintf", "sqrt", "srand", "stat", "strcasecmp",
+
+LINE 132: "strncmp", "strncpy", "strrchr", "strstr", "tan", "vfprintf",
+  BEFORE: "printf", "puts", "rand", "read", "realloc", "sin",
+  BEFORE: "snprintf", "sprintf", "sqrt", "srand", "stat", "strcasecmp",
+  BEFORE: "strcat", "strchr", "strcmp", "strcpy", "strlen", "strncat",
+  AFTER:  "vsprintf", "write", "__divdi3",
+  AFTER:  "DmaAddr", "builtin_set_imask", "sceCdRI", "sceCdRM",
+  AFTER:  "sceDevVif0Reset", "sceDevVu0Reset", "sceFsDbChk", "sceFsIntrSigSema", "sceFsSemExit", "sceFsSemInit",
+  AFTER:  "sceFsSigSema", "sceIDC", "sceMpegFlush", "sceRpcFreePacket", "sceRpcGetFPacket", "sceRpcGetFPacket2",
+  AFTER:  "sceSDC", "sceSifCmdIntrHdlr", "sceVu0ecossin", "mcCallMessageTypeSe", "mcCheckReadStartConfigFile", "mcCheckReadStartSaveFile",
+
+LINE 203: "sceSynthesizerSetupTruncateTvfPitchEnv", "sceSynthesizerSetuptEnv", "sceSynthesizerTonegenerator", "sceSynthesizerTransposeMatrix", "sceSynthesizerTvfProcI", "sceSynthesizerTvfProcNI",
+  BEFORE: "sceSynthesizerReadNoiseAdd", "sceSynthesizerReadSample16", "sceSynthesizerReadSample16Add", "sceSynthesizerReadSample8", "sceSynthesizerReadSample8Add", "sceSynthesizerResetPart",
+  BEFORE: "sceSynthesizerRestorDma", "sceSynthesizerSelectPatch", "sceSynthesizerSendShortMessage", "sceSynthesizerSetMasterVolume", "sceSynthesizerSetRVoice", "sceSynthesizerSetupDma",
+  BEFORE: "sceSynthesizerSetupLfo", "sceSynthesizerSetupMidiModuration", "sceSynthesizerSetupMidiPanpot", "sceSynthesizerSetupNewNoise", "sceSynthesizerSetupReleaseEnv", "sceSynthesizerSetupTruncateTvaEnv",
+  AFTER:  "sceSynthesizerWaitDmaFromSPR", "sceSynthesizerWaitDmaToSPR", "sceSynthsizerGetDrumPatch", "sceSynthsizerGetMeloPatch", "sceSynthsizerLfoNoise", "sceTtyHandler",
+  AFTER:  "sceTtyInit", "sceTtyRead", "sceTtyWrite", "sceVpu0Reset", "sceVu0AddVector", "sceVu0ApplyMatrix",
+  AFTER:  "sceVu0CameraMatrix", "sceVu0ClampVector", "sceVu0ClipAll", "sceVu0ClipScreen", "sceVu0ClipScreen3", "sceVu0CopyMatrix",
+  AFTER:  "sceVu0CopyVector", "sceVu0CopyVectorXYZ", "sceVu0DivVector", "sceVu0DivVectorXYZ", "sceVu0DropShadowMatrix", "sceVu0FTOI0Vector",
+  AFTER:  "sceVu0FTOI4Vector", "sceVu0ITOF0Vector", "sceVu0ITOF12Vector", "sceVu0ITOF4Vector", "sceVu0InnerProduct", "sceVu0InterVector",
+
+LINE 228: "printf", "sprintf", "snprintf", "fprintf", "vprintf", "vfprintf", "vsprintf", "vsnprintf",
+  BEFORE: ));
+  BEFORE: 
+  BEFORE: private static final Set<String> KNOWN_STDLIB_NAMES = new HashSet<>(Arrays.asList(
+  AFTER:  "puts", "putchar", "getchar", "gets", "fgets",
+  AFTER:  "__mcmp", "__sbprintf", "__sprint", "__sprint_r",
+  AFTER:  "malloc", "free", "calloc", "realloc", "memalign", "memclr", "aligned_alloc", "posix_memalign",
+  AFTER:  "memcpy", "memset", "memmove", "memcmp", "memchr", "bcopy", "bzero",
+  AFTER:  "strcpy", "strncpy", "strcat", "strncat", "strcmp", "strncmp", "strlen", "strstr",
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h
+LINE 174: X(fprintf)                                \
+  BEFORE: X(fflush)                                 \
+  BEFORE: X(floor)                                  \
+  BEFORE: X(fopen)                                  \
+  AFTER:  X(fread)                                  \
+  AFTER:  X(free)                                   \
+  AFTER:  X(fseek)                                  \
+  AFTER:  X(fstat)                                  \
+  AFTER:  X(ftell)                                  \
+
+LINE 218: X(vfprintf)                               \
+  BEFORE: X(strrchr)                                \
+  BEFORE: X(strstr)                                 \
+  BEFORE: X(tan)                                    \
+  AFTER:  X(vsprintf)                               \
+  AFTER:  X(write)                                  \
+  AFTER:  X(__divdi3)                               \
+  AFTER:  /* PS2 native */                          \
+  AFTER:  X(DmaAddr)                                \
+
+LINE 642: X(sceSynthesizerTvfProcI)                 \
+  BEFORE: X(sceSynthesizerSetuptEnv)                \
+  BEFORE: X(sceSynthesizerTonegenerator)            \
+  BEFORE: X(sceSynthesizerTransposeMatrix)          \
+  AFTER:  X(sceSynthesizerTvfProcNI)                \
+  AFTER:  X(sceSynthesizerWaitDmaFromSPR)           \
+  AFTER:  X(sceSynthesizerWaitDmaToSPR)             \
+  AFTER:  X(sceSynthsizerGetDrumPatch)              \
+  AFTER:  X(sceSynthsizerGetMeloPatch)              \
+
+LINE 643: X(sceSynthesizerTvfProcNI)                \
+  BEFORE: X(sceSynthesizerTonegenerator)            \
+  BEFORE: X(sceSynthesizerTransposeMatrix)          \
+  BEFORE: X(sceSynthesizerTvfProcI)                 \
+  AFTER:  X(sceSynthesizerWaitDmaFromSPR)           \
+  AFTER:  X(sceSynthesizerWaitDmaToSPR)             \
+  AFTER:  X(sceSynthsizerGetDrumPatch)              \
+  AFTER:  X(sceSynthsizerGetMeloPatch)              \
+  AFTER:  X(sceSynthsizerLfoNoise)                  \
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h
+LINE 142: // FPU registers (COP1)
+  BEFORE: // COP2 control registers (VU0 integer + control)
+  BEFORE: uint32_t cop2_ccr[32];
+  BEFORE: 
+  AFTER:  float f[32];
+  AFTER:  float f_acc;    // FPU accumulator
+  AFTER:  uint32_t fcr31; // Control/status register
+  AFTER:  
+  AFTER:  R5900Context()
+
+LINE 145: uint32_t fcr31; // Control/status register
+  BEFORE: // FPU registers (COP1)
+  BEFORE: float f[32];
+  BEFORE: float f_acc;    // FPU accumulator
+  AFTER:  
+  AFTER:  R5900Context()
+  AFTER:  {
+  AFTER:  std::memset(this, 0, sizeof(*this));
+  AFTER:  
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h
+LINE 903: // FPU (COP1) operations
+  BEFORE: #define PS2_PMFHL_SH(ctx) ps2_pmfhl(ctx, 4)
+  BEFORE: #define PS2_PMTHL_LW(ctx, value) ps2_pmthl_lw(ctx, value)
+  BEFORE: 
+  AFTER:  #define FPU_SET_ACC(ctx, res) (ctx->f_acc = res)
+  AFTER:  #define FPU_ADD_S(a, b) ps2_fadd((float)(a), (float)(b))
+  AFTER:  #define FPU_SUB_S(a, b) ps2_fsub((float)(a), (float)(b))
+  AFTER:  #define FPU_MUL_S(a, b) ps2_fmul((float)(a), (float)(b))
+  AFTER:  #define FPU_DIV_S(a, b) ps2_fdiv((float)(a), (float)(b))
+
+LINE 930: #define FPU_C_OLT_S(a, b) ((float)(a) < (float)(b))
+  BEFORE: #define FPU_C_UN_S(a, b) (isnan((float)(a)) || isnan((float)(b)))
+  BEFORE: #define FPU_C_EQ_S(a, b) ((float)(a) == (float)(b))
+  BEFORE: #define FPU_C_UEQ_S(a, b) ((float)(a) == (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+  AFTER:  #define FPU_C_ULT_S(a, b) ((float)(a) < (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+  AFTER:  #define FPU_C_OLE_S(a, b) ((float)(a) <= (float)(b))
+  AFTER:  #define FPU_C_ULE_S(a, b) ((float)(a) <= (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+  AFTER:  #define FPU_C_SF_S(a, b) (0)
+  AFTER:  #define FPU_C_NGLE_S(a, b) (isnan((float)(a)) || isnan((float)(b)))
+
+LINE 938: #define FPU_C_LT_S(a, b) ((float)(a) < (float)(b))
+  BEFORE: #define FPU_C_NGLE_S(a, b) (isnan((float)(a)) || isnan((float)(b)))
+  BEFORE: #define FPU_C_SEQ_S(a, b) ((float)(a) == (float)(b))
+  BEFORE: #define FPU_C_NGL_S(a, b) ((float)(a) == (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+  AFTER:  #define FPU_C_NGE_S(a, b) ((float)(a) < (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+  AFTER:  #define FPU_C_LE_S(a, b) ((float)(a) <= (float)(b))
+  AFTER:  #define FPU_C_NGT_S(a, b) ((float)(a) <= (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+  AFTER:  
+  AFTER:  // QFSRV: Quadword Funnel Shift Right Variable
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_stubs.h
+LINE 3: struct R5900Context;
+  BEFORE: #pragma once
+  BEFORE: 
+  AFTER:  class  PS2Runtime;
+  AFTER:  
+  AFTER:  #include <cstdint>
+  AFTER:  #include "ps2_call_list.h"
+  AFTER:  #include "runtime/ps2_memory.h"
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_audio_stream.cpp
+LINE 228: std::fprintf(stderr, "[audio] PS2X_AUDIO_CAPTURE: cannot open '%s' for writing\n", path);
+  BEFORE: m_file = std::fopen(path, "wb");
+  BEFORE: if (!m_file)
+  BEFORE: {
+  AFTER:  return;
+  AFTER:  }
+  AFTER:  writeHeader();
+  AFTER:  }
+  AFTER:  
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.h
+LINE 12: struct R5900Context;
+  BEFORE: #include <unordered_map>
+  BEFORE: 
+  BEFORE: class PS2Runtime;
+  AFTER:  
+  AFTER:  class PS2IopHostAdapter final : public ps2x::iop::IopHost
+  AFTER:  {
+  AFTER:  public:
+  AFTER:  class CallScope
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp
+LINE 420: std::fprintf(stderr,
+  BEFORE: const uint64_t underruns = spu2AudioUnderruns();
+  BEFORE: const uint64_t audioDrops = spu2AudioLatencyDroppedFrames();
+  BEFORE: const uint64_t pushed = spu2AudioPushedFrames();
+  AFTER:  "[perf] vsync=%llu guest_vps=%.1f host_fps=%.1f black_frames=%u last_black(tick=%llu dispfbp=0x%x srcfbp=0x%x) audio_rate=%.0f audio_underruns=+%llu audio_dropped_frames=+%llu\n",
+  AFTER:  static_cast<unsigned long long>(currentTick),
+  AFTER:  static_cast<double>(currentTick - s_lastTick) / elapsed,
+  AFTER:  static_cast<double>(s_hostFrames) / elapsed,
+  AFTER:  s_blackFrames,
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp
+LINE 104: std::fprintf(stderr, "[gsstats] prims/s point=%.0f line=%.0f tri=%.0f tristrip=%.0f trifan=%.0f sprite=%.0f textured=%.0f alone=%.0f\n",
+  BEFORE: return;
+  BEFORE: s.last = now;
+  BEFORE: const double perSec = 1.0 / seconds;
+  AFTER:  take(s.prims[0]) * perSec, (take(s.prims[1]) + take(s.prims[2])) * perSec, take(s.prims[3]) * perSec,
+  AFTER:  take(s.prims[4]) * perSec, take(s.prims[5]) * perSec, take(s.prims[6]) * perSec, take(s.texturedPrims) * perSec,
+  AFTER:  take(s.alonePrims) * perSec);
+  AFTER:  const char *batchNames[3] = {"tracked", "untracked", "serial"};
+  AFTER:  for (int i = 0; i < 3; ++i)
+
+LINE 114: std::fprintf(stderr, "[gsstats] batches %s/s=%.1f prims/batch=%.1f boxpx/batch=%.0f\n", batchNames[i], batches * perSec,
+  BEFORE: const uint64_t batches = take(s.batches[i]);
+  BEFORE: const uint64_t prims = take(s.batchPrims[i]);
+  BEFORE: const uint64_t pixels = take(s.batchPixels[i]);
+  AFTER:  batches ? double(prims) / batches : 0.0, batches ? double(pixels) / batches : 0.0);
+  AFTER:  }
+  AFTER:  std::string flushes;
+  AFTER:  for (size_t i = 0; i < sizeof(kFlushNames) / sizeof(kFlushNames[0]); ++i)
+  AFTER:  {
+
+LINE 124: std::fprintf(stderr, "[gsstats] flushes/s%s\n", flushes.c_str());
+  BEFORE: if (count)
+  BEFORE: flushes += " " + std::string(kFlushNames[i]) + "=" + std::to_string(static_cast<uint64_t>(count * perSec));
+  BEFORE: }
+  AFTER:  std::fprintf(stderr, "[gsstats] tracked starts/s self=%.1f cross=%.1f; last: fbp=%u fpsm=0x%x zbp=%u zpsm=0x%x tbp0=%u tpsm=0x%x prim=%u\n",
+  AFTER:  take(s.trackStart[0]) * perSec, take(s.trackStart[1]) * perSec, s.trackSample[0].load(), s.trackSample[1].load(),
+  AFTER:  s.trackSample[2].load(), s.trackSample[3].load(), s.trackSample[4].load(), s.trackSample[5].load(), s.trackSample[6].load());
+  AFTER:  std::fprintf(stderr, "[gsstats] Mpx/s box=%.2f inside=%.2f written=%.2f texsamples=%.2f bigbox=%.2f biginside=%.2f undo=%.2f\n",
+  AFTER:  take(s.boxPixels) * perSec * 1e-6, take(s.insidePixels) * perSec * 1e-6, take(s.writtenPixels) * perSec * 1e-6,
+
+LINE 125: std::fprintf(stderr, "[gsstats] tracked starts/s self=%.1f cross=%.1f; last: fbp=%u fpsm=0x%x zbp=%u zpsm=0x%x tbp0=%u tpsm=0x%x prim=%u\n",
+  BEFORE: flushes += " " + std::string(kFlushNames[i]) + "=" + std::to_string(static_cast<uint64_t>(count * perSec));
+  BEFORE: }
+  BEFORE: std::fprintf(stderr, "[gsstats] flushes/s%s\n", flushes.c_str());
+  AFTER:  take(s.trackStart[0]) * perSec, take(s.trackStart[1]) * perSec, s.trackSample[0].load(), s.trackSample[1].load(),
+  AFTER:  s.trackSample[2].load(), s.trackSample[3].load(), s.trackSample[4].load(), s.trackSample[5].load(), s.trackSample[6].load());
+  AFTER:  std::fprintf(stderr, "[gsstats] Mpx/s box=%.2f inside=%.2f written=%.2f texsamples=%.2f bigbox=%.2f biginside=%.2f undo=%.2f\n",
+  AFTER:  take(s.boxPixels) * perSec * 1e-6, take(s.insidePixels) * perSec * 1e-6, take(s.writtenPixels) * perSec * 1e-6,
+  AFTER:  take(s.texSamples) * perSec * 1e-6, take(s.bigBoxPixels) * perSec * 1e-6, take(s.bigInsidePixels) * perSec * 1e-6,
+
+LINE 128: std::fprintf(stderr, "[gsstats] Mpx/s box=%.2f inside=%.2f written=%.2f texsamples=%.2f bigbox=%.2f biginside=%.2f undo=%.2f\n",
+  BEFORE: std::fprintf(stderr, "[gsstats] tracked starts/s self=%.1f cross=%.1f; last: fbp=%u fpsm=0x%x zbp=%u zpsm=0x%x tbp0=%u tpsm=0x%x prim=%u\n",
+  BEFORE: take(s.trackStart[0]) * perSec, take(s.trackStart[1]) * perSec, s.trackSample[0].load(), s.trackSample[1].load(),
+  BEFORE: s.trackSample[2].load(), s.trackSample[3].load(), s.trackSample[4].load(), s.trackSample[5].load(), s.trackSample[6].load());
+  AFTER:  take(s.boxPixels) * perSec * 1e-6, take(s.insidePixels) * perSec * 1e-6, take(s.writtenPixels) * perSec * 1e-6,
+  AFTER:  take(s.texSamples) * perSec * 1e-6, take(s.bigBoxPixels) * perSec * 1e-6, take(s.bigInsidePixels) * perSec * 1e-6,
+  AFTER:  take(s.undoEntries) * perSec * 1e-6);
+  AFTER:  std::string times;
+  AFTER:  for (uint32_t i = 0; i < kTimeCount; ++i)
+
+LINE 139: std::fprintf(stderr, "[gsstats] gs-thread time%s\n", times.c_str());
+  BEFORE: std::snprintf(item, sizeof(item), " %s=%.1f%%", kTimeNames[i], take(s.timeNs[i]) * 1e-9 * perSec * 100.0);
+  BEFORE: times += item;
+  BEFORE: }
+  AFTER:  }
+  AFTER:  
+  AFTER:  // Adds wall time to one category while in scope, excluding nested timers so categories sum to the total.
+  AFTER:  thread_local uint64_t t_nestedNs = 0u;
+  AFTER:  class GSStatTimer
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp
+LINE 1039: if (!eventCondition(flag->bits, bits, mode))
+  BEFORE: {
+  BEFORE: return KE_UNKNOWN_EVFID;
+  BEFORE: }
+  AFTER:  {
+  AFTER:  return KE_EVF_COND;
+  AFTER:  }
+  AFTER:  observedBits = flag->bits;
+  AFTER:  if ((mode & WEF_CLEAR_ALL) != 0u)
+
+LINE 1067: if (eventCondition(flag->bits, bits, mode))
+  BEFORE: setReturnS32(&self->activeContext(), KE_UNKNOWN_EVFID);
+  BEFORE: return;
+  BEFORE: }
+  AFTER:  {
+  AFTER:  const uint32_t observed = flag->bits;
+  AFTER:  writeGuestU32(resultAddress, observed);
+  AFTER:  if ((mode & WEF_CLEAR_ALL) != 0u)
+  AFTER:  {
+
+LINE 1978: if (!eventCondition(flag.bits, wait.bits, wait.mode))
+  BEFORE: GuestThread *waiter = thread(*it);
+  BEFORE: assert(waiter != nullptr);
+  BEFORE: const EeEventFlagWait wait = std::get<EeEventFlagWait>(waiter->wait.payload);
+  AFTER:  {
+  AFTER:  ++it;
+  AFTER:  continue;
+  AFTER:  }
+  AFTER:  const uint32_t observed = flag.bits;
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Audio.cpp
+LINE 618: void sceSynthesizerTvfProcI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  BEFORE: TODO_NAMED("sceSynthesizerTransposeMatrix", rdram, ctx, runtime);
+  BEFORE: }
+  BEFORE: 
+  AFTER:  {
+  AFTER:  TODO_NAMED("sceSynthesizerTvfProcI", rdram, ctx, runtime);
+  AFTER:  }
+  AFTER:  
+  AFTER:  void sceSynthesizerTvfProcNI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+
+LINE 620: TODO_NAMED("sceSynthesizerTvfProcI", rdram, ctx, runtime);
+  BEFORE: 
+  BEFORE: void sceSynthesizerTvfProcI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  BEFORE: {
+  AFTER:  }
+  AFTER:  
+  AFTER:  void sceSynthesizerTvfProcNI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  AFTER:  {
+  AFTER:  TODO_NAMED("sceSynthesizerTvfProcNI", rdram, ctx, runtime);
+
+LINE 623: void sceSynthesizerTvfProcNI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  BEFORE: TODO_NAMED("sceSynthesizerTvfProcI", rdram, ctx, runtime);
+  BEFORE: }
+  BEFORE: 
+  AFTER:  {
+  AFTER:  TODO_NAMED("sceSynthesizerTvfProcNI", rdram, ctx, runtime);
+  AFTER:  }
+  AFTER:  
+  AFTER:  void sceSynthesizerWaitDmaFromSPR(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+
+LINE 625: TODO_NAMED("sceSynthesizerTvfProcNI", rdram, ctx, runtime);
+  BEFORE: 
+  BEFORE: void sceSynthesizerTvfProcNI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  BEFORE: {
+  AFTER:  }
+  AFTER:  
+  AFTER:  void sceSynthesizerWaitDmaFromSPR(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  AFTER:  {
+  AFTER:  TODO_NAMED("sceSynthesizerWaitDmaFromSPR", rdram, ctx, runtime);
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Audio.h
+LINE 93: void sceSynthesizerTvfProcI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  BEFORE: void sceSynthesizerSetupTruncateTvfPitchEnv(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  BEFORE: void sceSynthesizerTonegenerator(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  BEFORE: void sceSynthesizerTransposeMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void sceSynthesizerTvfProcNI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void sceSynthesizerWaitDmaFromSPR(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void sceSynthesizerWaitDmaToSPR(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void sceSynthsizerGetDrumPatch(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void sceSynthsizerGetMeloPatch(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+
+LINE 94: void sceSynthesizerTvfProcNI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  BEFORE: void sceSynthesizerTonegenerator(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  BEFORE: void sceSynthesizerTransposeMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  BEFORE: void sceSynthesizerTvfProcI(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void sceSynthesizerWaitDmaFromSPR(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void sceSynthesizerWaitDmaToSPR(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void sceSynthsizerGetDrumPatch(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void sceSynthsizerGetMeloPatch(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void sceSynthsizerLfoNoise(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp
+LINE 48: // Guest newlib snprintf/vsprintf format through vfprintf into a stack FILE flagged __SSTR.
+  BEFORE: return (offset < PS2_RAM_SIZE) ? (PS2_RAM_SIZE - offset) : 0u;
+  BEFORE: }
+  BEFORE: 
+  AFTER:  // Mirror __sprint: copy at most _w bytes to _p and advance both; the caller NUL-terminates.
+  AFTER:  bool writeGuestStringFile(uint8_t *rdram, PS2Runtime *runtime, uint32_t file, const std::string &text)
+  AFTER:  {
+  AFTER:  constexpr uint32_t kNewlibSstr = 0x0200u;
+  AFTER:  constexpr uint32_t kOffsetP = 0x0u;
+
+LINE 842: void fprintf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  BEFORE: setReturnU32(ctx, (uint32_t)items_written);
+  BEFORE: }
+  BEFORE: 
+  AFTER:  {
+  AFTER:  uint32_t file_handle = getRegU32(ctx, 4); // $a0
+  AFTER:  uint32_t format_addr = getRegU32(ctx, 5); // $a1
+  AFTER:  FILE *fp = get_file_ptr(file_handle);
+  AFTER:  const std::string formatOwned = readPs2CStringBounded(rdram, runtime, format_addr, 1024);
+
+LINE 853: ret = std::fprintf(fp, "%s", rendered.c_str());
+  BEFORE: if (fp && format_addr != 0)
+  BEFORE: {
+  BEFORE: std::string rendered = formatPs2StringWithArgs(rdram, ctx, runtime, formatOwned.c_str(), 2);
+  AFTER:  }
+  AFTER:  else
+  AFTER:  {
+  AFTER:  std::cerr << "fprintf error: Invalid file handle or format address."
+  AFTER:  << " Handle: 0x" << std::hex << file_handle << " (file valid: " << (fp != nullptr) << ")"
+
+LINE 857: std::cerr << "fprintf error: Invalid file handle or format address."
+  BEFORE: }
+  BEFORE: else
+  BEFORE: {
+  AFTER:  << " Handle: 0x" << std::hex << file_handle << " (file valid: " << (fp != nullptr) << ")"
+  AFTER:  << ", Format: 0x" << format_addr << std::dec
+  AFTER:  << std::endl;
+  AFTER:  }
+  AFTER:  
+
+LINE 1153: void vfprintf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  BEFORE: setReturnS32(ctx, static_cast<int32_t>(lhs.size()) - static_cast<int32_t>(rhs.size()));
+  BEFORE: }
+  BEFORE: 
+  AFTER:  {
+  AFTER:  uint32_t file_handle = getRegU32(ctx, 4);  // $a0
+  AFTER:  uint32_t format_addr = getRegU32(ctx, 5);  // $a1
+  AFTER:  uint32_t va_list_addr = getRegU32(ctx, 6); // $a2
+  AFTER:  FILE *fp = get_file_ptr(file_handle);
+
+LINE 1165: ret = std::fprintf(fp, "%s", rendered.c_str());
+  BEFORE: if (fp && format_addr != 0)
+  BEFORE: {
+  BEFORE: std::string rendered = formatPs2StringWithVaList(rdram, runtime, formatOwned.c_str(), va_list_addr);
+  AFTER:  }
+  AFTER:  else if (format_addr != 0)
+  AFTER:  {
+  AFTER:  std::string rendered = formatPs2StringWithVaList(rdram, runtime, formatOwned.c_str(), va_list_addr);
+  AFTER:  if (writeGuestStringFile(rdram, runtime, file_handle, rendered))
+
+LINE 1175: std::cerr << "vfprintf error: Invalid file handle or format address."
+  BEFORE: }
+  BEFORE: if (ret < 0)
+  BEFORE: {
+  AFTER:  << " Handle: 0x" << std::hex << file_handle << " (file valid: " << (fp != nullptr) << ")"
+  AFTER:  << ", Format: 0x" << format_addr << std::dec
+  AFTER:  << std::endl;
+  AFTER:  }
+  AFTER:  
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.h
+LINE 35: void fprintf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  BEFORE: void fclose(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  BEFORE: void fread(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  BEFORE: void fwrite(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void fseek(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void ftell(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void fflush(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void sqrt(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void sin(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+
+LINE 60: void vfprintf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  BEFORE: void rand(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  BEFORE: void srand(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  BEFORE: void strcasecmp(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void vsprintf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  void __divdi3(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  AFTER:  }
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\vita\module\libGLESv2.suprx
+LINE 14917: 
