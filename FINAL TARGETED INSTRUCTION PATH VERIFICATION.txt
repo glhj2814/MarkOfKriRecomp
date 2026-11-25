@@ -1,0 +1,2221 @@
+MARK OF KRI — FINAL TARGETED INSTRUCTION PATH VERIFICATION
+Generated: 2026-11-24 18:18:06
+Source files: 44
+Canonical word records: 4177
+
+============================================================
+MARK OF KRI RAW WORD REPRESENTATIVES
+============================================================
+
+INSTRUCTION: ADDI
+Unique words: 5
+0X20840004 | op=8 rs=4 rt=4 rd=0 sa=0 funct=4 | occurrences=1
+0X20E7FFFF | op=8 rs=7 rt=7 rd=31 sa=31 funct=63 | occurrences=1
+0X218CFFFF | op=8 rs=12 rt=12 rd=31 sa=31 funct=63 | occurrences=1
+0X22100020 | op=8 rs=16 rt=16 rd=0 sa=0 funct=32 | occurrences=1
+0X22310020 | op=8 rs=17 rt=17 rd=0 sa=0 funct=32 | occurrences=1
+
+INSTRUCTION: BEQ
+Unique words: 4161
+0X10000002 | op=4 rs=0 rt=0 rd=0 sa=0 funct=2 | occurrences=1
+0X10000003 | op=4 rs=0 rt=0 rd=0 sa=0 funct=3 | occurrences=1
+0X10000004 | op=4 rs=0 rt=0 rd=0 sa=0 funct=4 | occurrences=1
+0X10000005 | op=4 rs=0 rt=0 rd=0 sa=0 funct=5 | occurrences=1
+0X10000006 | op=4 rs=0 rt=0 rd=0 sa=0 funct=6 | occurrences=1
+0X10000007 | op=4 rs=0 rt=0 rd=0 sa=0 funct=7 | occurrences=1
+0X10000008 | op=4 rs=0 rt=0 rd=0 sa=0 funct=8 | occurrences=1
+0X10000009 | op=4 rs=0 rt=0 rd=0 sa=0 funct=9 | occurrences=1
+0X1000000A | op=4 rs=0 rt=0 rd=0 sa=0 funct=10 | occurrences=1
+0X1000000B | op=4 rs=0 rt=0 rd=0 sa=0 funct=11 | occurrences=1
+0X1000000C | op=4 rs=0 rt=0 rd=0 sa=0 funct=12 | occurrences=1
+0X1000000D | op=4 rs=0 rt=0 rd=0 sa=0 funct=13 | occurrences=1
+... 4149 additional words omitted from display
+
+INSTRUCTION: JR
+Unique words: 3
+0X00100048 | op=0 rs=0 rt=16 rd=0 sa=1 funct=8 | occurrences=2
+0X00400008 | op=0 rs=2 rt=0 rd=0 sa=0 funct=8 | occurrences=1
+0X03E00008 | op=0 rs=31 rt=0 rd=0 sa=0 funct=8 | occurrences=1
+
+INSTRUCTION: QMFC2
+Unique words: 7
+0X48226800 | op=18 rs=1 rt=2 rd=13 sa=0 funct=0 | occurrences=1
+0X48227800 | op=18 rs=1 rt=2 rd=15 sa=0 funct=0 | occurrences=1
+0X48228000 | op=18 rs=1 rt=2 rd=16 sa=0 funct=0 | occurrences=1
+0X48228800 | op=18 rs=1 rt=2 rd=17 sa=0 funct=0 | occurrences=1
+0X48230800 | op=18 rs=1 rt=3 rd=1 sa=0 funct=0 | occurrences=1
+0X48232000 | op=18 rs=1 rt=3 rd=4 sa=0 funct=0 | occurrences=1
+0X48233000 | op=18 rs=1 rt=3 rd=6 sa=0 funct=0 | occurrences=1
+
+INSTRUCTION: QMTC2
+Unique words: 1
+0X48A33000 | op=18 rs=5 rt=3 rd=6 sa=0 funct=0 | occurrences=1
+
+============================================================
+PS2RECOMP DECODER / TRANSLATOR / BRANCH PATHS
+============================================================
+
+------------------------------------------------------------
+FILE: ps2xRecomp\include\ps2recomp\code_generator.h
+Symbol matches: 1
+
+--- Lines 69-95; symbols: translateVUInstruction ---
+   69:         const std::vector<Section>& m_sections;
+   70:         BootstrapInfo m_bootstrapInfo;
+   71:         bool m_emitInstructionComments = true;
+   72:         RecompilerReporter *m_reporter = nullptr;
+   73:         std::string m_currentFunctionName;
+   74: 
+   75:         std::string translateInstruction(const Instruction &inst);
+   76:         std::string translateInstruction(const Instruction &inst, const MemoryAccessHint &memoryHint);
+   77:         std::string emitUnhandledInstruction(const Instruction &inst, const std::string &message);
+   78:         std::string translateMMIInstruction(const Instruction &inst);
+   79:         std::string translateVUInstruction(const Instruction &inst);
+   80:         std::string translateFPUInstruction(const Instruction &inst);
+   81:         std::string translateCOP0Instruction(const Instruction &inst);
+   82:         std::string translateRegimmInstruction(const Instruction &inst);
+   83:         std::string translateSpecialInstruction(const Instruction &inst);
+   84: 
+   85:         // MMI Translation functions
+   86:         std::string translateMMI0Instruction(const Instruction &inst);
+   87:         std::string translateMMI1Instruction(const Instruction &inst);
+   88:         std::string translateMMI2Instruction(const Instruction &inst);
+   89:         std::string translateMMI3Instruction(const Instruction &inst);
+   90:         std::string translatePMFHLInstruction(const Instruction &inst);
+   91:         std::string translatePMTHLInstruction(const Instruction &inst);
+   92: 
+   93:         // Instruction Helpers
+   94:         std::string translateQFSRV(const Instruction &inst);
+   95:         std::string translatePMADDW(const Instruction &inst);
+
+------------------------------------------------------------
+FILE: ps2xRecomp\include\ps2recomp\control_flow_utils.h
+Symbol matches: 1
+
+--- Lines 16-35; symbols: OPCODE_ADDI ---
+   16:     {
+   17:         const bool sllZero =
+   18:             inst.opcode == OPCODE_SPECIAL &&
+   19:             inst.function == SPECIAL_SLL &&
+   20:             inst.rd == 0u &&
+   21:             inst.rt == 0u &&
+   22:             inst.sa == 0u;
+   23: 
+   24:         // Some tests and decoded streams represent a no-op as addiu $zero, $zero, 0.
+   25:         const bool addiuZero =
+   26:             inst.opcode == OPCODE_ADDIU &&
+   27:             inst.rs == 0u &&
+   28:             inst.rt == 0u &&
+   29:             static_cast<int16_t>(inst.simmediate) == 0;
+   30: 
+   31:         return sllZero || addiuZero;
+   32:     }
+   33: }
+   34: 
+   35: #endif // PS2RECOMP_CONTROL_FLOW_UTILS_H
+
+------------------------------------------------------------
+FILE: ps2xRecomp\include\ps2recomp\instructions.h
+Symbol matches: 8
+
+--- Lines 47-92; symbols: OPCODE_ADDI, OPCODE_BEQ ---
+   47:         GPR_RA = 31,
+   48:     };
+   49: 
+   50:     // Basic MIPS opcodes (shared with R4300i)
+   51:     enum MipsOpcodes
+   52:     {
+   53:         OPCODE_SPECIAL = 0x00, // Special instructions group (see SpecialFunctions)
+   54:         OPCODE_REGIMM = 0x01,  // RegImm instructions group (see RegimmFunctions)
+   55:         OPCODE_J = 0x02,       // Jump
+   56:         OPCODE_JAL = 0x03,     // Jump and Link
+   57:         OPCODE_BEQ = 0x04,     // Branch on Equal
+   58:         OPCODE_BNE = 0x05,     // Branch on Not Equal
+   59:         OPCODE_BLEZ = 0x06,    // Branch on Less Than or Equal to Zero
+   60:         OPCODE_BGTZ = 0x07,    // Branch on Greater Than Zero
+   61: 
+   62:         OPCODE_ADDI = 0x08,  // Add Immediate Word
+   63:         OPCODE_ADDIU = 0x09, // Add Immediate Unsigned Word
+   64:         OPCODE_SLTI = 0x0A,  // Set on Less Than Immediate
+   65:         OPCODE_SLTIU = 0x0B, // Set on Less Than Immediate Unsigned
+   66:         OPCODE_ANDI = 0x0C,  // AND Immediate
+   67:         OPCODE_ORI = 0x0D,   // OR Immediate
+   68:         OPCODE_XORI = 0x0E,  // XOR Immediate
+   69:         OPCODE_LUI = 0x0F,   // Load Upper Immediate
+   70: 
+   71:         OPCODE_COP0 = 0x10, // Coprocessor 0 instructions (see Cop0Format)
+   72:         OPCODE_COP1 = 0x11, // Coprocessor 1 (FPU) instructions (see Cop1Format)
+   73:         OPCODE_COP2 = 0x12, // Coprocessor 2 (VU0 Macro) instructions (see Cop2Format)
+   74:         OPCODE_COP3 = 0x13, // Unused on PS2
+   75: 
+   76:         OPCODE_BEQL = 0x14,  // Branch on Equal Likely
+   77:         OPCODE_BNEL = 0x15,  // Branch on Not Equal Likely
+   78:         OPCODE_BLEZL = 0x16, // Branch on Less Than or Equal to Zero Likely
+   79:         OPCODE_BGTZL = 0x17, // Branch on Greater Than Zero Likely
+   80: 
+   81:         OPCODE_DADDI = 0x18,  // Doubleword Add Immediate
+   82:         OPCODE_DADDIU = 0x19, // Doubleword Add Immediate Unsigned
+   83:         OPCODE_LDL = 0x1A,    // Load Doubleword Left
+   84:         OPCODE_LDR = 0x1B,    // Load Doubleword Right
+   85:         OPCODE_MMI = 0x1C,    // PS2 specific MMI instructions group (see MMIFunctions)
+   86: 
+   87:         OPCODE_LQ = 0x1E, // PS2 specific 128-bit load
+   88:         OPCODE_SQ = 0x1F, // PS2 specific 128-bit store
+   89: 
+   90:         OPCODE_LB = 0x20,  // Load Byte
+   91:         OPCODE_LH = 0x21,  // Load Halfword
+   92:         OPCODE_LWL = 0x22, // Load Word Left
+
+--- Lines 131-158; symbols: SPECIAL_JALR, SPECIAL_JR ---
+  131:     {
+  132:         SPECIAL_SLL = 0x00, // Shift Word Left Logical
+  133: 
+  134:         SPECIAL_SRL = 0x02,  // Shift Word Right Logical
+  135:         SPECIAL_SRA = 0x03,  // Shift Word Right Arithmetic
+  136:         SPECIAL_SLLV = 0x04, // Shift Word Left Logical Variable
+  137: 
+  138:         SPECIAL_SRLV = 0x06, // Shift Word Right Logical Variable
+  139:         SPECIAL_SRAV = 0x07, // Shift Word Right Arithmetic Variable
+  140: 
+  141:         SPECIAL_JR = 0x08,      // Jump Register
+  142:         SPECIAL_JALR = 0x09,    // Jump and Link Register
+  143:         SPECIAL_MOVZ = 0x0A,    // Move Conditional on Zero
+  144:         SPECIAL_MOVN = 0x0B,    // Move Conditional on Not Zero
+  145:         SPECIAL_SYSCALL = 0x0C, // System Call
+  146:         SPECIAL_BREAK = 0x0D,   // Breakpoint
+  147: 
+  148:         SPECIAL_SYNC = 0x0F, // Synchronize Shared Memory
+  149: 
+  150:         SPECIAL_MFHI = 0x10,  // Move From HI Register
+  151:         SPECIAL_MTHI = 0x11,  // Move To HI Register
+  152:         SPECIAL_MFLO = 0x12,  // Move From LO Register
+  153:         SPECIAL_MTLO = 0x13,  // Move To LO Register
+  154:         SPECIAL_DSLLV = 0x14, // Doubleword Shift Left Logical Variable
+  155: 
+  156:         SPECIAL_DSRLV = 0x16, // Doubleword Shift Right Logical Variable
+  157:         SPECIAL_DSRAV = 0x17, // Doubleword Shift Right Arithmetic Variable
+  158: 
+
+--- Lines 525-553; symbols: COP2_QMFC2, COP2_QMTC2 ---
+  525:         COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  526:         COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  527:         COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  528:         COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  529:     };
+  530: 
+  531:     // COP2 (VU0 Macro) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP2
+  532:     enum Cop2Format
+  533:     {
+  534:         // Note: Standard MIPS MFC2/MTC2 use fmt 0x00/0x04, EE uses QMFC2/QMTC2
+  535:         COP2_QMFC2 = 0x01, // QMFC2 (fmt=00001) - Load Quadword From Coprocessor 2
+  536:         COP2_CFC2 = 0x02,  // CFC2 (fmt=00010) - Load Control Word From Coprocessor 2
+  537:         COP2_QMTC2 = 0x05, // QMTC2 (fmt=00101) - Store Quadword To Coprocessor 2
+  538:         COP2_CTC2 = 0x06,  // CTC2 (fmt=00110) - Store Control Word To Coprocessor 2
+  539:         COP2_BC = 0x08,    // BC2 group (fmt=01000) (see Cop2BranchCondition)
+  540:         COP2_CO = 0x10,    // VU0 Macro Operation group (fmt=1xxxx)
+  541:     };
+  542: 
+  543:     // COP2 BC Condition Field ('fmt' or 'rt' field, bits 20-16) for COP2_BC Format
+  544:     enum Cop2BranchCondition
+  545:     {
+  546:         COP2_BC_BCF = 0x00,  // Branch on VU0 Condition False (BC2F)
+  547:         COP2_BC_BCT = 0x01,  // Branch on VU0 Condition True (BC2T)
+  548:         COP2_BC_BCFL = 0x02, // Branch on VU0 Condition False Likely (BC2FL)
+  549:         COP2_BC_BCTL = 0x03, // Branch on VU0 Condition True Likely (BC2TL)
+  550:     };
+  551: 
+  552:     // VU0 Macro Function Field (bits 5-0) for COP2_CO Format (Special1 Table)
+  553:     enum VU0MacroSpecial1Functions : uint8_t
+
+------------------------------------------------------------
+FILE: ps2xRecomp\include\ps2recomp\r5900_decoder.h
+Symbol matches: 3
+
+--- Lines 13-59; symbols: decodeCOP2, decodeSPECIAL, isBranch ---
+   13:     {
+   14:     public:
+   15:         R5900Decoder();
+   16:         ~R5900Decoder();
+   17: 
+   18:         static std::string disassembleInstruction(uint32_t address, uint32_t rawInstruction);
+   19:         static std::string disassembleInstruction(const Instruction &inst);
+   20: 
+   21:         Instruction decodeInstruction(uint32_t address, uint32_t rawInstruction, bool includeDisassembly = true) const;
+   22: 
+   23:         bool isBranchInstruction(const Instruction &inst) const;
+   24:         bool isJumpInstruction(const Instruction &inst) const;
+   25:         bool isCallInstruction(const Instruction &inst) const;
+   26:         bool isReturnInstruction(const Instruction &inst) const;
+   27:         bool isMMIInstruction(const Instruction &inst) const;
+   28:         bool isVUInstruction(const Instruction &inst) const;
+   29:         bool isStore(const Instruction &inst) const;
+   30:         bool isLoad(const Instruction &inst) const;
+   31:         bool hasDelaySlot(const Instruction &inst) const;
+   32: 
+   33:         uint32_t getBranchTarget(const Instruction &inst) const;
+   34:         uint32_t getJumpTarget(const Instruction &inst) const;
+   35: 
+   36:     private:
+   37:         void decodeRType(Instruction &inst) const;
+   38:         void decodeIType(Instruction &inst) const;
+   39:         void decodeJType(Instruction &inst) const;
+   40:  
+   41:         void decodeSpecial(Instruction &inst) const;
+   42:         void decodeRegimm(Instruction &inst) const;
+   43:         
+   44:         void decodeCOP0(Instruction& inst) const;
+   45:         void decodeCOP1(Instruction &inst) const;
+   46:         void decodeCOP2(Instruction &inst) const;
+   47: 
+   48:         void decodeMMI(Instruction &inst) const;
+   49:         void decodeMMI0(Instruction &inst) const;
+   50:         void decodeMMI1(Instruction &inst) const;
+   51:         void decodeMMI2(Instruction &inst) const;
+   52:         void decodeMMI3(Instruction &inst) const;
+   53:         
+   54:         void decodePMFHL(Instruction &inst) const;
+   55:     };
+   56: 
+   57: } // namespace ps2recomp
+   58: 
+   59: #endif // PS2RECOMP_R5900_DECODER_H
+
+------------------------------------------------------------
+FILE: ps2xRecomp\include\ps2recomp\types.h
+Symbol matches: 2
+
+--- Lines 21-47; symbols: isBranch ---
+   21:         uint32_t sa;         // Shift amount
+   22:         uint32_t function;   // Function code for R-type instructions
+   23:         uint32_t immediate;  // Immediate value for I-type instructions
+   24:         uint32_t simmediate; // Sign-extended immediate value (extended to 32 bits)
+   25:         uint32_t target;     // Jump target for J-type instructions
+   26:         uint32_t raw;        // Raw instruction value
+   27: 
+   28:         // Instruction type flags
+   29:         bool isMMI;        // Is MMI instruction (PS2 specific)
+   30:         bool isVU;         // Is VU instruction (PS2 specific)
+   31:         bool isBranch;     // Is branch instruction
+   32:         bool isJump;       // Is jump instruction
+   33:         bool isCall;       // Is function call
+   34:         bool isReturn;     // Is return instruction
+   35:         bool hasDelaySlot; // Has delay slot
+   36:         bool isMultimedia; // PS2-specific multimedia operations
+   37:         bool isStore;      // Is store instruction
+   38:         bool isLoad;       // Is load instruction
+   39: 
+   40:         // Additional PS2-specific fields
+   41:         uint8_t mmiType;        // 0=MMI0, 1=MMI1, 2=MMI2, 3=MMI3
+   42:         uint8_t mmiFunction;    // Function within MMI type
+   43:         uint8_t pmfhlVariation; // For PMFHL instructions
+   44:         uint8_t vuFunction;     // For VU instructions
+   45: 
+   46:         bool isMmio = false;
+   47:         uint32_t mmioAddress = 0;
+
+--- Lines 64-90; symbols: isBranch ---
+   64:             bool modifiesFPR;     // Modifies floating point register
+   65:             bool modifiesVFR;     // Modifies vector float register
+   66:             bool modifiesVIR;     // Modifies vector integer register
+   67:             bool modifiesVIC;     // Modifies vector integer control register
+   68:             bool modifiesMemory;  // Modifies memory
+   69:             bool modifiesControl; // Modifies control register
+   70:         } modificationInfo;
+   71: 
+   72:         Instruction() : address(0), opcode(0), rs(0), rt(0), rd(0), sa(0), function(0),
+   73:                         immediate(0), simmediate(0), target(0), raw(0),
+   74:                         isMMI(false), isVU(false), isBranch(false), isJump(false), isCall(false),
+   75:                         isReturn(false), hasDelaySlot(false), isMultimedia(false), isStore(false), isLoad(false),
+   76:                         mmiType(0), mmiFunction(0), pmfhlVariation(0), vuFunction(0), isMmio(false), mmioAddress(0)
+   77:         {
+   78:             vectorInfo = {};
+   79:             modificationInfo = {};
+   80:         }
+   81:     };
+   82: 
+   83:     struct MemoryAccessHint
+   84:     {
+   85:         bool hasAddress = false;
+   86:         uint32_t address = 0;
+   87:     };
+   88: 
+   89:     // Function information
+   90:     struct Function
+
+------------------------------------------------------------
+FILE: ps2xRecomp\include\ps2recomp\Emitters\control_flow_emitter.h
+Symbol matches: 9
+
+--- Lines 18-50; symbols: BranchKind ---
+   18:         ControlFlowEmitter(CodeGenerator &generator,
+   19:                            const Instruction &branchInst,
+   20:                            const Instruction &delaySlot,
+   21:                            const Function &function,
+   22:                            const CodeGenerator::AnalysisResult &analysisResult,
+   23:                            std::string delaySlotOverride = {});
+   24: 
+   25:         std::string emit();
+   26: 
+   27:     private:
+   28:         enum class StaticBranchKind
+   29:         {
+   30:             Jump,
+   31:             Call,
+   32:         };
+   33: 
+   34:         enum class RegisterBranchKind
+   35:         {
+   36:             Jump,
+   37:             Call,
+   38:         };
+   39: 
+   40:         CodeGenerator &m_gen;
+   41:         const Instruction &m_branchInst;
+   42:         const Instruction &m_delaySlot;
+   43:         const Function &m_function;
+   44:         const CodeGenerator::AnalysisResult &m_analysisResult;
+   45:         std::string m_delaySlotOverride;
+   46:         std::stringstream m_ss;
+   47: 
+   48:         uint32_t branchPc() const;
+   49:         uint32_t delayPc() const;
+   50:         uint32_t fallthroughPc() const;
+
+--- Lines 54-86; symbols: BranchKind, emitConditional ---
+   54:         bool isInternalTarget(uint32_t target) const;
+   55:         std::vector<uint32_t> resolvedLocalIndirectTargets() const;
+   56: 
+   57:         std::string delaySlotCode() const;
+   58:         void emitDelaySlot(std::string_view indent);
+   59:         void emitResumeFromDelaySlotEntry();
+   60:         void emitInternalTarget(uint32_t target, uint32_t sourcePc, std::string_view indent);
+   61:         void emitFallthroughLabelIfNeeded();
+   62:         void emitFinalFallthrough();
+   63: 
+   64:         void emitStaticJump(StaticBranchKind kind);
+   65:         void emitRegisterJump(RegisterBranchKind kind);
+   66:         void emitConditionalBranch();
+   67:         void emitFallbackInstruction();
+   68: 
+   69:         bool emitDirectFunctionJumpIfAvailable(uint32_t target, StaticBranchKind kind, std::string_view indent);
+   70:         void emitExternalJumpDispatch(uint32_t target, StaticBranchKind kind, std::string_view indent);
+   71:         void emitExternalRegisterCallDispatch(std::string_view jumpTargetExpression, std::string_view indent);
+   72:         void emitExternalRegisterJumpDispatch(std::string_view jumpTargetExpression, RegisterBranchKind kind, uint8_t rsReg, std::string_view indent);
+   73:         void emitRuntimeBranchDispatch(std::string_view targetExpression,
+   74:                                        uint32_t sourcePc,
+   75:                                        uint32_t returnPc,
+   76:                                        std::string_view runtimeKind,
+   77:                                        std::string_view debugName,
+   78:                                        std::string_view indent,
+   79:                                        bool returnOnTransfer);
+   80:         bool emitRelocationCallIfAvailable(StaticBranchKind kind, std::string_view indent);
+   81:         std::string conditionalBranchExpression() const;
+   82:         uint32_t conditionalBranchTarget() const;
+   83:     };
+   84: }
+   85: 
+   86: #endif // PS2RECOMP_CONTROL_FLOW_EMITTER_H
+
+------------------------------------------------------------
+FILE: ps2xRecomp\src\lib\code_generator.cpp
+Symbol matches: 1
+
+--- Lines 251-277; symbols: translateVUInstruction ---
+  251:     std::string CodeGenerator::translateFPUInstruction(const Instruction &inst)
+  252:     {
+  253:         return FpuTranslator(*this).translate(inst);
+  254:     }
+  255: 
+  256:     std::string CodeGenerator::translateMMIInstruction(const Instruction &inst)
+  257:     {
+  258:         return MmiTranslator(*this).translate(inst);
+  259:     }
+  260: 
+  261:     std::string CodeGenerator::translateVUInstruction(const Instruction &inst)
+  262:     {
+  263:         return VuTranslator(*this).translate(inst);
+  264:     }
+  265: 
+  266:     CodeGenerator::AnalysisResult CodeGenerator::collectInternalBranchTargets(
+  267:         const Function &function, const std::vector<Instruction> &instructions, const std::vector<Function> *allFunctions)
+  268:     {
+  269:         ControlFlowAnalyzer analyzer(m_sections, m_configJumpTableTargetsByAddress, m_reporter);
+  270:         return analyzer.analyze(function, instructions, allFunctions);
+  271:     }
+  272: 
+  273:     std::string ps2recomp::CodeGenerator::generateFunction(
+  274:         const Function &function,
+  275:         const std::vector<Instruction> &instructions,
+  276:         const bool &useHeaders)
+  277:     {
+
+------------------------------------------------------------
+FILE: ps2xRecomp\src\lib\control_flow_analyzer.cpp
+Symbol matches: 8
+
+--- Lines 29-59; symbols: isBranch, OPCODE_BEQ ---
+   29:                 return inst.rd == reg;
+   30:             case OPCODE_JAL:
+   31:                 return reg == 31u;
+   32:             default:
+   33:                 return inst.rt == reg;
+   34:             }
+   35:         }
+   36: 
+   37:         // The delay slot of a branch-likely only runs when the branch is taken, so it cannot change a
+   38:         // register on the fall-through path that reaches the jump-table load.
+   39:         bool isBranchLikely(const Instruction &inst)
+   40:         {
+   41:             switch (inst.opcode)
+   42:             {
+   43:             case OPCODE_BEQL:
+   44:             case OPCODE_BNEL:
+   45:             case OPCODE_BLEZL:
+   46:             case OPCODE_BGTZL:
+   47:                 return true;
+   48:             case OPCODE_REGIMM:
+   49:                 return inst.rt == REGIMM_BLTZL || inst.rt == REGIMM_BGEZL ||
+   50:                        inst.rt == REGIMM_BLTZALL || inst.rt == REGIMM_BGEZALL;
+   51:             default:
+   52:                 return false;
+   53:             }
+   54:         }
+   55:     }
+   56: 
+   57:     ControlFlowAnalyzer::ControlFlowAnalyzer(
+   58:         const std::vector<Section> &sections,
+   59:         const std::unordered_map<uint32_t, std::vector<uint32_t>> &configuredJumpTableTargetsByAddress,
+
+--- Lines 163-208; symbols: isBranch, SPECIAL_JALR, SPECIAL_JR ---
+  163:                 return;
+  164:             }
+  165: 
+  166:             queueResumeEntryTarget(target);
+  167:         };
+  168: 
+  169:         for (const auto &inst : instructions)
+  170:         {
+  171:             instructionAddresses.insert(inst.address);
+  172:             if (inst.opcode == OPCODE_SPECIAL &&
+  173:                 ((inst.function == SPECIAL_JR && inst.rs != 31) ||
+  174:                  inst.function == SPECIAL_JALR))
+  175:             {
+  176:                 hasIndirectRegisterJump = true;
+  177:                 indirectJumps.push_back(&inst);
+  178:             }
+  179:         }
+  180: 
+  181:         for (const auto &inst : instructions)
+  182:         {
+  183:             // A guest-installed syscall handler runs as a separate invocation,
+  184:             // so the scheduler resumes this thread at syscall+4 and needs an
+  185:             // entry point there. +4, not +8: syscall has no delay slot.
+  186:             if (inst.opcode == OPCODE_SPECIAL && inst.function == SPECIAL_SYSCALL)
+  187:             {
+  188:                 queueResumeEntryTarget(inst.address + 4u);
+  189:             }
+  190: 
+  191:             bool isStaticJump = (inst.opcode == OPCODE_J || inst.opcode == OPCODE_JAL);
+  192:             if (inst.isBranch && inst.opcode != OPCODE_J && inst.opcode != OPCODE_JAL)
+  193:             {
+  194:                 const int32_t offsetBytes = (static_cast<int32_t>(static_cast<int16_t>(inst.simmediate)) << 2);
+  195:                 const uint32_t target = static_cast<uint32_t>(
+  196:                     static_cast<int64_t>(inst.address + 4u) + static_cast<int64_t>(offsetBytes));
+  197: 
+  198:                 if (target >= function.start && target < function.end &&
+  199:                     instructionAddresses.contains(target))
+  200:                 {
+  201:                     result.entryPoints.insert(target);
+  202:                     queueLoopResumeEntryTarget(target, inst.address);
+  203:                 }
+  204:                 else
+  205:                 {
+  206:                     queueExternalEntryTarget(target);
+  207:                 }
+  208:             }
+
+--- Lines 230-256; symbols: SPECIAL_JALR ---
+  230:                     }
+  231:                 }
+  232:             }
+  233:         }
+  234: 
+  235:         if (hasIndirectRegisterJump)
+  236:         {
+  237:             bool needsIndirectFallback = false;
+  238:             for (const Instruction *jrInst : indirectJumps)
+  239:             {
+  240:                 if (jrInst->function == SPECIAL_JALR)
+  241:                 {
+  242:                     queueResumeEntryTarget(jrInst->address + 8u);
+  243:                 }
+  244: 
+  245:                 bool foundTable = false;
+  246: 
+  247:                 uint32_t jrReg = jrInst->rs;
+  248: 
+  249:                 int lwIndex = -1;
+  250:                 uint32_t baseReg = 0;
+  251:                 int32_t lwOffset = 0;
+  252: 
+  253:                 auto it = std::find_if(instructions.begin(), instructions.end(), [&](const Instruction &inst)
+  254:                                        { return inst.address == jrInst->address; });
+  255:                 if (it != instructions.end())
+  256:                 {
+
+--- Lines 296-322; symbols: OPCODE_ADDI ---
+  296:                                 {
+  297:                                     if (inst.rt == tableBaseReg || inst.rt == indexReg)
+  298:                                     {
+  299:                                         uint32_t high = inst.immediate << 16;
+  300:                                         uint32_t low = 0;
+  301:                                         for (int j = i + 1; j < adduIndex; ++j)
+  302:                                         {
+  303:                                             const auto &lowInst = instructions[j];
+  304:                                             if (lowInst.rs == inst.rt && lowInst.rt == inst.rt)
+  305:                                             {
+  306:                                                 if (lowInst.opcode == OPCODE_ADDIU)
+  307:                                                 {
+  308:                                                     low = (uint32_t)lowInst.simmediate;
+  309:                                                 }
+  310:                                                 else if (lowInst.opcode == OPCODE_ORI)
+  311:                                                 {
+  312:                                                     low = lowInst.immediate;
+  313:                                                 }
+  314:                                             }
+  315:                                         }
+  316:                                         tableAddress = high + low;
+  317:                                         foundTableAddress = true;
+  318:                                         break;
+  319:                                     }
+  320:                                 }
+  321:                             }
+  322:                         }
+
+--- Lines 391-417; symbols: isBranch ---
+  391:                                 // reused for the table base after it.
+  392:                                 for (int i = sllIndex - 1; i >= 0 && i >= sllIndex - kJumpTableBoundSearchLimit; --i)
+  393:                                 {
+  394:                                     const auto &inst = instructions[i];
+  395:                                     if ((inst.opcode == OPCODE_SLTIU || inst.opcode == OPCODE_SLTI) && inst.rs == unshiftedIndexReg)
+  396:                                     {
+  397:                                         numCases = inst.immediate;
+  398:                                         break;
+  399:                                     }
+  400:                                     if (writesGpr(inst, unshiftedIndexReg) &&
+  401:                                         !(i > 0 && isBranchLikely(instructions[i - 1])))
+  402:                                     {
+  403:                                         break;
+  404:                                     }
+  405:                                 }
+  406:                             }
+  407: 
+  408:                             if (!foundTable && numCases > 0 && numCases <= 1000)
+  409:                             {
+  410:                                 const Section *rodata = nullptr;
+  411:                                 for (const auto &sec : m_sections)
+  412:                                 {
+  413:                                     if (tableAddress >= sec.address && tableAddress < sec.address + sec.size)
+  414:                                     {
+  415:                                         rodata = &sec;
+  416:                                         break;
+  417:                                     }
+
+------------------------------------------------------------
+FILE: ps2xRecomp\src\lib\control_flow_emitter.cpp
+Symbol matches: 31
+
+--- Lines 43-98; symbols: OPCODE_BEQ, SPECIAL_JALR, SPECIAL_JR ---
+   43:     }
+   44: 
+   45:     bool ControlFlowEmitter::hasRealDelaySlot() const
+   46:     {
+   47:         return !m_delaySlotOverride.empty() || !isGuestNop(m_delaySlot);
+   48:     }
+   49: 
+   50:     bool ControlFlowEmitter::isCallLikeEdge() const
+   51:     {
+   52:         return (m_branchInst.opcode == OPCODE_JAL) ||
+   53:                (m_branchInst.opcode == OPCODE_SPECIAL && m_branchInst.function == SPECIAL_JALR);
+   54:     }
+   55: 
+   56:     bool ControlFlowEmitter::isInternalTarget(uint32_t target) const
+   57:     {
+   58:         return m_analysisResult.entryPoints.contains(target);
+   59:     }
+   60: 
+   61:     bool ControlFlowEmitter::isLikelyBranch() const
+   62:     {
+   63:         return (m_branchInst.opcode == OPCODE_BEQL || m_branchInst.opcode == OPCODE_BNEL ||
+   64:                 m_branchInst.opcode == OPCODE_BLEZL || m_branchInst.opcode == OPCODE_BGTZL ||
+   65:                 (m_branchInst.opcode == OPCODE_REGIMM &&
+   66:                  (m_branchInst.rt == REGIMM_BLTZL || m_branchInst.rt == REGIMM_BGEZL ||
+   67:                   m_branchInst.rt == REGIMM_BLTZALL || m_branchInst.rt == REGIMM_BGEZALL)) ||
+   68:                 (m_branchInst.opcode == OPCODE_COP1 && m_branchInst.rs == COP1_BC &&
+   69:                  (m_branchInst.rt == COP1_BC_BCFL || m_branchInst.rt == COP1_BC_BCTL)) ||
+   70:                 (m_branchInst.opcode == OPCODE_COP2 && m_branchInst.rs == COP2_BC &&
+   71:                  (m_branchInst.rt == COP2_BC_BCFL || m_branchInst.rt == COP2_BC_BCTL)));
+   72:     }
+   73: 
+   74:     std::vector<uint32_t> ControlFlowEmitter::resolvedLocalIndirectTargets() const
+   75:     {
+   76:         if (m_branchInst.opcode != OPCODE_SPECIAL)
+   77:         {
+   78:             return {};
+   79:         }
+   80: 
+   81:         if (!((m_branchInst.function == SPECIAL_JR && m_branchInst.rs != 31u) ||
+   82:               m_branchInst.function == SPECIAL_JALR))
+   83:         {
+   84:             return {};
+   85:         }
+   86: 
+   87:         auto jtIt = m_analysisResult.jumpTableTargets.find(m_branchInst.address);
+   88:         if (jtIt == m_analysisResult.jumpTableTargets.end())
+   89:         {
+   90:             return {};
+   91:         }
+   92: 
+   93:         std::vector<uint32_t> targets = jtIt->second;
+   94:         std::sort(targets.begin(), targets.end());
+   95:         targets.erase(std::unique(targets.begin(), targets.end()), targets.end());
+   96:         return targets;
+   97:     }
+   98: 
+
+--- Lines 186-418; symbols: BranchKind, OPCODE_BEQ ---
+  186: 
+  187:     void ControlFlowEmitter::emitRuntimeBranchDispatch(std::string_view targetExpression,
+  188:                                                        uint32_t sourcePc,
+  189:                                                        uint32_t returnPc,
+  190:                                                        std::string_view runtimeKind,
+  191:                                                        std::string_view debugName,
+  192:                                                        std::string_view indent,
+  193:                                                        bool returnOnTransfer)
+  194:     {
+  195:         m_ss << fmt::format(
+  196:             "{}if (!runtime->dispatchGuestBranch(rdram, ctx, {}, 0x{:X}u, 0x{:X}u, PS2Runtime::GuestBranchKind::{}, \"{}\")) {{\n",
+  197:             indent,
+  198:             targetExpression,
+  199:             sourcePc,
+  200:             returnPc,
+  201:             runtimeKind,
+  202:             debugName);
+  203:         if (returnOnTransfer)
+  204:         {
+  205:             m_ss << fmt::format("{}    return;\n", indent);
+  206:         }
+  207:         m_ss << fmt::format("{}}}\n", indent);
+  208:     }
+  209: 
+  210:     bool ControlFlowEmitter::emitDirectFunctionJumpIfAvailable(uint32_t target, StaticBranchKind kind, std::string_view indent)
+  211:     {
+  212:         if (kind != StaticBranchKind::Jump)
+  213:         {
+  214:             return false;
+  215:         }
+  216: 
+  217:         const std::string functionName = m_gen.getFunctionName(target);
+  218:         if (functionName.empty())
+  219:         {
+  220:             return false;
+  221:         }
+  222: 
+  223:         m_ss << indent << functionName << "(rdram, ctx, runtime); return;\n";
+  224:         return true;
+  225:     }
+  226: 
+  227:     void ControlFlowEmitter::emitExternalJumpDispatch(uint32_t target, StaticBranchKind kind, std::string_view indent)
+  228:     {
+  229:         const bool isCall = kind == StaticBranchKind::Call;
+  230:         emitRuntimeBranchDispatch(fmt::format("0x{:X}u", target),
+  231:                                   branchPc(),
+  232:                                   isCall ? fallthroughPc() : 0u,
+  233:                                   isCall ? "DirectCall" : "DirectJump",
+  234:                                   isCall ? "JAL" : "J",
+  235:                                   indent,
+  236:                                   true);
+  237:     }
+  238: 
+  239:     void ControlFlowEmitter::emitExternalRegisterCallDispatch(std::string_view jumpTargetExpression, std::string_view indent)
+  240:     {
+  241:         emitRuntimeBranchDispatch(jumpTargetExpression,
+  242:                                   branchPc(),
+  243:                                   fallthroughPc(),
+  244:                                   "IndirectCall",
+  245:                                   "JALR",
+  246:                                   indent,
+  247:                                   true);
+  248:     }
+  249: 
+  250:     void ControlFlowEmitter::emitExternalRegisterJumpDispatch(std::string_view jumpTargetExpression,
+  251:                                                               RegisterBranchKind kind,
+  252:                                                               uint8_t rsReg,
+  253:                                                               std::string_view indent)
+  254:     {
+  255:         const bool isReturn = kind == RegisterBranchKind::Jump && rsReg == 31u;
+  256: 
+  257:         if (isReturn)
+  258:         {
+  259:             m_ss << indent << "#if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS\n";
+  260:             m_ss << indent << "(void)runtime->dispatchGuestBranch(rdram, ctx, " << jumpTargetExpression
+  261:                  << ", 0x" << fmt::format("{:X}", branchPc())
+  262:                  << "u, 0u, PS2Runtime::GuestBranchKind::Return, \"JR $ra\");\n";
+  263:             m_ss << indent << "return;\n";
+  264:             m_ss << indent << "#else\n";
+  265:             m_ss << indent << "ctx->pc = " << jumpTargetExpression << ";\n";
+  266:             m_ss << indent << "return;\n";
+  267:             m_ss << indent << "#endif\n";
+  268:             return;
+  269:         }
+  270: 
+  271:         emitRuntimeBranchDispatch(jumpTargetExpression,
+  272:                                   branchPc(),
+  273:                                   0u,
+  274:                                   "IndirectJump",
+  275:                                   "JR",
+  276:                                   indent,
+  277:                                   true);
+  278:     }
+  279: 
+  280:     bool ControlFlowEmitter::emitRelocationCallIfAvailable(StaticBranchKind kind, std::string_view indent)
+  281:     {
+  282:         const auto relocIt = m_gen.m_relocationCallNames.find(m_branchInst.address);
+  283:         if (relocIt == m_gen.m_relocationCallNames.end() || relocIt->second.empty())
+  284:         {
+  285:             return false;
+  286:         }
+  287: 
+  288:         const std::string_view resolvedSyscallName = ps2_runtime_calls::resolveSyscallName(relocIt->second);
+  289:         const std::string_view resolvedStubName = ps2_runtime_calls::resolveStubName(relocIt->second);
+  290:         if (resolvedSyscallName.empty() && resolvedStubName.empty())
+  291:         {
+  292:             return false;
+  293:         }
+  294: 
+  295:         const bool isSyscall = !resolvedSyscallName.empty();
+  296:         const std::string_view handlerName = isSyscall ? resolvedSyscallName : resolvedStubName;
+  297: 
+  298:         m_ss << indent << "{\n";
+  299:         if (kind == StaticBranchKind::Call)
+  300:         {
+  301:             m_ss << fmt::format("{}    ctx->pc = 0x{:X}u;\n", indent, fallthroughPc());
+  302:         }
+  303:         else
+  304:         {
+  305:             m_ss << indent << "    ctx->pc = getRegU32(ctx, 31);\n";
+  306:         }
+  307:         m_ss << indent << "    " << (isSyscall ? "ps2_syscalls::" : "ps2_stubs::")
+  308:              << handlerName << "(rdram, ctx, runtime);\n";
+  309:         m_ss << indent << "}\n";
+  310: 
+  311:         if (kind == StaticBranchKind::Jump)
+  312:         {
+  313:             m_ss << indent << "return;\n";
+  314:         }
+  315:         else
+  316:         {
+  317:             m_ss << fmt::format("{}if (ctx->pc != 0x{:X}u) {{ return; }}\n", indent, fallthroughPc());
+  318:         }
+  319: 
+  320:         return true;
+  321:     }
+  322: 
+  323:     void ControlFlowEmitter::emitStaticJump(StaticBranchKind kind)
+  324:     {
+  325:         if (kind == StaticBranchKind::Call)
+  326:         {
+  327:             m_ss << fmt::format("    SET_GPR_U32(ctx, 31, 0x{:X}u);\n", fallthroughPc());
+  328:         }
+  329: 
+  330:         emitDelaySlot("    ");
+  331: 
+  332:         const uint32_t target = buildAbsoluteJumpTarget(m_branchInst.address, m_branchInst.target);
+  333:         if (isInternalTarget(target))
+  334:         {
+  335:             emitInternalTarget(target, branchPc(), "    ");
+  336:             return;
+  337:         }
+  338: 
+  339:         m_ss << fmt::format("    ctx->pc = 0x{:X}u;\n", target);
+  340: 
+  341:         if (kind == StaticBranchKind::Call && emitRelocationCallIfAvailable(kind, "    "))
+  342:         {
+  343:             return;
+  344:         }
+  345: 
+  346:         if (emitDirectFunctionJumpIfAvailable(target, kind, "    "))
+  347:         {
+  348:             return;
+  349:         }
+  350: 
+  351:         emitExternalJumpDispatch(target, kind, "    ");
+  352:     }
+  353: 
+  354:     void ControlFlowEmitter::emitRegisterJump(RegisterBranchKind kind)
+  355:     {
+  356:         const uint8_t rsReg = static_cast<uint8_t>(m_branchInst.rs);
+  357:         const uint8_t rdReg = static_cast<uint8_t>(m_branchInst.rd);
+  358:         const std::vector<uint32_t> sortedInternalTargets = resolvedLocalIndirectTargets();
+  359: 
+  360:         m_ss << "    {\n";
+  361:         m_ss << "        const uint32_t jumpTarget = GPR_U32(ctx, " << static_cast<int>(rsReg) << ");\n";
+  362: 
+  363:         if (kind == RegisterBranchKind::Call && rdReg != 0u)
+  364:         {
+  365:             m_ss << fmt::format("        SET_GPR_U32(ctx, {}, 0x{:X}u);\n", rdReg, fallthroughPc());
+  366:         }
+  367: 
+  368:         emitDelaySlot("        ");
+  369:         m_ss << "        ctx->pc = jumpTarget;\n";
+  370: 
+  371:         if (!sortedInternalTargets.empty())
+  372:         {
+  373:             m_ss << "        switch (jumpTarget) {\n";
+  374:             for (uint32_t target : sortedInternalTargets)
+  375:             {
+  376:                 m_ss << fmt::format("            case 0x{:X}u: goto label_{:x};\n", target, target);
+  377:             }
+  378:             m_ss << "            default: break;\n";
+  379:             m_ss << "        }\n";
+  380:         }
+  381: 
+  382:         if (kind == RegisterBranchKind::Jump)
+  383:         {
+  384:             emitExternalRegisterJumpDispatch("jumpTarget", kind, rsReg, "        ");
+  385:         }
+  386:         else
+  387:         {
+  388:             emitExternalRegisterCallDispatch("jumpTarget", "        ");
+  389:         }
+  390: 
+  391:         m_ss << "    }\n";
+  392:     }
+  393: 
+  394:     std::string ControlFlowEmitter::conditionalBranchExpression() const
+  395:     {
+  396:         const uint8_t rsReg = static_cast<uint8_t>(m_branchInst.rs);
+  397:         const uint8_t rtReg = static_cast<uint8_t>(m_branchInst.rt);
+  398: 
+  399:         switch (m_branchInst.opcode)
+  400:         {
+  401:         case OPCODE_BEQ:
+  402:         case OPCODE_BEQL:
+  403:             return fmt::format("GPR_U64(ctx, {}) == GPR_U64(ctx, {})", rsReg, rtReg);
+  404:         case OPCODE_BNE:
+  405:         case OPCODE_BNEL:
+  406:             return fmt::format("GPR_U64(ctx, {}) != GPR_U64(ctx, {})", rsReg, rtReg);
+  407:         // Sign branches test all 64 bits: an ld of an IPU register yields 0x00000000_8xxxxxxx, which is positive.
+  408:         case OPCODE_BLEZ:
+  409:         case OPCODE_BLEZL:
+  410:             return fmt::format("GPR_S64(ctx, {}) <= 0", rsReg);
+  411:         case OPCODE_BGTZ:
+  412:         case OPCODE_BGTZL:
+  413:             return fmt::format("GPR_S64(ctx, {}) > 0", rsReg);
+  414:         case OPCODE_REGIMM:
+  415:             switch (m_branchInst.rt)
+  416:             {
+  417:             case REGIMM_BLTZ:
+  418:             case REGIMM_BLTZL:
+
+--- Lines 452-478; symbols: emitConditional ---
+  452:         return "false";
+  453:     }
+  454: 
+  455:     uint32_t ControlFlowEmitter::conditionalBranchTarget() const
+  456:     {
+  457:         const int32_t offsetBytes = static_cast<int32_t>(static_cast<int16_t>(m_branchInst.simmediate)) << 2;
+  458:         return static_cast<uint32_t>(static_cast<int64_t>(m_branchInst.address + 4u) +
+  459:                                      static_cast<int64_t>(offsetBytes));
+  460:     }
+  461: 
+  462:     void ControlFlowEmitter::emitConditionalBranch()
+  463:     {
+  464:         const uint32_t target = conditionalBranchTarget();
+  465:         const bool likely = isLikelyBranch();
+  466:         const std::string branchTakenVar = fmt::format("branch_taken_0x{:x}", m_branchInst.address);
+  467:         std::string unconditionalLinkCode;
+  468:         std::string conditionalLinkCode;
+  469: 
+  470:         if (m_branchInst.opcode == OPCODE_REGIMM)
+  471:         {
+  472:             if (m_branchInst.rt == REGIMM_BLTZAL || m_branchInst.rt == REGIMM_BGEZAL)
+  473:             {
+  474:                 unconditionalLinkCode = fmt::format("SET_GPR_U32(ctx, 31, 0x{:X}u);", fallthroughPc());
+  475:             }
+  476:             else if (m_branchInst.rt == REGIMM_BLTZALL || m_branchInst.rt == REGIMM_BGEZALL)
+  477:             {
+  478:                 conditionalLinkCode = fmt::format("SET_GPR_U32(ctx, 31, 0x{:X}u);", fallthroughPc());
+
+--- Lines 552-582; symbols: BranchKind, emitConditional, isBranch, SPECIAL_JALR, SPECIAL_JR ---
+  552:     }
+  553: 
+  554:     std::string ControlFlowEmitter::emit()
+  555:     {
+  556:         (void)m_function;
+  557:         emitResumeFromDelaySlotEntry();
+  558:         m_ss << fmt::format("    ctx->pc = 0x{:X}u;\n", branchPc());
+  559: 
+  560:         if (m_branchInst.opcode == OPCODE_J || m_branchInst.opcode == OPCODE_JAL)
+  561:         {
+  562:             emitStaticJump(m_branchInst.opcode == OPCODE_JAL ? StaticBranchKind::Call : StaticBranchKind::Jump);
+  563:         }
+  564:         else if (m_branchInst.opcode == OPCODE_SPECIAL &&
+  565:                  (m_branchInst.function == SPECIAL_JR || m_branchInst.function == SPECIAL_JALR))
+  566:         {
+  567:             emitRegisterJump(m_branchInst.function == SPECIAL_JALR ? RegisterBranchKind::Call : RegisterBranchKind::Jump);
+  568:         }
+  569:         else if (m_branchInst.isBranch)
+  570:         {
+  571:             emitConditionalBranch();
+  572:         }
+  573:         else
+  574:         {
+  575:             emitFallbackInstruction();
+  576:         }
+  577: 
+  578:         emitFallthroughLabelIfNeeded();
+  579:         emitFinalFallthrough();
+  580:         return m_ss.str();
+  581:     }
+  582: }
+
+------------------------------------------------------------
+FILE: ps2xRecomp\src\lib\elf_parser.cpp
+Symbol matches: 24
+
+--- Lines 537-590; symbols: OPCODE_ADDI, SPECIAL_JR ---
+  537: 
+  538:             const uint32_t opcode = OPCODE(raw);
+  539:             const uint32_t rs = RS(raw);
+  540:             const uint32_t rt = RT(raw);
+  541:             const uint16_t immediate = static_cast<uint16_t>(IMMEDIATE(raw));
+  542: 
+  543:             // Non-leaf functions normally allocate their stack frame immediately.
+  544:             // Static initializers may first issue a block of LUI instructions for
+  545:             // callback and descriptor addresses, as long as no unrelated operation
+  546:             // appears before the delayed prologue.
+  547:             if ((opcode == OPCODE_ADDIU || opcode == OPCODE_DADDIU) &&
+  548:                 rs == GPR_SP && rt == GPR_SP &&
+  549:                 (immediate & MIPS_IMMEDIATE_SIGN_BIT) != 0 &&
+  550:                 index < kDelayedPrologueProbeWords &&
+  551:                 (index < 4 || hasOnlyConstantPreamble))
+  552:             {
+  553:                 return true;
+  554:             }
+  555: 
+  556:             // Some prologues set up GP before saving RA, so also recognize the
+  557:             // common SW/SD/SQ $ra,offset($sp) forms in the entry window.
+  558:             if (index < kStandardProbeWords &&
+  559:                 (opcode == OPCODE_SW || opcode == OPCODE_SD || opcode == OPCODE_SQ) &&
+  560:                 rs == GPR_SP && rt == GPR_RA)
+  561:             {
+  562:                 return true;
+  563:             }
+  564: 
+  565:             // Leaf callbacks and vtable thunks often have no stack frame at all.
+  566:             // Besides the usual `jr $ra`, constructor/destructor wrappers commonly
+  567:             // prepare arguments and tail-call their implementation with a direct
+  568:             // `j`.  These addresses are only accepted by callers that already have
+  569:             // strong address-taken evidence (for example a clustered pointer table),
+  570:             // so recognizing the tail jump does not turn arbitrary code labels into
+  571:             // function starts.
+  572:             const bool isLeafReturn =
+  573:                 index < kStandardProbeWords &&
+  574:                 opcode == OPCODE_SPECIAL && FUNCTION(raw) == SPECIAL_JR && rs == GPR_RA;
+  575:             const uint32_t tailThunkProbeWords = restrictTailThunk ? 4u : kStandardProbeWords;
+  576:             const bool isShortTailThunk =
+  577:                 index < tailThunkProbeWords && opcode == OPCODE_J;
+  578:             if (allowLeafThunk && (isLeafReturn || isShortTailThunk))
+  579:             {
+  580:                 return true;
+  581:             }
+  582: 
+  583:             if (opcode != OPCODE_LUI)
+  584:             {
+  585:                 hasOnlyConstantPreamble = false;
+  586:             }
+  587:         }
+  588: 
+  589:         // A callback supported by strong address-taken evidence does not need a
+  590:         // prologue and is not required to return within an arbitrary linear
+
+--- Lines 617-644; symbols: OPCODE_ADDI ---
+  617:         }
+  618: 
+  619:         if (opcode == OPCODE_JAL)
+  620:         {
+  621:             return reg == GPR_RA;
+  622:         }
+  623: 
+  624:         bool writesRt = false;
+  625:         switch (opcode)
+  626:         {
+  627:         case OPCODE_ADDI:
+  628:         case OPCODE_ADDIU:
+  629:         case OPCODE_SLTI:
+  630:         case OPCODE_SLTIU:
+  631:         case OPCODE_ANDI:
+  632:         case OPCODE_ORI:
+  633:         case OPCODE_XORI:
+  634:         case OPCODE_LUI:
+  635:         case OPCODE_DADDI:
+  636:         case OPCODE_DADDIU:
+  637:         case OPCODE_LDL:
+  638:         case OPCODE_LDR:
+  639:         case OPCODE_LQ:
+  640:         case OPCODE_LB:
+  641:         case OPCODE_LH:
+  642:         case OPCODE_LWL:
+  643:         case OPCODE_LW:
+  644:         case OPCODE_LBU:
+
+--- Lines 658-710; symbols: OPCODE_BEQ, SPECIAL_JALR, SPECIAL_JR ---
+  658:     }
+  659: 
+  660:     bool IsControlTransfer(uint32_t raw)
+  661:     {
+  662:         const uint32_t opcode = OPCODE(raw);
+  663:         switch (opcode)
+  664:         {
+  665:         case OPCODE_REGIMM:
+  666:         case OPCODE_J:
+  667:         case OPCODE_JAL:
+  668:         case OPCODE_BEQ:
+  669:         case OPCODE_BNE:
+  670:         case OPCODE_BLEZ:
+  671:         case OPCODE_BGTZ:
+  672:         case OPCODE_BEQL:
+  673:         case OPCODE_BNEL:
+  674:         case OPCODE_BLEZL:
+  675:         case OPCODE_BGTZL:
+  676:             return true;
+  677:         default:
+  678:             break;
+  679:         }
+  680: 
+  681:         if (opcode != OPCODE_SPECIAL)
+  682:         {
+  683:             return false;
+  684:         }
+  685: 
+  686:         const uint32_t function = FUNCTION(raw);
+  687:         return function == SPECIAL_JR || function == SPECIAL_JALR;
+  688:     }
+  689: 
+  690:     bool IsCallInstruction(uint32_t raw)
+  691:     {
+  692:         const uint32_t opcode = OPCODE(raw);
+  693:         return opcode == OPCODE_JAL ||
+  694:                (opcode == OPCODE_SPECIAL && FUNCTION(raw) == SPECIAL_JALR);
+  695:     }
+  696: 
+  697:     bool TryGetGprCopy(uint32_t raw, uint32_t &outDestination, uint32_t &outSource)
+  698:     {
+  699:         const uint32_t opcode = OPCODE(raw);
+  700:         const uint32_t rs = RS(raw);
+  701:         const uint32_t rt = RT(raw);
+  702:         const uint32_t rd = RD(raw);
+  703: 
+  704:         if (opcode == OPCODE_SPECIAL)
+  705:         {
+  706:             const uint32_t function = FUNCTION(raw);
+  707:             const bool zeroExtendedMove =
+  708:                 function == SPECIAL_ADDU || function == SPECIAL_DADDU || function == SPECIAL_OR;
+  709:             if (zeroExtendedMove && rd != GPR_ZERO)
+  710:             {
+
+--- Lines 724-750; symbols: OPCODE_ADDI ---
+  724: 
+  725:             if (function == SPECIAL_SLL && SA(raw) == 0 &&
+  726:                 rd != GPR_ZERO && rt != GPR_ZERO)
+  727:             {
+  728:                 outDestination = rd;
+  729:                 outSource = rt;
+  730:                 return true;
+  731:             }
+  732:         }
+  733: 
+  734:         if ((opcode == OPCODE_ADDIU || opcode == OPCODE_DADDIU || opcode == OPCODE_ORI) &&
+  735:             IMMEDIATE(raw) == 0 && rs != GPR_ZERO && rt != GPR_ZERO)
+  736:         {
+  737:             outDestination = rt;
+  738:             outSource = rs;
+  739:             return true;
+  740:         }
+  741: 
+  742:         return false;
+  743:     }
+  744: 
+  745:     uint32_t PropagateTrackedGprs(uint32_t raw, uint32_t trackedGprs)
+  746:     {
+  747:         uint32_t copyDestination = GPR_ZERO;
+  748:         uint32_t copySource = GPR_ZERO;
+  749:         const bool copiesTrackedValue =
+  750:             TryGetGprCopy(raw, copyDestination, copySource) &&
+
+--- Lines 763-793; symbols: OPCODE_BEQ ---
+  763:             trackedGprs |= 1u << copyDestination;
+  764:         }
+  765: 
+  766:         return trackedGprs;
+  767:     }
+  768: 
+  769:     bool IsConditionalBranch(uint32_t raw)
+  770:     {
+  771:         switch (OPCODE(raw))
+  772:         {
+  773:         case OPCODE_BEQ:
+  774:         case OPCODE_BNE:
+  775:         case OPCODE_BLEZ:
+  776:         case OPCODE_BGTZ:
+  777:         case OPCODE_BEQL:
+  778:         case OPCODE_BNEL:
+  779:         case OPCODE_BLEZL:
+  780:         case OPCODE_BGTZL:
+  781:             return true;
+  782:         case OPCODE_REGIMM:
+  783:             switch (RT(raw))
+  784:             {
+  785:             case REGIMM_BLTZ:
+  786:             case REGIMM_BGEZ:
+  787:             case REGIMM_BLTZL:
+  788:             case REGIMM_BGEZL:
+  789:             case REGIMM_BLTZAL:
+  790:             case REGIMM_BGEZAL:
+  791:             case REGIMM_BLTZALL:
+  792:             case REGIMM_BGEZALL:
+  793:                 return true;
+
+--- Lines 796-822; symbols: OPCODE_BEQ ---
+  796:             }
+  797:         default:
+  798:             return false;
+  799:         }
+  800:     }
+  801: 
+  802:     bool IsLikelyBranch(uint32_t raw)
+  803:     {
+  804:         switch (OPCODE(raw))
+  805:         {
+  806:         case OPCODE_BEQL:
+  807:         case OPCODE_BNEL:
+  808:         case OPCODE_BLEZL:
+  809:         case OPCODE_BGTZL:
+  810:             return true;
+  811:         case OPCODE_REGIMM:
+  812:             return RT(raw) == REGIMM_BLTZL || RT(raw) == REGIMM_BGEZL ||
+  813:                    RT(raw) == REGIMM_BLTZALL || RT(raw) == REGIMM_BGEZALL;
+  814:         default:
+  815:             return false;
+  816:         }
+  817:     }
+  818: 
+  819:     uint32_t PcRelativeBranchTargetOffset(uint32_t instructionOffset, uint32_t raw)
+  820:     {
+  821:         return instructionOffset + MIPS_INSTRUCTION_SIZE +
+  822:                static_cast<uint32_t>(SIMMEDIATE(raw) * static_cast<int32_t>(MIPS_INSTRUCTION_SIZE));
+
+--- Lines 866-904; symbols: OPCODE_BEQ, SPECIAL_JR ---
+  866: 
+  867:             while (isReadableOffset(offset) && visitedOffsets.size() < kReachableInstructionSafetyBudget && visitedOffsets.insert(offset).second)
+  868:             {
+  869:                 uint32_t raw = 0;
+  870:                 if (!ReadSectionWord(section, offset, raw))
+  871:                 {
+  872:                     break;
+  873:                 }
+  874: 
+  875:                 const uint32_t opcode = OPCODE(raw);
+  876:                 if (opcode == OPCODE_SPECIAL && FUNCTION(raw) == SPECIAL_JR)
+  877:                 {
+  878:                     if (RS(raw) == GPR_RA)
+  879:                     {
+  880:                         return true;
+  881:                     }
+  882:                     break;
+  883:                 }
+  884: 
+  885:                 if (IsConditionalBranch(raw))
+  886:                 {
+  887:                     const uint32_t targetOffset = PcRelativeBranchTargetOffset(offset, raw);
+  888:                     const bool isUnconditionalBranch = opcode == OPCODE_BEQ && RS(raw) == GPR_ZERO && RT(raw) == GPR_ZERO;
+  889: 
+  890:                     if (isUnconditionalBranch)
+  891:                     {
+  892:                         if (!isReadableOffset(targetOffset))
+  893:                         {
+  894:                             break;
+  895:                         }
+  896:                         offset = targetOffset;
+  897:                         continue;
+  898:                     }
+  899: 
+  900:                     if (isReadableOffset(targetOffset))
+  901:                     {
+  902:                         pendingOffsets.push_back(targetOffset);
+  903:                     }
+  904: 
+
+--- Lines 913-939; symbols: SPECIAL_JALR ---
+  913:                 {
+  914:                     uint32_t targetOffset = 0;
+  915:                     if (!TryGetDirectJumpTargetOffset(section, offset, raw, targetOffset))
+  916:                     {
+  917:                         break;
+  918:                     }
+  919:                     offset = targetOffset;
+  920:                     continue;
+  921:                 }
+  922: 
+  923:                 if (opcode == OPCODE_JAL || (opcode == OPCODE_SPECIAL && FUNCTION(raw) == SPECIAL_JALR))
+  924:                 {
+  925:                     // Calls return after their delay slot; the callee is a separate
+  926:                     // control-flow region and is intentionally not traversed here.
+  927:                     offset += 2u * MIPS_INSTRUCTION_SIZE;
+  928:                     continue;
+  929:                 }
+  930: 
+  931:                 offset += MIPS_INSTRUCTION_SIZE;
+  932:             }
+  933:         }
+  934: 
+  935:         return false;
+  936:     }
+  937: 
+  938:     struct TrackedGprState
+  939:     {
+
+--- Lines 1051-1077; symbols: SPECIAL_JR ---
+ 1051:                 }
+ 1052:                 else if ((delayTracked & kArgumentMask) != 0)
+ 1053:                 {
+ 1054:                     // A direct jump outside the current coarse function is a
+ 1055:                     // tail call, and observes the same argument registers.
+ 1056:                     return true;
+ 1057:                 }
+ 1058:                 continue;
+ 1059:             }
+ 1060: 
+ 1061:             if (OPCODE(raw) == OPCODE_SPECIAL && FUNCTION(raw) == SPECIAL_JR)
+ 1062:             {
+ 1063:                 // A materialized code address used as a JR target is a tail
+ 1064:                 // callback even though it does not write $ra.
+ 1065:                 if ((state.trackedGprs & (1u << RS(raw))) != 0)
+ 1066:                 {
+ 1067:                     return true;
+ 1068:                 }
+ 1069:                 continue;
+ 1070:             }
+ 1071: 
+ 1072:             if (IsControlTransfer(raw))
+ 1073:             {
+ 1074:                 continue;
+ 1075:             }
+ 1076: 
+ 1077:             const uint32_t nextTracked = PropagateTrackedGprs(raw, state.trackedGprs);
+
+--- Lines 1082-1108; symbols: OPCODE_ADDI ---
+ 1082:     }
+ 1083: 
+ 1084:     bool TryCompleteCodeAddress(uint32_t raw,
+ 1085:                                 uint32_t upperValue,
+ 1086:                                 uint32_t upperAliases,
+ 1087:                                 uint32_t &outTarget,
+ 1088:                                 uint32_t &outValueReg)
+ 1089:     {
+ 1090:         const uint32_t opcode = OPCODE(raw);
+ 1091:         const uint32_t rs = RS(raw);
+ 1092:         if ((opcode != OPCODE_ADDIU && opcode != OPCODE_DADDIU && opcode != OPCODE_ORI) || (upperAliases & (1u << rs)) == 0)
+ 1093:         {
+ 1094:             return false;
+ 1095:         }
+ 1096: 
+ 1097:         const uint16_t immediate = static_cast<uint16_t>(IMMEDIATE(raw));
+ 1098:         outTarget = opcode == OPCODE_ORI
+ 1099:                         ? upperValue | static_cast<uint32_t>(immediate)
+ 1100:                         : upperValue + static_cast<uint32_t>(static_cast<int32_t>(static_cast<int16_t>(immediate)));
+ 1101:         outValueReg = RT(raw);
+ 1102:         return true;
+ 1103:     }
+ 1104: 
+ 1105:     bool TryLoadCodeAddressFromInitializedData(
+ 1106:         const std::vector<ps2recomp::Section> &sections,
+ 1107:         uint32_t raw,
+ 1108:         uint32_t upperValue,
+
+--- Lines 1260-1286; symbols: SPECIAL_JR ---
+ 1260:                             if (TryGetDirectJumpTargetOffset(
+ 1261:                                     section,
+ 1262:                                     offset - MIPS_INSTRUCTION_SIZE,
+ 1263:                                     predecessorRaw,
+ 1264:                                     targetOffset))
+ 1265:                             {
+ 1266:                                 enqueue(targetOffset, initialAliases);
+ 1267:                             }
+ 1268:                             startsAfterPredecessorTransfer = true;
+ 1269:                         }
+ 1270:                         else if (IsCallInstruction(predecessorRaw) || (OPCODE(predecessorRaw) == OPCODE_SPECIAL && FUNCTION(predecessorRaw) == SPECIAL_JR))
+ 1271:                         {
+ 1272:                             // The LUI ran in a call/jump delay slot. An incomplete
+ 1273:                             // address cannot survive through an unknown callee or
+ 1274:                             // indirect target in a caller-saved register.
+ 1275:                             startsAfterPredecessorTransfer = true;
+ 1276:                         }
+ 1277:                     }
+ 1278:                 }
+ 1279:                 if (!startsAfterPredecessorTransfer)
+ 1280:                 {
+ 1281:                     enqueue(offset + MIPS_INSTRUCTION_SIZE, initialAliases);
+ 1282:                 }
+ 1283: 
+ 1284:                 while (!worklist.empty())
+ 1285:                 {
+ 1286:                     const TrackedGprState state = worklist.back();
+
+--- Lines 1451-1477; symbols: SPECIAL_JR ---
+ 1451:             };
+ 1452:             const auto lookbackBegin = [](uint32_t index, uint32_t words)
+ 1453:             {
+ 1454:                 return index > words ? index - words : 0u;
+ 1455:             };
+ 1456: 
+ 1457:             const uint32_t wordCount = section.size / MIPS_INSTRUCTION_SIZE;
+ 1458:             for (uint32_t jrIndex = 1; jrIndex < wordCount; ++jrIndex)
+ 1459:             {
+ 1460:                 const uint32_t jrRaw = wordAt(jrIndex);
+ 1461:                 if (OPCODE(jrRaw) != OPCODE_SPECIAL || FUNCTION(jrRaw) != SPECIAL_JR || RS(jrRaw) == GPR_RA)
+ 1462:                 {
+ 1463:                     continue;
+ 1464:                 }
+ 1465: 
+ 1466:                 const uint32_t targetReg = RS(jrRaw);
+ 1467:                 uint32_t loadIndex = jrIndex;
+ 1468:                 for (uint32_t i = jrIndex; i-- > lookbackBegin(jrIndex, kLoadLookbackWords);)
+ 1469:                 {
+ 1470:                     const uint32_t raw = wordAt(i);
+ 1471:                     if ((OPCODE(raw) == OPCODE_LW || OPCODE(raw) == OPCODE_LWU) && RT(raw) == targetReg)
+ 1472:                     {
+ 1473:                         loadIndex = i;
+ 1474:                         break;
+ 1475:                     }
+ 1476:                 }
+ 1477:                 if (loadIndex == jrIndex)
+
+--- Lines 1513-1539; symbols: OPCODE_ADDI ---
+ 1513:                     }
+ 1514: 
+ 1515:                     uint32_t low = 0;
+ 1516:                     for (uint32_t j = i + 1; j < addIndex; ++j)
+ 1517:                     {
+ 1518:                         const uint32_t lowRaw = wordAt(j);
+ 1519:                         if (RS(lowRaw) != upperReg || RT(lowRaw) != upperReg)
+ 1520:                         {
+ 1521:                             continue;
+ 1522:                         }
+ 1523:                         if (OPCODE(lowRaw) == OPCODE_ADDIU)
+ 1524:                         {
+ 1525:                             low = static_cast<uint32_t>(SIMMEDIATE(lowRaw));
+ 1526:                         }
+ 1527:                         else if (OPCODE(lowRaw) == OPCODE_ORI)
+ 1528:                         {
+ 1529:                             low = IMMEDIATE(lowRaw);
+ 1530:                         }
+ 1531:                     }
+ 1532:                     // The low half may instead be folded into the load offset.
+ 1533:                     tableAddress = (IMMEDIATE(raw) << 16) + low + static_cast<uint32_t>(SIMMEDIATE(loadRaw));
+ 1534:                     foundTable = true;
+ 1535:                     break;
+ 1536:                 }
+ 1537:                 if (!foundTable)
+ 1538:                 {
+ 1539:                     continue;
+
+--- Lines 1608-1636; symbols: OPCODE_BEQ, SPECIAL_JR ---
+ 1608:             return true;
+ 1609:         }
+ 1610: 
+ 1611:         uint32_t raw = 0;
+ 1612:         if (!ReadSectionWord(*section, offset - 2u * MIPS_INSTRUCTION_SIZE, raw))
+ 1613:         {
+ 1614:             return false;
+ 1615:         }
+ 1616: 
+ 1617:         const uint32_t opcode = OPCODE(raw);
+ 1618:         const bool isJr = opcode == OPCODE_SPECIAL && FUNCTION(raw) == SPECIAL_JR;
+ 1619:         const bool isJ = opcode == OPCODE_J;
+ 1620:         const bool isUnconditionalBranch = opcode == OPCODE_BEQ && RS(raw) == GPR_ZERO && RT(raw) == GPR_ZERO;
+ 1621:         return isJr || isJ || isUnconditionalBranch;
+ 1622:     }
+ 1623: 
+ 1624:     void ScanDataFunctionPointerTables(const std::vector<ps2recomp::Section> &sections, std::unordered_set<uint32_t> &starts,
+ 1625:                                        const std::unordered_set<uint32_t> &switchJumpTableWords)
+ 1626:     {
+ 1627:         struct PointerCandidate
+ 1628:         {
+ 1629:             uint32_t sourceOffset;
+ 1630:             uint32_t target;
+ 1631:             bool hasConservativeShape;
+ 1632:         };
+ 1633: 
+ 1634:         constexpr uint32_t kClusterDistanceBytes = 32;
+ 1635: 
+ 1636:         for (const auto &section : sections)
+
+--- Lines 1861-1887; symbols: SPECIAL_JR ---
+ 1861: 
+ 1862:                 uint32_t previousRaw = 0;
+ 1863:                 uint32_t candidateRaw = 0;
+ 1864:                 if (!ReadSectionWord(section, offset - kLeafThunkBytes, previousRaw) || !ReadSectionWord(section, offset, candidateRaw))
+ 1865:                 {
+ 1866:                     continue;
+ 1867:                 }
+ 1868: 
+ 1869:                 const auto isReturn = [](uint32_t raw)
+ 1870:                 {
+ 1871:                     return OPCODE(raw) == OPCODE_SPECIAL && FUNCTION(raw) == SPECIAL_JR && RS(raw) == GPR_RA;
+ 1872:                 };
+ 1873: 
+ 1874:                 if (isReturn(previousRaw) && isReturn(candidateRaw))
+ 1875:                 {
+ 1876:                     starts.insert(section.address + offset);
+ 1877:                 }
+ 1878:             }
+ 1879:         }
+ 1880:     }
+ 1881: 
+ 1882:     void ScanFunctionStartsFallback(ps2recomp::ElfParser *parser, std::vector<ps2recomp::Function> &outFunctions)
+ 1883:     {
+ 1884:         std::unordered_set<uint32_t> starts;
+ 1885:         starts.reserve(4096);
+ 1886: 
+ 1887:         const uint32_t entry = parser->getEntryPoint();
+
+------------------------------------------------------------
+FILE: ps2xRecomp\src\lib\gif_dma_kick_analyzer.cpp
+Symbol matches: 3
+
+--- Lines 33-59; symbols: SPECIAL_JR ---
+   33:         std::string gifDmaKickTempName(uint32_t address, size_t slot)
+   34:         {
+   35:             std::ostringstream ss;
+   36:             ss << "gifDmaKickValue_" << std::hex << address << "_" << std::dec << slot;
+   37:             return ss.str();
+   38:         }
+   39: 
+   40:         bool isReturnWithDelaySlot(const Instruction &inst)
+   41:         {
+   42:             return inst.opcode == OPCODE_SPECIAL &&
+   43:                    inst.function == SPECIAL_JR &&
+   44:                    inst.rs == 31u &&
+   45:                    inst.hasDelaySlot;
+   46:         }
+   47: 
+   48:         bool tryMatchGifDmaStore(size_t instructionIndex,
+   49:                                  const Instruction &inst,
+   50:                                  const MemoryAccessHint &hint,
+   51:                                  const ConstantRegisterState &constants,
+   52:                                  uint32_t target,
+   53:                                  size_t slot,
+   54:                                  GifDmaKickPlan &plan)
+   55:         {
+   56:             if (inst.opcode != OPCODE_SW || !hint.hasAddress || hint.address != target)
+   57:                 return false;
+   58: 
+   59:             plan.storeIndices[slot] = instructionIndex;
+
+--- Lines 184-210; symbols: OPCODE_ADDI ---
+  184:         {
+  185:         case OPCODE_LUI:
+  186:             constants.write(inst.rt, inst.immediate << 16);
+  187:             return;
+  188:         case OPCODE_ORI:
+  189:             if (constants.read(inst.rs, lhs))
+  190:                 constants.write(inst.rt, lhs | (inst.immediate & 0xFFFFu));
+  191:             else
+  192:                 constants.invalidate(inst.rt);
+  193:             return;
+  194:         case OPCODE_ADDIU:
+  195:             if (constants.read(inst.rs, lhs))
+  196:                 constants.write(inst.rt, add32(lhs, inst.simmediate));
+  197:             else
+  198:                 constants.invalidate(inst.rt);
+  199:             return;
+  200:         case OPCODE_ANDI:
+  201:             if (constants.read(inst.rs, lhs))
+  202:                 constants.write(inst.rt, lhs & (inst.immediate & 0xFFFFu));
+  203:             else
+  204:                 constants.invalidate(inst.rt);
+  205:             return;
+  206:         case OPCODE_XORI:
+  207:             if (constants.read(inst.rs, lhs))
+  208:                 constants.write(inst.rt, lhs ^ (inst.immediate & 0xFFFFu));
+  209:             else
+  210:                 constants.invalidate(inst.rt);
+
+--- Lines 356-374; symbols: isBranch ---
+  356:                 if (!tryMatchGifDmaStore(delayIndex, delayInst, delayHint, scanConstants, kTargets[matched], matched, plan))
+  357:                     return {};
+  358: 
+  359:                 plan.valid = true;
+  360:                 plan.completesInDelaySlot = true;
+  361:                 plan.branchIndex = j;
+  362:                 plan.endIndex = delayIndex;
+  363:                 return plan;
+  364:             }
+  365: 
+  366:             if (inst.hasDelaySlot || inst.isBranch || inst.isJump || inst.modificationInfo.modifiesControl)
+  367:                 return {};
+  368: 
+  369:             updateConstantRegisters(inst, scanConstants);
+  370:         }
+  371: 
+  372:         return {};
+  373:     }
+  374: }
+
+------------------------------------------------------------
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+Symbol matches: 5
+
+--- Lines 143-180; symbols: OPCODE_ADDI, translateVUInstruction ---
+  143:         {
+  144:         case OPCODE_SPECIAL:
+  145:             return m_codeGenerator.translateSpecialInstruction(inst);
+  146:         case OPCODE_REGIMM:
+  147:             return m_codeGenerator.translateRegimmInstruction(inst);
+  148:         case OPCODE_COP0:
+  149:             return m_codeGenerator.translateCOP0Instruction(inst);
+  150:         case OPCODE_COP1:
+  151:             return m_codeGenerator.translateFPUInstruction(inst);
+  152:         case OPCODE_COP2:
+  153:             return m_codeGenerator.translateVUInstruction(inst);
+  154:         case OPCODE_ADDI:
+  155:             if (inst.rt == 0)
+  156:                 return "// NOP (addi to $zero)";
+  157:             return fmt::format(
+  158:                 "{{ uint32_t tmp; bool ov; "
+  159:                 "ADD32_OV(GPR_U32(ctx, {}), (int32_t){}, tmp, ov); "
+  160:                 "if (ov) runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+  161:                 "else SET_GPR_S32(ctx, {}, (int32_t)tmp); }}",
+  162:                 inst.rs, inst.simmediate, inst.rt);
+  163: 
+  164:         case OPCODE_ADDIU:
+  165:             if (inst.rt == 0)
+  166:                 return "// NOP (addiu $zero, ...)";
+  167:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ADD32(GPR_U32(ctx, {}), {}));", inst.rt, inst.rs, inst.simmediate);
+  168:         case OPCODE_SLTI:
+  169:             return fmt::format("SET_GPR_U64(ctx, {}, ((int64_t)GPR_S64(ctx, {}) < (int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+  170:         case OPCODE_SLTIU:
+  171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+  172:         case OPCODE_ANDI:
+  173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  174:         case OPCODE_ORI:
+  175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  176:         case OPCODE_XORI:
+  177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  178:         case OPCODE_LUI:
+  179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+  180:         case OPCODE_LB:
+
+--- Lines 224-254; symbols: OPCODE_BEQ ---
+  224:                 "else SET_GPR_S64(ctx, {}, res); }}",
+  225:                 inst.rs, inst.simmediate, inst.rt);
+  226:         case OPCODE_DADDIU:
+  227:             return fmt::format(
+  228:                 "SET_GPR_S64(ctx, {}, (int64_t)GPR_S64(ctx, {}) + (int64_t)(int32_t){});",
+  229:                 inst.rt, inst.rs, inst.simmediate);
+  230:         case OPCODE_J:
+  231:             return fmt::format("// J 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+  232:         case OPCODE_JAL:
+  233:             return fmt::format("// JAL 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+  234:         case OPCODE_BEQ:
+  235:         case OPCODE_BNE:
+  236:         case OPCODE_BLEZ:
+  237:         case OPCODE_BGTZ:
+  238:         case OPCODE_BEQL:
+  239:         case OPCODE_BNEL:
+  240:         case OPCODE_BLEZL:
+  241:         case OPCODE_BGTZL:
+  242:             return fmt::format("// Likely branch instruction at 0x{:X} - Handled by branch logic", inst.address);
+  243: 
+  244:         case OPCODE_LDL:
+  245:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+  246:                                "uint32_t aligned_addr = addr & ~7u; "
+  247:                                "uint32_t offset = addr & 7u; "
+  248:                                "uint64_t mem = {}; "
+  249:                                "uint32_t shift = (7u - offset) << 3; "
+  250:                                "uint64_t keepMask = (shift == 0) ? 0ull : ((1ull << shift) - 1ull); "
+  251:                                "SET_GPR_U64(ctx, {}, (GPR_U64(ctx, {}) & keepMask) | (mem << shift)); }}",
+  252:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, inst.rt);
+  253: 
+  254:         case OPCODE_LDR:
+
+------------------------------------------------------------
+FILE: ps2xRecomp\src\lib\ps2_recompiler.cpp
+Symbol matches: 3
+
+--- Lines 322-348; symbols: SPECIAL_JR ---
+  322:                         continue;
+  323:                     }
+  324:                     return section.address + section.size;
+  325:                 }
+  326:                 return std::nullopt;
+  327:             };
+  328: 
+  329:             auto isSimpleReturnThunkStart = [](const Instruction &inst) -> bool
+  330:             {
+  331:                 return inst.opcode == OPCODE_SPECIAL &&
+  332:                        inst.function == SPECIAL_JR &&
+  333:                        inst.rs == 31;
+  334:             };
+  335: 
+  336:             auto findContainingFunction = [&](uint32_t address) -> const Function *
+  337:             {
+  338:                 const Function *best = nullptr;
+  339:                 for (const auto &function : functions)
+  340:                 {
+  341:                     if (address < function.start || address >= function.end)
+  342:                     {
+  343:                         continue;
+  344:                     }
+  345: 
+  346:                     if (!function.isRecompiled || function.isStub || function.isSkipped)
+  347:                     {
+  348:                         continue;
+
+--- Lines 831-859; symbols: OPCODE_BEQ, SPECIAL_JR ---
+  831:     // through the owning function instead of leaving the thread dormant on a missing target.
+  832:     size_t collectPostTransferEntryTargetsImpl(
+  833:         const std::vector<Function> &functions,
+  834:         const std::unordered_map<uint32_t, std::vector<Instruction>> &decodedFunctions,
+  835:         std::unordered_map<uint32_t, std::vector<uint32_t>> &targetsByOwner)
+  836:     {
+  837:         const auto isUnconditionalTransfer = [](const Instruction &inst)
+  838:         {
+  839:             if (!inst.hasDelaySlot)
+  840:                 return false;
+  841:             const bool jumpRegister = inst.opcode == OPCODE_SPECIAL && inst.function == SPECIAL_JR;
+  842:             const bool jumpAbsolute = inst.opcode == OPCODE_J;
+  843:             const bool branchAlways = inst.opcode == OPCODE_BEQ && inst.rs == 0u && inst.rt == 0u;
+  844:             return jumpRegister || jumpAbsolute || branchAlways;
+  845:         };
+  846: 
+  847:         size_t addedCount = 0u;
+  848:         for (const auto &function : functions)
+  849:         {
+  850:             if (!function.isRecompiled || function.isStub || function.isSkipped)
+  851:                 continue;
+  852:             const auto decodedIt = decodedFunctions.find(function.start);
+  853:             if (decodedIt == decodedFunctions.end())
+  854:                 continue;
+  855:             const auto &instructions = decodedIt->second;
+  856:             std::vector<uint32_t> *targets = nullptr;
+  857:             for (size_t i = 0; i + 2 < instructions.size(); ++i)
+  858:             {
+  859:                 if (!isUnconditionalTransfer(instructions[i]))
+
+------------------------------------------------------------
+FILE: ps2xRecomp\src\lib\r5900_decoder.cpp
+Symbol matches: 22
+
+--- Lines 60-86; symbols: isBranch ---
+   60:         inst.rt = RT(rawInstruction);
+   61:         inst.rd = RD(rawInstruction);
+   62:         inst.sa = SA(rawInstruction);
+   63:         inst.function = FUNCTION(rawInstruction);
+   64:         inst.immediate = IMMEDIATE(rawInstruction);
+   65:         inst.simmediate = SIMMEDIATE(rawInstruction);
+   66:         inst.target = TARGET(rawInstruction);
+   67: 
+   68:         inst.isMMI = false;
+   69:         inst.isVU = false;
+   70:         inst.isBranch = false;
+   71:         inst.isJump = false;
+   72:         inst.isCall = false;
+   73:         inst.isReturn = false;
+   74:         inst.hasDelaySlot = false;
+   75:         inst.isMultimedia = false;
+   76:         inst.isLoad = false;
+   77:         inst.isStore = false;
+   78:         inst.isMmio = false;
+   79: 
+   80:         // Initialize the enhanced fields
+   81:         inst.mmiType = 0;
+   82:         inst.mmiFunction = 0;
+   83:         inst.pmfhlVariation = 0;
+   84:         inst.vuFunction = 0;
+   85:         inst.mmioAddress = 0;
+   86: 
+
+--- Lines 97-123; symbols: isBranch ---
+   97:         inst.modificationInfo.modifiesVIC = false;
+   98:         inst.modificationInfo.modifiesMemory = false;
+   99:         inst.modificationInfo.modifiesControl = false;
+  100: 
+  101:         RabbitizerInstruction rabbitizerInst;
+  102:         RabbitizerInstructionR5900_init(&rabbitizerInst, rawInstruction, address);
+  103:         RabbitizerInstructionR5900_processUniqueId(&rabbitizerInst);
+  104: 
+  105:         const RabbitizerInstrDescriptor *desc = rabbitizerInst.descriptor;
+  106: 
+  107:         inst.isBranch = RabbitizerInstrDescriptor_isBranch(desc);
+  108:         inst.isJump = RabbitizerInstrDescriptor_isJump(desc);
+  109:         inst.isCall = RabbitizerInstruction_isFunctionCall(&rabbitizerInst);
+  110:         inst.isReturn = RabbitizerInstruction_isReturn(&rabbitizerInst) ||
+  111:                         rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret;
+  112:         inst.hasDelaySlot = RabbitizerInstruction_hasDelaySlot(&rabbitizerInst);
+  113: 
+  114:         inst.isLoad = RabbitizerInstrDescriptor_doesLoad(desc);
+  115:         inst.isStore = RabbitizerInstrDescriptor_doesStore(desc);
+  116: 
+  117:         inst.isMMI = inst.opcode == OPCODE_MMI;
+  118:         inst.isVU = inst.opcode == OPCODE_COP2 ||
+  119:                     inst.opcode == OPCODE_LWC2 ||
+  120:                     inst.opcode == OPCODE_LDC2 ||
+  121:                     inst.opcode == OPCODE_SWC2 ||
+  122:                     inst.opcode == OPCODE_SDC2;
+  123: 
+
+--- Lines 138-164; symbols: isBranch ---
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+  141:         inst.modificationInfo.modifiesGPR = modifiesGpr;
+  142: 
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  145:                                             RabbitizerInstrDescriptor_modifiesFd(desc);
+  146: 
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  148:         inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+  149:                                                 RabbitizerInstrDescriptor_isJump(desc) ||
+  150:                                                 RabbitizerInstrDescriptor_isTrap(desc) ||
+  151:                                                 RabbitizerInstrDescriptor_modifiesHI(desc) ||
+  152:                                                 RabbitizerInstrDescriptor_modifiesLO(desc);
+  153: 
+  154:         if (rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret)
+  155:         {
+  156:             inst.isReturn = true;
+  157:             inst.hasDelaySlot = false;
+  158:             inst.modificationInfo.modifiesControl = true;
+  159:         }
+  160: 
+  161:         if (inst.opcode == OPCODE_LL || inst.opcode == OPCODE_LLD)
+  162:         {
+  163:             inst.isLoad = true;
+  164:             inst.modificationInfo.modifiesControl = true;
+
+--- Lines 173-219; symbols: decodeCOP2, decodeSPECIAL ---
+  173:             inst.isStore = true;
+  174:             inst.modificationInfo.modifiesControl = true;
+  175:             if (inst.rt != 0)
+  176:             {
+  177:                 inst.modificationInfo.modifiesGPR = true; // success flag to rt
+  178:             }
+  179:         }
+  180: 
+  181:         if (inst.opcode == OPCODE_COP2)
+  182:         {
+  183:             decodeCOP2(inst);
+  184:         }
+  185:         else if (inst.opcode == OPCODE_LWC2 || inst.opcode == OPCODE_LDC2)
+  186:         {
+  187:             inst.isVU = true;
+  188:             inst.modificationInfo.modifiesVFR = true;
+  189:         }
+  190:         else if (inst.opcode == OPCODE_SWC2 || inst.opcode == OPCODE_SDC2)
+  191:         {
+  192:             inst.isVU = true;
+  193:             inst.modificationInfo.modifiesMemory = true;
+  194:         }
+  195: 
+  196:         if (inst.opcode == OPCODE_LQ || inst.opcode == OPCODE_SQ)
+  197:         {
+  198:             inst.isMultimedia = true;
+  199:         }
+  200: 
+  201:         if (inst.opcode == OPCODE_SPECIAL)
+  202:         {
+  203:             decodeSpecial(inst);
+  204:         }
+  205:         else if (inst.opcode == OPCODE_MMI)
+  206:         {
+  207:             decodeMMI(inst);
+  208:         }
+  209: 
+  210:         if (inst.isMMI || inst.isVU)
+  211:         {
+  212:             inst.isMultimedia = true;
+  213:             inst.vectorInfo.isVector = inst.isVU; // Only VU ops are truly vector
+  214:         }
+  215: 
+  216:         if (includeDisassembly)
+  217:         {
+  218:             inst.disassembly = disassembleRabbitizerInstruction(rabbitizerInst);
+  219:         }
+
+--- Lines 226-290; symbols: decodeSPECIAL, isBranch, SPECIAL_JALR, SPECIAL_JR ---
+  226:     void R5900Decoder::decodeRType(Instruction &inst) const
+  227:     {
+  228:         // R-type instructions already have all fields set correctly
+  229:         if (inst.rd != 0)
+  230:             inst.modificationInfo.modifiesGPR = true;
+  231:     }
+  232: 
+  233:     void R5900Decoder::decodeIType(Instruction &inst) const
+  234:     {
+  235:         // I-type instructions already have all fields set correctly
+  236:         if (!inst.isStore && !inst.isBranch && inst.rt != 0)
+  237:         {
+  238:             inst.modificationInfo.modifiesGPR = true;
+  239:         }
+  240:     }
+  241: 
+  242:     void R5900Decoder::decodeJType(Instruction &inst) const
+  243:     {
+  244:         // J-type instructions already have all fields set correctly
+  245:         inst.isJump = true;
+  246:         inst.hasDelaySlot = true;
+  247:         inst.modificationInfo.modifiesControl = true; // PC
+  248:         if (inst.opcode == OPCODE_JAL)
+  249:         {
+  250:             inst.isCall = true;
+  251:             inst.modificationInfo.modifiesGPR = true; // $ra (r[31])
+  252:         }
+  253:     }
+  254: 
+  255:     void R5900Decoder::decodeSpecial(Instruction &inst) const
+  256:     {
+  257:         if (inst.rd != 0)
+  258:             inst.modificationInfo.modifiesGPR = true;
+  259: 
+  260:         switch (inst.function)
+  261:         {
+  262:         case SPECIAL_JR:
+  263:             inst.isJump = true;
+  264:             inst.hasDelaySlot = true;
+  265:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify GPR itself
+  266:             inst.modificationInfo.modifiesControl = true; // PC
+  267:             if (inst.rs == 31)
+  268:             {
+  269:                 // jr $ra is typically a return
+  270:                 inst.isReturn = true;
+  271:             }
+  272:             break;
+  273: 
+  274:         case SPECIAL_JALR:
+  275:             inst.isJump = true;
+  276:             inst.isCall = true;
+  277:             inst.hasDelaySlot = true;
+  278:             if (inst.rd == 0)
+  279:                 inst.modificationInfo.modifiesGPR = false; // JALR $zero, $rs is like JR $rs
+  280:             else
+  281:                 inst.modificationInfo.modifiesGPR = true;
+  282:             inst.modificationInfo.modifiesControl = true; // PC
+  283:             break;
+  284: 
+  285:         case SPECIAL_SYSCALL:
+  286:         case SPECIAL_BREAK:
+  287:             // Special handling for syscall/break
+  288:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+  289:             inst.modificationInfo.modifiesControl = true; // Changes control flow, potentially registers via handler
+  290:             break;
+
+--- Lines 399-435; symbols: isBranch ---
+  399:     {
+  400:         uint32_t rt = inst.rt;
+  401: 
+  402:         switch (rt)
+  403:         {
+  404:         case REGIMM_BLTZ:
+  405:         case REGIMM_BGEZ:
+  406:         case REGIMM_BLTZL:
+  407:         case REGIMM_BGEZL:
+  408:             // Branches
+  409:             inst.isBranch = true;
+  410:             inst.hasDelaySlot = true;
+  411:             inst.modificationInfo.modifiesControl = true; // PC potentially
+  412:             break;
+  413: 
+  414:         case REGIMM_BLTZAL:
+  415:         case REGIMM_BGEZAL:
+  416:         case REGIMM_BLTZALL:
+  417:         case REGIMM_BGEZALL:
+  418:             // Branch and Link
+  419:             inst.isBranch = true;
+  420:             inst.isCall = true;
+  421:             inst.hasDelaySlot = true;
+  422:             inst.modificationInfo.modifiesGPR = true;     // $ra (r[31])
+  423:             inst.modificationInfo.modifiesControl = true; // PC
+  424:             break;
+  425: 
+  426:         case REGIMM_TGEI:
+  427:         case REGIMM_TGEIU:
+  428:         case REGIMM_TLTI:
+  429:         case REGIMM_TLTIU:
+  430:         case REGIMM_TEQI:
+  431:         case REGIMM_TNEI:
+  432:             // Trap Instructions
+  433:             inst.modificationInfo.modifiesControl = true;
+  434:             break;
+  435: 
+
+--- Lines 787-862; symbols: COP2_QMFC2, COP2_QMTC2, decodeCOP2, isBranch ---
+  787:         {
+  788:             inst.modificationInfo.modifiesGPR = true;
+  789:         }
+  790:         else if (format == COP0_CO && inst.function == COP0_CO_ERET)
+  791:         {
+  792:             inst.isReturn = true;
+  793:             inst.hasDelaySlot = false;
+  794:         } // ERET is special
+  795:         else if (format == COP0_BC)
+  796:         {
+  797:             inst.isBranch = true;
+  798:             inst.hasDelaySlot = true;
+  799:         }
+  800:     }
+  801: 
+  802:     void R5900Decoder::decodeCOP1(Instruction &inst) const
+  803:     {
+  804:         uint8_t format = inst.rs;
+  805:         if (format == COP1_MF || format == COP1_CF)
+  806:         {
+  807:             if (inst.rt != 0)
+  808:                 inst.modificationInfo.modifiesGPR = true;
+  809:         }
+  810:         else if (format == COP1_BC)
+  811:         {
+  812:             inst.isBranch = true;
+  813:             inst.hasDelaySlot = true;
+  814:             inst.modificationInfo.modifiesControl = true;
+  815:         }
+  816:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  817:         {
+  818:             inst.modificationInfo.modifiesFPR = true;
+  819:         }
+  820:         if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  821:         {
+  822:             inst.modificationInfo.modifiesControl = true;
+  823:         } // FCR31
+  824:     }
+  825: 
+  826:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  827:     {
+  828:         uint8_t format = inst.rs;
+  829:         inst.isVU = true;
+  830:         inst.isMultimedia = true;
+  831: 
+  832:         switch (format)
+  833:         {
+  834:         case COP2_QMFC2:
+  835:         case COP2_CFC2:
+  836:             if (inst.rt != 0)
+  837:                 inst.modificationInfo.modifiesGPR = true;
+  838:             break;
+  839:         case COP2_QMTC2:
+  840:             inst.modificationInfo.modifiesVFR = true;
+  841:             break; // Modifies VU state
+  842:         case COP2_CTC2:
+  843:             inst.modificationInfo.modifiesControl = true;
+  844:             break; // Modifies VU control state
+  845:         case COP2_BC:
+  846:             inst.isBranch = true;
+  847:             inst.hasDelaySlot = true;
+  848:             inst.modificationInfo.modifiesControl = true;
+  849:             break;
+  850:         case COP2_CO: // VU Macro instructions (format >= 0x10)
+  851:         case COP2_CO + 1:
+  852:         case COP2_CO + 2:
+  853:         case COP2_CO + 3:
+  854:         case COP2_CO + 4:
+  855:         case COP2_CO + 5:
+  856:         case COP2_CO + 6:
+  857:         case COP2_CO + 7:
+  858:         case COP2_CO + 8:
+  859:         case COP2_CO + 9:
+  860:         case COP2_CO + 10:
+  861:         case COP2_CO + 11:
+  862:         case COP2_CO + 12:
+
+--- Lines 975-1003; symbols: isBranch ---
+  975:             break;
+  976:         case PMFHL_SH:
+  977:             inst.pmfhlVariation = PMFHL_SH;
+  978:             break;
+  979:         default:
+  980:             inst.pmfhlVariation = 0xFF;
+  981:             break;
+  982:         }
+  983:     }
+  984: 
+  985:     bool R5900Decoder::isBranchInstruction(const Instruction &inst) const
+  986:     {
+  987:         return inst.isBranch;
+  988:     }
+  989: 
+  990:     bool R5900Decoder::isJumpInstruction(const Instruction &inst) const
+  991:     {
+  992:         return inst.isJump;
+  993:     }
+  994: 
+  995:     bool R5900Decoder::isCallInstruction(const Instruction &inst) const
+  996:     {
+  997:         return inst.isCall;
+  998:     }
+  999: 
+ 1000:     bool R5900Decoder::isReturnInstruction(const Instruction &inst) const
+ 1001:     {
+ 1002:         return inst.isReturn;
+ 1003:     }
+
+--- Lines 1022-1065; symbols: isBranch, SPECIAL_JALR, SPECIAL_JR ---
+ 1022:         return inst.isLoad;
+ 1023:     }
+ 1024: 
+ 1025:     bool R5900Decoder::hasDelaySlot(const Instruction &inst) const
+ 1026:     {
+ 1027:         return inst.hasDelaySlot;
+ 1028:     }
+ 1029: 
+ 1030:     uint32_t R5900Decoder::getBranchTarget(const Instruction &inst) const
+ 1031:     {
+ 1032:         if (!inst.isBranch)
+ 1033:         {
+ 1034:             return 0;
+ 1035:         }
+ 1036: 
+ 1037:         int32_t offset = inst.simmediate << 2;
+ 1038:         return inst.address + 4 + offset;
+ 1039:     }
+ 1040: 
+ 1041:     uint32_t R5900Decoder::getJumpTarget(const Instruction &inst) const
+ 1042:     {
+ 1043:         if (!inst.isJump)
+ 1044:         {
+ 1045:             return 0;
+ 1046:         }
+ 1047: 
+ 1048:         if (inst.opcode == OPCODE_SPECIAL &&
+ 1049:             (inst.function == SPECIAL_JR || inst.function == SPECIAL_JALR))
+ 1050:         {
+ 1051:             // JR/JALR: target is in the rs register (can't be determined statically)
+ 1052:             return 0;
+ 1053:         }
+ 1054: 
+ 1055:         if (inst.opcode == OPCODE_J || inst.opcode == OPCODE_JAL)
+ 1056:         {
+ 1057:             // J/JAL: target is in the lower 26 bits, shifted left by 2
+ 1058:             // and combined with the upper 4 bits of PC + 4
+ 1059:             uint32_t pc_upper = (inst.address + 4) & 0xF0000000;
+ 1060:             return pc_upper | (inst.target << 2);
+ 1061:         }
+ 1062: 
+ 1063:         return 0;
+ 1064:     }
+ 1065: 
+
+------------------------------------------------------------
+FILE: ps2xRecomp\src\lib\special_translator.cpp
+Symbol matches: 2
+
+--- Lines 29-57; symbols: SPECIAL_JALR, SPECIAL_JR ---
+   29:         case SPECIAL_SRL:
+   30:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)SRL32(GPR_U32(ctx, {}), {}));", inst.rd, inst.rt, inst.sa);
+   31:         case SPECIAL_SRA:
+   32:             return fmt::format("SET_GPR_S32(ctx, {}, SRA32(GPR_S32(ctx, {}), {}));", inst.rd, inst.rt, inst.sa);
+   33:         case SPECIAL_SLLV:
+   34:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)SLL32(GPR_U32(ctx, {}), GPR_U32(ctx, {}) & 0x1F));", inst.rd, inst.rt, inst.rs);
+   35:         case SPECIAL_SRLV:
+   36:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)SRL32(GPR_U32(ctx, {}), GPR_U32(ctx, {}) & 0x1F));", inst.rd, inst.rt, inst.rs);
+   37:         case SPECIAL_SRAV:
+   38:             return fmt::format("SET_GPR_S32(ctx, {}, SRA32(GPR_S32(ctx, {}), GPR_U32(ctx, {}) & 0x1F));", inst.rd, inst.rt, inst.rs);
+   39:         case SPECIAL_JR:
+   40:             return fmt::format("// JR ${} - Handled by branch logic", inst.rs);
+   41:         case SPECIAL_JALR:
+   42:             return fmt::format("// JALR ${}, ${} - Handled by branch logic", inst.rd, inst.rs);
+   43:         case SPECIAL_SYSCALL:
+   44:             return fmt::format("ctx->pc = 0x{:X}u;\nruntime->handleSyscall(rdram, ctx, 0x{:X}u);",
+   45:                                inst.address + 4u,
+   46:                                (inst.raw >> 6) & 0xFFFFFu);
+   47:         case SPECIAL_BREAK:
+   48:             return fmt::format("runtime->handleBreak(rdram, ctx);");
+   49:         case SPECIAL_SYNC:
+   50:             return "// SYNC instruction - memory barrier\n// In recompiled code, we don't need explicit memory barriers";
+   51:         case SPECIAL_MFHI:
+   52:             return fmt::format("SET_GPR_U64(ctx, {}, ctx->hi);", inst.rd);
+   53:         case SPECIAL_MTHI:
+   54:             return fmt::format("ctx->hi = GPR_U64(ctx, {});", inst.rs);
+   55:         case SPECIAL_MFLO:
+   56:             return fmt::format("SET_GPR_U64(ctx, {}, ctx->lo);", inst.rd);
+   57:         case SPECIAL_MTLO:
+
+------------------------------------------------------------
+FILE: ps2xRecomp\src\lib\vu_translator.cpp
+Symbol matches: 2
+
+--- Lines 18-44; symbols: COP2_QMFC2 ---
+   18: 
+   19:     std::string VuTranslator::translate(const Instruction &inst)
+   20:     {
+   21:         uint8_t format = inst.rs; // Use parsed rs field for COP2 format
+   22:         uint8_t rt = inst.rt;
+   23:         uint8_t rd = inst.rd;
+   24:         uint8_t sa = inst.sa;
+   25: 
+   26:         switch (format)
+   27:         {
+   28:         case COP2_QMFC2:
+   29:             return fmt::format("SET_GPR_VEC(ctx, {}, _mm_castps_si128(ctx->vu0_vf[{}]));", rt, rd);
+   30:         case COP2_CFC2:
+   31:         {
+   32:             // CFC2/CTC2 use the same 5-bit register field for VI0..VI15 and the VU special control registers.
+   33:             if (rd < 16)
+   34:             {
+   35:                 return fmt::format("SET_GPR_U32(ctx, {}, static_cast<uint32_t>(ctx->vi[{}]));", rt, rd);
+   36:             }
+   37: 
+   38:             switch (rd)
+   39:             {
+   40:             case VU0_CR_STATUS:
+   41:                 return fmt::format("SET_GPR_U32(ctx, {}, ctx->vu0_status);", rt);
+   42:             case VU0_CR_MAC:
+   43:                 return fmt::format("SET_GPR_U32(ctx, {}, ctx->vu0_mac_flags);", rt);
+   44:             case VU0_CR_CLIP:
+
+--- Lines 56-82; symbols: COP2_QMTC2 ---
+   56:             case VU0_CR_FBRST:
+   57:                 return fmt::format("SET_GPR_U32(ctx, {}, ctx->vu0_fbrst);", rt);
+   58:             case VU0_CR_VPU_STAT:
+   59:                 return fmt::format("SET_GPR_U32(ctx, {}, ctx->vu0_vpu_stat);", rt);
+   60:             case VU0_CR_CMSAR1:
+   61:                 return fmt::format("SET_GPR_U32(ctx, {}, ctx->vu0_cmsar1);", rt);
+   62:             default:
+   63:                 return fmt::format("// Unimplemented CFC2 VU control register: {}", rd);
+   64:             }
+   65:         }
+   66:         case COP2_QMTC2:
+   67:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps(GPR_VEC(ctx, {}));", rd, rt);
+   68:         case COP2_CTC2:
+   69:         {
+   70:             if (rd < 16)
+   71:             {
+   72:                 if (rd == 0)
+   73:                 {
+   74:                     return "// CTC2 write to VI0 ignored";
+   75:                 }
+   76:                 return fmt::format("ctx->vi[{}] = static_cast<uint16_t>(GPR_U32(ctx, {}));", rd, rt);
+   77:             }
+   78: 
+   79:             switch (rd)
+   80:             {
+   81:             case VU0_CR_STATUS:
+   82:                 return fmt::format("ctx->vu0_status = static_cast<uint16_t>(GPR_U32(ctx, {}) & 0xFFFFu);", rt);
+
+============================================================
+TOTALS
+============================================================
+Source files scanned: 44
+Symbol matches: 125
+No source files modified.
