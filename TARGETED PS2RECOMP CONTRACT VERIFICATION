@@ -1,0 +1,3273 @@
+MARK OF KRI — TARGETED PS2RECOMP CONTRACT VERIFICATION
+Generated: 2026-11-24 21:04:01
+Source: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+MODE: READ ONLY
+
+============================================================================
+FILE: ps2xRuntime\include\ps2_runtime.h
+REQUESTED LINES: 1-205
+============================================================================
+TOTAL LINES: 557
+    1: #ifndef PS2_RUNTIME_H
+    2: #define PS2_RUNTIME_H
+    3: 
+    4: #include <cstring>
+    5: #include <cstdint>
+    6: #include <vector>
+    7: #include <string>
+    8: #include <string_view>
+    9: #include <functional>
+   10: #if defined(_MSC_VER)
+   11: #include <intrin.h>
+   12: #elif defined(USE_SSE2NEON)
+   13: #include "sse2neon.h"
+   14: #else
+   15: #include <immintrin.h> // For SSE/AVX instructions
+   16: #include <smmintrin.h> // For SSE4.1 instructions
+   17: #endif
+   18: #include <atomic>
+   19: #include <array>
+   20: #include <mutex>
+   21: #include <filesystem>
+   22: #include <memory>
+   23: #include <unordered_map>
+   24: #include <unordered_set>
+   25: 
+   26: #include "ps2_log.h"
+   27: #include "runtime/ps2_address.h"
+   28: #include "runtime/gs/ps2_gif_arbiter.h"
+   29: #include "runtime/ps2_memory.h"
+   30: #include "runtime/gs/gs_frontend.h"
+   31: #include "runtime/ps2_vu1.h"
+   32: #include "runtime/ps2_audio.h"
+   33: #include "runtime/ps2_pad.h"
+   34: #include "runtime/ps2_rom_device.h"
+   35: #include "runtime/ps2_vfs.h"
+   36: #include "ps2x/iop/iop_types.h"
+   37: 
+   38: namespace ps2x::iop
+   39: {
+   40:     class IopSubsystem;
+   41: }
+   42: 
+   43: class PS2IopHostAdapter;
+   44: class PS2IopTransport;
+   45: class EeScheduler;
+   46: struct EeEvent;
+   47: 
+   48: enum PS2Exception
+   49: {
+   50:     EXCEPTION_TLB_REFILL = 0x02,          // TLB refill/load exception
+   51:     EXCEPTION_ADDRESS_ERROR_LOAD = 0x04,  // Address error on load
+   52:     EXCEPTION_ADDRESS_ERROR_STORE = 0x05, // Address error on store
+   53:     EXCEPTION_SYSCALL = 0x08,             // SYSCALL instruction
+   54:     EXCEPTION_BREAKPOINT = 0x09,          // BREAK instruction
+   55:     EXCEPTION_RESERVED_INSTRUCTION = 0x0A,
+   56:     EXCEPTION_INTEGER_OVERFLOW = 0x0C, // From MIPS spec
+   57:     EXCEPTION_TRAP = 0x0D,             // Trap instruction condition met
+   58: };
+   59: 
+   60: // PS2 CPU context (R5900)
+   61: struct alignas(16) R5900Context
+   62: {
+   63:     // General Purpose Registers (128-bit)
+   64:     __m128i r[32]; // Main registers
+   65: 
+   66:     // Control registers
+   67:     uint32_t pc;         // Program counter
+   68:     uint64_t insn_count; // Instruction counter
+   69:     uint64_t hi, lo;     // HI/LO registers for mult/div results
+   70:     uint64_t hi1, lo1;   // Secondary HI/LO registers for MULT1/DIV1
+   71:     uint32_t sa;         // Shift amount register
+   72: 
+   73:     // VU0 registers (when used in macro mode)
+   74:     __m128 vu0_vf[32];        // VU0 vector float registers
+   75:     uint16_t vi[16];          // VU0 vector integer registers
+   76:     float vu0_q;              // VU0 Q register (quotient)
+   77:     float vu0_p;              // VU0 P register (EFU result)
+   78:     float vu0_i;              // VU0 I register (integer value)
+   79:     __m128 vu0_r;             // VU0 R register
+   80:     __m128 vu0_acc;           // VU0 ACC accumulator register
+   81:     uint16_t vu0_status;      // VU0 status register
+   82:     uint32_t vu0_mac_flags;   // VU0 MAC flags
+   83:     uint32_t vu0_clip_flags;  // VU0 clipping flags
+   84:     uint32_t vu0_clip_flags2; // VU0 clipping flags
+   85:     uint32_t vu0_cmsar0;      // VU0 microprogram start address
+   86:     uint32_t vu0_cmsar1;      // VU0 microprogram start address
+   87:     uint32_t vu0_cmsar2;      // VU0 microprogram start address
+   88:     uint32_t vu0_cmsar3;      // VU0 microprogram start address
+   89:     uint32_t vu0_vpu_stat;
+   90:     uint32_t vu0_vpu_stat2; // extra VPU status (used by CR_VPU_STAT2)
+   91:     uint32_t vu0_vpu_stat3; // extra VPU status 3
+   92:     uint32_t vu0_vpu_stat4; // extra VPU status 4
+   93:     uint32_t vu0_tpc;       // TPC (VU0 PC)
+   94:     uint32_t vu0_tpc2;      // second TPC
+   95:     uint32_t vu0_fbrst;     // VIF/VU reset register
+   96:     uint32_t vu0_fbrst2;    // FBRST2
+   97:     uint32_t vu0_fbrst3;    // FBRST3
+   98:     uint32_t vu0_fbrst4;    // FBRST4
+   99:     uint32_t vu0_itop;
+  100:     uint32_t vu0_top;
+  101:     uint32_t vu0_info;
+  102:     uint32_t vu0_xitop; // VU0 XITOP - input ITOP for VIF/VU sync
+  103:     uint32_t vu0_pc;
+  104: 
+  105:     float vu0_cf[4]; // VU0 FMAC control floating-point registers
+  106: 
+  107:     // COP0 System control registers
+  108:     uint32_t cop0_index;
+  109:     uint32_t cop0_random;
+  110:     uint32_t cop0_entrylo0;
+  111:     uint32_t cop0_entrylo1;
+  112:     uint32_t cop0_context;
+  113:     uint32_t cop0_pagemask;
+  114:     uint32_t cop0_wired;
+  115:     uint32_t cop0_badvaddr;
+  116:     uint32_t cop0_count;
+  117:     uint32_t cop0_entryhi;
+  118:     uint32_t cop0_compare;
+  119:     uint32_t cop0_status;
+  120:     uint32_t cop0_cause;
+  121:     uint32_t cop0_epc;
+  122:     uint32_t cop0_prid;
+  123:     uint32_t cop0_config;
+  124:     uint32_t cop0_badpaddr;
+  125:     uint32_t cop0_debug;
+  126:     uint32_t cop0_perf;
+  127:     uint32_t cop0_taglo;
+  128:     uint32_t cop0_taghi;
+  129:     uint32_t cop0_errorepc;
+  130: 
+  131:     // LL/SC reservation state (not part of COP0 Status bits).
+  132:     uint32_t llbit;
+  133:     uint32_t lladdr;
+  134: 
+  135:     // Delay slot state tracking
+  136:     bool in_delay_slot;
+  137:     uint32_t branch_pc;
+  138: 
+  139:     // COP2 control registers (VU0 integer + control)
+  140:     uint32_t cop2_ccr[32];
+  141: 
+  142:     // FPU registers (COP1)
+  143:     float f[32];
+  144:     float f_acc;    // FPU accumulator
+  145:     uint32_t fcr31; // Control/status register
+  146: 
+  147:     R5900Context()
+  148:     {
+  149:         std::memset(this, 0, sizeof(*this));
+  150: 
+  151:         // Initialize VU0 registers
+  152:         vu0_q = 1.0f; // Q register usually initialized to 1.0
+  153: 
+  154:         // Reset COP0 registers
+  155:         cop0_random = 47; // Start at maximum value
+  156:         // Status as the EE kernel leaves it at handoff. IE (bit 0) and EIE
+  157:         // (bit 16) are separate enables and guest code reads both; libkernel's
+  158:         // StartThread refuses to run while IE is clear.
+  159:         cop0_status = 0x00010001; // EIE | IE
+  160:         cop0_prid = 0x00002e20; // CPU ID for R5900
+  161: 
+  162:         in_delay_slot = false;
+  163:         branch_pc = 0;
+  164:     }
+  165: 
+  166:     void dump() const
+  167:     {
+  168:         std::ios_base::fmtflags flags = std::cout.flags();
+  169:         std::cout << std::hex << std::setfill('0');
+  170:         std::cout << "--- R5900 Context Dump ---\n";
+  171:         std::cout << "PC: 0x" << std::setw(8) << pc << "\n";
+  172:         std::cout << "HI: 0x" << std::setw(8) << hi << " LO: 0x" << std::setw(8) << lo << "\n";
+  173:         std::cout << "HI1:0x" << std::setw(8) << hi1 << " LO1:0x" << std::setw(8) << lo1 << "\n";
+  174:         std::cout << "SA: 0x" << std::setw(8) << sa << "\n";
+  175:         for (int i = 0; i < 32; ++i)
+  176:         {
+  177:             std::cout << "R" << std::setw(2) << std::dec << i << ": 0x" << std::hex
+  178:                       << std::setw(8) << static_cast<uint32_t>(_mm_extract_epi32(r[i], 3))
+  179:                       << std::setw(8) << static_cast<uint32_t>(_mm_extract_epi32(r[i], 2)) << "_"
+  180:                       << std::setw(8) << static_cast<uint32_t>(_mm_extract_epi32(r[i], 1))
+  181:                       << std::setw(8) << static_cast<uint32_t>(_mm_extract_epi32(r[i], 0)) << "\n";
+  182:         }
+  183:         std::cout << "Status: 0x" << std::setw(8) << cop0_status
+  184:                   << " Cause: 0x" << std::setw(8) << cop0_cause
+  185:                   << " EPC: 0x" << std::setw(8) << cop0_epc << "\n";
+  186:         std::cout << "--- End Context Dump ---\n";
+  187:         std::cout.flags(flags); // Restore format flags
+  188:     }
+  189: 
+  190:     ~R5900Context() = default;
+  191: };
+  192: 
+  193: inline uint32_t getRegU32(const R5900Context *ctx, int reg)
+  194: {
+  195:     // Check if reg is valid (0-31)
+  196:     if (reg < 0 || reg > 31)
+  197:         return 0;
+  198:     if (reg == 0)
+  199:         return 0;
+  200:     return static_cast<uint32_t>(_mm_extract_epi32(ctx->r[reg], 0));
+  201: }
+  202: 
+  203: inline void setReturnU32(R5900Context *ctx, uint32_t value)
+  204: {
+  205:     // R5900 sign-extends 32-bit results into 64-bit GPR, even for unsigned values.
+
+============================================================================
+FILE: ps2xRuntime\include\ps2_runtime.h
+REQUESTED LINES: 285-455
+============================================================================
+TOTAL LINES: 557
+  285:     PS2Runtime();
+  286:     ~PS2Runtime();
+  287: 
+  288:     bool initialize(const char *title = "PS2 Game");
+  289:     bool syncCoreSubsystems();
+  290:     bool loadELF(const std::string &elfPath);
+  291:     void run();
+  292: 
+  293:     [[nodiscard]] ps2x::iop::ModuleLoadResult loadIopModule(std::string_view path, const void *arguments = nullptr, uint32_t argumentSize = 0);
+  294:     [[nodiscard]] ps2x::iop::ModuleLoadResult loadIopModuleBuffer(uint32_t guestAddress, const void *arguments = nullptr, uint32_t argumentSize = 0);
+  295:     [[nodiscard]] bool stopIopModule(int32_t moduleId, int32_t *result = nullptr);
+  296:     [[nodiscard]] int32_t findIopModuleByAddress(uint32_t iopAddress) const noexcept;
+  297:     [[nodiscard]] ps2x::iop::DebugSnapshot iopDebugSnapshot() const;
+  298:     uint32_t allocateIopMemory(uint32_t size, uint32_t alignment = 16u);
+  299:     bool freeIopMemory(uint32_t address);
+  300:     bool readIopMemory(uint32_t address, void *destination, size_t size) const;
+  301:     bool writeIopMemory(uint32_t address, const void *source, size_t size);
+  302:     bool zeroIopMemory(uint32_t address, size_t size);
+  303:     bool isIopMemoryRange(uint32_t address, size_t size) const;
+  304: 
+  305:     using DebugUiCallback = void (*)(PS2Runtime &runtime, void *userData);
+  306:     void setDebugUiCallbacks(DebugUiCallback initCallback,
+  307:                              DebugUiCallback drawCallback,
+  308:                              DebugUiCallback shutdownCallback,
+  309:                              void *userData);
+  310: 
+  311:     using RecompiledFunction = void (*)(uint8_t *, R5900Context *, PS2Runtime *);
+  312: 
+  313:     enum class GuestBranchKind
+  314:     {
+  315:         DirectJump,
+  316:         DirectCall,
+  317:         IndirectJump,
+  318:         IndirectCall,
+  319:         Return,
+  320:     };
+  321: 
+  322:     enum class MissingFunctionPolicy : uint32_t
+  323:     {
+  324:         // Strict mode for tests/CI: log the bad target and request the runtime to stop.
+  325:         Stop = 0,
+  326: 
+  327:         // Debug mode: log once, leave ctx->pc on the bad target, and let the caller unwind.
+  328:         ContinueToTarget = 1,
+  329: 
+  330:         // Debug mode: same as ContinueToTarget, but triggers a debugger break once on MSVC.
+  331:         BreakOnce = 2,
+  332: 
+  333:         // Escape hatch only: skip missing calls by returning to fallthrough (it can hide guest bugs)
+  334:         SkipCallDebug = 3,
+  335:     };
+  336: 
+  337:     bool replaceFunction(uint32_t address, RecompiledFunction func);
+  338:     // TODO remove this later need to update all tests
+  339:     bool registerFunction(uint32_t address, RecompiledFunction func);
+  340:     RecompiledFunction lookupFunction(uint32_t address);
+  341:     bool hasFunction(uint32_t address) const;
+  342:     bool dispatchGuestBranch(uint8_t *rdram,
+  343:                              R5900Context *ctx,
+  344:                              uint32_t targetPc,
+  345:                              uint32_t sourcePc,
+  346:                              uint32_t fallthroughPc,
+  347:                              GuestBranchKind kind,
+  348:                              const char *debugName);
+  349:     void reportMissingFunction(uint8_t *rdram,
+  350:                                R5900Context *ctx,
+  351:                                uint32_t targetPc,
+  352:                                uint32_t sourcePc,
+  353:                                GuestBranchKind kind,
+  354:                                const char *debugName);
+  355:     void setMissingFunctionPolicy(MissingFunctionPolicy policy);
+  356:     MissingFunctionPolicy missingFunctionPolicy() const;
+  357:     void resetMissingFunctionReportOnce();
+  358: 
+  359:     static const IoPaths &getIoPaths();
+  360:     static void setIoPaths(const IoPaths &paths);
+  361:     static void configureIoPathsFromElf(const std::string &elfPath);
+  362: 
+  363:     void SignalException(R5900Context *ctx, PS2Exception exception);
+  364: 
+  365:     void executeVU0Microprogram(uint8_t *rdram, R5900Context *ctx, uint32_t address);
+  366:     void vu0StartMicroProgram(uint8_t *rdram, R5900Context *ctx, uint32_t address);
+  367: 
+  368: public:
+  369:     void handleSyscall(uint8_t *rdram, R5900Context *ctx);
+  370:     void handleSyscall(uint8_t *rdram, R5900Context *ctx, uint32_t encodedSyscallId);
+  371:     void handleBreak(uint8_t *rdram, R5900Context *ctx);
+  372: 
+  373:     void handleTrap(uint8_t *rdram, R5900Context *ctx);
+  374:     void handleTLBR(uint8_t *rdram, R5900Context *ctx);
+  375:     void handleTLBWI(uint8_t *rdram, R5900Context *ctx);
+  376:     void handleTLBWR(uint8_t *rdram, R5900Context *ctx);
+  377:     void handleTLBP(uint8_t *rdram, R5900Context *ctx);
+  378:     void clearLLBit(R5900Context *ctx);
+  379:     void configureGuestHeap(uint32_t guestBase, uint32_t guestLimit = PS2_RAM_SIZE);
+  380:     uint32_t guestMalloc(uint32_t size, uint32_t alignment = 16u);
+  381:     uint32_t guestCalloc(uint32_t count, uint32_t size, uint32_t alignment = 16u);
+  382:     uint32_t guestRealloc(uint32_t guestAddr, uint32_t newSize, uint32_t alignment = 16u);
+  383:     void guestFree(uint32_t guestAddr);
+  384:     uint32_t guestHeapBase() const;
+  385:     uint32_t guestHeapEnd() const;
+  386:     uint32_t guestHeapLimit() const;
+  387:     uint32_t reserveAsyncCallbackStack(uint32_t size, uint32_t alignment = 16u);
+  388:     // Keeps async callback stacks out of [base, end), e.g. a main-thread stack placed at the top of RAM.
+  389:     void excludeAsyncCallbackStackRange(uint32_t base, uint32_t end);
+  390: 
+  391:     void drainCompletedDmacHandlers(uint8_t *rdram);
+  392: 
+  393:     void requestStop();
+  394:     bool isStopRequested() const;
+  395: 
+  396:     EeScheduler &eeScheduler();
+  397:     const EeScheduler &eeScheduler() const;
+  398:     void postEeEvent(EeEvent event);
+  399:     bool eeCheckpointDue(uint32_t cycles = 32u) noexcept;
+  400:     [[noreturn]] void eeWaitVSyncTicks(uint32_t ticks, uint32_t resumePc);
+  401: 
+  402:     struct EeExitHandlerRegistration
+  403:     {
+  404:         uint32_t function = 0;
+  405:         uint32_t argument = 0;
+  406:     };
+  407:     void addEeExitHandler(int threadId, uint32_t function, uint32_t argument);
+  408:     std::vector<EeExitHandlerRegistration> takeEeExitHandlers(int threadId);
+  409:     void removeEeExitHandlers(int threadId);
+  410:     bool findEeSyscallOverride(uint32_t syscallNumber, uint32_t &handler) const;
+  411:     void setEeSyscallOverride(uint8_t *rdram, uint32_t syscallNumber, uint32_t handler);
+  412:     void initializeEeKernelState(uint8_t *rdram);
+  413: 
+  414:     uint8_t Load8(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr);
+  415:     uint16_t Load16(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr);
+  416:     uint32_t Load32(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr);
+  417:     uint64_t Load64(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr);
+  418:     __m128i Load128(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr);
+  419: 
+  420:     void Store8(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr, uint8_t value);
+  421:     void Store16(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr, uint16_t value);
+  422:     void Store32(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr, uint32_t value);
+  423:     void Store64(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr, uint64_t value);
+  424:     void Store128(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr, __m128i value);
+  425:     void kickGifDmaChainFromMMIO(uint8_t *rdram,
+  426:                                  R5900Context *ctx,
+  427:                                  uint32_t dPcrValue,
+  428:                                  uint32_t dStatValue,
+  429:                                  uint32_t tadr,
+  430:                                  uint32_t chcr);
+  431: 
+  432:     static inline bool isSpecialAddress(uint32_t addr)
+  433:     {
+  434:         return Ps2IsSpecialAddress(addr);
+  435:     }
+  436: 
+  437: public:
+  438:     inline R5900Context &cpu() { return m_cpuContext; }
+  439:     inline const R5900Context &cpu() const { return m_cpuContext; }
+  440: 
+  441:     inline PS2Memory &memory() { return m_memory; }
+  442:     inline const PS2Memory &memory() const { return m_memory; }
+  443: 
+  444:     inline GS &gs() { return m_gs; }
+  445:     inline const GS &gs() const { return m_gs; }
+  446:     inline GifArbiter &gifArbiter() { return m_gifArbiter; }
+  447:     inline const GifArbiter &gifArbiter() const { return m_gifArbiter; }
+  448:     inline VU1Interpreter &vu0() { return m_vu0; }
+  449:     inline const VU1Interpreter &vu0() const { return m_vu0; }
+  450:     inline VU1Interpreter &vu1() { return m_vu1; }
+  451:     inline const VU1Interpreter &vu1() const { return m_vu1; }
+  452: 
+  453:     inline PS2AudioBackend &audioBackend() { return m_audioBackend; }
+  454:     inline const PS2AudioBackend &audioBackend() const { return m_audioBackend; }
+  455:     inline PSPadBackend &padBackend() { return m_padBackend; }
+
+============================================================================
+FILE: ps2xRecomp\include\ps2recomp\code_generator.h
+REQUESTED LINES: 1-180
+============================================================================
+TOTAL LINES: 208
+    1: #ifndef PS2RECOMP_CODE_GENERATOR_H
+    2: #define PS2RECOMP_CODE_GENERATOR_H
+    3: 
+    4: #include <cstdint>
+    5: #include <string>
+    6: #include <vector>
+    7: #include <map>
+    8: #include <unordered_map>
+    9: #include <unordered_set>
+   10: #include "ps2recomp/control_flow_analyzer.h"
+   11: 
+   12: namespace ps2recomp
+   13: {
+   14: 	struct JumpTableEntry;
+   15:     struct JumpTable;
+   16: 	struct Instruction;
+   17:     struct MemoryAccessHint;
+   18: 	struct Function;
+   19: 	struct Symbol;
+   20: 	struct Section;
+   21:     class RecompilerReporter;
+   22: 
+   23: 	extern const std::unordered_set<std::string> kKeywords;
+   24: 
+   25:     class CodeGenerator
+   26:     {
+   27:     public:
+   28: 	    explicit CodeGenerator(const std::vector<Symbol> &symbols, const std::vector<Section> &sections);
+   29:         ~CodeGenerator();
+   30: 
+   31:         struct BootstrapInfo
+   32:         {
+   33:             bool valid = false;
+   34:             uint32_t entry = 0;
+   35:             uint32_t bssStart = 0;
+   36:             uint32_t bssEnd = 0;
+   37:             uint32_t gp = 0;
+   38:             std::string entryName;
+   39:         };
+   40: 
+   41:         using AnalysisResult = ControlFlowAnalysisResult;
+   42: 
+   43:         std::string generateFunction(const Function &function, const std::vector<Instruction> &instructions, const bool &useHeaders);
+   44:         std::string generateFunctionRegistration(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs);
+   45:         std::string handleBranchDelaySlots(const Instruction &branchInst, const Instruction &delaySlot,
+   46:                                            const Function &function, const AnalysisResult &analysisResult);
+   47:         std::string handleBranchDelaySlots(const Instruction &branchInst, const Instruction &delaySlot,
+   48:                                            const Function &function, const AnalysisResult &analysisResult,
+   49:                                            std::string delaySlotOverride);
+   50: 
+   51:         void setRenamedFunctions(const std::unordered_map<uint32_t, std::string> &renames);
+   52:         void setBootstrapInfo(const BootstrapInfo &info);
+   53:         void setRelocationCallNames(const std::unordered_map<uint32_t, std::string> &callNames);
+   54:         void setConfiguredJumpTables(const std::vector<JumpTable> &jumpTables);
+   55:         void setResumeEntryTargets(const std::unordered_map<uint32_t, std::vector<uint32_t>> &resumeTargetsByOwner);
+   56:         void setEmitInstructionComments(bool emitInstructionComments);
+   57:         void setReporter(RecompilerReporter *reporter);
+   58: 
+   59:         AnalysisResult collectInternalBranchTargets(const Function &function,
+   60:                                                   const std::vector<Instruction> &instructions,
+   61:                                                   const std::vector<Function> *allFunctions = nullptr);
+   62: 
+   63:     public:
+   64:         std::unordered_map<uint32_t, Symbol> m_symbols;
+   65:         std::unordered_map<uint32_t, std::string> m_renamedFunctions;
+   66:         std::unordered_map<uint32_t, std::string> m_relocationCallNames;
+   67:         std::unordered_map<uint32_t, std::vector<uint32_t>> m_configJumpTableTargetsByAddress;
+   68:         std::unordered_map<uint32_t, std::vector<uint32_t>> m_resumeEntryTargetsByOwner;
+   69:         const std::vector<Section>& m_sections;
+   70:         BootstrapInfo m_bootstrapInfo;
+   71:         bool m_emitInstructionComments = true;
+   72:         RecompilerReporter *m_reporter = nullptr;
+   73:         std::string m_currentFunctionName;
+   74: 
+   75:         std::string translateInstruction(const Instruction &inst);
+   76:         std::string translateInstruction(const Instruction &inst, const MemoryAccessHint &memoryHint);
+   77:         std::string emitUnhandledInstruction(const Instruction &inst, const std::string &message);
+   78:         std::string translateMMIInstruction(const Instruction &inst);
+   79:         std::string translateVUInstruction(const Instruction &inst);
+   80:         std::string translateFPUInstruction(const Instruction &inst);
+   81:         std::string translateCOP0Instruction(const Instruction &inst);
+   82:         std::string translateRegimmInstruction(const Instruction &inst);
+   83:         std::string translateSpecialInstruction(const Instruction &inst);
+   84: 
+   85:         // MMI Translation functions
+   86:         std::string translateMMI0Instruction(const Instruction &inst);
+   87:         std::string translateMMI1Instruction(const Instruction &inst);
+   88:         std::string translateMMI2Instruction(const Instruction &inst);
+   89:         std::string translateMMI3Instruction(const Instruction &inst);
+   90:         std::string translatePMFHLInstruction(const Instruction &inst);
+   91:         std::string translatePMTHLInstruction(const Instruction &inst);
+   92: 
+   93:         // Instruction Helpers
+   94:         std::string translateQFSRV(const Instruction &inst);
+   95:         std::string translatePMADDW(const Instruction &inst);
+   96:         std::string translatePMULTW(const Instruction &inst);
+   97:         std::string translatePMSUBW(const Instruction &inst);
+   98:         std::string translatePEXT5(const Instruction &inst);
+   99:         std::string translatePPAC5(const Instruction &inst);
+  100:         std::string translatePADSBH(const Instruction &inst);
+  101:         std::string translatePMSUBH(const Instruction &inst);
+  102:         std::string translatePHMSBH(const Instruction &inst);
+  103:         std::string translatePMADDUW(const Instruction &inst);
+  104:         std::string translatePDIVW(const Instruction &inst);
+  105:         std::string translatePCPYLD(const Instruction &inst);
+  106:         std::string translatePMADDH(const Instruction &inst);
+  107:         std::string translatePHMADH(const Instruction &inst);
+  108:         std::string translatePEXEH(const Instruction &inst);
+  109:         std::string translatePREVH(const Instruction &inst);
+  110:         std::string translatePMULTH(const Instruction &inst);
+  111:         std::string translatePDIVBW(const Instruction &inst);
+  112:         std::string translatePEXEW(const Instruction &inst);
+  113:         std::string translatePROT3W(const Instruction &inst);
+  114:         std::string translatePMULTUW(const Instruction &inst);
+  115:         std::string translatePDIVUW(const Instruction &inst);
+  116:         std::string translatePCPYUD(const Instruction &inst);
+  117:         std::string translatePEXCH(const Instruction &inst);
+  118:         std::string translatePCPYH(const Instruction &inst);
+  119:         std::string translatePEXCW(const Instruction &inst);
+  120:         std::string translatePMTHI(const Instruction &inst);
+  121:         std::string translatePMTLO(const Instruction &inst);
+  122: 
+  123:         // VU instruction translations
+  124:         std::string translateVU_VADD_Field(const Instruction &inst);
+  125:         std::string translateVU_VSUB_Field(const Instruction &inst);
+  126:         std::string translateVU_VMUL_Field(const Instruction &inst);
+  127:         std::string translateVU_VMSUB_Field(const Instruction &inst);
+  128:         std::string translateVU_VADDA_Field(const Instruction &inst);
+  129:         std::string translateVU_VSUBA_Field(const Instruction &inst);
+  130:         std::string translateVU_VMADDA_Field(const Instruction &inst);
+  131:         std::string translateVU_VMSUBA_Field(const Instruction &inst);
+  132:         std::string translateVU_VMULA_Field(const Instruction &inst);
+  133:         std::string translateVU_VADD(const Instruction &inst);
+  134:         std::string translateVU_VSUB(const Instruction &inst);
+  135:         std::string translateVU_VMUL(const Instruction &inst);
+  136:         std::string translateVU_VDIV(const Instruction &inst);
+  137:         std::string translateVU_VSQRT(const Instruction &inst);
+  138:         std::string translateVU_VRSQRT(const Instruction &inst);
+  139:         std::string translateVU_VMTIR(const Instruction &inst);
+  140:         std::string translateVU_VMFIR(const Instruction &inst);
+  141:         std::string translateVU_VILWR(const Instruction &inst);
+  142:         std::string translateVU_VISWR(const Instruction &inst);
+  143:         std::string translateVU_VIADD(const Instruction &inst);
+  144:         std::string translateVU_VISUB(const Instruction &inst);
+  145:         std::string translateVU_VIADDI(const Instruction &inst);
+  146:         std::string translateVU_VIAND(const Instruction &inst);
+  147:         std::string translateVU_VIOR(const Instruction &inst);
+  148:         std::string translateVU_VCALLMS(const Instruction &inst);
+  149:         std::string translateVU_VCALLMSR(const Instruction &inst);
+  150:         std::string translateVU_VRNEXT(const Instruction &inst);
+  151:         std::string translateVU_VRGET(const Instruction &inst);
+  152:         std::string translateVU_VRINIT(const Instruction &inst);
+  153:         std::string translateVU_VRXOR(const Instruction &inst);
+  154:         std::string translateVU_VMADD_Field(const Instruction &inst);
+  155:         std::string translateVU_VMINI_Field(const Instruction &inst);
+  156:         std::string translateVU_VMAX_Field(const Instruction &inst);
+  157:         std::string translateVU_VMADD(const Instruction &inst);
+  158:         std::string translateVU_VMADDq(const Instruction &inst);
+  159:         std::string translateVU_VMADDi(const Instruction &inst);
+  160:         std::string translateVU_VMAX(const Instruction &inst);
+  161:         std::string translateVU_VMAXi(const Instruction &inst);
+  162:         std::string translateVU_VADDA(const Instruction &inst);
+  163:         std::string translateVU_VADDAq(const Instruction &inst);
+  164:         std::string translateVU_VADDAi(const Instruction &inst);
+  165:         std::string translateVU_VSUBA(const Instruction &inst);
+  166:         std::string translateVU_VSUBAq(const Instruction &inst);
+  167:         std::string translateVU_VSUBAi(const Instruction &inst);
+  168:         std::string translateVU_VMADDA(const Instruction &inst);
+  169:         std::string translateVU_VMADDAq(const Instruction &inst);
+  170:         std::string translateVU_VMADDAi(const Instruction &inst);
+  171:         std::string translateVU_VMSUBA(const Instruction &inst);
+  172:         std::string translateVU_VMSUBAq(const Instruction &inst);
+  173:         std::string translateVU_VMSUBAi(const Instruction &inst);
+  174:         std::string translateVU_VMULA(const Instruction &inst);
+  175:         std::string translateVU_VMULAq(const Instruction &inst);
+  176:         std::string translateVU_VMULAi(const Instruction &inst);
+  177:         std::string translateVU_VOPMULA(const Instruction &inst);
+  178:         std::string translateVU_VOPMSUB(const Instruction &inst);
+  179:         std::string translateVU_VMINI(const Instruction &inst);
+  180:         std::string translateVU_VMINIi(const Instruction &inst);
+
+============================================================================
+FILE: ps2xRecomp\src\lib\code_generator.cpp
+REQUESTED LINES: 1-330
+============================================================================
+TOTAL LINES: 308
+    1: #include "ps2recomp/code_generator.h"
+    2: #include "ps2recomp/control_flow_analyzer.h"
+    3: #include "ps2recomp/Emitters/function_emitter.h"
+    4: #include "ps2recomp/Emitters/function_table_emitter.h"
+    5: #include "ps2recomp/Translators/instruction_translator.h"
+    6: #include "ps2recomp/Translators/special_translator.h"
+    7: #include "ps2recomp/Translators/regimm_translator.h"
+    8: #include "ps2recomp/Translators/cop0_translator.h"
+    9: #include "ps2recomp/Translators/fpu_translator.h"
+   10: #include "ps2recomp/Translators/mmi_translator.h"
+   11: #include "ps2recomp/Translators/vu_translator.h"
+   12: #include "ps2recomp/Emitters/control_flow_emitter.h"
+   13: #include "ps2recomp/control_flow_utils.h"
+   14: #include "ps2recomp/instructions.h"
+   15: #include "ps2recomp/ps2_recompiler.h"
+   16: #include "ps2recomp/r5900_decoder.h"
+   17: #include "ps2recomp/recompiler_reporter.h"
+   18: #include "ps2recomp/types.h"
+   19: #include "ps2_runtime_calls.h"
+   20: 
+   21: #include <fmt/format.h>
+   22: #include <sstream>
+   23: #include <algorithm>
+   24: #include <cstring>
+   25: #include <unordered_set>
+   26: #include <utility>
+   27: #include <unordered_map>
+   28: #include <iostream>
+   29: #include <cctype>
+   30: #include <cmath>
+   31: #include <vector>
+   32: 
+   33: namespace ps2recomp
+   34: {
+   35:     const std::unordered_set<std::string> kKeywords = {
+   36:         "alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", "bitor", "bool",
+   37:         "break", "case", "catch", "char", "char8_t", "char16_t", "char32_t", "class",
+   38:         "compl", "concept", "const", "consteval", "constexpr", "constinit", "const_cast",
+   39:         "continue", "co_await", "co_return", "co_yield", "decltype", "default", "delete",
+   40:         "do", "double", "dynamic_cast", "else", "enum", "explicit", "export", "extern",
+   41:         "false", "float", "for", "friend", "goto", "if", "inline", "int", "long", "mutable",
+   42:         "namespace", "new", "noexcept", "not", "not_eq", "nullptr", "operator", "or", "or_eq",
+   43:         "private", "protected", "public", "register", "reinterpret_cast", "requires", "return",
+   44:         "short", "signed", "sizeof", "static", "static_assert", "static_cast", "struct",
+   45:         "switch", "template", "this", "thread_local", "throw", "true", "try", "typedef",
+   46:         "typeid", "typename", "union", "unsigned", "using", "virtual", "void", "volatile",
+   47:         "wchar_t", "while", "xor", "xor_eq"};
+   48: }
+   49: 
+   50: namespace ps2recomp
+   51: {
+   52: 
+   53:     static std::string sanitizeIdentifierBody(const std::string &name)
+   54:     {
+   55:         std::string sanitized;
+   56:         sanitized.reserve(name.size() + 1);
+   57: 
+   58:         for (char c : name)
+   59:         {
+   60:             const unsigned char uc = static_cast<unsigned char>(c);
+   61:             if (std::isalnum(uc) || c == '_')
+   62:             {
+   63:                 sanitized.push_back(c);
+   64:             }
+   65:             else
+   66:             {
+   67:                 sanitized.push_back('_');
+   68:             }
+   69:         }
+   70: 
+   71:         if (sanitized.empty())
+   72:         {
+   73:             return sanitized;
+   74:         }
+   75: 
+   76:         const unsigned char first = static_cast<unsigned char>(sanitized.front());
+   77:         if (!(std::isalpha(first) || sanitized.front() == '_'))
+   78:         {
+   79:             sanitized.insert(sanitized.begin(), '_');
+   80:         }
+   81: 
+   82:         return sanitized;
+   83:     }
+   84: 
+   85:     static bool isReservedCxxIdentifier(const std::string &name)
+   86:     {
+   87:         if (name.size() >= 2 && name[0] == '_' && name[1] == '_')
+   88:             return true;
+   89:         if (name.size() >= 2 && name[0] == '_' && std::isupper(static_cast<unsigned char>(name[1])))
+   90:             return true;
+   91:         return false;
+   92:     }
+   93: 
+   94:     static bool isReservedCxxKeyword(const std::string &name)
+   95:     {
+   96:         return kKeywords.contains(name);
+   97:     }
+   98: 
+   99:     CodeGenerator::CodeGenerator(const std::vector<Symbol> &symbols, const std::vector<Section> &sections)
+  100:         : m_sections(sections)
+  101:     {
+  102:         for (auto &symbol : symbols)
+  103:         {
+  104:             m_symbols.emplace(symbol.address, symbol);
+  105:         }
+  106:     }
+  107: 
+  108:     void CodeGenerator::setRenamedFunctions(const std::unordered_map<uint32_t, std::string> &renames)
+  109:     {
+  110:         m_renamedFunctions = renames;
+  111:     }
+  112: 
+  113:     void CodeGenerator::setBootstrapInfo(const BootstrapInfo &info)
+  114:     {
+  115:         m_bootstrapInfo = info;
+  116:     }
+  117: 
+  118:     void CodeGenerator::setRelocationCallNames(const std::unordered_map<uint32_t, std::string> &callNames)
+  119:     {
+  120:         m_relocationCallNames = callNames;
+  121:     }
+  122: 
+  123:     void CodeGenerator::setConfiguredJumpTables(const std::vector<JumpTable> &jumpTables)
+  124:     {
+  125:         m_configJumpTableTargetsByAddress.clear();
+  126:         for (const auto &table : jumpTables)
+  127:         {
+  128:             auto &targets = m_configJumpTableTargetsByAddress[table.address];
+  129:             for (const auto &entry : table.entries)
+  130:             {
+  131:                 targets.push_back(entry.target);
+  132:             }
+  133:         }
+  134: 
+  135:         for (auto &[address, targets] : m_configJumpTableTargetsByAddress)
+  136:         {
+  137:             (void)address;
+  138:             std::sort(targets.begin(), targets.end());
+  139:             targets.erase(std::unique(targets.begin(), targets.end()), targets.end());
+  140:         }
+  141:     }
+  142: 
+  143:     void CodeGenerator::setResumeEntryTargets(const std::unordered_map<uint32_t, std::vector<uint32_t>> &resumeTargetsByOwner)
+  144:     {
+  145:         m_resumeEntryTargetsByOwner = resumeTargetsByOwner;
+  146:         for (auto &[owner, targets] : m_resumeEntryTargetsByOwner)
+  147:         {
+  148:             (void)owner;
+  149:             std::sort(targets.begin(), targets.end());
+  150:             targets.erase(std::unique(targets.begin(), targets.end()), targets.end());
+  151:         }
+  152:     }
+  153: 
+  154:     void CodeGenerator::setEmitInstructionComments(bool emitInstructionComments)
+  155:     {
+  156:         m_emitInstructionComments = emitInstructionComments;
+  157:     }
+  158: 
+  159:     void CodeGenerator::setReporter(RecompilerReporter *reporter)
+  160:     {
+  161:         m_reporter = reporter;
+  162:     }
+  163: 
+  164:     std::string CodeGenerator::getFunctionName(uint32_t address) const
+  165:     {
+  166:         auto it = m_renamedFunctions.find(address);
+  167:         if (it != m_renamedFunctions.end())
+  168:         {
+  169:             return it->second;
+  170:         }
+  171: 
+  172:         const Symbol *sym = findSymbolByAddress(address);
+  173:         if (sym && sym->isFunction)
+  174:         {
+  175:             return CodeGenerator::sanitizeFunctionName(sym->name);
+  176:         }
+  177: 
+  178:         return "";
+  179:     }
+  180: 
+  181:     std::string CodeGenerator::sanitizeFunctionName(const std::string &name) const
+  182:     {
+  183:         std::string sanitized = sanitizeIdentifierBody(name);
+  184:         if (sanitized.empty())
+  185:             return sanitized;
+  186: 
+  187:         // ugly but will do for now
+  188:         if (sanitized == "main")
+  189:             return "ps2_main";
+  190: 
+  191:         if (isReservedCxxKeyword(sanitized))
+  192:             return "ps2_" + sanitized;
+  193: 
+  194:         if (sanitized[0] == '_')
+  195:             return "ps2" + sanitized;
+  196: 
+  197:         if (!isReservedCxxIdentifier(sanitized))
+  198:             return sanitized;
+  199: 
+  200:         return "ps2_" + sanitized;
+  201:     }
+  202: 
+  203:     std::string CodeGenerator::handleBranchDelaySlots(
+  204:         const Instruction &branchInst,
+  205:         const Instruction &delaySlot,
+  206:         const Function &function,
+  207:         const AnalysisResult &analysisResult)
+  208:     {
+  209:         ControlFlowEmitter emitter(*this, branchInst, delaySlot, function, analysisResult);
+  210:         return emitter.emit();
+  211:     }
+  212: 
+  213:     std::string CodeGenerator::handleBranchDelaySlots(
+  214:         const Instruction &branchInst,
+  215:         const Instruction &delaySlot,
+  216:         const Function &function,
+  217:         const AnalysisResult &analysisResult,
+  218:         std::string delaySlotOverride)
+  219:     {
+  220:         ControlFlowEmitter emitter(*this, branchInst, delaySlot, function, analysisResult, std::move(delaySlotOverride));
+  221:         return emitter.emit();
+  222:     }
+  223: 
+  224:     CodeGenerator::~CodeGenerator() = default;
+  225: 
+  226:     std::string CodeGenerator::translateInstruction(const Instruction &inst)
+  227:     {
+  228:         return InstructionTranslator(*this).translate(inst, {});
+  229:     }
+  230: 
+  231:     std::string CodeGenerator::translateInstruction(const Instruction &inst, const MemoryAccessHint &memoryHint)
+  232:     {
+  233:         return InstructionTranslator(*this).translate(inst, memoryHint);
+  234:     }
+  235: 
+  236:     std::string CodeGenerator::translateSpecialInstruction(const Instruction &inst)
+  237:     {
+  238:         return SpecialTranslator(*this).translate(inst);
+  239:     }
+  240: 
+  241:     std::string CodeGenerator::translateRegimmInstruction(const Instruction &inst)
+  242:     {
+  243:         return RegimmTranslator(*this).translate(inst);
+  244:     }
+  245: 
+  246:     std::string CodeGenerator::translateCOP0Instruction(const Instruction &inst)
+  247:     {
+  248:         return Cop0Translator(*this).translate(inst);
+  249:     }
+  250: 
+  251:     std::string CodeGenerator::translateFPUInstruction(const Instruction &inst)
+  252:     {
+  253:         return FpuTranslator(*this).translate(inst);
+  254:     }
+  255: 
+  256:     std::string CodeGenerator::translateMMIInstruction(const Instruction &inst)
+  257:     {
+  258:         return MmiTranslator(*this).translate(inst);
+  259:     }
+  260: 
+  261:     std::string CodeGenerator::translateVUInstruction(const Instruction &inst)
+  262:     {
+  263:         return VuTranslator(*this).translate(inst);
+  264:     }
+  265: 
+  266:     CodeGenerator::AnalysisResult CodeGenerator::collectInternalBranchTargets(
+  267:         const Function &function, const std::vector<Instruction> &instructions, const std::vector<Function> *allFunctions)
+  268:     {
+  269:         ControlFlowAnalyzer analyzer(m_sections, m_configJumpTableTargetsByAddress, m_reporter);
+  270:         return analyzer.analyze(function, instructions, allFunctions);
+  271:     }
+  272: 
+  273:     std::string ps2recomp::CodeGenerator::generateFunction(
+  274:         const Function &function,
+  275:         const std::vector<Instruction> &instructions,
+  276:         const bool &useHeaders)
+  277:     {
+  278:         FunctionEmitter emitter(*this);
+  279:         return emitter.emit(function, instructions, useHeaders);
+  280:     }
+  281: 
+  282:     std::string CodeGenerator::emitUnhandledInstruction(const Instruction &inst, const std::string &message)
+  283:     {
+  284:         if (m_reporter)
+  285:         {
+  286:             m_reporter->recordUnhandledInstruction(m_currentFunctionName, inst.address, inst.raw, message);
+  287:         }
+  288: 
+  289:         return fmt::format("throw std::runtime_error(\"{} at 0x{:X} raw=0x{:08X}\");", message, inst.address, inst.raw);
+  290:     }
+  291: 
+  292:     std::string CodeGenerator::generateFunctionRegistration(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs)
+  293:     {
+  294:         FunctionTableEmitter emitter(*this);
+  295:         return emitter.emit(functions, stubs);
+  296:     }
+  297: 
+  298:     const Symbol *CodeGenerator::findSymbolByAddress(uint32_t address) const
+  299:     {
+  300:         auto it = m_symbols.find(address);
+  301:         if (it != m_symbols.end())
+  302:         {
+  303:             return &it->second;
+  304:         }
+  305: 
+  306:         return nullptr;
+  307:     }
+  308: }
+
+============================================================================
+FILE: ps2xRecomp\include\ps2recomp\ps2_recompiler.h
+REQUESTED LINES: 1-180
+============================================================================
+TOTAL LINES: 101
+    1: #ifndef PS2RECOMP_PS2_RECOMPILER_H
+    2: #define PS2RECOMP_PS2_RECOMPILER_H
+    3: 
+    4: #include "code_generator.h"
+    5: #include "config_manager.h"
+    6: #include "recompiler_reporter.h"
+    7: #include <string>
+    8: #include <vector>
+    9: #include <unordered_map>
+   10: #include <unordered_set>
+   11: #include <filesystem>
+   12: #include <memory>
+   13: #include <map>
+   14: 
+   15: namespace ps2recomp
+   16: {
+   17:     class R5900Decoder;
+   18:     class ElfParser;
+   19: 
+   20:     enum class StubTarget
+   21:     {
+   22:         Unknown,
+   23:         Syscall,
+   24:         Stub
+   25:     };
+   26: 
+   27:     class PS2Recompiler
+   28:     {
+   29:     public:
+   30:         explicit PS2Recompiler(const std::string &configPath);
+   31:         ~PS2Recompiler();
+   32: 
+   33:         bool initialize();
+   34:         bool recompile();
+   35:         void generateOutput();
+   36:         void printReport() const;
+   37:         const RecompilerReporter::Counters &reportCounters() const { return m_reporter.counters(); }
+   38: 
+   39:         static StubTarget resolveStubTarget(const std::string& name);
+   40:         static bool IsCorrectnessCriticalFunctionName(const std::string &name);
+   41:         static size_t DiscoverAdditionalEntryPoints(
+   42:             std::vector<Function> &functions,
+   43:             std::unordered_map<uint32_t, std::vector<Instruction>> &decodedFunctions,
+   44:             const std::vector<Section> &sections);
+   45:         static size_t ResliceEntryFunctions(std::vector<Function> &functions, std::unordered_map<uint32_t, std::vector<Instruction>> &decodedFunctions);
+   46:         static size_t CollectPostTransferEntryTargets(
+   47:             const std::vector<Function> &functions,
+   48:             const std::unordered_map<uint32_t, std::vector<Instruction>> &decodedFunctions,
+   49:             std::unordered_map<uint32_t, std::vector<uint32_t>> &targetsByOwner);
+   50:         static size_t CollectInternalEntryTargets(
+   51:             const std::vector<Function> &functions,
+   52:             const std::unordered_map<uint32_t, std::vector<Instruction>> &decodedFunctions,
+   53:             const std::unordered_set<uint32_t> &entryAddresses,
+   54:             std::unordered_map<uint32_t, std::vector<uint32_t>> &targetsByOwner);
+   55: 
+   56:         static std::string ClampFilenameLength(const std::string& baseName, const std::string& extension, std::size_t maxLength);
+   57: 
+   58:     private:
+   59:         ConfigManager m_configManager;
+   60:         std::unique_ptr<ElfParser> m_elfParser;
+   61:         std::unique_ptr<R5900Decoder> m_decoder;
+   62:         std::unique_ptr<CodeGenerator> m_codeGenerator;
+   63:         RecompilerConfig m_config;
+   64:         RecompilerReporter m_reporter;
+   65: 
+   66:         std::vector<Function> m_functions;
+   67:         std::vector<Symbol> m_symbols;
+   68:         std::vector<Section> m_sections;
+   69:         std::vector<Relocation> m_relocations;
+   70: 
+   71:         std::unordered_map<uint32_t, std::vector<Instruction>> m_decodedFunctions;
+   72:         std::unordered_map<std::string, bool> m_skipFunctions;
+   73:         std::unordered_set<uint32_t> m_skipFunctionStarts;
+   74:         std::unordered_set<std::string> m_stubFunctions;
+   75:         std::unordered_set<uint32_t> m_stubFunctionStarts;
+   76:         std::unordered_map<uint32_t, std::string> m_stubHandlerBindingsByStart;
+   77:         std::unordered_set<uint32_t> m_entryPointHintStarts;
+   78:         std::unordered_set<uint32_t> m_correctnessCriticalFunctionStarts;
+   79:         std::map<uint32_t, std::string> m_generatedStubs;
+   80:         std::unordered_map<uint32_t, std::string> m_functionRenames;
+   81:         std::unordered_map<uint32_t, std::vector<uint32_t>> m_resumeEntryTargetsByOwner;
+   82:         CodeGenerator::BootstrapInfo m_bootstrapInfo;
+   83: 
+   84:         bool decodeFunction(Function &function);
+   85:         void discoverAdditionalEntryPoints();
+   86:         bool shouldSkipFunction(const Function &function) const;
+   87:         bool isStubFunction(const Function &function) const;
+   88:         bool isCorrectnessCriticalFunction(const Function &function) const;
+   89:         bool hasResolvedStubHandler(const Function &function) const;
+   90:         void collectCorrectnessCriticalFunctionStarts();
+   91:         bool generateFunctionHeader();
+   92:         bool generateStubHeader();
+   93:         bool writeToFile(const std::string &path, const std::string &content);
+   94:         std::filesystem::path getOutputPath(const Function &function) const;
+   95:         static std::string clampFilenameLength(const std::string& baseName, const std::string& extension, std::size_t maxLength);
+   96:         std::string sanitizeFunctionName(const std::string &name) const;       
+   97:     };
+   98: 
+   99: }
+  100: 
+  101: #endif
+
+============================================================================
+FILE: ps2xRecomp\src\lib\ps2_recompiler.cpp
+REQUESTED LINES: 890-1275
+============================================================================
+TOTAL LINES: 2560
+  890:     bool PS2Recompiler::initialize()
+  891:     {
+  892:         try
+  893:         {
+  894:             m_reporter.progress("parsing config");
+  895:             m_config = m_configManager.loadConfig();
+  896:             m_skipFunctions.clear();
+  897:             m_skipFunctionStarts.clear();
+  898:             m_stubFunctions.clear();
+  899:             m_stubFunctionStarts.clear();
+  900:             m_stubHandlerBindingsByStart.clear();
+  901:             m_entryPointHintStarts.clear();
+  902:             m_correctnessCriticalFunctionStarts.clear();
+  903: 
+  904:             for (const auto &name : m_config.skipFunctions)
+  905:             {
+  906:                 const FunctionSelector selector = parseFunctionSelector(name);
+  907:                 if (!selector.name.empty())
+  908:                 {
+  909:                     m_skipFunctions[selector.name] = true;
+  910:                 }
+  911:                 if (selector.start.has_value())
+  912:                 {
+  913:                     m_skipFunctionStarts.insert(*selector.start);
+  914:                 }
+  915:             }
+  916:             for (const auto &name : m_config.stubImplementations)
+  917:             {
+  918:                 const FunctionSelector selector = parseFunctionSelector(name);
+  919:                 if (!selector.name.empty())
+  920:                 {
+  921:                     m_stubFunctions.insert(selector.name);
+  922:                 }
+  923:                 if (selector.start.has_value())
+  924:                 {
+  925:                     m_stubFunctionStarts.insert(*selector.start);
+  926:                     if (!selector.name.empty())
+  927:                     {
+  928:                         auto bindingIt = m_stubHandlerBindingsByStart.find(*selector.start);
+  929:                         if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+  930:                             bindingIt->second != selector.name)
+  931:                         {
+  932:                             std::ostringstream msg;
+  933:                             msg << "Multiple stub handler bindings for 0x"
+  934:                                 << std::hex << *selector.start
+  935:                                 << " (keeping latest '" << selector.name
+  936:                                 << "', previous '" << bindingIt->second << "')";
+  937:                             m_reporter.warning("config", msg.str());
+  938:                         }
+  939:                         m_stubHandlerBindingsByStart[*selector.start] = selector.name;
+  940:                     }
+  941:                 }
+  942:             }
+  943:             for (const auto &hint : m_config.entryPointHints)
+  944:             {
+  945:                 const FunctionSelector selector = parseFunctionSelector(hint);
+  946:                 if (selector.start.has_value())
+  947:                 {
+  948:                     m_entryPointHintStarts.insert(*selector.start);
+  949:                 }
+  950:             }
+  951: 
+  952:             m_reporter.progress("parsing ELF");
+  953:             m_elfParser = std::make_unique<ElfParser>(m_config.inputPath);
+  954:             m_elfParser->setReporter(&m_reporter);
+  955:             if (!m_elfParser->parse())
+  956:             {
+  957:                 m_reporter.error("elf", "Failed to parse ELF file: " + m_config.inputPath);
+  958:                 return false;
+  959:             }
+  960: 
+  961:             if (!m_config.ghidraMapPath.empty())
+  962:             {
+  963:                 m_elfParser->loadGhidraFunctionMap(m_config.ghidraMapPath);
+  964:             }
+  965: 
+  966:             m_functions = m_elfParser->extractFunctions();
+  967:             m_symbols = m_elfParser->extractSymbols();
+  968:             m_sections = m_elfParser->getSections();
+  969:             m_relocations = m_elfParser->getRelocations();
+  970:             collectCorrectnessCriticalFunctionStarts();
+  971: 
+  972:             if (m_functions.empty())
+  973:             {
+  974:                 m_reporter.error("elf", "No functions found in ELF file.");
+  975:                 return false;
+  976:             }
+  977: 
+  978:             {
+  979:                 m_bootstrapInfo = {};
+  980:                 uint32_t entry = m_elfParser->getEntryPoint();
+  981:                 {
+  982:                     std::ostringstream msg;
+  983:                     msg << "ELF entry point: 0x" << std::hex << entry;
+  984:                     m_reporter.info("elf", msg.str());
+  985:                 }
+  986:                 uint32_t bssStart = std::numeric_limits<uint32_t>::max();
+  987:                 uint32_t bssEnd = 0;
+  988:                 for (const auto &sec : m_sections)
+  989:                 {
+  990:                     if (sec.isBSS && sec.size > 0)
+  991:                     {
+  992:                         bssStart = std::min(bssStart, sec.address);
+  993:                         bssEnd = std::max(bssEnd, sec.address + sec.size);
+  994:                     }
+  995:                 }
+  996: 
+  997:                 uint32_t gp = 0;
+  998:                 for (const auto &sym : m_symbols)
+  999:                 {
+ 1000:                     if (sym.name == "_gp")
+ 1001:                     {
+ 1002:                         gp = sym.address;
+ 1003:                         break;
+ 1004:                     }
+ 1005:                 }
+ 1006: 
+ 1007:                 if (bssStart != std::numeric_limits<uint32_t>::max())
+ 1008:                 {
+ 1009:                     std::ostringstream msg;
+ 1010:                     msg << "BSS range: 0x" << std::hex << bssStart << " - 0x" << bssEnd
+ 1011:                         << " (size 0x" << (bssEnd - bssStart) << "), gp=0x" << gp;
+ 1012:                     m_reporter.info("elf", msg.str());
+ 1013:                 }
+ 1014:                 else
+ 1015:                 {
+ 1016:                     std::ostringstream msg;
+ 1017:                     msg << "No BSS found, gp=0x" << std::hex << gp;
+ 1018:                     m_reporter.info("elf", msg.str());
+ 1019:                 }
+ 1020: 
+ 1021:                 if (entry != 0)
+ 1022:                 {
+ 1023:                     m_bootstrapInfo.valid = true;
+ 1024:                     m_bootstrapInfo.entry = entry;
+ 1025:                     if (bssStart != std::numeric_limits<uint32_t>::max() && bssEnd > bssStart)
+ 1026:                     {
+ 1027:                         m_bootstrapInfo.bssStart = bssStart;
+ 1028:                         m_bootstrapInfo.bssEnd = bssEnd;
+ 1029:                     }
+ 1030:                     else
+ 1031:                     {
+ 1032:                         m_bootstrapInfo.bssStart = 0;
+ 1033:                         m_bootstrapInfo.bssEnd = 0;
+ 1034:                     }
+ 1035:                     m_bootstrapInfo.gp = gp;
+ 1036:                 }
+ 1037:             }
+ 1038: 
+ 1039:             m_reporter.recordDiscovered(m_functions.size(), m_symbols.size(), m_sections.size(), m_relocations.size());
+ 1040:             {
+ 1041:                 std::ostringstream msg;
+ 1042:                 msg << "extracted " << m_functions.size() << " functions, "
+ 1043:                     << m_symbols.size() << " symbols, "
+ 1044:                     << m_sections.size() << " sections, "
+ 1045:                     << m_relocations.size() << " relocations";
+ 1046:                 m_reporter.progress(msg.str());
+ 1047:             }
+ 1048: 
+ 1049:             m_decoder = std::make_unique<R5900Decoder>();
+ 1050:             m_codeGenerator = std::make_unique<CodeGenerator>(m_symbols, m_sections);
+ 1051:             m_codeGenerator->setReporter(&m_reporter);
+ 1052:             std::unordered_map<uint32_t, std::string> relocationCallNames;
+ 1053:             relocationCallNames.reserve(m_relocations.size());
+ 1054:             for (const auto &reloc : m_relocations)
+ 1055:             {
+ 1056:                 if (reloc.symbolName.empty())
+ 1057:                 {
+ 1058:                     continue;
+ 1059:                 }
+ 1060: 
+ 1061:                 auto inserted = relocationCallNames.emplace(reloc.offset, reloc.symbolName);
+ 1062:                 if (!inserted.second && inserted.first->second != reloc.symbolName)
+ 1063:                 {
+ 1064:                     std::ostringstream msg;
+ 1065:                     msg << "multiple relocation symbols at 0x" << std::hex << reloc.offset
+ 1066:                         << " (keeping '" << inserted.first->second
+ 1067:                         << "', ignoring '" << reloc.symbolName << "')";
+ 1068:                     m_reporter.warning("relocation", msg.str());
+ 1069:                 }
+ 1070:             }
+ 1071:             m_codeGenerator->setRelocationCallNames(relocationCallNames);
+ 1072:             m_codeGenerator->setBootstrapInfo(m_bootstrapInfo);
+ 1073:             m_codeGenerator->setConfiguredJumpTables(m_config.jumpTables);
+ 1074:             m_codeGenerator->setEmitInstructionComments(true);
+ 1075: 
+ 1076:             fs::create_directories(m_config.outputPath);
+ 1077: 
+ 1078:             return true;
+ 1079:         }
+ 1080:         catch (const std::exception &e)
+ 1081:         {
+ 1082:             m_reporter.error("initialize", e.what());
+ 1083:             return false;
+ 1084:         }
+ 1085:     }
+ 1086: 
+ 1087:     bool PS2Recompiler::recompile()
+ 1088:     {
+ 1089:         try
+ 1090:         {
+ 1091:             {
+ 1092:                 std::ostringstream msg;
+ 1093:                 msg << "recompiling " << m_functions.size() << " functions";
+ 1094:                 m_reporter.progress(msg.str());
+ 1095:             }
+ 1096: 
+ 1097:             size_t processedCount = 0;
+ 1098:             size_t failedCount = 0;
+ 1099:             size_t correctnessCriticalFailureCount = 0;
+ 1100: 
+ 1101:             for (uint32_t initializerStart : m_correctnessCriticalFunctionStarts)
+ 1102:             {
+ 1103:                 const auto functionIt = std::find_if(
+ 1104:                     m_functions.begin(), m_functions.end(),
+ 1105:                     [initializerStart](const Function &function)
+ 1106:                     { return function.start == initializerStart; });
+ 1107:                 if (functionIt == m_functions.end())
+ 1108:                 {
+ 1109:                     const auto bindingIt = m_stubHandlerBindingsByStart.find(initializerStart);
+ 1110:                     if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+ 1111:                         resolveStubTarget(bindingIt->second) != StubTarget::Unknown)
+ 1112:                     {
+ 1113:                         Function manualInitializer{};
+ 1114:                         manualInitializer.name = "manual_initializer_" + bindingIt->second;
+ 1115:                         manualInitializer.start = initializerStart;
+ 1116:                         manualInitializer.end = initializerStart + 4u;
+ 1117:                         m_functions.push_back(std::move(manualInitializer));
+ 1118:                         m_reporter.info(
+ 1119:                             "correctness-critical",
+ 1120:                             "Synthesized initializer entry for resolved handler '" +
+ 1121:                                 bindingIt->second + "'");
+ 1122:                         continue;
+ 1123:                     }
+ 1124: 
+ 1125:                     ++correctnessCriticalFailureCount;
+ 1126:                     m_reporter.recordCorrectnessCriticalFailure();
+ 1127:                     m_reporter.errorAt(
+ 1128:                         "correctness-critical",
+ 1129:                         ".ctors/.init_array",
+ 1130:                         initializerStart,
+ 1131:                         "Initializer table target has no discovered guest function or manual handler");
+ 1132:                 }
+ 1133:             }
+ 1134: 
+ 1135:             // A configured stub whose routine was never discovered (e.g. only reached by a tail-call J)
+ 1136:             // would otherwise get no wrapper, and any branch to it hits an unregistered address at runtime.
+ 1137:             for (const auto &[stubStart, handlerName] : m_stubHandlerBindingsByStart)
+ 1138:             {
+ 1139:                 if (resolveStubTarget(handlerName) == StubTarget::Unknown)
+ 1140:                 {
+ 1141:                     continue;
+ 1142:                 }
+ 1143:                 // Only recompiled guest code can already reach this address; a stubbed owner emits none.
+ 1144:                 const bool covered = std::any_of(
+ 1145:                     m_functions.begin(), m_functions.end(),
+ 1146:                     [&](const Function &function)
+ 1147:                     {
+ 1148:                         return stubStart >= function.start &&
+ 1149:                                stubStart < std::max(function.end, function.start + 4u) &&
+ 1150:                                (function.start == stubStart || !isStubFunction(function));
+ 1151:                     });
+ 1152:                 if (covered)
+ 1153:                 {
+ 1154:                     continue;
+ 1155:                 }
+ 1156:                 Function stubEntry{};
+ 1157:                 stubEntry.name = handlerName;
+ 1158:                 stubEntry.start = stubStart;
+ 1159:                 stubEntry.end = stubStart + 4u;
+ 1160:                 m_functions.push_back(std::move(stubEntry));
+ 1161:                 m_reporter.info("stub", "Synthesized entry for undiscovered stub '" + handlerName + "'");
+ 1162:             }
+ 1163: 
+ 1164:             for (auto &function : m_functions)
+ 1165:             {
+ 1166:                 m_reporter.recordFunctionProcessed();
+ 1167:                 const bool correctnessCritical = isCorrectnessCriticalFunction(function);
+ 1168: 
+ 1169:                 if (isStubFunction(function))
+ 1170:                 {
+ 1171:                     if (hasResolvedStubHandler(function))
+ 1172:                     {
+ 1173:                         function.isStub = true;
+ 1174:                         function.isSkipped = false;
+ 1175:                         m_reporter.recordFunctionStubbed();
+ 1176:                         continue;
+ 1177:                     }
+ 1178: 
+ 1179:                     if (correctnessCritical)
+ 1180:                     {
+ 1181:                         m_reporter.recordCorrectnessCriticalGuestFallback();
+ 1182:                     }
+ 1183:                     m_reporter.warningAt(
+ 1184:                         "stub",
+ 1185:                         function.name,
+ 1186:                         function.start,
+ 1187:                         "Configured stub has no runtime handler; recompiling the original guest function");
+ 1188:                 }
+ 1189: 
+ 1190:                 if (shouldSkipFunction(function))
+ 1191:                 {
+ 1192:                     if (!correctnessCritical)
+ 1193:                     {
+ 1194:                         function.isSkipped = true;
+ 1195:                         function.isStub = false;
+ 1196:                         m_reporter.recordFunctionSkipped();
+ 1197:                         continue;
+ 1198:                     }
+ 1199: 
+ 1200:                     m_reporter.recordCorrectnessCriticalGuestFallback();
+ 1201:                     m_reporter.warningAt(
+ 1202:                         "correctness-critical",
+ 1203:                         function.name,
+ 1204:                         function.start,
+ 1205:                         "Initializer skip ignored; recompiling the original guest function");
+ 1206:                 }
+ 1207: 
+ 1208:                 if (!decodeFunction(function))
+ 1209:                 {
+ 1210:                     ++failedCount;
+ 1211:                     m_reporter.recordDecodeFailure();
+ 1212:                     m_reporter.recordFunctionSkipped();
+ 1213:                     function.isSkipped = true;
+ 1214:                     if (correctnessCritical)
+ 1215:                     {
+ 1216:                         ++correctnessCriticalFailureCount;
+ 1217:                         m_reporter.recordCorrectnessCriticalFailure();
+ 1218:                         m_reporter.errorAt(
+ 1219:                             "correctness-critical",
+ 1220:                             function.name,
+ 1221:                             function.start,
+ 1222:                             "Initializer could not be recompiled and has no resolved manual handler");
+ 1223:                     }
+ 1224:                     else
+ 1225:                     {
+ 1226:                         m_reporter.warningAt("decode", function.name, function.start, "Skipping function due decode failure");
+ 1227:                     }
+ 1228:                     continue;
+ 1229:                 }
+ 1230: 
+ 1231:                 function.isStub = false;
+ 1232:                 function.isSkipped = false;
+ 1233:                 function.isRecompiled = true;
+ 1234:                 m_reporter.recordFunctionRecompiled();
+ 1235: #if _DEBUG
+ 1236:                 processedCount++;
+ 1237:                 if (processedCount % 100 == 0)
+ 1238:                 {
+ 1239:                     {
+ 1240:                         std::ostringstream msg;
+ 1241:                         msg << "processed " << processedCount << " functions";
+ 1242:                         m_reporter.progress(msg.str());
+ 1243:                     }
+ 1244:                 }
+ 1245: #endif
+ 1246:             }
+ 1247: 
+ 1248:             discoverAdditionalEntryPoints();
+ 1249: 
+ 1250:             if (failedCount > 0)
+ 1251:             {
+ 1252:                 std::ostringstream msg;
+ 1253:                 msg << "Recompile completed with " << failedCount << " function(s) skipped due decode issues.";
+ 1254:                 m_reporter.warning("decode", msg.str());
+ 1255:             }
+ 1256: 
+ 1257:             m_reporter.progress("recompilation pass completed");
+ 1258:             return correctnessCriticalFailureCount == 0u;
+ 1259:         }
+ 1260:         catch (const std::exception &e)
+ 1261:         {
+ 1262:             m_reporter.error("recompile", e.what());
+ 1263:             return false;
+ 1264:         }
+ 1265:     }
+ 1266: 
+ 1267:     void PS2Recompiler::generateOutput()
+ 1268:     {
+ 1269:         try
+ 1270:         {
+ 1271:             m_functionRenames.clear();
+ 1272: 
+ 1273:             auto makeName = [&](const Function &function) -> std::string
+ 1274:             {
+ 1275:                 std::string sanitized = sanitizeFunctionName(function.name);
+
+============================================================================
+LDC2 / SDC2 / LQC2 / SQC2 TRANSLATION IMPLEMENTATIONS
+============================================================================
+
+FILE: ps2xRecomp\include\ps2recomp\instructions.h
+  106:         OPCODE_CACHE = 0x2F, // Cache Operation
+  107: 
+  108:         OPCODE_LL = 0x30,   // LL - Load Linked Word, maybe omitted/unused
+  109:         OPCODE_LWC1 = 0x31, // Load Word to Coprocessor 1 (FPU)
+  110:         OPCODE_LWC2 = 0x32, // Load Word to Coprocessor 2, maybe omitted/unused
+  111:         OPCODE_PREF = 0x33, // Prefetch
+  112:         OPCODE_LLD = 0x34,  // Load Linked Doubleword, maybe omitted/unused
+  113:         OPCODE_LDC1 = 0x35, // Load Doubleword to Coprocessor 1, FPU is single-precision
+  114:         OPCODE_LDC2 = 0x36, // Load Quadword to Coprocessor 2 (VU0) - Overrides standard MIPS LDC2
+  115:         OPCODE_LD = 0x37,   // Load Doubleword
+  116: 
+  117:         OPCODE_SC = 0x38,   // Store Conditional Word, maybe omitted/unused?
+  118:         OPCODE_SWC1 = 0x39, // Store Word from Coprocessor 1 (FPU)
+  119:         OPCODE_SWC2 = 0x3A, // SWC2 - Store Word from Coprocessor 2, maybe omitted/unused
+  120:         OPCODE_SCD = 0x3C,  // SCD - Store Conditional Doubleword, maybe omitted/unused?
+  121:         OPCODE_SDC1 = 0x3D, // SDC1 - Store Doubleword from Coprocessor 1, FPU is single-precision
+  122:         OPCODE_SDC2 = 0x3E, // PS2 specific Store Quadword from Coprocessor 2 (VU0) - Overrides standard MIPS SDC2
+
+FILE: ps2xRecomp\include\ps2recomp\instructions.h
+  114:         OPCODE_LDC2 = 0x36, // Load Quadword to Coprocessor 2 (VU0) - Overrides standard MIPS LDC2
+  115:         OPCODE_LD = 0x37,   // Load Doubleword
+  116: 
+  117:         OPCODE_SC = 0x38,   // Store Conditional Word, maybe omitted/unused?
+  118:         OPCODE_SWC1 = 0x39, // Store Word from Coprocessor 1 (FPU)
+  119:         OPCODE_SWC2 = 0x3A, // SWC2 - Store Word from Coprocessor 2, maybe omitted/unused
+  120:         OPCODE_SCD = 0x3C,  // SCD - Store Conditional Doubleword, maybe omitted/unused?
+  121:         OPCODE_SDC1 = 0x3D, // SDC1 - Store Doubleword from Coprocessor 1, FPU is single-precision
+  122:         OPCODE_SDC2 = 0x3E, // PS2 specific Store Quadword from Coprocessor 2 (VU0) - Overrides standard MIPS SDC2
+  123:         OPCODE_SD = 0x3F,   // Store Doubleword
+  124: 
+  125:         OPCODE_LQC2 = OPCODE_LDC2,
+  126:         OPCODE_SQC2 = OPCODE_SDC2
+  127:     };
+  128: 
+  129:     // SPECIAL Function (bits 5-0) for OPCODE_SPECIAL
+  130:     enum SpecialFunctions
+
+FILE: ps2xRecomp\include\ps2recomp\instructions.h
+  117:         OPCODE_SC = 0x38,   // Store Conditional Word, maybe omitted/unused?
+  118:         OPCODE_SWC1 = 0x39, // Store Word from Coprocessor 1 (FPU)
+  119:         OPCODE_SWC2 = 0x3A, // SWC2 - Store Word from Coprocessor 2, maybe omitted/unused
+  120:         OPCODE_SCD = 0x3C,  // SCD - Store Conditional Doubleword, maybe omitted/unused?
+  121:         OPCODE_SDC1 = 0x3D, // SDC1 - Store Doubleword from Coprocessor 1, FPU is single-precision
+  122:         OPCODE_SDC2 = 0x3E, // PS2 specific Store Quadword from Coprocessor 2 (VU0) - Overrides standard MIPS SDC2
+  123:         OPCODE_SD = 0x3F,   // Store Doubleword
+  124: 
+  125:         OPCODE_LQC2 = OPCODE_LDC2,
+  126:         OPCODE_SQC2 = OPCODE_SDC2
+  127:     };
+  128: 
+  129:     // SPECIAL Function (bits 5-0) for OPCODE_SPECIAL
+  130:     enum SpecialFunctions
+  131:     {
+  132:         SPECIAL_SLL = 0x00, // Shift Word Left Logical
+  133: 
+
+FILE: ps2xRecomp\include\ps2recomp\instructions.h
+  118:         OPCODE_SWC1 = 0x39, // Store Word from Coprocessor 1 (FPU)
+  119:         OPCODE_SWC2 = 0x3A, // SWC2 - Store Word from Coprocessor 2, maybe omitted/unused
+  120:         OPCODE_SCD = 0x3C,  // SCD - Store Conditional Doubleword, maybe omitted/unused?
+  121:         OPCODE_SDC1 = 0x3D, // SDC1 - Store Doubleword from Coprocessor 1, FPU is single-precision
+  122:         OPCODE_SDC2 = 0x3E, // PS2 specific Store Quadword from Coprocessor 2 (VU0) - Overrides standard MIPS SDC2
+  123:         OPCODE_SD = 0x3F,   // Store Doubleword
+  124: 
+  125:         OPCODE_LQC2 = OPCODE_LDC2,
+  126:         OPCODE_SQC2 = OPCODE_SDC2
+  127:     };
+  128: 
+  129:     // SPECIAL Function (bits 5-0) for OPCODE_SPECIAL
+  130:     enum SpecialFunctions
+  131:     {
+  132:         SPECIAL_SLL = 0x00, // Shift Word Left Logical
+  133: 
+  134:         SPECIAL_SRL = 0x02,  // Shift Word Right Logical
+
+FILE: ps2xRecomp\src\lib\gif_dma_kick_analyzer.cpp
+  141:         case OPCODE_LH:
+  142:         case OPCODE_LW:
+  143:         case OPCODE_LBU:
+  144:         case OPCODE_LHU:
+  145:         case OPCODE_LWU:
+  146:         case OPCODE_LQ:
+  147:         case OPCODE_LD:
+  148:         case OPCODE_LWC1:
+  149:         case OPCODE_LDC2:
+  150:         case OPCODE_SB:
+  151:         case OPCODE_SH:
+  152:         case OPCODE_SW:
+  153:         case OPCODE_SQ:
+  154:         case OPCODE_SD:
+  155:         case OPCODE_SWC1:
+  156:         case OPCODE_SDC2:
+  157:             return true;
+
+FILE: ps2xRecomp\src\lib\gif_dma_kick_analyzer.cpp
+  148:         case OPCODE_LWC1:
+  149:         case OPCODE_LDC2:
+  150:         case OPCODE_SB:
+  151:         case OPCODE_SH:
+  152:         case OPCODE_SW:
+  153:         case OPCODE_SQ:
+  154:         case OPCODE_SD:
+  155:         case OPCODE_SWC1:
+  156:         case OPCODE_SDC2:
+  157:             return true;
+  158:         default:
+  159:             return false;
+  160:         }
+  161:     }
+  162: 
+  163:     MemoryAccessHint resolveMemoryAccessHint(const Instruction &inst, const ConstantRegisterState &constants)
+  164:     {
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+  206:         case OPCODE_LWC1:
+  207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+  208:         case OPCODE_SWC1:
+  209:             return fmt::format(
+  210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+  211:                 inst.rt,
+  212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+  213:         case OPCODE_LDC2:
+  214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  215:         case OPCODE_SDC2:
+  216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+  217:         case OPCODE_DADDI:
+  218:             return fmt::format(
+  219:                 "{{ int64_t src = (int64_t)GPR_S64(ctx, {}); "
+  220:                 "int64_t imm = (int64_t)(int32_t){}; "
+  221:                 "int64_t res = src + imm; "
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+  208:         case OPCODE_SWC1:
+  209:             return fmt::format(
+  210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+  211:                 inst.rt,
+  212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+  213:         case OPCODE_LDC2:
+  214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  215:         case OPCODE_SDC2:
+  216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+  217:         case OPCODE_DADDI:
+  218:             return fmt::format(
+  219:                 "{{ int64_t src = (int64_t)GPR_S64(ctx, {}); "
+  220:                 "int64_t imm = (int64_t)(int32_t){}; "
+  221:                 "int64_t res = src + imm; "
+  222:                 "if (((src ^ imm) >= 0) && ((src ^ res) < 0)) "
+  223:                 "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+
+FILE: ps2xRecomp\src\lib\r5900_decoder.cpp
+  112:         inst.hasDelaySlot = RabbitizerInstruction_hasDelaySlot(&rabbitizerInst);
+  113: 
+  114:         inst.isLoad = RabbitizerInstrDescriptor_doesLoad(desc);
+  115:         inst.isStore = RabbitizerInstrDescriptor_doesStore(desc);
+  116: 
+  117:         inst.isMMI = inst.opcode == OPCODE_MMI;
+  118:         inst.isVU = inst.opcode == OPCODE_COP2 ||
+  119:                     inst.opcode == OPCODE_LWC2 ||
+  120:                     inst.opcode == OPCODE_LDC2 ||
+  121:                     inst.opcode == OPCODE_SWC2 ||
+  122:                     inst.opcode == OPCODE_SDC2;
+  123: 
+  124:         bool modifiesGpr = false;
+  125:         if (RabbitizerInstrDescriptor_modifiesRs(desc) && inst.rs != 0)
+  126:         {
+  127:             modifiesGpr = true;
+  128:         }
+
+FILE: ps2xRecomp\src\lib\r5900_decoder.cpp
+  114:         inst.isLoad = RabbitizerInstrDescriptor_doesLoad(desc);
+  115:         inst.isStore = RabbitizerInstrDescriptor_doesStore(desc);
+  116: 
+  117:         inst.isMMI = inst.opcode == OPCODE_MMI;
+  118:         inst.isVU = inst.opcode == OPCODE_COP2 ||
+  119:                     inst.opcode == OPCODE_LWC2 ||
+  120:                     inst.opcode == OPCODE_LDC2 ||
+  121:                     inst.opcode == OPCODE_SWC2 ||
+  122:                     inst.opcode == OPCODE_SDC2;
+  123: 
+  124:         bool modifiesGpr = false;
+  125:         if (RabbitizerInstrDescriptor_modifiesRs(desc) && inst.rs != 0)
+  126:         {
+  127:             modifiesGpr = true;
+  128:         }
+  129:         if (RabbitizerInstrDescriptor_modifiesRt(desc) && inst.rt != 0)
+  130:         {
+
+FILE: ps2xRecomp\src\lib\r5900_decoder.cpp
+  177:                 inst.modificationInfo.modifiesGPR = true; // success flag to rt
+  178:             }
+  179:         }
+  180: 
+  181:         if (inst.opcode == OPCODE_COP2)
+  182:         {
+  183:             decodeCOP2(inst);
+  184:         }
+  185:         else if (inst.opcode == OPCODE_LWC2 || inst.opcode == OPCODE_LDC2)
+  186:         {
+  187:             inst.isVU = true;
+  188:             inst.modificationInfo.modifiesVFR = true;
+  189:         }
+  190:         else if (inst.opcode == OPCODE_SWC2 || inst.opcode == OPCODE_SDC2)
+  191:         {
+  192:             inst.isVU = true;
+  193:             inst.modificationInfo.modifiesMemory = true;
+
+FILE: ps2xRecomp\src\lib\r5900_decoder.cpp
+  182:         {
+  183:             decodeCOP2(inst);
+  184:         }
+  185:         else if (inst.opcode == OPCODE_LWC2 || inst.opcode == OPCODE_LDC2)
+  186:         {
+  187:             inst.isVU = true;
+  188:             inst.modificationInfo.modifiesVFR = true;
+  189:         }
+  190:         else if (inst.opcode == OPCODE_SWC2 || inst.opcode == OPCODE_SDC2)
+  191:         {
+  192:             inst.isVU = true;
+  193:             inst.modificationInfo.modifiesMemory = true;
+  194:         }
+  195: 
+  196:         if (inst.opcode == OPCODE_LQ || inst.opcode == OPCODE_SQ)
+  197:         {
+  198:             inst.isMultimedia = true;
+
+MATCHES: 12
+
+============================================================================
+INSTRUCTION DISPATCH AND GENERATED RUNTIME DEPENDENCIES
+============================================================================
+
+FILE: ps2xRecomp\include\ps2recomp\code_generator.h
+   72:         RecompilerReporter *m_reporter = nullptr;
+   73:         std::string m_currentFunctionName;
+   74: 
+   75:         std::string translateInstruction(const Instruction &inst);
+   76:         std::string translateInstruction(const Instruction &inst, const MemoryAccessHint &memoryHint);
+   77:         std::string emitUnhandledInstruction(const Instruction &inst, const std::string &message);
+   78:         std::string translateMMIInstruction(const Instruction &inst);
+
+FILE: ps2xRecomp\include\ps2recomp\code_generator.h
+   73:         std::string m_currentFunctionName;
+   74: 
+   75:         std::string translateInstruction(const Instruction &inst);
+   76:         std::string translateInstruction(const Instruction &inst, const MemoryAccessHint &memoryHint);
+   77:         std::string emitUnhandledInstruction(const Instruction &inst, const std::string &message);
+   78:         std::string translateMMIInstruction(const Instruction &inst);
+   79:         std::string translateVUInstruction(const Instruction &inst);
+
+FILE: ps2xRecomp\include\ps2recomp\code_generator.h
+   75:         std::string translateInstruction(const Instruction &inst);
+   76:         std::string translateInstruction(const Instruction &inst, const MemoryAccessHint &memoryHint);
+   77:         std::string emitUnhandledInstruction(const Instruction &inst, const std::string &message);
+   78:         std::string translateMMIInstruction(const Instruction &inst);
+   79:         std::string translateVUInstruction(const Instruction &inst);
+   80:         std::string translateFPUInstruction(const Instruction &inst);
+   81:         std::string translateCOP0Instruction(const Instruction &inst);
+
+FILE: ps2xRecomp\include\ps2recomp\code_generator.h
+   76:         std::string translateInstruction(const Instruction &inst, const MemoryAccessHint &memoryHint);
+   77:         std::string emitUnhandledInstruction(const Instruction &inst, const std::string &message);
+   78:         std::string translateMMIInstruction(const Instruction &inst);
+   79:         std::string translateVUInstruction(const Instruction &inst);
+   80:         std::string translateFPUInstruction(const Instruction &inst);
+   81:         std::string translateCOP0Instruction(const Instruction &inst);
+   82:         std::string translateRegimmInstruction(const Instruction &inst);
+
+FILE: ps2xRecomp\include\ps2recomp\code_generator.h
+   77:         std::string emitUnhandledInstruction(const Instruction &inst, const std::string &message);
+   78:         std::string translateMMIInstruction(const Instruction &inst);
+   79:         std::string translateVUInstruction(const Instruction &inst);
+   80:         std::string translateFPUInstruction(const Instruction &inst);
+   81:         std::string translateCOP0Instruction(const Instruction &inst);
+   82:         std::string translateRegimmInstruction(const Instruction &inst);
+   83:         std::string translateSpecialInstruction(const Instruction &inst);
+
+FILE: ps2xRecomp\include\ps2recomp\code_generator.h
+   78:         std::string translateMMIInstruction(const Instruction &inst);
+   79:         std::string translateVUInstruction(const Instruction &inst);
+   80:         std::string translateFPUInstruction(const Instruction &inst);
+   81:         std::string translateCOP0Instruction(const Instruction &inst);
+   82:         std::string translateRegimmInstruction(const Instruction &inst);
+   83:         std::string translateSpecialInstruction(const Instruction &inst);
+   84: 
+
+FILE: ps2xRecomp\src\lib\code_generator.cpp
+  223: 
+  224:     CodeGenerator::~CodeGenerator() = default;
+  225: 
+  226:     std::string CodeGenerator::translateInstruction(const Instruction &inst)
+  227:     {
+  228:         return InstructionTranslator(*this).translate(inst, {});
+  229:     }
+
+FILE: ps2xRecomp\src\lib\code_generator.cpp
+  228:         return InstructionTranslator(*this).translate(inst, {});
+  229:     }
+  230: 
+  231:     std::string CodeGenerator::translateInstruction(const Instruction &inst, const MemoryAccessHint &memoryHint)
+  232:     {
+  233:         return InstructionTranslator(*this).translate(inst, memoryHint);
+  234:     }
+
+FILE: ps2xRecomp\src\lib\code_generator.cpp
+  243:         return RegimmTranslator(*this).translate(inst);
+  244:     }
+  245: 
+  246:     std::string CodeGenerator::translateCOP0Instruction(const Instruction &inst)
+  247:     {
+  248:         return Cop0Translator(*this).translate(inst);
+  249:     }
+
+FILE: ps2xRecomp\src\lib\code_generator.cpp
+  248:         return Cop0Translator(*this).translate(inst);
+  249:     }
+  250: 
+  251:     std::string CodeGenerator::translateFPUInstruction(const Instruction &inst)
+  252:     {
+  253:         return FpuTranslator(*this).translate(inst);
+  254:     }
+
+FILE: ps2xRecomp\src\lib\code_generator.cpp
+  253:         return FpuTranslator(*this).translate(inst);
+  254:     }
+  255: 
+  256:     std::string CodeGenerator::translateMMIInstruction(const Instruction &inst)
+  257:     {
+  258:         return MmiTranslator(*this).translate(inst);
+  259:     }
+
+FILE: ps2xRecomp\src\lib\code_generator.cpp
+  258:         return MmiTranslator(*this).translate(inst);
+  259:     }
+  260: 
+  261:     std::string CodeGenerator::translateVUInstruction(const Instruction &inst)
+  262:     {
+  263:         return VuTranslator(*this).translate(inst);
+  264:     }
+
+FILE: ps2xRecomp\src\lib\control_flow_emitter.cpp
+  120:             code += " (Delay Slot)\n";
+  121:         }
+  122: 
+  123:         code += m_gen.translateInstruction(m_delaySlot);
+  124:         return code;
+  125:     }
+  126: 
+
+FILE: ps2xRecomp\src\lib\control_flow_emitter.cpp
+  177:         m_ss << fmt::format("{}ctx->pc = 0x{:X}u;\n", indent, target);
+  178:         if (target <= sourcePc && !isCallLikeEdge())
+  179:         {
+  180:             m_ss << fmt::format("{}if (runtime->eeCheckpointDue()) {{\n", indent);
+  181:             m_ss << fmt::format("{}    return;\n", indent);
+  182:             m_ss << fmt::format("{}}}\n", indent);
+  183:         }
+
+FILE: ps2xRecomp\src\lib\control_flow_emitter.cpp
+  193:                                                        bool returnOnTransfer)
+  194:     {
+  195:         m_ss << fmt::format(
+  196:             "{}if (!runtime->dispatchGuestBranch(rdram, ctx, {}, 0x{:X}u, 0x{:X}u, PS2Runtime::GuestBranchKind::{}, \"{}\")) {{\n",
+  197:             indent,
+  198:             targetExpression,
+  199:             sourcePc,
+
+FILE: ps2xRecomp\src\lib\control_flow_emitter.cpp
+  257:         if (isReturn)
+  258:         {
+  259:             m_ss << indent << "#if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS\n";
+  260:             m_ss << indent << "(void)runtime->dispatchGuestBranch(rdram, ctx, " << jumpTargetExpression
+  261:                  << ", 0x" << fmt::format("{:X}", branchPc())
+  262:                  << "u, 0u, PS2Runtime::GuestBranchKind::Return, \"JR $ra\");\n";
+  263:             m_ss << indent << "return;\n";
+
+FILE: ps2xRecomp\src\lib\control_flow_emitter.cpp
+  324:     {
+  325:         if (kind == StaticBranchKind::Call)
+  326:         {
+  327:             m_ss << fmt::format("    SET_GPR_U32(ctx, 31, 0x{:X}u);\n", fallthroughPc());
+  328:         }
+  329: 
+  330:         emitDelaySlot("    ");
+
+FILE: ps2xRecomp\src\lib\control_flow_emitter.cpp
+  362: 
+  363:         if (kind == RegisterBranchKind::Call && rdReg != 0u)
+  364:         {
+  365:             m_ss << fmt::format("        SET_GPR_U32(ctx, {}, 0x{:X}u);\n", rdReg, fallthroughPc());
+  366:         }
+  367: 
+  368:         emitDelaySlot("        ");
+
+FILE: ps2xRecomp\src\lib\control_flow_emitter.cpp
+  400:         {
+  401:         case OPCODE_BEQ:
+  402:         case OPCODE_BEQL:
+  403:             return fmt::format("GPR_U64(ctx, {}) == GPR_U64(ctx, {})", rsReg, rtReg);
+  404:         case OPCODE_BNE:
+  405:         case OPCODE_BNEL:
+  406:             return fmt::format("GPR_U64(ctx, {}) != GPR_U64(ctx, {})", rsReg, rtReg);
+
+FILE: ps2xRecomp\src\lib\control_flow_emitter.cpp
+  403:             return fmt::format("GPR_U64(ctx, {}) == GPR_U64(ctx, {})", rsReg, rtReg);
+  404:         case OPCODE_BNE:
+  405:         case OPCODE_BNEL:
+  406:             return fmt::format("GPR_U64(ctx, {}) != GPR_U64(ctx, {})", rsReg, rtReg);
+  407:         // Sign branches test all 64 bits: an ld of an IPU register yields 0x00000000_8xxxxxxx, which is positive.
+  408:         case OPCODE_BLEZ:
+  409:         case OPCODE_BLEZL:
+
+FILE: ps2xRecomp\src\lib\control_flow_emitter.cpp
+  471:         {
+  472:             if (m_branchInst.rt == REGIMM_BLTZAL || m_branchInst.rt == REGIMM_BGEZAL)
+  473:             {
+  474:                 unconditionalLinkCode = fmt::format("SET_GPR_U32(ctx, 31, 0x{:X}u);", fallthroughPc());
+  475:             }
+  476:             else if (m_branchInst.rt == REGIMM_BLTZALL || m_branchInst.rt == REGIMM_BGEZALL)
+  477:             {
+
+FILE: ps2xRecomp\src\lib\control_flow_emitter.cpp
+  475:             }
+  476:             else if (m_branchInst.rt == REGIMM_BLTZALL || m_branchInst.rt == REGIMM_BGEZALL)
+  477:             {
+  478:                 conditionalLinkCode = fmt::format("SET_GPR_U32(ctx, 31, 0x{:X}u);", fallthroughPc());
+  479:             }
+  480:         }
+  481: 
+
+FILE: ps2xRecomp\src\lib\control_flow_emitter.cpp
+  534: 
+  535:     void ControlFlowEmitter::emitFallbackInstruction()
+  536:     {
+  537:         m_ss << "    " << m_gen.translateInstruction(m_branchInst) << "\n";
+  538:         emitDelaySlot("    ");
+  539:     }
+  540: 
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   28:             switch (rd)
+   29:             {
+   30:             case COP0_REG_INDEX:
+   31:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_index);", rt);
+   32:             case COP0_REG_RANDOM:
+   33:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_random);", rt);
+   34:             case COP0_REG_ENTRYLO0:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   30:             case COP0_REG_INDEX:
+   31:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_index);", rt);
+   32:             case COP0_REG_RANDOM:
+   33:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_random);", rt);
+   34:             case COP0_REG_ENTRYLO0:
+   35:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_entrylo0);", rt);
+   36:             case COP0_REG_ENTRYLO1:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   32:             case COP0_REG_RANDOM:
+   33:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_random);", rt);
+   34:             case COP0_REG_ENTRYLO0:
+   35:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_entrylo0);", rt);
+   36:             case COP0_REG_ENTRYLO1:
+   37:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_entrylo1);", rt);
+   38:             case COP0_REG_CONTEXT:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   34:             case COP0_REG_ENTRYLO0:
+   35:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_entrylo0);", rt);
+   36:             case COP0_REG_ENTRYLO1:
+   37:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_entrylo1);", rt);
+   38:             case COP0_REG_CONTEXT:
+   39:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_context);", rt);
+   40:             case COP0_REG_PAGEMASK:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   36:             case COP0_REG_ENTRYLO1:
+   37:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_entrylo1);", rt);
+   38:             case COP0_REG_CONTEXT:
+   39:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_context);", rt);
+   40:             case COP0_REG_PAGEMASK:
+   41:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_pagemask);", rt);
+   42:             case COP0_REG_WIRED:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   38:             case COP0_REG_CONTEXT:
+   39:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_context);", rt);
+   40:             case COP0_REG_PAGEMASK:
+   41:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_pagemask);", rt);
+   42:             case COP0_REG_WIRED:
+   43:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_wired);", rt);
+   44:             case COP0_REG_BADVADDR:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   40:             case COP0_REG_PAGEMASK:
+   41:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_pagemask);", rt);
+   42:             case COP0_REG_WIRED:
+   43:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_wired);", rt);
+   44:             case COP0_REG_BADVADDR:
+   45:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_badvaddr);", rt);
+   46:             case COP0_REG_COUNT:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   42:             case COP0_REG_WIRED:
+   43:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_wired);", rt);
+   44:             case COP0_REG_BADVADDR:
+   45:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_badvaddr);", rt);
+   46:             case COP0_REG_COUNT:
+   47:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_count);", rt);
+   48:             case COP0_REG_ENTRYHI:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   44:             case COP0_REG_BADVADDR:
+   45:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_badvaddr);", rt);
+   46:             case COP0_REG_COUNT:
+   47:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_count);", rt);
+   48:             case COP0_REG_ENTRYHI:
+   49:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_entryhi);", rt);
+   50:             case COP0_REG_COMPARE:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   46:             case COP0_REG_COUNT:
+   47:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_count);", rt);
+   48:             case COP0_REG_ENTRYHI:
+   49:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_entryhi);", rt);
+   50:             case COP0_REG_COMPARE:
+   51:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_compare);", rt);
+   52:             case COP0_REG_STATUS:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   48:             case COP0_REG_ENTRYHI:
+   49:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_entryhi);", rt);
+   50:             case COP0_REG_COMPARE:
+   51:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_compare);", rt);
+   52:             case COP0_REG_STATUS:
+   53:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_status);", rt);
+   54:             case COP0_REG_CAUSE:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   50:             case COP0_REG_COMPARE:
+   51:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_compare);", rt);
+   52:             case COP0_REG_STATUS:
+   53:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_status);", rt);
+   54:             case COP0_REG_CAUSE:
+   55:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_cause);", rt);
+   56:             case COP0_REG_EPC:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   52:             case COP0_REG_STATUS:
+   53:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_status);", rt);
+   54:             case COP0_REG_CAUSE:
+   55:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_cause);", rt);
+   56:             case COP0_REG_EPC:
+   57:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_epc);", rt);
+   58:             case COP0_REG_PRID:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   54:             case COP0_REG_CAUSE:
+   55:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_cause);", rt);
+   56:             case COP0_REG_EPC:
+   57:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_epc);", rt);
+   58:             case COP0_REG_PRID:
+   59:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_prid);", rt);
+   60:             case COP0_REG_CONFIG:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   56:             case COP0_REG_EPC:
+   57:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_epc);", rt);
+   58:             case COP0_REG_PRID:
+   59:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_prid);", rt);
+   60:             case COP0_REG_CONFIG:
+   61:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_config);", rt);
+   62:             case COP0_REG_BADPADDR:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   58:             case COP0_REG_PRID:
+   59:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_prid);", rt);
+   60:             case COP0_REG_CONFIG:
+   61:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_config);", rt);
+   62:             case COP0_REG_BADPADDR:
+   63:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_badpaddr);", rt);
+   64:             case COP0_REG_DEBUG:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   60:             case COP0_REG_CONFIG:
+   61:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_config);", rt);
+   62:             case COP0_REG_BADPADDR:
+   63:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_badpaddr);", rt);
+   64:             case COP0_REG_DEBUG:
+   65:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_debug);", rt);
+   66:             case COP0_REG_PERF:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   62:             case COP0_REG_BADPADDR:
+   63:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_badpaddr);", rt);
+   64:             case COP0_REG_DEBUG:
+   65:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_debug);", rt);
+   66:             case COP0_REG_PERF:
+   67:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_perf);", rt);
+   68:             case COP0_REG_TAGLO:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   64:             case COP0_REG_DEBUG:
+   65:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_debug);", rt);
+   66:             case COP0_REG_PERF:
+   67:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_perf);", rt);
+   68:             case COP0_REG_TAGLO:
+   69:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_taglo);", rt);
+   70:             case COP0_REG_TAGHI:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   66:             case COP0_REG_PERF:
+   67:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_perf);", rt);
+   68:             case COP0_REG_TAGLO:
+   69:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_taglo);", rt);
+   70:             case COP0_REG_TAGHI:
+   71:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_taghi);", rt);
+   72:             case COP0_REG_ERROREPC:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   68:             case COP0_REG_TAGLO:
+   69:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_taglo);", rt);
+   70:             case COP0_REG_TAGHI:
+   71:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_taghi);", rt);
+   72:             case COP0_REG_ERROREPC:
+   73:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_errorepc);", rt);
+   74:             default:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   70:             case COP0_REG_TAGHI:
+   71:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_taghi);", rt);
+   72:             case COP0_REG_ERROREPC:
+   73:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_errorepc);", rt);
+   74:             default:
+   75:                 return fmt::format("SET_GPR_S32(ctx, {}, 0);  // Unimplemented COP0 register {}", rt, rd);
+   76:             }
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+   72:             case COP0_REG_ERROREPC:
+   73:                 return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ctx->cop0_errorepc);", rt);
+   74:             default:
+   75:                 return fmt::format("SET_GPR_S32(ctx, {}, 0);  // Unimplemented COP0 register {}", rt, rd);
+   76:             }
+   77:         case COP0_MT:
+   78:             switch (rd)
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+  132:             switch (function)
+  133:             {
+  134:             case COP0_CO_TLBR:
+  135:                 return fmt::format("runtime->handleTLBR(rdram, ctx);");
+  136:             case COP0_CO_TLBWI:
+  137:                 return fmt::format("runtime->handleTLBWI(rdram, ctx);");
+  138:             case COP0_CO_TLBWR:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+  134:             case COP0_CO_TLBR:
+  135:                 return fmt::format("runtime->handleTLBR(rdram, ctx);");
+  136:             case COP0_CO_TLBWI:
+  137:                 return fmt::format("runtime->handleTLBWI(rdram, ctx);");
+  138:             case COP0_CO_TLBWR:
+  139:                 return fmt::format("runtime->handleTLBWR(rdram, ctx);");
+  140:             case COP0_CO_TLBP:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+  136:             case COP0_CO_TLBWI:
+  137:                 return fmt::format("runtime->handleTLBWI(rdram, ctx);");
+  138:             case COP0_CO_TLBWR:
+  139:                 return fmt::format("runtime->handleTLBWR(rdram, ctx);");
+  140:             case COP0_CO_TLBP:
+  141:                 return fmt::format("runtime->handleTLBP(rdram, ctx);");
+  142:             case COP0_CO_ERET:
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+  138:             case COP0_CO_TLBWR:
+  139:                 return fmt::format("runtime->handleTLBWR(rdram, ctx);");
+  140:             case COP0_CO_TLBP:
+  141:                 return fmt::format("runtime->handleTLBP(rdram, ctx);");
+  142:             case COP0_CO_ERET:
+  143:                 return fmt::format(
+  144:                     "if (ctx->cop0_status & 0x4) {{ \n" // Check ERL bit (bit 2)
+
+FILE: ps2xRecomp\src\lib\cop0_translator.cpp
+  148:                     "    ctx->pc = ctx->cop0_epc; \n"  // Note: If neither ERL/EXL set, behavior is undefined; using EPC is common.
+  149:                     "    ctx->cop0_status &= ~0x2; \n" // Clear EXL bit
+  150:                     "}} \n"
+  151:                     "runtime->clearLLBit(ctx); \n" // Essential: Clear Load-Linked bit
+  152:                     "return;"                      // Stop execution in this recompiled block
+  153:                 );
+  154:             case COP0_CO_EI:
+
+FILE: ps2xRecomp\src\lib\fpu_translator.cpp
+   26:         switch (format)
+   27:         {
+   28:         case COP1_MF:
+   29:             return fmt::format("{{ uint32_t bits; std::memcpy(&bits, &ctx->f[{}], sizeof(bits)); SET_GPR_U32(ctx, {}, bits); }}", fs, ft);
+   30:         case COP1_MT:
+   31:             return fmt::format("{{ uint32_t bits = GPR_U32(ctx, {}); std::memcpy(&ctx->f[{}], &bits, sizeof(bits)); }}", ft, fs);
+   32:         case COP1_CF:
+
+FILE: ps2xRecomp\src\lib\fpu_translator.cpp
+   31:             return fmt::format("{{ uint32_t bits = GPR_U32(ctx, {}); std::memcpy(&ctx->f[{}], &bits, sizeof(bits)); }}", ft, fs);
+   32:         case COP1_CF:
+   33:             if (fs == 31)
+   34:                 return fmt::format("SET_GPR_U32(ctx, {}, ctx->fcr31);", ft); // FCR31 contains status/control
+   35:             if (fs == 0)
+   36:                 return fmt::format("SET_GPR_U32(ctx, {}, 0x00000000);", ft); // FCR0 is the FPU implementation register
+   37:             return fmt::format("SET_GPR_U32(ctx, {}, 0); // Unimplemented FCR{}", ft, fs);
+
+FILE: ps2xRecomp\src\lib\fpu_translator.cpp
+   33:             if (fs == 31)
+   34:                 return fmt::format("SET_GPR_U32(ctx, {}, ctx->fcr31);", ft); // FCR31 contains status/control
+   35:             if (fs == 0)
+   36:                 return fmt::format("SET_GPR_U32(ctx, {}, 0x00000000);", ft); // FCR0 is the FPU implementation register
+   37:             return fmt::format("SET_GPR_U32(ctx, {}, 0); // Unimplemented FCR{}", ft, fs);
+   38:         case COP1_CT:
+   39:             if (fs == 31)
+
+FILE: ps2xRecomp\src\lib\fpu_translator.cpp
+   34:                 return fmt::format("SET_GPR_U32(ctx, {}, ctx->fcr31);", ft); // FCR31 contains status/control
+   35:             if (fs == 0)
+   36:                 return fmt::format("SET_GPR_U32(ctx, {}, 0x00000000);", ft); // FCR0 is the FPU implementation register
+   37:             return fmt::format("SET_GPR_U32(ctx, {}, 0); // Unimplemented FCR{}", ft, fs);
+   38:         case COP1_CT:
+   39:             if (fs == 31)
+   40:                 return fmt::format("ctx->fcr31 = GPR_U32(ctx, {}) & 0x0183FFFF;", ft);
+
+FILE: ps2xRecomp\src\lib\function_emitter.cpp
+  203:                     ss << "    ctx->pc = 0x" << std::hex << inst.address << "u;\n"
+  204:                        << std::dec;
+  205:                     const MemoryAccessHint memoryHint = resolveMemoryAccessHint(inst, constantRegisters);
+  206:                     ss << "    " << cg.translateInstruction(inst, memoryHint);
+  207:                     if (inst.isMmio)
+  208:                     {
+  209:                         ss << " // MMIO: 0x" << std::hex << inst.mmioAddress << std::dec;
+
+FILE: ps2xRecomp\src\lib\gif_dma_kick_analyzer.cpp
+  258:     std::string gifDmaKickCall(const GifDmaKickPlan &plan)
+  259:     {
+  260:         std::ostringstream ss;
+  261:         ss << "runtime->kickGifDmaChainFromMMIO(rdram, ctx, "
+  262:            << plan.values[0] << ", "
+  263:            << plan.values[1] << ", "
+  264:            << plan.values[2] << ", "
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+   84:             const std::string resolvedAddressExpr = addressLiteral(resolvedAddress);
+   85:             if (inst.isMmio || Ps2IsSpecialAddress(resolvedAddress))
+   86:             {
+   87:                 return fmt::format("runtime->Load{}(rdram, ctx, {})", width, resolvedAddressExpr);
+   88:             }
+   89:             return fmt::format("FAST_READ{}({})", width, resolvedAddressExpr);
+   90:         }
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+   91: 
+   92:         if (inst.isMmio)
+   93:         {
+   94:             return fmt::format("runtime->Load{}(rdram, ctx, {})", width, addr);
+   95:         }
+   96:         return fmt::format("READ{}({})", width, addr);
+   97:     }
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  108:             const std::string resolvedAddressExpr = addressLiteral(resolvedAddress);
+  109:             if (inst.isMmio || Ps2IsSpecialAddress(resolvedAddress))
+  110:             {
+  111:                 return fmt::format("runtime->Store{}(rdram, ctx, {}, {})", width, resolvedAddressExpr, value);
+  112:             }
+  113:             return genFastWrite(width, resolvedAddress, value);
+  114:         }
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  115: 
+  116:         if (inst.isMmio)
+  117:         {
+  118:             return fmt::format("runtime->Store{}(rdram, ctx, {}, {})", width, addr, value);
+  119:         }
+  120:         return fmt::format("WRITE{}({}, {})", width, addr, value);
+  121:     }
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  124:     {
+  125:         if (inst.isMMI)
+  126:         {
+  127:             return m_codeGenerator.translateMMIInstruction(inst);
+  128:         }
+  129: 
+  130:         const MemoryAccessHint effectiveMemoryHint = effectiveMemoryHintFor(inst, memoryHint);
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  146:         case OPCODE_REGIMM:
+  147:             return m_codeGenerator.translateRegimmInstruction(inst);
+  148:         case OPCODE_COP0:
+  149:             return m_codeGenerator.translateCOP0Instruction(inst);
+  150:         case OPCODE_COP1:
+  151:             return m_codeGenerator.translateFPUInstruction(inst);
+  152:         case OPCODE_COP2:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  148:         case OPCODE_COP0:
+  149:             return m_codeGenerator.translateCOP0Instruction(inst);
+  150:         case OPCODE_COP1:
+  151:             return m_codeGenerator.translateFPUInstruction(inst);
+  152:         case OPCODE_COP2:
+  153:             return m_codeGenerator.translateVUInstruction(inst);
+  154:         case OPCODE_ADDI:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  150:         case OPCODE_COP1:
+  151:             return m_codeGenerator.translateFPUInstruction(inst);
+  152:         case OPCODE_COP2:
+  153:             return m_codeGenerator.translateVUInstruction(inst);
+  154:         case OPCODE_ADDI:
+  155:             if (inst.rt == 0)
+  156:                 return "// NOP (addi to $zero)";
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  157:             return fmt::format(
+  158:                 "{{ uint32_t tmp; bool ov; "
+  159:                 "ADD32_OV(GPR_U32(ctx, {}), (int32_t){}, tmp, ov); "
+  160:                 "if (ov) runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+  161:                 "else SET_GPR_S32(ctx, {}, (int32_t)tmp); }}",
+  162:                 inst.rs, inst.simmediate, inst.rt);
+  163: 
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  158:                 "{{ uint32_t tmp; bool ov; "
+  159:                 "ADD32_OV(GPR_U32(ctx, {}), (int32_t){}, tmp, ov); "
+  160:                 "if (ov) runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+  161:                 "else SET_GPR_S32(ctx, {}, (int32_t)tmp); }}",
+  162:                 inst.rs, inst.simmediate, inst.rt);
+  163: 
+  164:         case OPCODE_ADDIU:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  164:         case OPCODE_ADDIU:
+  165:             if (inst.rt == 0)
+  166:                 return "// NOP (addiu $zero, ...)";
+  167:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ADD32(GPR_U32(ctx, {}), {}));", inst.rt, inst.rs, inst.simmediate);
+  168:         case OPCODE_SLTI:
+  169:             return fmt::format("SET_GPR_U64(ctx, {}, ((int64_t)GPR_S64(ctx, {}) < (int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+  170:         case OPCODE_SLTIU:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  166:                 return "// NOP (addiu $zero, ...)";
+  167:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ADD32(GPR_U32(ctx, {}), {}));", inst.rt, inst.rs, inst.simmediate);
+  168:         case OPCODE_SLTI:
+  169:             return fmt::format("SET_GPR_U64(ctx, {}, ((int64_t)GPR_S64(ctx, {}) < (int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+  170:         case OPCODE_SLTIU:
+  171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+  172:         case OPCODE_ANDI:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  168:         case OPCODE_SLTI:
+  169:             return fmt::format("SET_GPR_U64(ctx, {}, ((int64_t)GPR_S64(ctx, {}) < (int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+  170:         case OPCODE_SLTIU:
+  171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+  172:         case OPCODE_ANDI:
+  173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  174:         case OPCODE_ORI:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  170:         case OPCODE_SLTIU:
+  171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+  172:         case OPCODE_ANDI:
+  173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  174:         case OPCODE_ORI:
+  175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  176:         case OPCODE_XORI:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  172:         case OPCODE_ANDI:
+  173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  174:         case OPCODE_ORI:
+  175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  176:         case OPCODE_XORI:
+  177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  178:         case OPCODE_LUI:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  174:         case OPCODE_ORI:
+  175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  176:         case OPCODE_XORI:
+  177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  178:         case OPCODE_LUI:
+  179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+  180:         case OPCODE_LB:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  176:         case OPCODE_XORI:
+  177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+  178:         case OPCODE_LUI:
+  179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+  180:         case OPCODE_LB:
+  181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  182:         case OPCODE_LH:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  178:         case OPCODE_LUI:
+  179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+  180:         case OPCODE_LB:
+  181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  182:         case OPCODE_LH:
+  183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  184:         case OPCODE_LW:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  180:         case OPCODE_LB:
+  181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  182:         case OPCODE_LH:
+  183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  184:         case OPCODE_LW:
+  185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  186:         case OPCODE_LBU:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  182:         case OPCODE_LH:
+  183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  184:         case OPCODE_LW:
+  185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  186:         case OPCODE_LBU:
+  187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  188:         case OPCODE_LHU:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  184:         case OPCODE_LW:
+  185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  186:         case OPCODE_LBU:
+  187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  188:         case OPCODE_LHU:
+  189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  190:         case OPCODE_LWU:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  186:         case OPCODE_LBU:
+  187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  188:         case OPCODE_LHU:
+  189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  190:         case OPCODE_LWU:
+  191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  192:         case OPCODE_SB:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  188:         case OPCODE_LHU:
+  189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  190:         case OPCODE_LWU:
+  191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  192:         case OPCODE_SB:
+  193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+  194:         case OPCODE_SH:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  196:         case OPCODE_SW:
+  197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+  198:         case OPCODE_LQ:
+  199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  200:         case OPCODE_SQ:
+  201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+  202:         case OPCODE_LD:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  198:         case OPCODE_LQ:
+  199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  200:         case OPCODE_SQ:
+  201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+  202:         case OPCODE_LD:
+  203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  204:         case OPCODE_SD:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  200:         case OPCODE_SQ:
+  201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+  202:         case OPCODE_LD:
+  203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  204:         case OPCODE_SD:
+  205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+  206:         case OPCODE_LWC1:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  202:         case OPCODE_LD:
+  203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+  204:         case OPCODE_SD:
+  205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+  206:         case OPCODE_LWC1:
+  207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+  208:         case OPCODE_SWC1:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  220:                 "int64_t imm = (int64_t)(int32_t){}; "
+  221:                 "int64_t res = src + imm; "
+  222:                 "if (((src ^ imm) >= 0) && ((src ^ res) < 0)) "
+  223:                 "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+  224:                 "else SET_GPR_S64(ctx, {}, res); }}",
+  225:                 inst.rs, inst.simmediate, inst.rt);
+  226:         case OPCODE_DADDIU:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  221:                 "int64_t res = src + imm; "
+  222:                 "if (((src ^ imm) >= 0) && ((src ^ res) < 0)) "
+  223:                 "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+  224:                 "else SET_GPR_S64(ctx, {}, res); }}",
+  225:                 inst.rs, inst.simmediate, inst.rt);
+  226:         case OPCODE_DADDIU:
+  227:             return fmt::format(
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  225:                 inst.rs, inst.simmediate, inst.rt);
+  226:         case OPCODE_DADDIU:
+  227:             return fmt::format(
+  228:                 "SET_GPR_S64(ctx, {}, (int64_t)GPR_S64(ctx, {}) + (int64_t)(int32_t){});",
+  229:                 inst.rt, inst.rs, inst.simmediate);
+  230:         case OPCODE_J:
+  231:             return fmt::format("// J 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  248:                                "uint64_t mem = {}; "
+  249:                                "uint32_t shift = (7u - offset) << 3; "
+  250:                                "uint64_t keepMask = (shift == 0) ? 0ull : ((1ull << shift) - 1ull); "
+  251:                                "SET_GPR_U64(ctx, {}, (GPR_U64(ctx, {}) & keepMask) | (mem << shift)); }}",
+  252:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, inst.rt);
+  253: 
+  254:         case OPCODE_LDR:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  258:                                "uint64_t mem = {}; "
+  259:                                "uint32_t shift = offset << 3; "
+  260:                                "uint64_t keepMask = (offset == 0) ? 0ull : (0xFFFFFFFFFFFFFFFFull << ((8u - offset) << 3)); "
+  261:                                "SET_GPR_U64(ctx, {}, (GPR_U64(ctx, {}) & keepMask) | (mem >> shift)); }}",
+  262:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, inst.rt);
+  263: 
+  264:         case OPCODE_LWL:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  269:                                "uint32_t shift = (3u - offset) << 3; "
+  270:                                "uint32_t keepMask = (shift == 0) ? 0u : ((1u << shift) - 1u); "
+  271:                                "uint32_t merged = (GPR_U32(ctx, {}) & keepMask) | (mem << shift); "
+  272:                                "SET_GPR_S32(ctx, {}, (int32_t)merged); }}",
+  273:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"), inst.rt, inst.rt);
+  274: 
+  275:         case OPCODE_LWR:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  280:                                "uint32_t shift = offset << 3; "
+  281:                                "uint32_t keepMask = (offset == 0) ? 0u : (0xFFFFFFFFu << ((4u - offset) << 3)); "
+  282:                                "uint32_t merged32 = (GPR_U32(ctx, {}) & keepMask) | (mem >> shift); "
+  283:                                "uint64_t merged64 = (GPR_U64(ctx, {}) & 0xFFFFFFFF00000000ull) | (uint64_t)merged32; "
+  284:                                "if (offset == 0) merged64 = (uint64_t)(int64_t)(int32_t)merged32; "
+  285:                                "SET_GPR_U64(ctx, {}, merged64); }}",
+  286:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"),
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  282:                                "uint32_t merged32 = (GPR_U32(ctx, {}) & keepMask) | (mem >> shift); "
+  283:                                "uint64_t merged64 = (GPR_U64(ctx, {}) & 0xFFFFFFFF00000000ull) | (uint64_t)merged32; "
+  284:                                "if (offset == 0) merged64 = (uint64_t)(int64_t)(int32_t)merged32; "
+  285:                                "SET_GPR_U64(ctx, {}, merged64); }}",
+  286:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"),
+  287:                                inst.rt, inst.rt, inst.rt);
+  288: 
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  317:                                "uint32_t shift = (7u - offset) << 3; "
+  318:                                "uint64_t mask = 0xFFFFFFFFFFFFFFFFull >> shift; "
+  319:                                "uint64_t old_data = {}; "
+  320:                                "uint64_t val = GPR_U64(ctx, {}); "
+  321:                                "uint64_t new_data = (old_data & ~mask) | ((val >> shift) & mask); "
+  322:                                "{}; }}",
+  323:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, genWrite(64, "aligned_addr", "new_data"));
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  329:                                "uint32_t shift = offset << 3; "
+  330:                                "uint64_t mask = 0xFFFFFFFFFFFFFFFFull << shift; "
+  331:                                "uint64_t old_data = {}; "
+  332:                                "uint64_t val = GPR_U64(ctx, {}); "
+  333:                                "uint64_t new_data = (old_data & ~mask) | ((val << shift) & mask); "
+  334:                                "{}; }}",
+  335:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, genWrite(64, "aligned_addr", "new_data"));
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  340:         case OPCODE_LL:
+  341:             return fmt::format(
+  342:                 "{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+  343:                 "SET_GPR_S32(ctx, {}, (int32_t)READ32(addr)); "
+  344:                 "ctx->llbit = 1; ctx->lladdr = addr; }}",
+  345:                 inst.rs, inst.simmediate, inst.rt);
+  346:         case OPCODE_SC:
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  347:             return fmt::format(
+  348:                 "{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+  349:                 "if (ctx->llbit && ctx->lladdr == addr) {{ WRITE32(addr, GPR_U32(ctx, {})); "
+  350:                 "SET_GPR_S32(ctx, {}, 1); }} "
+  351:                 "else {{ SET_GPR_S32(ctx, {}, 0); }} "
+  352:                 "ctx->llbit = 0; ctx->lladdr = 0; }}",
+  353:                 inst.rs, inst.simmediate, inst.rt, inst.rt, inst.rt);
+
+FILE: ps2xRecomp\src\lib\instruction_translator.cpp
+  348:                 "{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+  349:                 "if (ctx->llbit && ctx->lladdr == addr) {{ WRITE32(addr, GPR_U32(ctx, {})); "
+  350:                 "SET_GPR_S32(ctx, {}, 1); }} "
+  351:                 "else {{ SET_GPR_S32(ctx, {}, 0); }} "
+  352:                 "ctx->llbit = 0; ctx->lladdr = 0; }}",
+  353:                 inst.rs, inst.simmediate, inst.rt, inst.rt, inst.rt);
+  354:         default:
+
+FILE: ps2xRecomp\src\lib\mmi_translation_helpers.cpp
+   17:         switch (subfunc)
+   18:         {
+   19:         case MMI0_PADDW:
+   20:             return fmt::format("SET_GPR_VEC(ctx, {}, PS2_PADDW(GPR_VEC(ctx, {}), GPR_VEC(ctx, {})));", rd, rs, rt);
+   21:         case MMI0_PSUBW:
+   22:             return fmt::format("SET_GPR_VEC(ctx, {}, PS2_PSUBW(GPR_VEC(ctx, {}), GPR_VEC(ctx, {})));", rd, rs, rt);
+   23:         case MMI0_PCGTW:
+
+FILE: ps2xRecomp\src\lib\mmi_translation_helpers.cpp
+   19:         case MMI0_PADDW:
+   20:             return fmt::format("SET_GPR_VEC(ctx, {}, PS2_PADDW(GPR_VEC(ctx, {}), GPR_VEC(ctx, {})));", rd, rs, rt);
+   21:         case MMI0_PSUBW:
+   22:             return fmt::format("SET_GPR_VEC(ctx, {}, PS2_PSUBW(GPR_VEC(ctx, {}), GPR_VEC(ctx, {})));", rd, rs, rt);
+   23:         case MMI0_PCGTW:
+   24:             return fmt::format("SET_GPR_VEC(ctx, {}, PS2_PCGTW(GPR_VEC(ctx, {}), GPR_VEC(ctx, {})));", rd, rs, rt);
+   25:         case MMI0_PMAXW:
+
+FILE: ps2xRecomp\src\lib\mmi_translation_helpers.cpp
+   21:         case MMI0_PSUBW:
+   22:             return fmt::format("SET_GPR_VEC(ctx, {}, PS2_PSUBW(GPR_VEC(ctx, {}), GPR_VEC(ctx, {})));", rd, rs, rt);
+   23:         case MMI0_PCGTW:
+   24:             return fmt::format("SET_GPR_VEC(ctx, {}, PS2_PCGTW(GPR_VEC(ctx, {}), GPR_VEC(ctx, {})));", rd, rs, rt);
+   25:         case MMI0_PMAXW:
+   26:             return fmt::format("SET_GPR_VEC(ctx, {}, PS2_PMAXW(GPR_VEC(ctx, {}), GPR_VEC(ctx, {})));", rd, rs, rt);
+   27:         case MMI0_PADDH:
+MATCH LIMIT REACHED: 100
+
+============================================================================
+FILE: ps2xTest\src\code_generator_tests.cpp
+REQUESTED LINES: 1-210
+============================================================================
+TOTAL LINES: 2224
+    1: #include "MiniTest.h"
+    2: #include "ps2recomp/code_generator.h"
+    3: #include "ps2recomp/instructions.h"
+    4: #include "ps2recomp/ps2_recompiler.h"
+    5: #include "ps2recomp/types.h"
+    6: #include <filesystem>
+    7: #include <fstream>
+    8: #include <regex>
+    9: #include <sstream>
+   10: #include <utility>
+   11: 
+   12: using namespace ps2recomp;
+   13: 
+   14: static Instruction makeBranch(uint32_t address, uint32_t targetOffsetWords)
+   15: {
+   16:     Instruction inst;
+   17:     inst.address = address;
+   18:     inst.raw = 0x10000000 | (address & 0xFFFF); // arbitrary debug value
+   19:     inst.opcode = OPCODE_BEQ;
+   20:     inst.rs = 1;
+   21:     inst.rt = 1; // always equal
+   22:     inst.simmediate = static_cast<uint32_t>(targetOffsetWords);
+   23:     inst.isBranch = true;
+   24:     inst.hasDelaySlot = true;
+   25:     return inst;
+   26: }
+   27: 
+   28: static Instruction makeNop(uint32_t address)
+   29: {
+   30:     Instruction inst;
+   31:     inst.address = address;
+   32:     inst.raw = 0;
+   33:     inst.opcode = OPCODE_ADDIU;
+   34:     inst.rt = 0; // encode as nop in translator
+   35:     inst.hasDelaySlot = false;
+   36:     return inst;
+   37: }
+   38: 
+   39: static uint32_t signExtend16(uint16_t value)
+   40: {
+   41:     return static_cast<uint32_t>(static_cast<int32_t>(static_cast<int16_t>(value)));
+   42: }
+   43: 
+   44: static Instruction makeIType(uint32_t address, uint32_t opcode, uint8_t rs, uint8_t rt, uint16_t immediate)
+   45: {
+   46:     Instruction inst{};
+   47:     inst.address = address;
+   48:     inst.opcode = opcode;
+   49:     inst.rs = rs;
+   50:     inst.rt = rt;
+   51:     inst.immediate = immediate;
+   52:     inst.simmediate = signExtend16(immediate);
+   53:     inst.raw = (opcode << 26) | (static_cast<uint32_t>(rs) << 21) |
+   54:                (static_cast<uint32_t>(rt) << 16) | immediate;
+   55:     return inst;
+   56: }
+   57: 
+   58: static Instruction makeLui(uint32_t address, uint8_t rt, uint16_t immediate)
+   59: {
+   60:     return makeIType(address, OPCODE_LUI, 0, rt, immediate);
+   61: }
+   62: 
+   63: static Instruction makeOri(uint32_t address, uint8_t rt, uint8_t rs, uint16_t immediate)
+   64: {
+   65:     return makeIType(address, OPCODE_ORI, rs, rt, immediate);
+   66: }
+   67: 
+   68: static Instruction makeAddiu(uint32_t address, uint8_t rt, uint8_t rs, uint16_t immediate)
+   69: {
+   70:     return makeIType(address, OPCODE_ADDIU, rs, rt, immediate);
+   71: }
+   72: 
+   73: static Instruction makeLw(uint32_t address, uint8_t rt, uint8_t rs, uint16_t immediate)
+   74: {
+   75:     return makeIType(address, OPCODE_LW, rs, rt, immediate);
+   76: }
+   77: 
+   78: static Instruction makeSw(uint32_t address, uint8_t rt, uint8_t rs, uint16_t immediate)
+   79: {
+   80:     return makeIType(address, OPCODE_SW, rs, rt, immediate);
+   81: }
+   82: 
+   83: static std::string readFileFromCandidates(const std::vector<std::string> &candidates)
+   84: {
+   85:     for (const auto &path : candidates)
+   86:     {
+   87:         std::ifstream file(path);
+   88:         if (file)
+   89:         {
+   90:             std::ostringstream ss;
+   91:             ss << file.rdbuf();
+   92:             return ss.str();
+   93:         }
+   94:     }
+   95:     return {};
+   96: }
+   97: 
+   98: static std::vector<uint32_t> parseEnumValues(const std::string &text, const std::string &prefix)
+   99: {
+  100:     std::vector<uint32_t> values;
+  101:     std::regex re("\\b(" + prefix + "[A-Za-z0-9_]+)\\b\\s*=\\s*0x([0-9A-Fa-f]+)");
+  102:     for (auto it = std::sregex_iterator(text.begin(), text.end(), re); it != std::sregex_iterator(); ++it)
+  103:     {
+  104:         const auto &match = *it;
+  105:         uint32_t value = static_cast<uint32_t>(std::stoul(match[2].str(), nullptr, 16));
+  106:         values.push_back(value);
+  107:     }
+  108:     return values;
+  109: }
+  110: 
+  111: static Instruction makeJal(uint32_t address, uint32_t target)
+  112: {
+  113:     Instruction inst{};
+  114:     inst.address = address;
+  115:     inst.opcode = OPCODE_JAL;
+  116:     inst.target = (target >> 2) & 0x3FFFFFF;
+  117:     inst.hasDelaySlot = true;
+  118:     inst.raw = (OPCODE_JAL << 26) | inst.target;
+  119:     return inst;
+  120: }
+  121: 
+  122: static Instruction makeJalr(uint32_t address, uint8_t rs, uint8_t rd)
+  123: {
+  124:     Instruction inst{};
+  125:     inst.address = address;
+  126:     inst.opcode = OPCODE_SPECIAL;
+  127:     inst.function = SPECIAL_JALR;
+  128:     inst.rs = rs;
+  129:     inst.rd = rd; // Destination for link address (default 31)
+  130:     inst.hasDelaySlot = true;
+  131:     inst.raw = (OPCODE_SPECIAL << 26) | (rs << 21) | (0 << 16) | (rd << 11) | (0 << 6) | SPECIAL_JALR;
+  132:     return inst;
+  133: }
+  134: 
+  135: static Instruction makeJr(uint32_t address, uint8_t rs)
+  136: {
+  137:     Instruction inst{};
+  138:     inst.address = address;
+  139:     inst.opcode = OPCODE_SPECIAL;
+  140:     inst.function = SPECIAL_JR;
+  141:     inst.rs = rs;
+  142:     inst.hasDelaySlot = true;
+  143:     inst.raw = (OPCODE_SPECIAL << 26) | (rs << 21) | SPECIAL_JR;
+  144:     return inst;
+  145: }
+  146: 
+  147: static Instruction makeSyscall(uint32_t address)
+  148: {
+  149:     Instruction inst{};
+  150:     inst.address = address;
+  151:     inst.opcode = OPCODE_SPECIAL;
+  152:     inst.function = SPECIAL_SYSCALL;
+  153:     inst.hasDelaySlot = false;
+  154:     inst.raw = (OPCODE_SPECIAL << 26) | SPECIAL_SYSCALL;
+  155:     return inst;
+  156: }
+  157: 
+  158: static void printGeneratedCode(const std::string& name, const std::string& code)
+  159: {
+  160: #ifdef PRINT_GENERATED_CODE
+  161:     std::cout << "=== Generated Code for " << name << " ===" << std::endl;
+  162:     std::cout << code << std::endl;
+  163:     std::cout << "========================================" << std::endl;
+  164: #endif
+  165: }
+  166: 
+  167: void register_code_generator_tests()
+  168: {
+  169:     MiniTest::Case("CodeGenerator", [](TestCase &tc)
+  170:                    {
+  171:     tc.Run("Generated sources cannot be shadowed by stale local declaration headers", [](TestCase &t) {
+  172:         Function func;
+  173:         func.name = "header_lookup";
+  174:         func.start = 0x8F00;
+  175:         func.end = 0x8F04;
+  176:         func.isRecompiled = true;
+  177: 
+  178:         CodeGenerator gen({}, {});
+  179:         gen.setRenamedFunctions({{func.start, "header_lookup_0x8f00"}});
+  180: 
+  181:         const std::string generated = gen.generateFunction(func, {makeNop(func.start)}, true);
+  182:         const std::string registration = gen.generateFunctionRegistration({func}, {});
+  183: 
+  184:         t.IsTrue(generated.find("#include <ps2_recompiled_functions.h>") != std::string::npos,
+  185:                  "function sources must resolve declarations through the configured include path");
+  186:         t.IsTrue(generated.find("#include <ps2_recompiled_stubs.h>") != std::string::npos,
+  187:                  "function sources must resolve stub declarations through the configured include path");
+  188:         t.IsTrue(registration.find("#include <ps2_recompiled_functions.h>") != std::string::npos,
+  189:                  "the registration source must use the same unambiguous declaration header");
+  190:         t.IsTrue(registration.find("#include <ps2_recompiled_stubs.h>") != std::string::npos,
+  191:                  "the registration source must use the same unambiguous stub header");
+  192:     });
+  193: 
+  194:     tc.Run("unsigned integer loads use explicit zero extension", [](TestCase &t) {
+  195:         CodeGenerator gen({}, {});
+  196:         const std::string lbu = gen.translateInstruction(makeIType(0x8F10, OPCODE_LBU, 1, 2, 0x10));
+  197:         const std::string lhu = gen.translateInstruction(makeIType(0x8F14, OPCODE_LHU, 1, 3, 0x12));
+  198:         const std::string lwu = gen.translateInstruction(makeIType(0x8F18, OPCODE_LWU, 1, 4, 0x14));
+  199: 
+  200:         t.IsTrue(lbu.find("SET_GPR_ZE32(ctx, 2") != std::string::npos,
+  201:                  "LBU must zero-extend into the low 64-bit scalar lane");
+  202:         t.IsTrue(lhu.find("SET_GPR_ZE32(ctx, 3") != std::string::npos,
+  203:                  "LHU must zero-extend into the low 64-bit scalar lane");
+  204:         t.IsTrue(lwu.find("SET_GPR_ZE32(ctx, 4") != std::string::npos,
+  205:                  "LWU must not sign-extend bit 31 into the allocator bitmap value");
+  206:     });
+  207: 
+  208:     tc.Run("SYSCALL publishes its continuation before entering the runtime", [](TestCase &t) {
+  209:         Function func;
+  210:         func.name = "syscall_resume";
+
+============================================================================
+FILE: ps2xTest\src\code_generator_tests.cpp
+REQUESTED LINES: 730-850
+============================================================================
+TOTAL LINES: 2224
+  730: 
+  731:         t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[2] = resume_owner_0x7000; // 0x7008") != std::string::npos,
+  732:                  "resume entry pc should register to the owner wrapper");
+  733:         t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[3] = resume_owner_0x7000; // 0x700c") != std::string::npos,
+  734:                  "multiple resume pcs should register to the same owner wrapper");
+  735:     });
+  736: 
+  737:     tc.Run("configured internal guest handlers register to their owner wrapper", [](TestCase &t) {
+  738:         Function owner;
+  739:         owner.name = "sdk_bootstrap_owner";
+  740:         owner.start = 0x7000;
+  741:         owner.end = 0x7020;
+  742:         owner.isRecompiled = true;
+  743:         owner.isStub = false;
+  744: 
+  745:         std::vector<Instruction> instructions{
+  746:             makeNop(0x7000), makeNop(0x7004), makeNop(0x7008), makeNop(0x700C),
+  747:             makeNop(0x7010), makeNop(0x7014), makeNop(0x7018), makeNop(0x701C)};
+  748:         std::vector<Function> functions{owner};
+  749:         std::unordered_map<uint32_t, std::vector<Instruction>> decoded{{owner.start, instructions}};
+  750:         std::unordered_map<uint32_t, std::vector<uint32_t>> targetsByOwner;
+  751: 
+  752:         const size_t added = PS2Recompiler::CollectInternalEntryTargets(
+  753:             functions, decoded, {0x7008u, 0x7018u}, targetsByOwner);
+  754: 
+  755:         t.IsTrue(added == 2u,
+  756:                  "both address-qualified internal handlers should be promoted");
+  757:         t.IsTrue(targetsByOwner.at(owner.start).size() == 2u,
+  758:                  "both handlers should belong to the containing generated wrapper");
+  759: 
+  760:         CodeGenerator gen({}, {});
+  761:         gen.setRenamedFunctions({{owner.start, "sdk_bootstrap_owner_0x7000"}});
+  762:         gen.setResumeEntryTargets(targetsByOwner);
+  763: 
+  764:         const std::string generated = gen.generateFunction(owner, instructions, false);
+  765:         const std::string registration = gen.generateFunctionRegistration(functions, {});
+  766: 
+  767:         t.IsTrue(generated.find("case 0x7008u: goto label_7008;") != std::string::npos,
+  768:                  "the owner must enter directly at the first installed handler");
+  769:         t.IsTrue(generated.find("case 0x7018u: goto label_7018;") != std::string::npos,
+  770:                  "the owner must enter directly at the second installed handler");
+  771:         t.IsTrue(registration.find("sdk_bootstrap_owner_0x7000; // 0x7008") != std::string::npos,
+  772:                  "the first handler address must dispatch to its owner wrapper");
+  773:         t.IsTrue(registration.find("sdk_bootstrap_owner_0x7000; // 0x7018") != std::string::npos,
+  774:                  "the second handler address must dispatch to its owner wrapper");
+  775:     });
+  776: 
+  777:     tc.Run("external mid-function entry can register to the owner wrapper", [](TestCase &t) {
+  778:         Function caller;
+  779:         caller.name = "caller";
+  780:         caller.start = 0x4000;
+  781:         caller.end = 0x4008;
+  782:         caller.isRecompiled = true;
+  783:         caller.isStub = false;
+  784: 
+  785:         Function owner;
+  786:         owner.name = "owner";
+  787:         owner.start = 0x5000;
+  788:         owner.end = 0x5010;
+  789:         owner.isRecompiled = true;
+  790:         owner.isStub = false;
+  791: 
+  792:         Instruction j{};
+  793:         j.address = 0x4000;
+  794:         j.opcode = OPCODE_J;
+  795:         j.target = (0x5004u >> 2) & 0x3FFFFFFu;
+  796:         j.hasDelaySlot = true;
+  797:         j.raw = (OPCODE_J << 26) | (j.target & 0x3FFFFFFu);
+  798: 
+  799:         std::vector<Instruction> callerInstructions{j, makeNop(0x4004)};
+  800:         std::vector<Function> functions{caller, owner};
+  801:         std::vector<Section> sections = {
+  802:             {".text", 0x4000u, 0x2000u, 0u, true, false, false, true, nullptr}
+  803:         };
+  804: 
+  805:         CodeGenerator gen({}, sections);
+  806:         CodeGenerator::AnalysisResult analysis =
+  807:             gen.collectInternalBranchTargets(caller, callerInstructions, &functions);
+  808: 
+  809:         t.IsTrue(analysis.externalEntryPoints.contains(0x5004u),
+  810:                  "cross-function jump should identify the mid-function target as externally reachable");
+  811: 
+  812:         gen.setRenamedFunctions({{0x5000u, "owner_0x5000"}});
+  813:         gen.setResumeEntryTargets({{0x5000u, {0x5004u}}});
+  814: 
+  815:         std::string registration = gen.generateFunctionRegistration({owner}, {});
+  816:         printGeneratedCode("external mid-function entry can register to the owner wrapper", registration);
+  817: 
+  818:         t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[1] = owner_0x5000; // 0x5004") != std::string::npos,
+  819:                  "mid-function external entry should register back to the owner wrapper");
+  820:     });
+  821: 
+  822:     tc.Run("branches outside function still set pc", [](TestCase &t) {
+  823:         Function func;
+  824:         func.name = "external_branch";
+  825:         func.start = 0x3000;
+  826:         func.end = 0x3020;
+  827:         func.isRecompiled = true;
+  828:         func.isStub = false;
+  829: 
+  830:         // Branch targets outside the function range
+  831:         std::vector<Instruction> instructions;
+  832:         instructions.push_back(makeBranch(0x3000, 4)); // target = 0x3014 (inside) -> make it outside by adjusting end? easier: set end smaller? Instead use large offset
+  833:         instructions.clear();
+  834:         Instruction br = makeBranch(0x3000, 0x100); // target far outside
+  835:         instructions.push_back(br);
+  836:         instructions.push_back(makeNop(0x3004)); // delay slot
+  837: 
+  838:         CodeGenerator gen({}, {});
+  839:         std::string generated = gen.generateFunction(func, instructions, false);
+  840:         printGeneratedCode("branches outside function still set pc", generated);
+  841: 
+  842:         t.IsTrue(generated.find("ctx->pc = 0x") != std::string::npos, "external branch should set ctx->pc");
+  843:         t.IsTrue(generated.find("goto label_") == std::string::npos, "external branch should not use goto");
+  844:     });
+  845: 
+  846:     tc.Run("jumps to known symbols call by name", [](TestCase &t) {
+  847:         Function func;
+  848:         func.name = "call_symbol";
+  849:         func.start = 0x4000;
+  850:         func.end = 0x4018;
+
+============================================================================
+FILE: ps2xRecomp\CMakeLists.txt
+REQUESTED LINES: 1-240
+============================================================================
+TOTAL LINES: 138
+    1: cmake_minimum_required(VERSION 3.20)
+    2: 
+    3: project(PS2Recomp VERSION 0.1.0 LANGUAGES C CXX)
+    4: 
+    5: set(CMAKE_CXX_STANDARD 20)
+    6: set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    7: set(CMAKE_C_STANDARD 99)
+    8: set(CMAKE_C_STANDARD_REQUIRED ON)
+    9: 
+   10: include(FetchContent)
+   11: 
+   12: FetchContent_Declare(
+   13:     elfio
+   14:     GIT_REPOSITORY https://github.com/serge1/ELFIO.git
+   15:     GIT_TAG Release_3.12
+   16:     GIT_SHALLOW TRUE
+   17: )
+   18: FetchContent_MakeAvailable(elfio)
+   19: 
+   20: FetchContent_Declare(
+   21:     toml11
+   22:     GIT_REPOSITORY https://github.com/ToruNiina/toml11.git
+   23:     GIT_TAG v4.4.0
+   24: )
+   25: FetchContent_MakeAvailable(toml11)
+   26: 
+   27: FetchContent_Declare(
+   28:     fmt
+   29:     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+   30:     GIT_TAG 12.1.0
+   31: )
+   32: FetchContent_MakeAvailable(fmt)
+   33:  
+   34: FetchContent_Declare(
+   35:     libdwarf
+   36:     GIT_REPOSITORY https://github.com/davea42/libdwarf-code.git
+   37:     GIT_TAG v2.2.0
+   38:     GIT_SHALLOW TRUE
+   39: )
+   40: 
+   41: set(BUILD_DWARFDUMP    OFF CACHE BOOL "" FORCE)
+   42: set(BUILD_DWARFEXAMPLE OFF CACHE BOOL "" FORCE)
+   43: set(BUILD_DWARFGEN     OFF CACHE BOOL "" FORCE)
+   44: 
+   45: set(BUILD_SHARED   OFF CACHE BOOL "" FORCE)
+   46: set(BUILD_NON_SHARED ON CACHE BOOL "" FORCE)
+   47: 
+   48: FetchContent_MakeAvailable(libdwarf)
+   49: 
+   50: set(LIBDWARF_INCLUDE_DIR "${libdwarf_SOURCE_DIR}/src/lib/libdwarf")
+   51: 
+   52: FetchContent_Declare(
+   53:     rabbitizer
+   54:     GIT_REPOSITORY https://github.com/Decompollaborate/rabbitizer.git
+   55:     GIT_TAG 1.14.3
+   56: )
+   57: FetchContent_MakeAvailable(rabbitizer)
+   58: 
+   59: if (NOT TARGET rabbitizer)
+   60:     file(GLOB_RECURSE RABBITIZER_SOURCES CONFIGURE_DEPENDS
+   61:         "${rabbitizer_SOURCE_DIR}/src/analysis/*.c"
+   62:         "${rabbitizer_SOURCE_DIR}/src/common/*.c"
+   63:         "${rabbitizer_SOURCE_DIR}/src/instructions/*.c"
+   64:         "${rabbitizer_SOURCE_DIR}/src/instructions/*/*.c"
+   65:     )
+   66: 
+   67:     add_library(rabbitizer STATIC ${RABBITIZER_SOURCES})
+   68: 
+   69:     target_include_directories(rabbitizer PUBLIC
+   70:         "${rabbitizer_SOURCE_DIR}/include"
+   71:         "${rabbitizer_SOURCE_DIR}/tables"
+   72:         "${rabbitizer_SOURCE_DIR}/tables/tables"
+   73:     )
+   74: endif()
+   75: 
+   76: file(GLOB_RECURSE PS2RECOMP_LIB_SOURCES CONFIGURE_DEPENDS
+   77:     src/lib/*.cpp
+   78: )
+   79: 
+   80: file(GLOB_RECURSE PS2RECOMP_HEADERS CONFIGURE_DEPENDS
+   81:     include/*.h
+   82:     include/*.hpp
+   83: )
+   84: 
+   85: add_library(ps2_recomp_lib STATIC ${PS2RECOMP_LIB_SOURCES} ${PS2RECOMP_HEADERS})
+   86: 
+   87: target_compile_definitions(ps2_recomp_lib
+   88: PUBLIC
+   89:     LIBDWARF_STATIC
+   90: PRIVATE
+   91:     LIBDWARF_STATIC
+   92: )
+   93: 
+   94: target_include_directories(ps2_recomp_lib
+   95: PUBLIC
+   96:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+   97:     ${elfio_SOURCE_DIR}
+   98:     ${LIBDWARF_INCLUDE_DIR}
+   99: 
+  100: PRIVATE
+  101:     ${CMAKE_CURRENT_SOURCE_DIR}/../ps2xRuntime/include
+  102: )
+  103: 
+  104: target_link_libraries(ps2_recomp_lib
+  105: PUBLIC
+  106:     fmt::fmt
+  107:     toml11::toml11 
+  108:     dwarf
+  109:     rabbitizer
+  110: )
+  111: 
+  112: file(GLOB_RECURSE PS2RECOMP_EXE_SOURCES CONFIGURE_DEPENDS
+  113:     src/runner/*.cpp
+  114: )
+  115: 
+  116: add_executable(ps2_recomp ${PS2RECOMP_EXE_SOURCES})
+  117: 
+  118: target_link_libraries(ps2_recomp
+  119: PRIVATE
+  120:     ps2_recomp_lib
+  121: )
+  122: 
+  123: install(TARGETS ps2_recomp ps2_recomp_lib
+  124:     RUNTIME DESTINATION bin
+  125:     LIBRARY DESTINATION lib
+  126:     ARCHIVE DESTINATION lib
+  127: )
+  128: 
+  129: install(DIRECTORY include/
+  130:     DESTINATION include
+  131: )
+  132: 
+  133: include("${CMAKE_SOURCE_DIR}/ps2xRuntime/cmake/ReleaseMode.cmake")
+  134: 
+  135: if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  136:     EnableFastReleaseMode(ps2_recomp_lib)
+  137:     EnableFastReleaseMode(ps2_recomp)
+  138: endif()
+
+============================================================================
+FILE: ps2xRuntime\CMakeLists.txt
+REQUESTED LINES: 1-240
+============================================================================
+TOTAL LINES: 612
+    1: cmake_minimum_required(VERSION 3.20)
+    2: 
+    3: project(PS2Runtime VERSION 0.1.0 LANGUAGES CXX)
+    4: 
+    5: set(CMAKE_CXX_STANDARD 20)
+    6: set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    7: 
+    8: option(PS2X_ENABLE_RUNNER_UNITY_BUILD "Build ps2EntryRunner with CMake unity build" ON)
+    9: set(PS2X_RUNNER_UNITY_BUILD_BATCH_SIZE 32 CACHE STRING "Unity build batch size for ps2EntryRunner")
+   10: option(PS2X_ENABLE_RUNNER_PCH "Precompile the heavy runtime headers for ps2EntryRunner" ON)
+   11: option(PS2X_ENABLE_SCCACHE "Use sccache as compiler launcher when available" ON)
+   12: 
+   13: option(PS2X_ENABLE_RUNTIME_LOGS "Enable PS2 runtime logs" ON)
+   14: option(PS2X_ENABLE_AGRESSIVE_LOGS "Enable very verbose/agressive PS2 runtime logs" ON)
+   15: option(PS2X_ENABLE_IOP_RPC_TRACE "Log unhandled IOP/SIF RPC trace suggestions" ON)
+   16: option(PS2X_STRICT_RETURN_DIAGNOSTICS "Route generated JR $ra returns through runtime branch diagnostics" OFF)
+   17: option(PS2X_SHOW_WINDOWS_CONSOLE "Show a console window for ps2EntryRunner on Windows release builds" ON)
+   18: option(PS2X_ENABLE_DEBUG_UI "Build the desktop runtime debug UI" ON)
+   19: 
+   20: if(PS2X_ENABLE_SCCACHE)
+   21:     find_program(PS2X_SCCACHE_PROGRAM sccache)
+   22: 
+   23:     if(PS2X_SCCACHE_PROGRAM)
+   24:         if(CMAKE_C_COMPILER)
+   25:             set(CMAKE_C_COMPILER_LAUNCHER "${PS2X_SCCACHE_PROGRAM}")
+   26:         endif()
+   27: 
+   28:         set(CMAKE_CXX_COMPILER_LAUNCHER "${PS2X_SCCACHE_PROGRAM}")
+   29:         message(STATUS "Using sccache: ${PS2X_SCCACHE_PROGRAM}")
+   30:     else()
+   31:         message(STATUS "sccache not found; continuing without compiler launcher")
+   32:     endif()
+   33: endif()
+   34: 
+   35: include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/ReleaseMode.cmake")
+   36: 
+   37: set(PS2X_IS_VITA OFF)
+   38: 
+   39: if((CMAKE_C_COMPILER MATCHES "arm-vita-eabi") OR
+   40:     (CMAKE_CXX_COMPILER MATCHES "arm-vita-eabi"))
+   41:     set(PS2X_IS_VITA ON)
+   42: endif()
+   43: 
+   44: set(PS2X_IS_ANDROID OFF)
+   45: 
+   46: if(ANDROID)
+   47:     set(PS2X_IS_ANDROID ON)
+   48: endif()
+   49: 
+   50: option(PS2X_VITA_CREATE_PACKAGE "Create Vita eboot/vpk targets" ON)
+   51: set(PS2X_VITA_APP_NAME "PS2 Retro X" CACHE STRING "Display name for the Vita bubble")
+   52: set(PS2X_VITA_TITLEID "RANJ00001" CACHE STRING "9-character Vita title id")
+   53: set(PS2X_VITA_VERSION "01.00" CACHE STRING "Vita app version")
+   54: set(PS2X_DEFAULT_BOOT_ELF "" CACHE STRING "Guest ELF path passed directly to main() when argv is unavailable")
+   55: 
+   56: if(PS2X_IS_VITA)
+   57:     if(NOT DEFINED ENV{VITASDK})
+   58:         message(FATAL_ERROR "VITASDK is not defined. Configure inside the VitaSDK environment or pass the Vita toolchain file.")
+   59:     endif()
+   60: 
+   61:     set(PS2X_VITASDK "$ENV{VITASDK}")
+   62: 
+   63:     if(NOT EXISTS "${PS2X_VITASDK}/share/vita.cmake")
+   64:         message(FATAL_ERROR "Could not find vita.cmake under ${PS2X_VITASDK}/share.")
+   65:     endif()
+   66: 
+   67:     include("${PS2X_VITASDK}/share/vita.cmake" REQUIRED)
+   68: else()
+   69:     include(FetchContent)
+   70:     set(FETCHCONTENT_QUIET FALSE)
+   71:     set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+   72:     set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
+   73: 
+   74:     if(PS2X_IS_ANDROID)
+   75:         set(PLATFORM "Android" CACHE STRING "" FORCE)
+   76:     endif()
+   77: 
+   78:     FetchContent_Declare(
+   79:         raylib
+   80:         GIT_REPOSITORY "https://github.com/raysan5/raylib.git"
+   81:         GIT_TAG "5.5" # we will migrate to 4.2.0 later, trust me it will be better
+   82:         GIT_PROGRESS TRUE
+   83:     )
+   84:     FetchContent_MakeAvailable(raylib)
+   85: 
+   86:     if(PS2X_ENABLE_DEBUG_UI AND NOT PS2X_IS_ANDROID)
+   87:         FetchContent_Declare(
+   88:             imgui
+   89:             GIT_REPOSITORY https://github.com/ocornut/imgui.git
+   90:             GIT_TAG "v1.92.7-docking"
+   91:             GIT_SHALLOW TRUE
+   92:         )
+   93:         FetchContent_GetProperties(imgui)
+   94: 
+   95:         if(NOT imgui_POPULATED)
+   96:             FetchContent_Populate(imgui)
+   97:         endif()
+   98: 
+   99:         set(PS2X_IMGUI_SOURCE_DIR "${imgui_SOURCE_DIR}")
+  100: 
+  101:         add_library(imgui STATIC
+  102:             "${PS2X_IMGUI_SOURCE_DIR}/imgui.cpp"
+  103:             "${PS2X_IMGUI_SOURCE_DIR}/imgui_draw.cpp"
+  104:             "${PS2X_IMGUI_SOURCE_DIR}/imgui_tables.cpp"
+  105:             "${PS2X_IMGUI_SOURCE_DIR}/imgui_widgets.cpp"
+  106:             "${PS2X_IMGUI_SOURCE_DIR}/imgui_demo.cpp"
+  107:         )
+  108:         target_include_directories(imgui PUBLIC "${PS2X_IMGUI_SOURCE_DIR}")
+  109: 
+  110:         FetchContent_Declare(
+  111:             rlImGui
+  112:             GIT_REPOSITORY https://github.com/raylib-extras/rlImGui.git
+  113:             GIT_TAG "Raylib_5_5"
+  114:             GIT_SHALLOW TRUE
+  115:         )
+  116:         FetchContent_GetProperties(rlImGui)
+  117: 
+  118:         if(NOT rlimgui_POPULATED)
+  119:             FetchContent_Populate(rlImGui)
+  120:         endif()
+  121: 
+  122:         set(PS2X_RLIMGUI_SOURCE_DIR "${rlimgui_SOURCE_DIR}")
+  123: 
+  124:         add_library(rlImGui STATIC
+  125:             "${PS2X_RLIMGUI_SOURCE_DIR}/rlImGui.cpp"
+  126:         )
+  127:         target_include_directories(rlImGui PUBLIC "${PS2X_RLIMGUI_SOURCE_DIR}")
+  128:         target_link_libraries(rlImGui PUBLIC raylib imgui)
+  129:     endif()
+  130: endif()
+  131: 
+  132: add_library(ps2_host_backend INTERFACE)
+  133: 
+  134: set(PS2X_DEFAULT_BOOT_ELF_DEFINE "")
+  135: 
+  136: if(PS2X_DEFAULT_BOOT_ELF)
+  137:     set(PS2X_DEFAULT_BOOT_ELF_DEFINE "${PS2X_DEFAULT_BOOT_ELF}")
+  138:     string(REPLACE "\\" "\\\\" PS2X_DEFAULT_BOOT_ELF_DEFINE "${PS2X_DEFAULT_BOOT_ELF_DEFINE}")
+  139:     string(REPLACE "\"" "\\\"" PS2X_DEFAULT_BOOT_ELF_DEFINE "${PS2X_DEFAULT_BOOT_ELF_DEFINE}")
+  140: endif()
+  141: 
+  142: if(PS2X_IS_VITA)
+  143:     set(PS2X_VITA_PREFIX "${PS2X_VITASDK}/arm-vita-eabi")
+  144:     set(PS2X_VITA_EXTRA_INCLUDE_DIRS "" CACHE STRING "Extra include directories for Vita host dependencies")
+  145:     set(PS2X_VITA_LIBRARY_DIR "${PS2X_VITA_PREFIX}/lib")
+  146:     set(PS2X_VITA_REQUIRED_LIBRARY_NAMES
+  147:         raylib
+  148:         SDL2
+  149:         OpenSLES
+  150:         taihen_stub
+  151:         SceAppMgr_stub
+  152:         SceCtrl_stub
+  153:         SceGxm_stub
+  154:         SceCommonDialog_stub
+  155:         SceLibKernel_stub
+  156:         SceAudio_stub
+  157:         SceTouch_stub
+  158:         SceHid_stub
+  159:         SceMotion_stub
+  160:         SceSysmodule_stub
+  161:         SceIofilemgr_stub
+  162:         SceNetCtl_stub
+  163:         SceNet_stub
+  164:         SceDisplay_stub
+  165:         SceAppUtil_stub
+  166:         SceAudioIn_stub
+  167:         ScePower_stub
+  168:         SceProcessmgr_stub
+  169:         SceIme_stub
+  170:         libIMGEGL_stub_weak
+  171:         libgpu_es4_ext_stub_weak
+  172:         libGLESv2_stub_weak
+  173:         libGL_stub_weak
+  174:         libGLESv1_CM_stub_weak
+  175:     )
+  176: 
+  177:     set(PS2X_VITA_INCLUDE_DIRS
+  178:         "${PS2X_VITA_PREFIX}/include"
+  179:     )
+  180: 
+  181:     foreach(PS2X_VITA_OPTIONAL_INCLUDE_DIR IN ITEMS
+  182:         "${PS2X_VITA_PREFIX}/include/raylib"
+  183:         "${PS2X_VITA_PREFIX}/include/SDL2")
+  184:         if(EXISTS "${PS2X_VITA_OPTIONAL_INCLUDE_DIR}")
+  185:             list(APPEND PS2X_VITA_INCLUDE_DIRS "${PS2X_VITA_OPTIONAL_INCLUDE_DIR}")
+  186:         endif()
+  187:     endforeach()
+  188: 
+  189:     if(PS2X_VITA_EXTRA_INCLUDE_DIRS)
+  190:         list(APPEND PS2X_VITA_INCLUDE_DIRS ${PS2X_VITA_EXTRA_INCLUDE_DIRS})
+  191:     endif()
+  192: 
+  193:     if(NOT EXISTS "${PS2X_VITA_PREFIX}/include/SDL2/SDL.h")
+  194:         message(FATAL_ERROR
+  195:             "Missing SDL2 headers under ${PS2X_VITA_PREFIX}/include/SDL2. "
+  196:             "Quenom/raylib-5.5-vita requires SDL2 with PVR support installed into VitaSDK.")
+  197:     endif()
+  198: 
+  199:     if(NOT EXISTS "${PS2X_VITA_LIBRARY_DIR}")
+  200:         message(FATAL_ERROR "Missing Vita library directory: ${PS2X_VITA_LIBRARY_DIR}")
+  201:     endif()
+  202: 
+  203:     function(ps2x_find_vita_library out_var library_name)
+  204:         string(MAKE_C_IDENTIFIER "${library_name}" library_id)
+  205:         set(cache_var "PS2X_VITA_LIB_${library_id}")
+  206: 
+  207:         find_library(${cache_var}
+  208:             NAMES "${library_name}" "${library_name}.a" "lib${library_name}.a"
+  209:             PATHS "${PS2X_VITA_LIBRARY_DIR}"
+  210:             NO_DEFAULT_PATH
+  211:         )
+  212: 
+  213:         if(NOT ${cache_var})
+  214:             message(FATAL_ERROR
+  215:                 "Could not find Vita library '${library_name}' under ${PS2X_VITA_LIBRARY_DIR}. "
+  216:                 "Install Quenom/raylib-5.5-vita and its SDL2/PVR dependencies into VitaSDK first.")
+  217:         endif()
+  218: 
+  219:         set(${out_var} "${${cache_var}}" PARENT_SCOPE)
+  220:     endfunction()
+  221: 
+  222:     set(PS2X_VITA_RESOLVED_LIBRARIES "")
+  223: 
+  224:     foreach(PS2X_VITA_LIBRARY_NAME IN LISTS PS2X_VITA_REQUIRED_LIBRARY_NAMES)
+  225:         ps2x_find_vita_library(PS2X_VITA_LIBRARY_PATH "${PS2X_VITA_LIBRARY_NAME}")
+  226:         list(APPEND PS2X_VITA_RESOLVED_LIBRARIES "${PS2X_VITA_LIBRARY_PATH}")
+  227:     endforeach()
+  228: 
+  229:     target_compile_definitions(ps2_host_backend INTERFACE PLATFORM_VITA)
+  230:     target_include_directories(ps2_host_backend INTERFACE ${PS2X_VITA_INCLUDE_DIRS})
+  231:     target_link_libraries(ps2_host_backend INTERFACE
+  232:         ${PS2X_VITA_RESOLVED_LIBRARIES}
+  233:         m
+  234:         c
+  235:         pthread
+  236:     )
+  237: else()
+  238:     target_link_libraries(ps2_host_backend INTERFACE raylib)
+  239: 
+  240:     if(PS2X_IS_ANDROID)
+
+============================================================================
+SAFETY
+============================================================================
+Source files modified: NO
+Ghidra database modified: NO
+Original ELF modified: NO
+Build invoked: NO
+Generated game code: NO
+Report: D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_TARGETED_CONTRACT_20261124_210401.txt
