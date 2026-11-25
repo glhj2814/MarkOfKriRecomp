@@ -1,0 +1,2350 @@
+MARK OF KRI - SHIMMER WORKSPACE DISCOVERY
+Generated: 2026-11-25 14:34:21
+Root: D:\Games\MarkOfKriRecomp
+
+DISCOVERED FILE COUNT: 25
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_20261125_121646\CMakeLists.txt
+SIZE: 302
+LAST WRITE: 2026-11-25 12:16:46
+----- CONTENT BEGIN -----
+cmake_minimum_required(VERSION 3.20)
+
+project(MarkOfKriPS2RecompMinimal LANGUAGES C CXX)
+
+# Add only the PS2Recomp compiler project.
+# Deliberately do not add ps2xRuntime, ps2xStudio, or other subprojects.
+
+add_subdirectory(
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRecomp"
+    ps2xRecomp
+)
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+SIZE: 5098
+LAST WRITE: 2026-11-25 13:52:31
+----- CONTENT BEGIN -----
+cmake_minimum_required(VERSION 3.20)
+project(MarkOfKriPS2RecompMinimal LANGUAGES C CXX)
+
+# The upstream ps2xRecomp CMakeLists expects this helper relative
+# to CMAKE_SOURCE_DIR. It is copied into this isolated wrapper.
+add_subdirectory(
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRecomp"
+    ps2xRecomp
+)
+# MARK_OF_KRI_NEXT_TWO_FUNCTION_CODEGEN_TARGET
+add_executable(markofkri_next_two_function_codegen
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/next_two_function_codegen_20261125_125200/src/next_two_function_codegen.cpp"
+)
+target_link_libraries(markofkri_next_two_function_codegen PRIVATE ps2_recomp_lib)
+target_compile_features(markofkri_next_two_function_codegen PRIVATE cxx_std_20)
+
+# MARK_OF_KRI_TWO_FUNCTION_EXECUTION_TARGET
+add_executable(markofkri_two_function_execution_test
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/two_function_execution_20261125_132205/src/two_function_execution_test.cpp"
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/real_function_runtime_boundary.cpp"
+    "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/next_two_function_codegen_20261125_125200/MARK_OF_KRI_allowLockMode__6Camerab.cpp"
+    "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/next_two_function_codegen_20261125_125200/MARK_OF_KRI_anmcmd_exitHeader__Fv.cpp"
+)
+target_link_libraries(markofkri_two_function_execution_test PRIVATE ps2_recomp_lib)
+target_compile_features(markofkri_two_function_execution_test PRIVATE cxx_std_20)
+
+# MARK_OF_KRI_TWO_FUNCTION_EXECUTION_RETRY_INCLUDE_PATHS
+target_include_directories(markofkri_two_function_execution_test PRIVATE
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/include"
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/two_function_execution_retry_20261125_132538/compatibility_headers"
+)
+
+# MARK_OF_KRI_TWO_FUNCTION_IOP_INCLUDE_ROOTS
+target_include_directories(markofkri_two_function_execution_test PRIVATE
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xIOP/include"
+)
+
+
+# MARK_OF_KRI_TWO_FUNCTION_KERNEL_INCLUDE_ROOT
+target_include_directories(markofkri_two_function_execution_test PRIVATE
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/src/lib/Kernel"
+)
+# MARK_OF_KRI_DOORRESET_CODEGEN_TARGET
+add_executable(markofkri_doorreset_codegen
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/doorReset_codegen_20261125_133621/src/doorReset_codegen.cpp"
+)
+target_link_libraries(markofkri_doorreset_codegen PRIVATE ps2_recomp_lib)
+target_compile_features(markofkri_doorreset_codegen PRIVATE cxx_std_20)
+
+# MARK_OF_KRI_DOORRESET_EXECUTION_TARGET
+add_executable(markofkri_doorreset_execution_test
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/doorReset_execution_20261125_133945/src/doorReset_execution_test.cpp"
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/doorReset_execution_20261125_133945/src/doorReset_runtime_boundary.cpp"
+    "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/doorReset_codegen_20261125_133621/MARK_OF_KRI_doorReset__FP6Mscobj.cpp"
+)
+target_link_libraries(markofkri_doorreset_execution_test PRIVATE ps2_recomp_lib)
+target_compile_features(markofkri_doorreset_execution_test PRIVATE cxx_std_20)
+target_include_directories(markofkri_doorreset_execution_test PRIVATE
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/include"
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/two_function_execution_retry_20261125_132538/compatibility_headers"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xIOP/include"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/src/lib/Kernel"
+)
+
+# MARK_OF_KRI_INIT_BACKDROP_CODEGEN_TARGET
+add_executable(markofkri_init_backdrop_codegen
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/initBackdrop_codegen_20261125_134800/src/initBackdrop_codegen.cpp"
+)
+target_link_libraries(markofkri_init_backdrop_codegen PRIVATE ps2_recomp_lib)
+target_compile_features(markofkri_init_backdrop_codegen PRIVATE cxx_std_20)
+
+# MARK_OF_KRI_INIT_BACKDROP_EXECUTION_TARGET
+add_executable(markofkri_init_backdrop_execution_test
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/initBackdrop_execution_20261125_135231/src/initBackdrop_execution_test.cpp"
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/real_function_runtime_boundary.cpp"
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/initBackdrop_execution_20261125_135231/src/initBackdrop_64bit_runtime_boundary.cpp"
+    "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/initBackdrop_codegen_20261125_134800/MARK_OF_KRI_Init__10gsBackdropi.cpp"
+)
+target_link_libraries(markofkri_init_backdrop_execution_test PRIVATE ps2_recomp_lib)
+target_compile_features(markofkri_init_backdrop_execution_test PRIVATE cxx_std_20)
+target_include_directories(markofkri_init_backdrop_execution_test PRIVATE
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/include"
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/two_function_execution_retry_20261125_132538/compatibility_headers"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xIOP/include"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/src/lib/Kernel"
+)
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset__FP6Mscobj.cpp
+SIZE: 3765
+LAST WRITE: 2026-11-25 13:37:45
+----- CONTENT BEGIN -----
+#include <stdexcept>
+#include "ps2_runtime_macros.h"
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include <ps2_recompiled_stubs.h>
+
+#include "ps2_syscalls.h"
+#include "ps2_stubs.h"
+
+#ifdef PS2_FUNCTION_LOG_TRACKER
+#include "ps2_log.h"
+#endif
+
+// Function: doorReset__FP6Mscobj
+// Address: 0x1f0078 - 0x1f00b8
+void doorReset__FP6Mscobj(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+#ifdef PS2_FUNCTION_LOG_TRACKER
+    PS_LOG_ENTRY("doorReset__FP6Mscobj");
+#endif
+
+    ctx->pc = 0x1f0078u;
+
+    // 0x1f0078: 0x24030002  addiu       $v1, $zero, 0x2
+    ctx->pc = 0x1f0078u;
+    SET_GPR_S32(ctx, 3, (int32_t)ADD32(GPR_U32(ctx, 0), 2));
+    // 0x1f007c: 0x8c850014  lw          $a1, 0x14($a0)
+    ctx->pc = 0x1f007cu;
+    SET_GPR_S32(ctx, 5, (int32_t)READ32(ADD32(GPR_U32(ctx, 4), 20)));
+    // 0x1f0080: 0x302d  daddu       $a2, $zero, $zero
+    ctx->pc = 0x1f0080u;
+    SET_GPR_U64(ctx, 6, (uint64_t)GPR_U64(ctx, 0) + (uint64_t)GPR_U64(ctx, 0));
+    // 0x1f0084: 0x24020320  addiu       $v0, $zero, 0x320
+    ctx->pc = 0x1f0084u;
+    SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 800));
+    // 0x1f0088: 0x10a20004  beq         $a1, $v0, . + 4 + (0x4 << 2)
+    ctx->pc = 0x1F0088u;
+    {
+        const bool branch_taken_0x1f0088 = (GPR_U64(ctx, 5) == GPR_U64(ctx, 2));
+        ctx->pc = 0x1F008Cu;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x1F0088u;
+        // 0x1f008c: 0xa0830c50  sb          $v1, 0xC50($a0) (Delay Slot)
+        WRITE8(ADD32(GPR_U32(ctx, 4), 3152), (uint8_t)GPR_U32(ctx, 3));
+        ctx->in_delay_slot = false;
+        if (branch_taken_0x1f0088) {
+            ctx->pc = 0x1F009Cu;
+            goto label_1f009c;
+        }
+    }
+    ctx->pc = 0x1F0090u;
+    // 0x1f0090: 0x24020323  addiu       $v0, $zero, 0x323
+    ctx->pc = 0x1f0090u;
+    SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 803));
+    // 0x1f0094: 0x14a20002  bne         $a1, $v0, . + 4 + (0x2 << 2)
+    ctx->pc = 0x1F0094u;
+    {
+        const bool branch_taken_0x1f0094 = (GPR_U64(ctx, 5) != GPR_U64(ctx, 2));
+        if (branch_taken_0x1f0094) {
+            ctx->pc = 0x1F00A0u;
+            goto label_1f00a0;
+        }
+    }
+    ctx->pc = 0x1F009Cu;
+label_1f009c:
+    // 0x1f009c: 0x24060001  addiu       $a2, $zero, 0x1
+    ctx->pc = 0x1f009cu;
+    SET_GPR_S32(ctx, 6, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+label_1f00a0:
+    // 0x1f00a0: 0x10c00003  beqz        $a2, . + 4 + (0x3 << 2)
+    ctx->pc = 0x1F00A0u;
+    {
+        const bool branch_taken_0x1f00a0 = (GPR_U64(ctx, 6) == GPR_U64(ctx, 0));
+        if (branch_taken_0x1f00a0) {
+            ctx->pc = 0x1F00B0u;
+            goto label_1f00b0;
+        }
+    }
+    ctx->pc = 0x1F00A8u;
+    // 0x1f00a8: 0xac800c6c  sw          $zero, 0xC6C($a0)
+    ctx->pc = 0x1f00a8u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 3180), GPR_U32(ctx, 0));
+    // 0x1f00ac: 0xac800c70  sw          $zero, 0xC70($a0)
+    ctx->pc = 0x1f00acu;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 3184), GPR_U32(ctx, 0));
+label_1f00b0:
+    // 0x1f00b0: 0x3e00008  jr          $ra
+    ctx->pc = 0x1F00B0u;
+    {
+        const uint32_t jumpTarget = GPR_U32(ctx, 31);
+        ctx->pc = 0x1F00B4u;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x1F00B0u;
+        // 0x1f00b4: 0x24020001  addiu       $v0, $zero, 0x1 (Delay Slot)
+        SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+        ctx->in_delay_slot = false;
+        ctx->pc = jumpTarget;
+        #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+        (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x1F00B0u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+        return;
+        #else
+        ctx->pc = jumpTarget;
+        return;
+        #endif
+    }
+    ctx->pc = 0x1F00B8u;
+}
+
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp
+SIZE: 688
+LAST WRITE: 2026-11-25 13:37:45
+----- CONTENT BEGIN -----
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include "ps2_stubs.h"
+#include <ps2_recompiled_stubs.h>
+#include "ps2_syscalls.h"
+
+extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1f0078u;
+extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1f007cu;
+extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+
+namespace {
+struct GeneratedFunctionTableInitializer {
+    GeneratedFunctionTableInitializer() {
+        g_ps2RecompiledFunctionTable[0] = doorReset__FP6Mscobj; // 0x1f0078
+    }
+};
+static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+}
+
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_Init__10gsBackdropi.cpp
+SIZE: 3856
+LAST WRITE: 2026-11-25 13:49:08
+----- CONTENT BEGIN -----
+#include <stdexcept>
+#include "ps2_runtime_macros.h"
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include <ps2_recompiled_stubs.h>
+
+#include "ps2_syscalls.h"
+#include "ps2_stubs.h"
+
+#ifdef PS2_FUNCTION_LOG_TRACKER
+#include "ps2_log.h"
+#endif
+
+// Function: Init__10gsBackdropi
+// Address: 0x2dc180 - 0x2dc1d0
+void Init__10gsBackdropi(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+#ifdef PS2_FUNCTION_LOG_TRACKER
+    PS_LOG_ENTRY("Init__10gsBackdropi");
+#endif
+
+    ctx->pc = 0x2dc180u;
+
+    // 0x2dc180: 0xac800000  sw          $zero, 0x0($a0)
+    ctx->pc = 0x2dc180u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 0), GPR_U32(ctx, 0));
+    // 0x2dc184: 0x24060049  addiu       $a2, $zero, 0x49
+    ctx->pc = 0x2dc184u;
+    SET_GPR_S32(ctx, 6, (int32_t)ADD32(GPR_U32(ctx, 0), 73));
+    // 0x2dc188: 0xac800004  sw          $zero, 0x4($a0)
+    ctx->pc = 0x2dc188u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 4), GPR_U32(ctx, 0));
+    // 0x2dc18c: 0xac800008  sw          $zero, 0x8($a0)
+    ctx->pc = 0x2dc18cu;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 8), GPR_U32(ctx, 0));
+    // 0x2dc190: 0xdc820000  ld          $v0, 0x0($a0)
+    ctx->pc = 0x2dc190u;
+    SET_GPR_U64(ctx, 2, READ64(ADD32(GPR_U32(ctx, 4), 0)));
+    // 0x2dc194: 0xdc830008  ld          $v1, 0x8($a0)
+    ctx->pc = 0x2dc194u;
+    SET_GPR_U64(ctx, 3, READ64(ADD32(GPR_U32(ctx, 4), 8)));
+    // 0x2dc198: 0xac850050  sw          $a1, 0x50($a0)
+    ctx->pc = 0x2dc198u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 80), GPR_U32(ctx, 5));
+    // 0x2dc19c: 0xfc820010  sd          $v0, 0x10($a0)
+    ctx->pc = 0x2dc19cu;
+    WRITE64(ADD32(GPR_U32(ctx, 4), 16), GPR_U64(ctx, 2));
+    // 0x2dc1a0: 0xfc830018  sd          $v1, 0x18($a0)
+    ctx->pc = 0x2dc1a0u;
+    WRITE64(ADD32(GPR_U32(ctx, 4), 24), GPR_U64(ctx, 3));
+    // 0x2dc1a4: 0xfc860030  sd          $a2, 0x30($a0)
+    ctx->pc = 0x2dc1a4u;
+    WRITE64(ADD32(GPR_U32(ctx, 4), 48), GPR_U64(ctx, 6));
+    // 0x2dc1a8: 0xac800024  sw          $zero, 0x24($a0)
+    ctx->pc = 0x2dc1a8u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 36), GPR_U32(ctx, 0));
+    // 0x2dc1ac: 0xa0800020  sb          $zero, 0x20($a0)
+    ctx->pc = 0x2dc1acu;
+    WRITE8(ADD32(GPR_U32(ctx, 4), 32), (uint8_t)GPR_U32(ctx, 0));
+    // 0x2dc1b0: 0xa0800021  sb          $zero, 0x21($a0)
+    ctx->pc = 0x2dc1b0u;
+    WRITE8(ADD32(GPR_U32(ctx, 4), 33), (uint8_t)GPR_U32(ctx, 0));
+    // 0x2dc1b4: 0xac800028  sw          $zero, 0x28($a0)
+    ctx->pc = 0x2dc1b4u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 40), GPR_U32(ctx, 0));
+    // 0x2dc1b8: 0xa0800040  sb          $zero, 0x40($a0)
+    ctx->pc = 0x2dc1b8u;
+    WRITE8(ADD32(GPR_U32(ctx, 4), 64), (uint8_t)GPR_U32(ctx, 0));
+    // 0x2dc1bc: 0xa0800041  sb          $zero, 0x41($a0)
+    ctx->pc = 0x2dc1bcu;
+    WRITE8(ADD32(GPR_U32(ctx, 4), 65), (uint8_t)GPR_U32(ctx, 0));
+    // 0x2dc1c0: 0xa0800042  sb          $zero, 0x42($a0)
+    ctx->pc = 0x2dc1c0u;
+    WRITE8(ADD32(GPR_U32(ctx, 4), 66), (uint8_t)GPR_U32(ctx, 0));
+    // 0x2dc1c4: 0xac800044  sw          $zero, 0x44($a0)
+    ctx->pc = 0x2dc1c4u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 68), GPR_U32(ctx, 0));
+    // 0x2dc1c8: 0x3e00008  jr          $ra
+    ctx->pc = 0x2DC1C8u;
+    {
+        const uint32_t jumpTarget = GPR_U32(ctx, 31);
+        ctx->pc = 0x2DC1CCu;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x2DC1C8u;
+        // 0x2dc1cc: 0xac800048  sw          $zero, 0x48($a0) (Delay Slot)
+        WRITE32(ADD32(GPR_U32(ctx, 4), 72), GPR_U32(ctx, 0));
+        ctx->in_delay_slot = false;
+        ctx->pc = jumpTarget;
+        #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+        (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x2DC1C8u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+        return;
+        #else
+        ctx->pc = jumpTarget;
+        return;
+        #endif
+    }
+    ctx->pc = 0x2DC1D0u;
+}
+
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp
+SIZE: 687
+LAST WRITE: 2026-11-25 13:49:08
+----- CONTENT BEGIN -----
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include "ps2_stubs.h"
+#include <ps2_recompiled_stubs.h>
+#include "ps2_syscalls.h"
+
+extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x2dc180u;
+extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x2dc184u;
+extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+
+namespace {
+struct GeneratedFunctionTableInitializer {
+    GeneratedFunctionTableInitializer() {
+        g_ps2RecompiledFunctionTable[0] = Init__10gsBackdropi; // 0x2dc180
+    }
+};
+static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+}
+
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+SIZE: 2100
+LAST WRITE: 2026-11-24 22:08:46
+----- CONTENT BEGIN -----
+#include <stdexcept>
+#include "ps2_runtime_macros.h"
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include <ps2_recompiled_stubs.h>
+
+#include "ps2_syscalls.h"
+#include "ps2_stubs.h"
+
+#ifdef PS2_FUNCTION_LOG_TRACKER
+#include "ps2_log.h"
+#endif
+
+// Function: resetGrabMode__6Camera
+// Address: 0x1159b8 - 0x1159c4
+void resetGrabMode__6Camera(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+#ifdef PS2_FUNCTION_LOG_TRACKER
+    PS_LOG_ENTRY("resetGrabMode__6Camera");
+#endif
+
+    ctx->pc = 0x1159b8u;
+
+    // 0x1159b8: 0xac8003bc  sw zero,0x3bc(a0)
+    ctx->pc = 0x1159b8u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 956), GPR_U32(ctx, 0));
+    // 0x1159bc: 0x3e00008  jr ra
+    ctx->pc = 0x1159BCu;
+    {
+        const uint32_t jumpTarget = GPR_U32(ctx, 31);
+        ctx->pc = 0x1159C0u;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x1159BCu;
+        // 0x1159c0: 0x24020001  addiu v0,zero,1 (Delay Slot)
+        SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+        ctx->in_delay_slot = false;
+        ctx->pc = jumpTarget;
+        #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+        (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x1159BCu, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+        return;
+        #else
+        ctx->pc = jumpTarget;
+        return;
+        #endif
+    }
+    ctx->pc = 0x1159C4u;
+}
+
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include "ps2_stubs.h"
+#include <ps2_recompiled_stubs.h>
+#include "ps2_syscalls.h"
+
+extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1159b8u;
+extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1159bcu;
+extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+
+namespace {
+struct GeneratedFunctionTableInitializer {
+    GeneratedFunctionTableInitializer() {
+        g_ps2RecompiledFunctionTable[0] = resetGrabMode__6Camera; // 0x1159b8
+    }
+};
+static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+}
+
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_addSpirit__6PlayerP9ObjHandle.cpp
+SIZE: 3778
+LAST WRITE: 2026-11-24 23:44:41
+----- CONTENT BEGIN -----
+#include <stdexcept>
+#include "ps2_runtime_macros.h"
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include <ps2_recompiled_stubs.h>
+
+#include "ps2_syscalls.h"
+#include "ps2_stubs.h"
+
+#ifdef PS2_FUNCTION_LOG_TRACKER
+#include "ps2_log.h"
+#endif
+
+// Function: addSpirit__6PlayerP9ObjHandle
+// Address: 0x21acd0 - 0x21ad00
+void addSpirit__6PlayerP9ObjHandle(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+#ifdef PS2_FUNCTION_LOG_TRACKER
+    PS_LOG_ENTRY("addSpirit__6PlayerP9ObjHandle");
+#endif
+
+    ctx->pc = 0x21acd0u;
+
+    // 0x21acd0: 0x90831c30  lbu         $v1, 0x1C30($a0)
+    ctx->pc = 0x21acd0u;
+    SET_GPR_ZE32(ctx, 3, (uint8_t)READ8(ADD32(GPR_U32(ctx, 4), 7216)));
+    // 0x21acd4: 0x306600ff  andi        $a2, $v1, 0xFF
+    ctx->pc = 0x21acd4u;
+    SET_GPR_U64(ctx, 6, GPR_U64(ctx, 3) & (uint64_t)(uint16_t)255);
+    // 0x21acd8: 0x2cc20004  sltiu       $v0, $a2, 0x4
+    ctx->pc = 0x21acd8u;
+    SET_GPR_U64(ctx, 2, ((uint64_t)GPR_U64(ctx, 6) < (uint64_t)(int64_t)(int32_t)4) ? 1 : 0);
+    // 0x21acdc: 0x14400003  bnez        $v0, . + 4 + (0x3 << 2)
+    ctx->pc = 0x21ACDCu;
+    {
+        const bool branch_taken_0x21acdc = (GPR_U64(ctx, 2) != GPR_U64(ctx, 0));
+        ctx->pc = 0x21ACE0u;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x21ACDCu;
+        // 0x21ace0: 0x24630001  addiu       $v1, $v1, 0x1 (Delay Slot)
+        SET_GPR_S32(ctx, 3, (int32_t)ADD32(GPR_U32(ctx, 3), 1));
+        ctx->in_delay_slot = false;
+        if (branch_taken_0x21acdc) {
+            ctx->pc = 0x21ACECu;
+            goto label_21acec;
+        }
+    }
+    ctx->pc = 0x21ACE4u;
+    // 0x21ace4: 0x3e00008  jr          $ra
+    ctx->pc = 0x21ACE4u;
+    {
+        const uint32_t jumpTarget = GPR_U32(ctx, 31);
+        ctx->pc = 0x21ACE8u;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x21ACE4u;
+        // 0x21ace8: 0x102d  daddu       $v0, $zero, $zero (Delay Slot)
+        SET_GPR_U64(ctx, 2, (uint64_t)GPR_U64(ctx, 0) + (uint64_t)GPR_U64(ctx, 0));
+        ctx->in_delay_slot = false;
+        ctx->pc = jumpTarget;
+        #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+        (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x21ACE4u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+        return;
+        #else
+        ctx->pc = jumpTarget;
+        return;
+        #endif
+    }
+    ctx->pc = 0x21ACECu;
+label_21acec:
+    // 0x21acec: 0x61080  sll         $v0, $a2, 2
+    ctx->pc = 0x21acecu;
+    SET_GPR_S32(ctx, 2, (int32_t)SLL32(GPR_U32(ctx, 6), 2));
+    // 0x21acf0: 0x821021  addu        $v0, $a0, $v0
+    ctx->pc = 0x21acf0u;
+    SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 4), GPR_U32(ctx, 2)));
+    // 0x21acf4: 0xa0831c30  sb          $v1, 0x1C30($a0)
+    ctx->pc = 0x21acf4u;
+    WRITE8(ADD32(GPR_U32(ctx, 4), 7216), (uint8_t)GPR_U32(ctx, 3));
+    // 0x21acf8: 0xac451c38  sw          $a1, 0x1C38($v0)
+    ctx->pc = 0x21acf8u;
+    WRITE32(ADD32(GPR_U32(ctx, 2), 7224), GPR_U32(ctx, 5));
+    // 0x21acfc: 0x3e00008  jr          $ra
+    ctx->pc = 0x21ACFCu;
+    {
+        const uint32_t jumpTarget = GPR_U32(ctx, 31);
+        ctx->pc = 0x21AD00u;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x21ACFCu;
+        // 0x21ad00: 0x24020001  addiu       $v0, $zero, 0x1 (Delay Slot)
+        SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+        ctx->in_delay_slot = false;
+        ctx->pc = jumpTarget;
+        #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+        (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x21ACFCu, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+        return;
+        #else
+        ctx->pc = jumpTarget;
+        return;
+        #endif
+    }
+    ctx->pc = 0x21AD04u;
+}
+
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp
+SIZE: 899
+LAST WRITE: 2026-11-24 23:44:41
+----- CONTENT BEGIN -----
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include "ps2_stubs.h"
+#include <ps2_recompiled_stubs.h>
+#include "ps2_syscalls.h"
+
+extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x21acd0u;
+extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x34da54u;
+extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 314209u;
+PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[314209u] = {};
+
+namespace {
+struct GeneratedFunctionTableInitializer {
+    GeneratedFunctionTableInitializer() {
+        g_ps2RecompiledFunctionTable[0] = addSpirit__6PlayerP9ObjHandle; // 0x21acd0
+        g_ps2RecompiledFunctionTable[166906] = SetViewArea__14DisplayEnvInfoUiUi; // 0x2bdcb8
+        g_ps2RecompiledFunctionTable[314208] = GetVoDataSizeInMacroBlocks__8movVoBuf; // 0x34da50
+    }
+};
+static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+}
+
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_GetVoDataSizeInMacroBlocks__8movVoBuf.cpp
+SIZE: 3114
+LAST WRITE: 2026-11-24 23:44:41
+----- CONTENT BEGIN -----
+#include <stdexcept>
+#include "ps2_runtime_macros.h"
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include <ps2_recompiled_stubs.h>
+
+#include "ps2_syscalls.h"
+#include "ps2_stubs.h"
+
+#ifdef PS2_FUNCTION_LOG_TRACKER
+#include "ps2_log.h"
+#endif
+
+// Function: GetVoDataSizeInMacroBlocks__8movVoBuf
+// Address: 0x34da50 - 0x34da80
+void GetVoDataSizeInMacroBlocks__8movVoBuf(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+#ifdef PS2_FUNCTION_LOG_TRACKER
+    PS_LOG_ENTRY("GetVoDataSizeInMacroBlocks__8movVoBuf");
+#endif
+
+    ctx->pc = 0x34da50u;
+
+    // 0x34da50: 0x8c870018  lw          $a3, 0x18($a0)
+    ctx->pc = 0x34da50u;
+    SET_GPR_S32(ctx, 7, (int32_t)READ32(ADD32(GPR_U32(ctx, 4), 24)));
+    // 0x34da54: 0x2406ffff  addiu       $a2, $zero, -0x1
+    ctx->pc = 0x34da54u;
+    SET_GPR_S32(ctx, 6, (int32_t)ADD32(GPR_U32(ctx, 0), 4294967295));
+    // 0x34da58: 0x8c850014  lw          $a1, 0x14($a0)
+    ctx->pc = 0x34da58u;
+    SET_GPR_S32(ctx, 5, (int32_t)READ32(ADD32(GPR_U32(ctx, 4), 20)));
+    // 0x34da5c: 0xc7202a  slt         $a0, $a2, $a3
+    ctx->pc = 0x34da5cu;
+    SET_GPR_U64(ctx, 4, ((int64_t)GPR_S64(ctx, 6) < (int64_t)GPR_S64(ctx, 7)) ? 1 : 0);
+    // 0x34da60: 0x24e3000f  addiu       $v1, $a3, 0xF
+    ctx->pc = 0x34da60u;
+    SET_GPR_S32(ctx, 3, (int32_t)ADD32(GPR_U32(ctx, 7), 15));
+    // 0x34da64: 0x24a2000f  addiu       $v0, $a1, 0xF
+    ctx->pc = 0x34da64u;
+    SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 5), 15));
+    // 0x34da68: 0xc5302a  slt         $a2, $a2, $a1
+    ctx->pc = 0x34da68u;
+    SET_GPR_U64(ctx, 6, ((int64_t)GPR_S64(ctx, 6) < (int64_t)GPR_S64(ctx, 5)) ? 1 : 0);
+    // 0x34da6c: 0xa6100b  movn        $v0, $a1, $a2
+    ctx->pc = 0x34da6cu;
+    if (GPR_U64(ctx, 6) != 0) SET_GPR_VEC(ctx, 2, GPR_VEC(ctx, 5));
+    // 0x34da70: 0xe4180b  movn        $v1, $a3, $a0
+    ctx->pc = 0x34da70u;
+    if (GPR_U64(ctx, 4) != 0) SET_GPR_VEC(ctx, 3, GPR_VEC(ctx, 7));
+    // 0x34da74: 0x21103  sra         $v0, $v0, 4
+    ctx->pc = 0x34da74u;
+    SET_GPR_S32(ctx, 2, SRA32(GPR_S32(ctx, 2), 4));
+    // 0x34da78: 0x31903  sra         $v1, $v1, 4
+    ctx->pc = 0x34da78u;
+    SET_GPR_S32(ctx, 3, SRA32(GPR_S32(ctx, 3), 4));
+    // 0x34da7c: 0x3e00008  jr          $ra
+    ctx->pc = 0x34DA7Cu;
+    {
+        const uint32_t jumpTarget = GPR_U32(ctx, 31);
+        ctx->pc = 0x34DA80u;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x34DA7Cu;
+        // 0x34da80: 0x431018  mult        $v0, $v0, $v1 (Delay Slot)
+        { int64_t result = (int64_t)GPR_S32(ctx, 2) * (int64_t)GPR_S32(ctx, 3); ctx->lo = (uint64_t)(int64_t)(int32_t)result; ctx->hi = (uint64_t)(int64_t)(int32_t)(result >> 32); SET_GPR_S32(ctx, 2, (int32_t)result); }
+        ctx->in_delay_slot = false;
+        ctx->pc = jumpTarget;
+        #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+        (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x34DA7Cu, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+        return;
+        #else
+        ctx->pc = jumpTarget;
+        return;
+        #endif
+    }
+    ctx->pc = 0x34DA84u;
+}
+
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_SetViewArea__14DisplayEnvInfoUiUi.cpp
+SIZE: 2603
+LAST WRITE: 2026-11-24 23:44:41
+----- CONTENT BEGIN -----
+#include <stdexcept>
+#include "ps2_runtime_macros.h"
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include <ps2_recompiled_stubs.h>
+
+#include "ps2_syscalls.h"
+#include "ps2_stubs.h"
+
+#ifdef PS2_FUNCTION_LOG_TRACKER
+#include "ps2_log.h"
+#endif
+
+// Function: SetViewArea__14DisplayEnvInfoUiUi
+// Address: 0x2bdcb8 - 0x2bdce0
+void SetViewArea__14DisplayEnvInfoUiUi(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+#ifdef PS2_FUNCTION_LOG_TRACKER
+    PS_LOG_ENTRY("SetViewArea__14DisplayEnvInfoUiUi");
+#endif
+
+    ctx->pc = 0x2bdcb8u;
+
+    // 0x2bdcb8: 0x84820004  lh          $v0, 0x4($a0)
+    ctx->pc = 0x2bdcb8u;
+    SET_GPR_S32(ctx, 2, (int16_t)READ16(ADD32(GPR_U32(ctx, 4), 4)));
+    // 0x2bdcbc: 0x61842  srl         $v1, $a2, 1
+    ctx->pc = 0x2bdcbcu;
+    SET_GPR_S32(ctx, 3, (int32_t)SRL32(GPR_U32(ctx, 6), 1));
+    // 0x2bdcc0: 0xac800020  sw          $zero, 0x20($a0)
+    ctx->pc = 0x2bdcc0u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 32), GPR_U32(ctx, 0));
+    // 0x2bdcc4: 0x38420001  xori        $v0, $v0, 0x1
+    ctx->pc = 0x2bdcc4u;
+    SET_GPR_U64(ctx, 2, GPR_U64(ctx, 2) ^ (uint64_t)(uint16_t)1);
+    // 0x2bdcc8: 0xac85002c  sw          $a1, 0x2C($a0)
+    ctx->pc = 0x2bdcc8u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 44), GPR_U32(ctx, 5));
+    // 0x2bdccc: 0xc2180b  movn        $v1, $a2, $v0
+    ctx->pc = 0x2bdcccu;
+    if (GPR_U64(ctx, 2) != 0) SET_GPR_VEC(ctx, 3, GPR_VEC(ctx, 6));
+    // 0x2bdcd0: 0xac850008  sw          $a1, 0x8($a0)
+    ctx->pc = 0x2bdcd0u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 8), GPR_U32(ctx, 5));
+    // 0x2bdcd4: 0xac830028  sw          $v1, 0x28($a0)
+    ctx->pc = 0x2bdcd4u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 40), GPR_U32(ctx, 3));
+    // 0x2bdcd8: 0xac83000c  sw          $v1, 0xC($a0)
+    ctx->pc = 0x2bdcd8u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 12), GPR_U32(ctx, 3));
+    // 0x2bdcdc: 0x3e00008  jr          $ra
+    ctx->pc = 0x2BDCDCu;
+    {
+        const uint32_t jumpTarget = GPR_U32(ctx, 31);
+        ctx->pc = 0x2BDCE0u;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x2BDCDCu;
+        // 0x2bdce0: 0xac800024  sw          $zero, 0x24($a0) (Delay Slot)
+        WRITE32(ADD32(GPR_U32(ctx, 4), 36), GPR_U32(ctx, 0));
+        ctx->in_delay_slot = false;
+        ctx->pc = jumpTarget;
+        #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+        (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x2BDCDCu, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+        return;
+        #else
+        ctx->pc = jumpTarget;
+        return;
+        #endif
+    }
+    ctx->pc = 0x2BDCE4u;
+}
+
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_allowLockMode__6Camerab.cpp
+SIZE: 2700
+LAST WRITE: 2026-11-25 13:00:48
+----- CONTENT BEGIN -----
+#include <stdexcept>
+#include "ps2_runtime_macros.h"
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include <ps2_recompiled_stubs.h>
+
+#include "ps2_syscalls.h"
+#include "ps2_stubs.h"
+
+#ifdef PS2_FUNCTION_LOG_TRACKER
+#include "ps2_log.h"
+#endif
+
+// Function: allowLockMode__6Camerab
+// Address: 0x1161a0 - 0x1161b8
+void allowLockMode__6Camerab(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+#ifdef PS2_FUNCTION_LOG_TRACKER
+    PS_LOG_ENTRY("allowLockMode__6Camerab");
+#endif
+
+    ctx->pc = 0x1161a0u;
+
+    // 0x1161a0: 0x10a00003  beqz        $a1, . + 4 + (0x3 << 2)
+    ctx->pc = 0x1161A0u;
+    {
+        const bool branch_taken_0x1161a0 = (GPR_U64(ctx, 5) == GPR_U64(ctx, 0));
+        ctx->pc = 0x1161A4u;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x1161A0u;
+        // 0x1161a4: 0x24020001  addiu       $v0, $zero, 0x1 (Delay Slot)
+        SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+        ctx->in_delay_slot = false;
+        if (branch_taken_0x1161a0) {
+            ctx->pc = 0x1161B0u;
+            goto label_1161b0;
+        }
+    }
+    ctx->pc = 0x1161A8u;
+    // 0x1161a8: 0x3e00008  jr          $ra
+    ctx->pc = 0x1161A8u;
+    {
+        const uint32_t jumpTarget = GPR_U32(ctx, 31);
+        ctx->pc = 0x1161ACu;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x1161A8u;
+        // 0x1161ac: 0xa08204d0  sb          $v0, 0x4D0($a0) (Delay Slot)
+        WRITE8(ADD32(GPR_U32(ctx, 4), 1232), (uint8_t)GPR_U32(ctx, 2));
+        ctx->in_delay_slot = false;
+        ctx->pc = jumpTarget;
+        #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+        (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x1161A8u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+        return;
+        #else
+        ctx->pc = jumpTarget;
+        return;
+        #endif
+    }
+    ctx->pc = 0x1161B0u;
+label_1161b0:
+    // 0x1161b0: 0x3e00008  jr          $ra
+    ctx->pc = 0x1161B0u;
+    {
+        const uint32_t jumpTarget = GPR_U32(ctx, 31);
+        ctx->pc = 0x1161B4u;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x1161B0u;
+        // 0x1161b4: 0xa08004d0  sb          $zero, 0x4D0($a0) (Delay Slot)
+        WRITE8(ADD32(GPR_U32(ctx, 4), 1232), (uint8_t)GPR_U32(ctx, 0));
+        ctx->in_delay_slot = false;
+        ctx->pc = jumpTarget;
+        #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+        (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x1161B0u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+        return;
+        #else
+        ctx->pc = jumpTarget;
+        return;
+        #endif
+    }
+    ctx->pc = 0x1161B8u;
+}
+
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_anmcmd_exitHeader__Fv.cpp
+SIZE: 2193
+LAST WRITE: 2026-11-25 13:00:48
+----- CONTENT BEGIN -----
+#include <stdexcept>
+#include "ps2_runtime_macros.h"
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include <ps2_recompiled_stubs.h>
+
+#include "ps2_syscalls.h"
+#include "ps2_stubs.h"
+
+#ifdef PS2_FUNCTION_LOG_TRACKER
+#include "ps2_log.h"
+#endif
+
+// Function: anmcmd_exitHeader__Fv
+// Address: 0x19c8c0 - 0x19c8e0
+void anmcmd_exitHeader__Fv(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+#ifdef PS2_FUNCTION_LOG_TRACKER
+    PS_LOG_ENTRY("anmcmd_exitHeader__Fv");
+#endif
+
+    ctx->pc = 0x19c8c0u;
+
+    // 0x19c8c0: 0x24020004  addiu       $v0, $zero, 0x4
+    ctx->pc = 0x19c8c0u;
+    SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 4));
+    // 0x19c8c4: 0x2403000a  addiu       $v1, $zero, 0xA
+    ctx->pc = 0x19c8c4u;
+    SET_GPR_S32(ctx, 3, (int32_t)ADD32(GPR_U32(ctx, 0), 10));
+    // 0x19c8c8: 0xaf82c370  sw          $v0, -0x3C90($gp)
+    ctx->pc = 0x19c8c8u;
+    WRITE32(ADD32(GPR_U32(ctx, 28), 4294951792), GPR_U32(ctx, 2));
+    // 0x19c8cc: 0x24020001  addiu       $v0, $zero, 0x1
+    ctx->pc = 0x19c8ccu;
+    SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+    // 0x19c8d0: 0xaf83c374  sw          $v1, -0x3C8C($gp)
+    ctx->pc = 0x19c8d0u;
+    WRITE32(ADD32(GPR_U32(ctx, 28), 4294951796), GPR_U32(ctx, 3));
+    // 0x19c8d4: 0xaf80c36c  sw          $zero, -0x3C94($gp)
+    ctx->pc = 0x19c8d4u;
+    WRITE32(ADD32(GPR_U32(ctx, 28), 4294951788), GPR_U32(ctx, 0));
+    // 0x19c8d8: 0x3e00008  jr          $ra
+    ctx->pc = 0x19C8D8u;
+    {
+        const uint32_t jumpTarget = GPR_U32(ctx, 31);
+        ctx->pc = 0x19C8DCu;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x19C8D8u;
+        // 0x19c8dc: 0xaf80c378  sw          $zero, -0x3C88($gp) (Delay Slot)
+        WRITE32(ADD32(GPR_U32(ctx, 28), 4294951800), GPR_U32(ctx, 0));
+        ctx->in_delay_slot = false;
+        ctx->pc = jumpTarget;
+        #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+        (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x19C8D8u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+        return;
+        #else
+        ctx->pc = jumpTarget;
+        return;
+        #endif
+    }
+    ctx->pc = 0x19C8E0u;
+}
+
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp
+SIZE: 783
+LAST WRITE: 2026-11-25 13:00:48
+----- CONTENT BEGIN -----
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include "ps2_stubs.h"
+#include <ps2_recompiled_stubs.h>
+#include "ps2_syscalls.h"
+
+extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1161a0u;
+extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x19c8c4u;
+extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 137673u;
+PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[137673u] = {};
+
+namespace {
+struct GeneratedFunctionTableInitializer {
+    GeneratedFunctionTableInitializer() {
+        g_ps2RecompiledFunctionTable[0] = allowLockMode__6Camerab; // 0x1161a0
+        g_ps2RecompiledFunctionTable[137672] = anmcmd_exitHeader__Fv; // 0x19c8c0
+    }
+};
+static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+}
+
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt
+SIZE: 4234
+LAST WRITE: 2026-11-24 23:28:11
+----- CONTENT BEGIN -----
+add_executable(markofkri_codegen_smoke
+    "${CMAKE_CURRENT_LIST_DIR}/code_generator_smoke.cpp"
+)
+
+target_link_libraries(markofkri_codegen_smoke
+    PRIVATE
+        ps2_recomp_lib
+)
+
+target_compile_features(markofkri_codegen_smoke PRIVATE cxx_std_20)
+
+set_target_properties(markofkri_codegen_smoke PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${MARK_OF_KRI_NATIVE_OUTPUT_DIR}"
+)
+# Isolated real Mark of Kri function generated from Ghidra instruction words.
+target_sources(markofkri_codegen_smoke PRIVATE
+    "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+)
+target_include_directories(markofkri_codegen_smoke PRIVATE
+    "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/include"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/include"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRecomp/include"
+)
+# Required transitive IOP headers from the PS2Recomp runtime.
+target_include_directories(markofkri_codegen_smoke PRIVATE
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xIOP/include"
+)
+# Include root for PS2Recomp's real Unimplemented stub header.
+target_include_directories(markofkri_codegen_smoke PRIVATE
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/src/lib/Kernel"
+)
+# MARK_OF_KRI_REAL_FUNCTION_OBJECT_TARGET
+# Keep the real generated game function out of the generator executable.
+# Compile it independently so runtime implementation symbols are not linked here.
+get_target_property(_markofkri_smoke_sources markofkri_codegen_smoke SOURCES)
+set(_markofkri_smoke_sources_filtered "")
+get_filename_component(_markofkri_generated_abs
+    "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+
+foreach(_markofkri_source IN LISTS _markofkri_smoke_sources)
+    get_filename_component(_markofkri_source_abs
+        "${_markofkri_source}" ABSOLUTE
+        BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    if(NOT "${_markofkri_source_abs}" STREQUAL "${_markofkri_generated_abs}")
+        list(APPEND _markofkri_smoke_sources_filtered "${_markofkri_source}")
+    endif()
+endforeach()
+
+set_property(TARGET markofkri_codegen_smoke
+    PROPERTY SOURCES "${_markofkri_smoke_sources_filtered}")
+
+add_library(markofkri_real_function_compile OBJECT
+    "${_markofkri_generated_abs}"
+)
+
+target_compile_features(markofkri_real_function_compile PRIVATE cxx_std_20)
+
+target_include_directories(markofkri_real_function_compile PRIVATE
+    "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/include"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/include"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRecomp/include"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xIOP/include"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/src/lib/Kernel"
+)
+# MARK_OF_KRI_REAL_FUNCTION_EXECUTION_TARGET
+add_executable(markofkri_real_function_execution_test
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/real_function_execution_test.cpp"
+    "D:/Games/MarkOfKriRecomp/native/tests/recomp/real_function_runtime_boundary.cpp"
+    "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+)
+
+target_compile_features(markofkri_real_function_execution_test PRIVATE cxx_std_20)
+
+target_include_directories(markofkri_real_function_execution_test PRIVATE
+    "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/include"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/include"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRecomp/include"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xIOP/include"
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRuntime/src/lib/Kernel"
+)
+# MARK_OF_KRI_MULTIFUNCTION_CODEGEN_TARGET
+# Uses the real PS2Recomp decoder to populate instruction metadata.
+add_executable(markofkri_multifunction_codegen
+    "${CMAKE_CURRENT_LIST_DIR}/multifunction_codegen.cpp"
+)
+
+target_link_libraries(markofkri_multifunction_codegen
+    PRIVATE
+        ps2_recomp_lib
+)
+
+target_compile_features(markofkri_multifunction_codegen PRIVATE cxx_std_20)
+
+set_target_properties(markofkri_multifunction_codegen PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${MARK_OF_KRI_NATIVE_OUTPUT_DIR}"
+)
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\doorReset_execution_20261125_133945\src\doorReset_execution_test.cpp
+SIZE: 3738
+LAST WRITE: 2026-11-25 13:39:45
+----- CONTENT BEGIN -----
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include "ps2_runtime.h"
+
+extern void doorReset__FP6Mscobj(uint8_t*, R5900Context*, PS2Runtime*);
+
+static int failures = 0;
+
+static uint32_t getGpr(const R5900Context& ctx, int index)
+{
+    return static_cast<uint32_t>(_mm_cvtsi128_si64(ctx.r[index]));
+}
+
+static void setGpr(R5900Context& ctx, int index, uint32_t value)
+{
+    ctx.r[index] = _mm_set_epi64x(
+        0,
+        static_cast<int64_t>(static_cast<uint64_t>(value)));
+}
+
+static uint32_t read32(const uint8_t* memory, uint32_t address)
+{
+    return
+        static_cast<uint32_t>(memory[address]) |
+        (static_cast<uint32_t>(memory[address + 1]) << 8) |
+        (static_cast<uint32_t>(memory[address + 2]) << 16) |
+        (static_cast<uint32_t>(memory[address + 3]) << 24);
+}
+
+static void write32(uint8_t* memory, uint32_t address, uint32_t value)
+{
+    memory[address] = static_cast<uint8_t>(value);
+    memory[address + 1] = static_cast<uint8_t>(value >> 8);
+    memory[address + 2] = static_cast<uint8_t>(value >> 16);
+    memory[address + 3] = static_cast<uint8_t>(value >> 24);
+}
+
+static void check(bool condition, const char* label)
+{
+    if (condition) {
+        std::printf("[PASS] %s\n", label);
+    } else {
+        std::printf("[FAIL] %s\n", label);
+        ++failures;
+    }
+}
+
+static void runCase(
+    uint8_t* rdram,
+    uint32_t inputValue,
+    bool shouldClear,
+    const char* caseName)
+{
+    constexpr uint32_t objectBase = 0x1000;
+    constexpr uint32_t returnAddress = 0x00ABCDEF;
+    constexpr uint32_t sentinel = 0xA5A5A5A5;
+
+    std::printf("\n=== %s ===\n", caseName);
+
+    std::memset(rdram, 0, 0x20000);
+
+    R5900Context ctx{};
+    ctx.pc = 0x001F0078;
+
+    setGpr(ctx, 4, objectBase);
+    setGpr(ctx, 31, returnAddress);
+
+    write32(rdram, objectBase + 0x14, inputValue);
+    write32(rdram, objectBase + 0xC6C, sentinel);
+    write32(rdram, objectBase + 0xC70, sentinel);
+
+    doorReset__FP6Mscobj(rdram, &ctx, nullptr);
+
+    check(
+        rdram[objectBase + 0xC50] == 2,
+        "First BEQ delay slot always stores byte 2 at +0xC50");
+
+    check(
+        read32(rdram, objectBase + 0xC6C) ==
+            (shouldClear ? 0u : sentinel),
+        "Conditional path handles +0xC6C correctly");
+
+    check(
+        read32(rdram, objectBase + 0xC70) ==
+            (shouldClear ? 0u : sentinel),
+        "Conditional path handles +0xC70 correctly");
+
+    check(
+        getGpr(ctx, 2) == 1,
+        "JR delay slot sets V0 to 1");
+
+    check(
+        getGpr(ctx, 3) == 2,
+        "V1 retains value 2");
+
+    check(
+        getGpr(ctx, 6) == (shouldClear ? 1u : 0u),
+        "A2 reflects the matching/nonmatching branch path");
+
+    check(
+        static_cast<uint32_t>(ctx.pc) == returnAddress,
+        "JR transfers PC through RA");
+
+    check(
+        !ctx.in_delay_slot,
+        "Function returns with delay-slot state cleared");
+}
+
+int main()
+{
+    constexpr size_t RDRAM_SIZE = 32u * 1024u * 1024u;
+
+    std::printf("MARK OF KRI - DOORRESET REAL-FUNCTION EXECUTION TEST\n");
+    std::printf("RDRAM: %zu MiB\n", RDRAM_SIZE / (1024u * 1024u));
+
+    uint8_t* rdram = new uint8_t[RDRAM_SIZE];
+    std::memset(rdram, 0, RDRAM_SIZE);
+
+    // The test-only PS2Runtime methods below implement ordinary RDRAM
+    // access. No PS2Runtime object or full runtime initialization is needed.
+    runCase(rdram, 0x320, true, "PATH A - input 0x320");
+    runCase(rdram, 0x323, true, "PATH B - input 0x323");
+    runCase(rdram, 0x321, false, "PATH C - input 0x321");
+
+    delete[] rdram;
+
+    std::printf("\nTOTAL FAILURES: %d\n", failures);
+    std::printf(
+        "RESULT: %s\n",
+        failures == 0 ? "DOORRESET EXECUTION PASSED" : "DOORRESET EXECUTION FAILED");
+
+    return failures == 0 ? 0 : 1;
+}
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\doorReset_execution_20261125_133945\src\doorReset_runtime_boundary.cpp
+SIZE: 893
+LAST WRITE: 2026-11-25 13:39:45
+----- CONTENT BEGIN -----
+#include <ps2_runtime.h>
+#include <cstdint>
+#include <cstdlib>
+#include <iostream>
+
+uint32_t PS2Runtime::Load32(
+    uint8_t* rdram,
+    R5900Context*,
+    uint32_t address)
+{
+    return
+        static_cast<uint32_t>(rdram[address]) |
+        (static_cast<uint32_t>(rdram[address + 1]) << 8) |
+        (static_cast<uint32_t>(rdram[address + 2]) << 16) |
+        (static_cast<uint32_t>(rdram[address + 3]) << 24);
+}
+
+void PS2Runtime::Store8(
+    uint8_t* rdram,
+    R5900Context*,
+    uint32_t address,
+    uint8_t value)
+{
+    rdram[address] = value;
+}
+
+void PS2Runtime::Store32(
+    uint8_t* rdram,
+    R5900Context*,
+    uint32_t address,
+    uint32_t value)
+{
+    rdram[address] = static_cast<uint8_t>(value);
+    rdram[address + 1] = static_cast<uint8_t>(value >> 8);
+    rdram[address + 2] = static_cast<uint8_t>(value >> 16);
+    rdram[address + 3] = static_cast<uint8_t>(value >> 24);
+}
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\initBackdrop_execution_20261125_135231\src\initBackdrop_64bit_runtime_boundary.cpp
+SIZE: 524
+LAST WRITE: 2026-11-25 13:52:31
+----- CONTENT BEGIN -----
+#include <ps2_runtime.h>
+#include <cstdint>
+#include <cstdlib>
+#include <iostream>
+
+uint64_t PS2Runtime::Load64(
+    uint8_t*,
+    R5900Context*,
+    uint32_t address)
+{
+    std::cerr << "ERROR: unexpected PS2Runtime::Load64 at 0x"
+              << std::hex << address << "\n";
+    std::abort();
+}
+
+void PS2Runtime::Store64(
+    uint8_t*,
+    R5900Context*,
+    uint32_t address,
+    uint64_t)
+{
+    std::cerr << "ERROR: unexpected PS2Runtime::Store64 at 0x"
+              << std::hex << address << "\n";
+    std::abort();
+}
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\initBackdrop_execution_20261125_135231\src\initBackdrop_execution_test.cpp
+SIZE: 5876
+LAST WRITE: 2026-11-25 13:57:07
+----- CONTENT BEGIN -----
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <immintrin.h>
+#include "ps2_runtime.h"
+
+extern void Init__10gsBackdropi(uint8_t*, R5900Context*, PS2Runtime*);
+
+static int failures = 0;
+static int checks = 0;
+
+static uint32_t getGpr32(const R5900Context& ctx, int index)
+{
+    return static_cast<uint32_t>(_mm_cvtsi128_si64(ctx.r[index]));
+}
+
+static uint64_t getGpr64(const R5900Context& ctx, int index)
+{
+    return static_cast<uint64_t>(_mm_cvtsi128_si64(ctx.r[index]));
+}
+
+static void setGpr32(R5900Context& ctx, int index, uint32_t value)
+{
+    ctx.r[index] = _mm_set_epi64x(
+        0,
+        static_cast<int64_t>(static_cast<uint64_t>(value)));
+}
+
+static uint32_t read32(const uint8_t* memory, uint32_t address)
+{
+    return
+        static_cast<uint32_t>(memory[address]) |
+        (static_cast<uint32_t>(memory[address + 1]) << 8) |
+        (static_cast<uint32_t>(memory[address + 2]) << 16) |
+        (static_cast<uint32_t>(memory[address + 3]) << 24);
+}
+
+static uint64_t read64(const uint8_t* memory, uint32_t address)
+{
+    return
+        static_cast<uint64_t>(read32(memory, address)) |
+        (static_cast<uint64_t>(read32(memory, address + 4)) << 32);
+}
+
+static void check(bool condition, const char* label)
+{
+    ++checks;
+    if (condition) {
+        std::printf("[PASS] %s\n", label);
+    } else {
+        std::printf("[FAIL] %s\n", label);
+        ++failures;
+    }
+}
+
+int main()
+{
+    constexpr size_t RDRAM_SIZE = 32u * 1024u * 1024u;
+    constexpr uint32_t objectBase = 0x1000u;
+    constexpr uint32_t returnAddress = 0x00ABCDEFu;
+    constexpr uint32_t a1Value = 0x12345678u;
+    constexpr uint32_t upperSentinel = 0xA1B2C3D4u;
+    constexpr uint8_t fillByte = 0xCCu;
+
+    std::printf("MARK OF KRI - INIT BACKDROP REAL-FUNCTION EXECUTION TEST\n");
+    std::printf("RDRAM: %zu MiB\n", RDRAM_SIZE / (1024u * 1024u));
+    std::printf("Function: Init__10gsBackdropi @ 0x002DC180\n");
+
+    uint8_t* rdram = new uint8_t[RDRAM_SIZE];
+    std::memset(rdram, 0, RDRAM_SIZE);
+
+    std::memset(rdram + objectBase, fillByte, 0x100u);
+    rdram[objectBase + 0x0C] = 0xD4;
+    rdram[objectBase + 0x0D] = 0xC3;
+    rdram[objectBase + 0x0E] = 0xB2;
+    rdram[objectBase + 0x0F] = 0xA1;
+
+    R5900Context ctx{};
+    ctx.pc = 0x002DC180u;
+    setGpr32(ctx, 4, objectBase);
+    setGpr32(ctx, 5, a1Value);
+    setGpr32(ctx, 31, returnAddress);
+
+    std::printf("\n=== EXECUTE GENERATED GAME FUNCTION ===\n");
+    Init__10gsBackdropi(rdram, &ctx, nullptr);
+
+    check(read32(rdram, objectBase + 0x00) == 0,
+          "SW clears object field +0x00");
+    check(read32(rdram, objectBase + 0x04) == 0,
+          "SW clears object field +0x04");
+    check(read32(rdram, objectBase + 0x08) == 0,
+          "SW clears lower word at +0x08");
+
+    check(getGpr64(ctx, 2) == 0,
+          "LD V0 reads the two cleared words at +0x00");
+    check(getGpr64(ctx, 3) ==
+              ((static_cast<uint64_t>(upperSentinel) << 32) | 0u),
+          "LD V1 preserves upper word at +0x0C after lower word is cleared");
+
+    check(read64(rdram, objectBase + 0x10) == 0,
+          "SD stores V0 as a full 64-bit zero at +0x10");
+    check(read64(rdram, objectBase + 0x18) ==
+              (static_cast<uint64_t>(upperSentinel) << 32),
+          "SD stores V1 as a full 64-bit value at +0x18");
+    check(read64(rdram, objectBase + 0x30) == 0x49u,
+          "SD stores A2 value 0x49 as a 64-bit value at +0x30");
+
+    check(read32(rdram, objectBase + 0x50) == a1Value,
+          "SW copies A1 to object field +0x50");
+    check(read32(rdram, objectBase + 0x24) == 0,
+          "SW clears object field +0x24");
+    check(rdram[objectBase + 0x20] == 0,
+          "SB clears byte +0x20");
+    check(rdram[objectBase + 0x21] == 0,
+          "SB clears byte +0x21");
+    check(rdram[objectBase + 0x28] == 0 &&
+              read32(rdram, objectBase + 0x28) == 0,
+          "SW clears object field +0x28");
+
+    check(rdram[objectBase + 0x40] == 0,
+          "SB clears byte +0x40");
+    check(rdram[objectBase + 0x41] == 0,
+          "SB clears byte +0x41");
+    check(rdram[objectBase + 0x42] == 0,
+          "SB clears byte +0x42");
+    check(read32(rdram, objectBase + 0x44) == 0,
+          "SW clears object field +0x44");
+    check(read32(rdram, objectBase + 0x48) == 0,
+          "JR delay slot clears object field +0x48");
+
+    check(rdram[objectBase + 0x22] == fillByte &&
+              rdram[objectBase + 0x23] == fillByte,
+          "Adjacent bytes +0x22/+0x23 remain untouched");
+    check(read32(rdram, objectBase + 0x2C) ==
+              static_cast<uint32_t>(fillByte) * 0x01010101u,
+          "Untargeted field +0x2C remains untouched");
+    check(read32(rdram, objectBase + 0x34) == 0u,
+          "SD at +0x30 writes zero to upper word +0x34");
+    check(rdram[objectBase + 0x43] == fillByte,
+          "Adjacent byte +0x43 remains untouched");
+
+    check(getGpr32(ctx, 6) == 0x49u,
+          "A2 contains immediate value 0x49");
+    check(ctx.pc == returnAddress,
+          "JR transfers PC to RA");
+    check(ctx.branch_pc == 0x002DC1C8u,
+          "JR records the correct branch instruction address");
+    check(!ctx.in_delay_slot,
+          "Return completes with delay-slot state cleared");
+
+    check(getGpr32(ctx, 4) == objectBase,
+          "A0 object pointer remains unchanged");
+    check(getGpr32(ctx, 5) == a1Value,
+          "A1 input value remains unchanged");
+
+    delete[] rdram;
+
+    std::printf("\nTOTAL CHECKS: %d\n", checks);
+    std::printf("TOTAL FAILURES: %d\n", failures);
+    std::printf("RESULT: %s\n",
+        failures == 0
+            ? "INIT BACKDROP EXECUTION PASSED"
+            : "INIT BACKDROP EXECUTION FAILED");
+
+    return failures == 0 ? 0 : 1;
+}
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\multifunction_execution_test.cpp
+SIZE: 11138
+LAST WRITE: 2026-11-25 10:56:22
+----- CONTENT BEGIN -----
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+#include "ps2_runtime.h"
+static uint32_t harnessGetGprU32(const R5900Context& ctx, int index)
+{
+    return static_cast<uint32_t>(_mm_cvtsi128_si64(ctx.r[index]));
+}
+
+static void harnessSetGprU32(R5900Context& ctx, int index, uint32_t value)
+{
+    ctx.r[index] = _mm_set_epi64x(0, static_cast<int64_t>(static_cast<uint64_t>(value)));
+}
+
+
+extern void addSpirit__6PlayerP9ObjHandle(
+    uint8_t* rdram,
+    R5900Context* ctx,
+    PS2Runtime* runtime);
+
+extern void SetViewArea__14DisplayEnvInfoUiUi(
+    uint8_t* rdram,
+    R5900Context* ctx,
+    PS2Runtime* runtime);
+
+extern void GetVoDataSizeInMacroBlocks__8movVoBuf(
+    uint8_t* rdram,
+    R5900Context* ctx,
+    PS2Runtime* runtime);
+
+static int failures = 0;
+
+static void check(bool condition, const char* label)
+{
+    if (condition) {
+        std::printf("[PASS] %s\n", label);
+    }
+    else {
+        std::printf("[FAIL] %s\n", label);
+        failures++;
+    }
+}
+
+static uint8_t read8(uint8_t* memory, uint32_t address)
+{
+    return memory[address];
+}
+
+static uint16_t read16(uint8_t* memory, uint32_t address)
+{
+    return
+        static_cast<uint16_t>(memory[address]) |
+        (static_cast<uint16_t>(memory[address + 1]) << 8);
+}
+
+static uint32_t read32(uint8_t* memory, uint32_t address)
+{
+    return
+        static_cast<uint32_t>(memory[address]) |
+        (static_cast<uint32_t>(memory[address + 1]) << 8) |
+        (static_cast<uint32_t>(memory[address + 2]) << 16) |
+        (static_cast<uint32_t>(memory[address + 3]) << 24);
+}
+
+static void write16(uint8_t* memory, uint32_t address, uint16_t value)
+{
+    memory[address] = static_cast<uint8_t>(value);
+    memory[address + 1] = static_cast<uint8_t>(value >> 8);
+}
+
+static void write32(uint8_t* memory, uint32_t address, uint32_t value)
+{
+    memory[address] = static_cast<uint8_t>(value);
+    memory[address + 1] = static_cast<uint8_t>(value >> 8);
+    memory[address + 2] = static_cast<uint8_t>(value >> 16);
+    memory[address + 3] = static_cast<uint8_t>(value >> 24);
+}
+
+static void clearContext(R5900Context& ctx)
+{
+    std::memset(&ctx, 0, sizeof(ctx));
+}
+
+static void testAddSpirit(
+    uint8_t* rdram,
+    PS2Runtime* runtime)
+{
+    std::printf("\n=== addSpirit__6PlayerP9ObjHandle ===\n");
+
+    constexpr uint32_t objectBase = 0x1000;
+    constexpr uint32_t countOffset = 0x1C30;
+    constexpr uint32_t handleOffset = 0x1C38;
+    constexpr uint32_t returnAddress = 0x00ABCDEF;
+
+    const uint32_t handle = 0x12345678;
+
+    R5900Context ctx{};
+
+    // ---------------------------------------------------------------------
+    // Path A: count = 3.
+    // BNEZ should NOT be taken.
+    // Delay slot increments V1.
+    // Function should store the handle and return 1.
+    // ---------------------------------------------------------------------
+
+    std::memset(rdram, 0, 0x20000);
+    clearContext(ctx);
+
+    ctx.pc = 0x0021ACD0;
+    harnessSetGprU32(ctx, 4, static_cast<uint32_t>(objectBase));
+    harnessSetGprU32(ctx, 5, static_cast<uint32_t>(handle));
+    harnessSetGprU32(ctx, 31, static_cast<uint32_t>(returnAddress));
+
+    rdram[objectBase + countOffset] = 3;
+    const uint32_t indexedHandleAddressA = objectBase + (3u * 4u) + handleOffset;
+    write32(rdram, indexedHandleAddressA, 0xDEADBEEF);
+
+    addSpirit__6PlayerP9ObjHandle(
+        rdram,
+        &ctx,
+        runtime);
+
+    check(
+        read8(rdram, objectBase + countOffset) == 4,
+        "count=3 increments count from 3 to 4");
+
+    check(
+        read32(rdram, indexedHandleAddressA) == handle,
+        "count=3 stores supplied handle");
+
+    check(
+        static_cast<uint32_t>(harnessGetGprU32(ctx, 2)) == 1,
+        "count=3 returns V0=1");
+
+    check(
+        static_cast<uint32_t>(ctx.pc) == returnAddress,
+        "count=3 transfers PC through JR $ra");
+
+    check(
+        !ctx.in_delay_slot,
+        "count=3 clears delay-slot state");
+
+    // ---------------------------------------------------------------------
+    // Path B: count = 4.
+    // BNEZ should be taken.
+    // Function should return 0 and skip the handle write.
+    // ---------------------------------------------------------------------
+
+    std::memset(rdram, 0, 0x20000);
+    clearContext(ctx);
+
+    ctx.pc = 0x0021ACD0;
+    harnessSetGprU32(ctx, 4, static_cast<uint32_t>(objectBase));
+    harnessSetGprU32(ctx, 5, static_cast<uint32_t>(handle));
+    harnessSetGprU32(ctx, 31, static_cast<uint32_t>(returnAddress));
+
+    rdram[objectBase + countOffset] = 4;
+    const uint32_t indexedHandleAddressB = objectBase + (4u * 4u) + handleOffset;
+    write32(rdram, indexedHandleAddressB, 0xDEADBEEF);
+
+    addSpirit__6PlayerP9ObjHandle(
+        rdram,
+        &ctx,
+        runtime);
+
+    check(
+        read8(rdram, objectBase + countOffset) == 4,
+        "count=4 leaves count unchanged");
+
+    check(
+        read32(rdram, indexedHandleAddressB) == 0xDEADBEEF,
+        "count=4 does not overwrite handle");
+
+    check(
+        static_cast<uint32_t>(harnessGetGprU32(ctx, 2)) == 0,
+        "count=4 returns V0=0");
+
+    check(
+        static_cast<uint32_t>(ctx.pc) == returnAddress,
+        "count=4 transfers PC through JR $ra");
+
+    check(
+        !ctx.in_delay_slot,
+        "count=4 clears delay-slot state");
+}
+
+static void testSetViewArea(
+    uint8_t* rdram,
+    PS2Runtime* runtime)
+{
+    std::printf("\n=== SetViewArea__14DisplayEnvInfoUiUi ===\n");
+
+    constexpr uint32_t objectBase = 0x3000;
+    constexpr uint32_t returnAddress = 0x00BCDEF0;
+
+    const uint32_t a1 = 0x13572468;
+    const uint32_t a2 = 0x00000010;
+
+    R5900Context ctx{};
+
+    // ---------------------------------------------------------------------
+    // Path A:
+    // LH(+4) = 1
+    // XORI 1 -> 0
+    // MOVN is NOT executed.
+    // V1 remains A2 >> 1 = 8.
+    // ---------------------------------------------------------------------
+
+    std::memset(rdram, 0, 0x20000);
+    clearContext(ctx);
+
+    ctx.pc = 0x002BDCB8;
+    harnessSetGprU32(ctx, 4, static_cast<uint32_t>(objectBase));
+    harnessSetGprU32(ctx, 5, static_cast<uint32_t>(a1));
+    harnessSetGprU32(ctx, 6, static_cast<uint32_t>(a2));
+    harnessSetGprU32(ctx, 31, static_cast<uint32_t>(returnAddress));
+
+    write16(rdram, objectBase + 4, 1);
+
+    SetViewArea__14DisplayEnvInfoUiUi(
+        rdram,
+        &ctx,
+        runtime);
+
+    check(
+        read32(rdram, objectBase + 0x20) == 0,
+        "LH=1 clears +0x20");
+
+    check(
+        read32(rdram, objectBase + 0x2C) == a1,
+        "LH=1 stores A1 at +0x2C");
+
+    check(
+        read32(rdram, objectBase + 0x08) == a1,
+        "LH=1 stores A1 at +0x08");
+
+    check(
+        read32(rdram, objectBase + 0x28) == 8,
+        "MOVN-false path stores A2>>1 at +0x28");
+
+    check(
+        read32(rdram, objectBase + 0x0C) == 8,
+        "MOVN-false path stores A2>>1 at +0x0C");
+
+    check(
+        read32(rdram, objectBase + 0x24) == 0,
+        "JR delay slot clears +0x24");
+
+    check(
+        static_cast<uint32_t>(ctx.pc) == returnAddress,
+        "LH=1 transfers PC through JR $ra");
+
+    check(
+        !ctx.in_delay_slot,
+        "LH=1 clears delay-slot state");
+
+    // ---------------------------------------------------------------------
+    // Path B:
+    // LH(+4) = 0
+    // XORI 1 -> 1
+    // MOVN executes and replaces V1 with A2.
+    // ---------------------------------------------------------------------
+
+    std::memset(rdram, 0, 0x20000);
+    clearContext(ctx);
+
+    ctx.pc = 0x002BDCB8;
+    harnessSetGprU32(ctx, 4, static_cast<uint32_t>(objectBase));
+    harnessSetGprU32(ctx, 5, static_cast<uint32_t>(a1));
+    harnessSetGprU32(ctx, 6, static_cast<uint32_t>(a2));
+    harnessSetGprU32(ctx, 31, static_cast<uint32_t>(returnAddress));
+
+    write16(rdram, objectBase + 4, 0);
+
+    SetViewArea__14DisplayEnvInfoUiUi(
+        rdram,
+        &ctx,
+        runtime);
+
+    check(
+        read32(rdram, objectBase + 0x28) == a2,
+        "MOVN-true path replaces V1 with A2");
+
+    check(
+        read32(rdram, objectBase + 0x0C) == a2,
+        "MOVN-true path stores A2 at +0x0C");
+
+    check(
+        static_cast<uint32_t>(ctx.pc) == returnAddress,
+        "LH=0 transfers PC through JR $ra");
+
+    check(
+        !ctx.in_delay_slot,
+        "LH=0 clears delay-slot state");
+}
+
+static void testGetVo(
+    uint8_t* rdram,
+    PS2Runtime* runtime)
+{
+    std::printf("\n=== GetVoDataSizeInMacroBlocks__8movVoBuf ===\n");
+
+    constexpr uint32_t objectBase = 0x5000;
+    constexpr uint32_t returnAddress = 0x00FEDCBA;
+
+    R5900Context ctx{};
+
+    // width  = 32 -> (32 + 15) >> 4 = 2
+    // height = 16 -> (16 + 15) >> 4 = 1
+    // MULT   = 2 * 1 = 2
+    //
+    // R5900-specific PS2Recomp semantics:
+    //   LO = 2
+    //   HI = 0
+    //   rd(V0) = 2
+    //
+    // Seed HI/LO first so that successful writes are observable.
+
+    std::memset(rdram, 0, 0x20000);
+    clearContext(ctx);
+
+    ctx.pc = 0x0034DA50;
+    harnessSetGprU32(ctx, 4, static_cast<uint32_t>(objectBase));
+    harnessSetGprU32(ctx, 31, static_cast<uint32_t>(returnAddress));
+
+    write32(rdram, objectBase + 0x18, 32);
+    write32(rdram, objectBase + 0x14, 16);
+
+    ctx.hi = 0x11111111;
+    ctx.lo = 0x22222222;
+
+    GetVoDataSizeInMacroBlocks__8movVoBuf(
+        rdram,
+        &ctx,
+        runtime);
+
+    check(
+        static_cast<uint32_t>(harnessGetGprU32(ctx, 2)) == 2,
+        "MULT writes V0=2 for 2*1");
+
+    check(
+        static_cast<uint32_t>(ctx.lo) == 2,
+        "MULT writes LO=2");
+
+    check(
+        static_cast<uint32_t>(ctx.hi) == 0,
+        "MULT writes HI=0");
+
+    check(
+        static_cast<uint32_t>(harnessGetGprU32(ctx, 2)) == 2,
+        "V0 remains the R5900 MULT destination result");
+
+    check(
+        static_cast<uint32_t>(ctx.pc) == returnAddress,
+        "GetVo transfers PC through JR $ra");
+
+    check(
+        !ctx.in_delay_slot,
+        "GetVo clears delay-slot state");
+}
+
+int main()
+{
+    constexpr size_t RDRAM_SIZE = 32u * 1024u * 1024u;
+
+    std::printf(
+        "MARK OF KRI — THREE REAL-FUNCTION EXECUTION TEST\n");
+
+    std::printf(
+        "RDRAM: %zu MiB\n",
+        RDRAM_SIZE / (1024u * 1024u));
+
+    uint8_t* rdram = new uint8_t[RDRAM_SIZE];
+
+    std::memset(
+        rdram,
+        0,
+        RDRAM_SIZE);
+
+    // The generated functions used by this controlled test do not require
+    // runtime services on their ordinary-RDRAM paths. The successful
+    // resetGrabMode test established the same boundary pattern.
+    PS2Runtime* runtime = nullptr;
+
+    testAddSpirit(
+        rdram,
+        runtime);
+
+    testSetViewArea(
+        rdram,
+        runtime);
+
+    testGetVo(
+        rdram,
+        runtime);
+
+    delete[] rdram;
+
+    std::printf(
+        "\nTOTAL FAILURES: %d\n",
+        failures);
+
+    return failures == 0 ? 0 : 1;
+}
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\build\CMakeCache.txt
+SIZE: 13593
+LAST WRITE: 2026-11-25 11:43:27
+CMAKE_INSTALL_PREFIX:PATH=C:/Program Files/markofkri_next_two_function_codegen
+CMAKE_GENERATOR:INTERNAL=Visual Studio 18 2026
+CMAKE_HOME_DIRECTORY:INTERNAL=D:/Games/MarkOfKriRecomp/native/tests/recomp/next_two_function_codegen_20261125_114147
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\CMakeLists.txt
+SIZE: 747
+LAST WRITE: 2026-11-25 11:43:21
+----- CONTENT BEGIN -----
+cmake_minimum_required(VERSION 3.24)
+
+project(markofkri_next_two_function_codegen LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(PS2RECOMP_ROOT
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp"
+)
+
+add_executable(
+    markofkri_next_two_function_codegen
+    src/next_two_function_codegen.cpp
+)
+
+target_include_directories(
+    markofkri_next_two_function_codegen
+    PRIVATE
+    "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xRecomp/include/ps2recomp"
+    "\/ps2xRecomp/include"
+    "\/ps2xRecomp/src"
+)
+
+target_link_directories(
+    markofkri_next_two_function_codegen
+    PRIVATE
+    "\/ps2xRecomp/build/Release"
+)
+
+target_link_libraries(
+    markofkri_next_two_function_codegen
+    PRIVATE
+    ps2xRecomp
+)
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\real_function_execution_test.cpp
+SIZE: 2998
+LAST WRITE: 2026-11-24 22:25:59
+----- CONTENT BEGIN -----
+#include <ps2_runtime.h>
+
+#include <cstdint>
+#include <cstring>
+#include <iostream>
+#include <vector>
+
+void resetGrabMode__6Camera(
+    uint8_t* rdram,
+    R5900Context* ctx,
+    PS2Runtime* runtime
+);
+
+int main()
+{
+    constexpr uint32_t a0 = 0x00001000u;
+    constexpr uint32_t storeAddress = a0 + 0x3BCu;
+    constexpr uint32_t returnAddress = 0x00ABCDEFu;
+    constexpr uint32_t initialMemory = 0xDEADBEEFu;
+    constexpr uint32_t initialV0 = 0xA5A5A5A5u;
+    constexpr size_t rdramSize = 32u * 1024u * 1024u;
+
+    std::vector<uint8_t> rdram(rdramSize, 0);
+    R5900Context ctx;
+
+    ctx.r[4] = _mm_set_epi64x(0, static_cast<int64_t>(a0));
+    ctx.r[2] = _mm_set_epi64x(0, static_cast<int64_t>(initialV0));
+    ctx.r[31] = _mm_set_epi64x(0, static_cast<int64_t>(returnAddress));
+
+    std::memcpy(rdram.data() + storeAddress, &initialMemory, sizeof(initialMemory));
+
+    if (PS2Runtime::isSpecialAddress(storeAddress))
+    {
+        std::cerr << "[FAIL] Test address unexpectedly maps to special hardware space\n";
+        return 10;
+    }
+
+    std::cout << "Initial memory: 0x" << std::hex << initialMemory << "\n";
+    std::cout << "Store address: 0x" << std::hex << storeAddress << "\n";
+    std::cout << "Return address: 0x" << std::hex << returnAddress << "\n";
+
+    // The ordinary-RAM path must not dereference the runtime pointer.
+    // The test-only Store32 boundary aborts if the hardware path is taken.
+    resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+
+    uint32_t actualMemory = 0;
+    std::memcpy(&actualMemory, rdram.data() + storeAddress, sizeof(actualMemory));
+
+    const uint32_t actualV0 =
+        static_cast<uint32_t>(_mm_extract_epi32(ctx.r[2], 0));
+
+    bool passed = true;
+
+    if (actualMemory == 0)
+        std::cout << "[PASS] sw zero stored zero at A0 + 0x3BC\n";
+    else
+    {
+        std::cout << "[FAIL] Memory value was 0x" << std::hex << actualMemory << "\n";
+        passed = false;
+    }
+
+    if (actualV0 == 1)
+        std::cout << "[PASS] JR delay slot set V0 to 1\n";
+    else
+    {
+        std::cout << "[FAIL] V0 was 0x" << std::hex << actualV0 << "\n";
+        passed = false;
+    }
+
+    if (ctx.pc == returnAddress)
+        std::cout << "[PASS] PC transferred to RA\n";
+    else
+    {
+        std::cout << "[FAIL] PC was 0x" << std::hex << ctx.pc << "\n";
+        passed = false;
+    }
+
+    if (!ctx.in_delay_slot)
+        std::cout << "[PASS] Delay-slot state cleared after return\n";
+    else
+    {
+        std::cout << "[FAIL] Context remained in delay slot\n";
+        passed = false;
+    }
+
+    if (ctx.branch_pc == 0x001159BCu)
+        std::cout << "[PASS] Branch PC records the JR instruction\n";
+    else
+    {
+        std::cout << "[FAIL] Branch PC was 0x" << std::hex << ctx.branch_pc << "\n";
+        passed = false;
+    }
+
+    if (passed)
+    {
+        std::cout << "RESULT: REAL GENERATED FUNCTION EXECUTION PASSED\n";
+        return 0;
+    }
+
+    std::cout << "RESULT: REAL GENERATED FUNCTION EXECUTION FAILED\n";
+    return 1;
+}
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\real_function_runtime_boundary.cpp
+SIZE: 1168
+LAST WRITE: 2026-11-25 09:57:34
+----- CONTENT BEGIN -----
+#include <ps2_runtime.h>
+#include <cstdlib>
+
+// Test-only boundary. This function must never be called by this test,
+// because its guest address is verified to be ordinary RDRAM.
+void PS2Runtime::Store32(
+    uint8_t*,
+    R5900Context*,
+    uint32_t,
+    uint32_t)
+{
+    std::cerr << "ERROR: unexpected PS2Runtime::Store32 invocation\n";
+    std::abort();
+}
+
+uint8_t PS2Runtime::Load8(
+    uint8_t* rdram,
+    R5900Context*,
+    uint32_t vaddr)
+{
+    return rdram[vaddr];
+}
+
+uint16_t PS2Runtime::Load16(
+    uint8_t* rdram,
+    R5900Context*,
+    uint32_t vaddr)
+{
+    return static_cast<uint16_t>(
+        static_cast<uint16_t>(rdram[vaddr]) |
+        (static_cast<uint16_t>(rdram[vaddr + 1]) << 8)
+    );
+}
+
+uint32_t PS2Runtime::Load32(
+    uint8_t* rdram,
+    R5900Context*,
+    uint32_t vaddr)
+{
+    return
+        static_cast<uint32_t>(rdram[vaddr]) |
+        (static_cast<uint32_t>(rdram[vaddr + 1]) << 8) |
+        (static_cast<uint32_t>(rdram[vaddr + 2]) << 16) |
+        (static_cast<uint32_t>(rdram[vaddr + 3]) << 24);
+}
+
+void PS2Runtime::Store8(
+    uint8_t* rdram,
+    R5900Context*,
+    uint32_t vaddr,
+    uint8_t value)
+{
+    rdram[vaddr] = value;
+}
+
+----- CONTENT END -----
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\tests\recomp\two_function_execution_20261125_132205\src\two_function_execution_test.cpp
+SIZE: 5760
+LAST WRITE: 2026-11-25 13:22:05
+----- CONTENT BEGIN -----
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <vector>
+
+#include "ps2_runtime.h"
+
+extern void allowLockMode__6Camerab(
+    uint8_t* rdram,
+    R5900Context* ctx,
+    PS2Runtime* runtime);
+
+extern void anmcmd_exitHeader__Fv(
+    uint8_t* rdram,
+    R5900Context* ctx,
+    PS2Runtime* runtime);
+
+static int failures = 0;
+static int checks = 0;
+
+static uint32_t getGprU32(const R5900Context& ctx, int index)
+{
+    return static_cast<uint32_t>(_mm_cvtsi128_si64(ctx.r[index]));
+}
+
+static void setGprU32(R5900Context& ctx, int index, uint32_t value)
+{
+    ctx.r[index] = _mm_set_epi64x(
+        0,
+        static_cast<int64_t>(static_cast<uint64_t>(value)));
+}
+
+static void check(bool condition, const char* label)
+{
+    ++checks;
+
+    if (condition)
+    {
+        std::printf("[PASS] %s\n", label);
+    }
+    else
+    {
+        std::printf("[FAIL] %s\n", label);
+        ++failures;
+    }
+}
+
+static uint32_t read32(const uint8_t* memory, uint32_t address)
+{
+    return
+        static_cast<uint32_t>(memory[address]) |
+        (static_cast<uint32_t>(memory[address + 1]) << 8) |
+        (static_cast<uint32_t>(memory[address + 2]) << 16) |
+        (static_cast<uint32_t>(memory[address + 3]) << 24);
+}
+
+static void clearMemory(std::vector<uint8_t>& rdram)
+{
+    std::memset(rdram.data(), 0, rdram.size());
+}
+
+static void testAllowLockMode(
+    std::vector<uint8_t>& rdram,
+    uint32_t a1,
+    uint8_t expectedByte,
+    uint32_t expectedBranchPc,
+    const char* pathLabel)
+{
+    constexpr uint32_t a0 = 0x00010000u;
+    constexpr uint32_t storeAddress = a0 + 0x4D0u;
+    constexpr uint32_t returnAddress = 0x00ABCDEFu;
+
+    clearMemory(rdram);
+
+    R5900Context ctx{};
+    std::memset(&ctx, 0, sizeof(ctx));
+
+    setGprU32(ctx, 4, a0);
+    setGprU32(ctx, 5, a1);
+    setGprU32(ctx, 31, returnAddress);
+
+    rdram[storeAddress] = 0xCC;
+
+    std::printf("\n=== allowLockMode: %s ===\n", pathLabel);
+
+    allowLockMode__6Camerab(
+        rdram.data(),
+        &ctx,
+        nullptr);
+
+    check(
+        rdram[storeAddress] == expectedByte,
+        "SB delay slot writes the expected byte");
+
+    check(
+        getGprU32(ctx, 2) == 1,
+        "V0 equals 1 after branch delay slot");
+
+    check(
+        ctx.pc == returnAddress,
+        "JR transfers PC to RA");
+
+    check(
+        ctx.branch_pc == expectedBranchPc,
+        "branch_pc identifies the executed JR");
+
+    check(
+        !ctx.in_delay_slot,
+        "delay-slot state is cleared after return");
+}
+
+static void testExitHeader(std::vector<uint8_t>& rdram)
+{
+    constexpr uint32_t gp = 0x00005000u;
+    constexpr uint32_t returnAddress = 0x00FEDCBAu;
+
+    constexpr uint32_t address4 = gp - 0x3C90u;
+    constexpr uint32_t address10 = gp - 0x3C8Cu;
+    constexpr uint32_t addressZeroA = gp - 0x3C94u;
+    constexpr uint32_t addressZeroB = gp - 0x3C88u;
+
+    clearMemory(rdram);
+
+    R5900Context ctx{};
+    std::memset(&ctx, 0, sizeof(ctx));
+
+    setGprU32(ctx, 28, gp);
+    setGprU32(ctx, 31, returnAddress);
+
+    std::printf("\n=== anmcmd_exitHeader__Fv ===\n");
+
+    anmcmd_exitHeader__Fv(
+        rdram.data(),
+        &ctx,
+        nullptr);
+
+    check(
+        read32(rdram.data(), address4) == 4,
+        "SW stores 4 at GP - 0x3C90");
+
+    check(
+        read32(rdram.data(), address10) == 10,
+        "SW stores 10 at GP - 0x3C8C");
+
+    check(
+        read32(rdram.data(), addressZeroA) == 0,
+        "SW stores zero at GP - 0x3C94");
+
+    check(
+        read32(rdram.data(), addressZeroB) == 0,
+        "JR delay slot stores zero at GP - 0x3C88");
+
+    check(
+        getGprU32(ctx, 2) == 1,
+        "V0 equals 1 at function return");
+
+    check(
+        ctx.pc == returnAddress,
+        "JR transfers PC to RA");
+
+    check(
+        ctx.branch_pc == 0x0019C8D8u,
+        "branch_pc identifies exitHeader JR");
+
+    check(
+        !ctx.in_delay_slot,
+        "delay-slot state is cleared after return");
+}
+
+int main()
+{
+    constexpr size_t RDRAM_SIZE = 32u * 1024u * 1024u;
+
+    std::printf(
+        "MARK OF KRI - TWO-FUNCTION REAL EXECUTION TEST\n");
+
+    std::printf(
+        "RDRAM: %zu MiB\n",
+        RDRAM_SIZE / (1024u * 1024u));
+
+    std::vector<uint8_t> rdram(RDRAM_SIZE, 0);
+
+    constexpr uint32_t allowStore = 0x00010000u + 0x4D0u;
+
+    const uint32_t exitGp = 0x00005000u;
+    const uint32_t exitAddresses[] = {
+        exitGp - 0x3C90u,
+        exitGp - 0x3C8Cu,
+        exitGp - 0x3C94u,
+        exitGp - 0x3C88u
+    };
+
+    bool addressGuardPassed = true;
+
+    if (PS2Runtime::isSpecialAddress(allowStore))
+    {
+        std::printf("[FAIL] allowLockMode test address is special hardware space\n");
+        addressGuardPassed = false;
+    }
+
+    for (uint32_t address : exitAddresses)
+    {
+        if (PS2Runtime::isSpecialAddress(address))
+        {
+            std::printf(
+                "[FAIL] exitHeader test address 0x%08X is special hardware space\n",
+                address);
+            addressGuardPassed = false;
+        }
+    }
+
+    check(
+        addressGuardPassed,
+        "All test memory addresses are ordinary RDRAM");
+
+    if (!addressGuardPassed)
+    {
+        std::printf("\nRESULT: ADDRESS GUARD FAILED\n");
+        return 2;
+    }
+
+    testAllowLockMode(
+        rdram,
+        1u,
+        1u,
+        0x001161A8u,
+        "A1 nonzero - BEQ not taken");
+
+    testAllowLockMode(
+        rdram,
+        0u,
+        0u,
+        0x001161B0u,
+        "A1 zero - BEQ taken");
+
+    testExitHeader(rdram);
+
+    std::printf(
+        "\nTOTAL CHECKS: %d\nTOTAL FAILURES: %d\n",
+        checks,
+        failures);
+
+    if (failures == 0)
+    {
+        std::printf(
+            "RESULT: TWO-FUNCTION REAL EXECUTION PASSED\n");
+        return 0;
+    }
+
+    std::printf(
+        "RESULT: TWO-FUNCTION REAL EXECUTION FAILED\n");
+    return 1;
+}
+----- CONTENT END -----
