@@ -1,0 +1,945 @@
+
+========== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp ==========
+
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:176:        func.isRecompiled = true;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:177:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:178:        CodeGenerator gen({}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:179:        gen.setRenamedFunctions({{func.start, 
+"header_lookup_0x8f00"}});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:180:
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:181:        const std::string generated = gen.generateFunction(func, 
+{makeNop(func.start)}, true);
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:182:        const std::string registration = 
+gen.generateFunctionRegistration({func}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:183:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:184:        t.IsTrue(generated.find("#include 
+<ps2_recompiled_functions.h>") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:185:                 "function sources must resolve declarations 
+through the configured include path");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:186:        t.IsTrue(generated.find("#include 
+<ps2_recompiled_stubs.h>") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:187:                 "function sources must resolve stub declarations 
+through the configured include path");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:188:        t.IsTrue(registration.find("#include 
+<ps2_recompiled_functions.h>") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:189:                 "the registration source must use the same 
+unambiguous declaration header");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:190:        t.IsTrue(registration.find("#include 
+<ps2_recompiled_stubs.h>") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:191:                 "the registration source must use the same 
+unambiguous stub header");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:192:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:193:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:194:    tc.Run("unsigned integer loads use explicit zero extension", 
+[](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:219:        syscall.raw = (0x44u << 6) | SPECIAL_SYSCALL;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:220:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:221:        Instruction after = makeNop(0x9004);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:222:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:223:        CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:224:        const std::string generated = gen.generateFunction(func, 
+{syscall, after}, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:225:        const size_t continuation = generated.find("ctx->pc = 
+0x9004u;");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:226:        const size_t dispatch = 
+generated.find("runtime->handleSyscall(rdram, ctx, 0x44u);");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:227:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:228:        t.IsTrue(continuation != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:229:                 "generated syscall must publish the next guest 
+PC");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:230:        t.IsTrue(dispatch != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:231:                 "generated syscall must still dispatch the encoded 
+syscall");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:232:        t.IsTrue(continuation < dispatch,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:233:                 "the continuation PC must be visible before a 
+syscall can transfer to the scheduler");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:234:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:235:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:236:    tc.Run("SYSCALL fallthrough is a resumable entry", [](TestCase 
+&t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:252:            gen.collectInternalBranchTargets(func, {syscall, 
+after});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:253:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:254:        t.IsTrue(analysis.resumeEntryPoints.contains(0x9104u),
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:255:                 "a syscall can yield through a guest override, so 
+its fallthrough must be resumable");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:256:
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:257:        const std::string generated = gen.generateFunction(func, 
+{syscall, after}, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:258:        t.IsTrue(generated.find("case 0x9104u: goto label_9104;") 
+!= std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:259:                 "the owner wrapper must resume directly after the 
+syscall");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:260:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:261:        gen.setRenamedFunctions({{0x9100u, 
+"syscall_resume_entry_0x9100"}});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:262:        gen.setResumeEntryTargets({{0x9100u,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:263:                                    
+std::vector<uint32_t>(analysis.resumeEntryPoints.begin(),
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:264:                                                          
+analysis.resumeEntryPoints.end())}});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:265:        const std::string registration = 
+gen.generateFunctionRegistration({func}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:266:        t.IsTrue(registration.find(
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:267:                     "g_ps2RecompiledFunctionTable[1] = 
+syscall_resume_entry_0x9100; // 0x9104") !=
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:268:                     std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:269:                 "the syscall continuation must register to the 
+owner wrapper");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:270:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:271:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:272:    tc.Run("R5900 MULT writes rd when rd is non-zero", [](TestCase 
+&t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:273:        CodeGenerator gen({}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:274:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:275:        Instruction mult{};
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:276:        mult.opcode = OPCODE_SPECIAL;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:277:        mult.function = SPECIAL_MULT;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:320:        instructions.push_back(makeLui(0x1000, 1, 0x1000));
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:321:        instructions.push_back(makeOri(0x1004, 1, 1, 0xE020));
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:322:        instructions.push_back(makeSw(0x1008, 2, 1, 0));
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:323:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:324:        CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:325:        std::string generated = gen.generateFunction(func, 
+instructions, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:326:        printGeneratedCode("constant MMIO store emits direct 
+runtime store", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:327:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:328:        t.IsTrue(generated.find("runtime->Store32(rdram, ctx, 
+0x1000E020u, GPR_U32(ctx, 2));") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:329:                 "constant MMIO SW should emit a direct runtime 
+Store32");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:330:        t.IsTrue(generated.find("WRITE32(ADD32(GPR_U32(ctx, 1)") == 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:331:                 "constant MMIO SW should not go through WRITE32 
+address classification");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:332:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:333:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:334:    tc.Run("stale MMIO annotation does not replace the guest 
+effective address", [](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:335:        Instruction store = makeSw(0x1100, 2, 1, 0);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:336:        store.isMmio = true;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:337:        store.mmioAddress = 0x10000000u; // A stale analyzer hint; 
+$at still owns the real address.
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:358:        instructions.push_back(makeOri(0x2004, 1, 1, 0x3450));
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:359:        instructions.push_back(makeLw(0x2008, 3, 1, 0x0010));
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:360:        instructions.push_back(makeSw(0x200C, 4, 1, 0x0014));
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:361:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:362:        CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:363:        std::string generated = gen.generateFunction(func, 
+instructions, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:364:        printGeneratedCode("constant RDRAM load and store emit fast 
+memory access", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:365:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:366:        t.IsTrue(generated.find("SET_GPR_S32(ctx, 3, 
+(int32_t)FAST_READ32(0x123460u));") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:367:                 "constant RDRAM LW should emit FAST_READ32 with 
+the resolved address");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:368:        t.IsTrue(generated.find("FAST_WRITE32(0x123464u, _value);") 
+!= std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:369:                 "constant RDRAM SW should emit FAST_WRITE32 with 
+the resolved address");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:370:        t.IsTrue(generated.find("READ32(ADD32(GPR_U32(ctx, 1)") == 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:371:                 "constant RDRAM LW should not go through READ32 
+address classification");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:372:        t.IsTrue(generated.find("WRITE32(ADD32(GPR_U32(ctx, 1)") == 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:373:                 "constant RDRAM SW should not go through WRITE32 
+address classification");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:374:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:375:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:394:        instructions.push_back(makeAddiu(0x3028, 5, 0, 0x0105));
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:395:        instructions.push_back(makeAddiu(0x302C, 1, 1, 0xFFD0));
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:396:        instructions.push_back(makeSw(0x3030, 5, 1, 0));
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:397:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:398:        CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:399:        std::string generated = gen.generateFunction(func, 
+instructions, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:400:        printGeneratedCode("known GIF DMA MMIO sequence emits 
+native kick helper", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:401:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:402:        t.IsTrue(generated.find("uint32_t gifDmaKickValue_3024_2 = 
+GPR_U32(ctx, 4);") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:403:                 "dynamic GIF TADR source should be captured when 
+the store is coalesced");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:404:        
+t.IsTrue(generated.find("runtime->kickGifDmaChainFromMMIO(rdram, ctx, 0x4u, 0x4u, gifDmaKickValue_3024_2, 0x105u);") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:405:                 "known GIF DMA MMIO stores should coalesce into 
+the native kick helper");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:406:        t.IsTrue(generated.find("runtime->Store32(rdram, ctx, 
+0x1000E020u") == std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:407:                 "coalesced D_PCR store should not remain as an 
+individual Store32");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:408:        t.IsTrue(generated.find("runtime->Store32(rdram, ctx, 
+0x1000A000u") == std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:409:                 "coalesced GIF CHCR store should not remain as an 
+individual Store32");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:410:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:411:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:431:        instructions.push_back(makeOri(0x2E7CBC, 3, 5, 0xA000));
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:432:        instructions.push_back(makeJr(0x2E7CC0, 31));
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:433:        instructions.push_back(makeSw(0x2E7CC4, 4, 3, 0));
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:434:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:435:        CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:436:        std::string generated = gen.generateFunction(func, 
+instructions, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:437:        printGeneratedCode("GIF DMA kick coalesces when CHCR store 
+is a return delay slot", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:438:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:439:        t.IsTrue(generated.find("label_2e7c9c:") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:440:                 "test should cover a branch target inside the GIF 
+DMA setup");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:441:        t.IsTrue(generated.find("uint32_t gifDmaKickValue_2e7cb4_2 
+= GPR_U32(ctx, 4);") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:442:                 "TADR value should be captured before a0 is reused 
+for CHCR");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:443:        t.IsTrue(generated.find("ctx->in_delay_slot = true;") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:444:                 "coalesced helper should still run as the return 
+delay slot");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:445:        
+t.IsTrue(generated.find("runtime->kickGifDmaChainFromMMIO(rdram, ctx, 0x4u, 0x4u, gifDmaKickValue_2e7cb4_2, 0x105u);") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:446:                 "loadImage-like GIF DMA stores should coalesce 
+into the native kick helper");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:447:        t.IsTrue(generated.find("WRITE32(ADD32(GPR_U32(ctx, 3), 0), 
+GPR_U32(ctx, 4));") == std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:448:                 "coalesced delay-slot CHCR store should not remain 
+as an individual WRITE32");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:468:        instructions.push_back(makeNop(0x1008));       // delay slot
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:469:        instructions.push_back(makeNop(0x100c));       // branch 
+target
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:470:        instructions.push_back(makeNop(0x1010));       // extra
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:471:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:472:        CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:473:        std::string generated = gen.generateFunction(func, 
+instructions, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:474:        printGeneratedCode("emits labels and gotos for internal 
+branches", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:475:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:476:        t.IsTrue(generated.find("label_100c:") != 
+std::string::npos, "branch target should emit a label");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:477:        t.IsTrue(generated.find("goto label_100c;") != 
+std::string::npos, "internal branch should jump via goto");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:478:        t.IsTrue(generated.find("label_1008:") == 
+std::string::npos, "delay slot without incoming branch should not get a label");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:479:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:480:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:481:    tc.Run("labels delay slot when it is a branch target", 
+[](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:482:        Function func;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:483:        func.name = "delay_slot_label";
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:484:        func.start = 0x2000;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:485:        func.end = 0x2020;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:491:        instructions.push_back(makeBranch(0x2000, 0)); // target = 
+0x2004
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:492:        instructions.push_back(makeNop(0x2004));       // delay 
+slot and target
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:493:        instructions.push_back(makeNop(0x2008));       // extra
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:494:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:495:        CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:496:        std::string generated = gen.generateFunction(func, 
+instructions, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:497:        printGeneratedCode("labels delay slot when it is a branch 
+target", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:498:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:499:        t.IsTrue(generated.find("label_2004:") != 
+std::string::npos, "delay slot that is a target should emit a label");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:500:        t.IsTrue(generated.find("goto label_2004;") != 
+std::string::npos, "branch to delay slot should use goto");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:501:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:502:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:503:    tc.Run("control-flow analysis keeps same-function JAL target 
+internal and promotes only the return pc", [](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:504:        Function func;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:505:        func.name = "same_function_call";
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:506:        func.start = 0x1000;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:507:        func.end = 0x101C;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:508:        func.isRecompiled = true;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:700:        };
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:701:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:702:        CodeGenerator gen({}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:703:        gen.setResumeEntryTargets({{0x6000u, {0x6008u}}});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:704:
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:705:        std::string generated = gen.generateFunction(func, 
+instructions, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:706:        printGeneratedCode("resume entry targets emit a top-level 
+pc switch in the owner wrapper", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:707:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:708:        t.IsTrue(generated.find("switch (ctx->pc)") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:709:                 "owner wrapper should dispatch resumable pcs with 
+a switch");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:710:        t.IsTrue(generated.find("case 0x6008u: goto label_6008;") 
+!= std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:711:                 "resume pc should jump directly to the internal 
+label");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:712:        t.IsTrue(generated.find("label_6008:") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:713:                 "resume pc should force label emission for that 
+instruction");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:714:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:715:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:716:    tc.Run("resume entry targets register to the owner wrapper", 
+[](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:717:        Function func;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:723:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:724:        CodeGenerator gen({}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:725:        gen.setRenamedFunctions({{0x7000u, "resume_owner_0x7000"}});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:726:        gen.setResumeEntryTargets({{0x7000u, {0x7008u, 0x700Cu}}});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:727:
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:728:        std::string registration = 
+gen.generateFunctionRegistration({func}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:729:        printGeneratedCode("resume entry targets register to the 
+owner wrapper", registration);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:730:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:731:        t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[2] 
+= resume_owner_0x7000; // 0x7008") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:732:                 "resume entry pc should register to the owner 
+wrapper");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:733:        t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[3] 
+= resume_owner_0x7000; // 0x700c") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:734:                 "multiple resume pcs should register to the same 
+owner wrapper");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:735:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:736:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:737:    tc.Run("configured internal guest handlers register to their 
+owner wrapper", [](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:738:        Function owner;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:739:        owner.name = "sdk_bootstrap_owner";
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:740:        owner.start = 0x7000;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:759:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:760:        CodeGenerator gen({}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:761:        gen.setRenamedFunctions({{owner.start, 
+"sdk_bootstrap_owner_0x7000"}});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:762:        gen.setResumeEntryTargets(targetsByOwner);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:763:
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:764:        const std::string generated = gen.generateFunction(owner, 
+instructions, false);
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:765:        const std::string registration = 
+gen.generateFunctionRegistration(functions, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:766:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:767:        t.IsTrue(generated.find("case 0x7008u: goto label_7008;") 
+!= std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:768:                 "the owner must enter directly at the first 
+installed handler");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:769:        t.IsTrue(generated.find("case 0x7018u: goto label_7018;") 
+!= std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:770:                 "the owner must enter directly at the second 
+installed handler");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:771:        t.IsTrue(registration.find("sdk_bootstrap_owner_0x7000; // 
+0x7008") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:772:                 "the first handler address must dispatch to its 
+owner wrapper");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:773:        t.IsTrue(registration.find("sdk_bootstrap_owner_0x7000; // 
+0x7018") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:774:                 "the second handler address must dispatch to its 
+owner wrapper");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:775:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:776:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:777:    tc.Run("external mid-function entry can register to the owner 
+wrapper", [](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:810:                 "cross-function jump should identify the 
+mid-function target as externally reachable");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:811:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:812:        gen.setRenamedFunctions({{0x5000u, "owner_0x5000"}});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:813:        gen.setResumeEntryTargets({{0x5000u, {0x5004u}}});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:814:
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:815:        std::string registration = 
+gen.generateFunctionRegistration({owner}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:816:        printGeneratedCode("external mid-function entry can 
+register to the owner wrapper", registration);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:817:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:818:        t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[1] 
+= owner_0x5000; // 0x5004") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:819:                 "mid-function external entry should register back 
+to the owner wrapper");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:820:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:821:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:822:    tc.Run("branches outside function still set pc", [](TestCase 
+&t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:823:        Function func;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:824:        func.name = "external_branch";
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:825:        func.start = 0x3000;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:826:        func.end = 0x3020;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:827:        func.isRecompiled = true;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:834:        Instruction br = makeBranch(0x3000, 0x100); // target far 
+outside
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:835:        instructions.push_back(br);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:836:        instructions.push_back(makeNop(0x3004)); // delay slot
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:837:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:838:        CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:839:        std::string generated = gen.generateFunction(func, 
+instructions, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:840:        printGeneratedCode("branches outside function still set 
+pc", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:841:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:842:        t.IsTrue(generated.find("ctx->pc = 0x") != 
+std::string::npos, "external branch should set ctx->pc");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:843:        t.IsTrue(generated.find("goto label_") == 
+std::string::npos, "external branch should not use goto");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:844:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:845:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:846:    tc.Run("jumps to known symbols call by name", [](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:847:        Function func;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:848:        func.name = "call_symbol";
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:849:        func.start = 0x4000;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:850:        func.end = 0x4018;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:851:        func.isRecompiled = true;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:866:        Instruction delay = makeNop(0x4004);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:867:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:868:        std::vector<Instruction> instructions{j, delay, 
+makeNop(0x4008)};
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:869:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:870:        CodeGenerator gen({targetSym}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:871:        std::string generated = gen.generateFunction(func, 
+instructions, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:872:        printGeneratedCode("jumps to known symbols call by name", 
+generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:873:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:874:        t.IsTrue(generated.find("target_func(rdram, ctx, runtime); 
+return;") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:875:                 "jump to known function should emit direct call");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:876:    });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:877:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:878:    tc.Run("jump to unknown target sets pc", [](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:879:            Function func;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:880:            func.name = "jump_unknown";
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:881:            func.start = 0x6000;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:882:            func.end = 0x6010;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:883:            func.isRecompiled = true;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:892:            Instruction delay = makeNop(0x6004);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:893:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:894:            std::vector<Instruction> instructions{j, delay};
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:895:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:896:            CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:897:            std::string generated = gen.generateFunction(func, 
+instructions, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:898:            printGeneratedCode("jump to unknown target sets pc", 
+generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:899:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:900:            t.IsTrue(generated.find("ctx->pc = 0x") != 
+std::string::npos, "unknown jump target should set ctx->pc");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:901:            t.IsTrue(generated.find("goto label_") == 
+std::string::npos, "external jump should not use goto");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:902:        });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:903:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:904:        tc.Run("renamed function used in jump table", [](TestCase 
+&t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:905:            Function func;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:906:            func.name = "jt_func";
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:907:            func.start = 0x7000;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:908:            func.end = 0x7010;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:909:            func.isRecompiled = true;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:951:            std::vector<Instruction> instructions{j, delay};
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:952:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:953:            CodeGenerator gen({targetSym}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:954:            gen.setRenamedFunctions({{targetSym.address, 
+"ps2___is_pointer"}});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:955:
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:956:            std::string generated = gen.generateFunction(func, 
+instructions, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:957:            printGeneratedCode("reserved identifiers are sanitized 
+and used in calls", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:958:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:959:            t.IsTrue(generated.find("void ps2___is_pointer(") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:960:                     "definition should use sanitized name");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:961:            t.IsTrue(generated.find("ps2___is_pointer(rdram, ctx, 
+runtime); return;") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:962:                "call should use sanitized name but got: " + 
+generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:963:        });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:964:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:965:        tc.Run("COP0 MFC0/MTC0 translate to COP0 register access", 
+[](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:966:            CodeGenerator gen({}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:967:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:968:            Instruction mfc0{};
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1500:            // 0xA004: NOP (delay slot)
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1501:            Instruction jal = makeJal(0xA000, 0xB000);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1502:            Instruction delay = makeNop(0xA004);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1503:            
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1504:            CodeGenerator gen({targetSym}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1505:            std::string generated = gen.generateFunction(func, 
+{jal, delay}, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1506:            printGeneratedCode("JAL to known function emits call 
+and check", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1507:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1508:            // Expect:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1509:            // SET_GPR_U32(ctx, 31, 0xA008u);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1510:            // ctx->pc = 0xA004u;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1511:            // ... delay slot ...
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1512:            // runtime->dispatchGuestBranch(..., DirectCall, "JAL")
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1513:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1514:            t.IsTrue(generated.find("SET_GPR_U32(ctx, 31, 
+0xA008u);") != std::string::npos, "JAL should set RA");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1515:            
+t.IsTrue(generated.find("runtime->dispatchGuestBranch(rdram, ctx, 0xB000u") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1516:                     "JAL should dispatch through the runtime 
+branch helper");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1517:            
+t.IsTrue(generated.find("PS2Runtime::GuestBranchKind::DirectCall") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1532:            target.address = 0xB040;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1533:            target.isFunction = true;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1534:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1535:            CodeGenerator gen({target}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1536:            gen.setRelocationCallNames({{0xA040u, "GetThreadId"}});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1537:            const std::string generated = gen.generateFunction(
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1538:                func, {makeJal(0xA040, 0xB040), makeNop(0xA044)}, 
+false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1539:            const size_t continuation = generated.find("ctx->pc = 
+0xA048u;");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1540:            const size_t handler = 
+generated.find("ps2_syscalls::GetThreadId(rdram, ctx, runtime);");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1541:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1542:            t.IsTrue(continuation != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1543:                     "a resolved HLE JAL should publish its 
+fallthrough PC");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1544:            t.IsTrue(handler != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1545:                     "the resolved syscall handler should still be 
+called directly");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1546:            t.IsTrue(continuation < handler,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1547:                     "the fallthrough must be restart-safe before 
+a blocking HLE handler runs");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1548:            t.IsTrue(generated.find("__entryPc") == 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1549:                     "resolved HLE calls must not retain the 
+unchanged-PC compatibility guard");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1563:            targetSym.isFunction = true;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1564:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1565:            Instruction jal = makeJal(0xA100, 0xB000);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1566:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1567:            CodeGenerator gen({targetSym}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1568:            std::string generated = gen.generateFunction(func, 
+{jal}, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1569:            printGeneratedCode("trailing JAL without decoded delay 
+slot still emits call flow", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1570:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1571:            t.IsTrue(generated.find("SET_GPR_U32(ctx, 31, 
+0xA108u);") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1572:                     "truncated trailing JAL should still set RA");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1573:            
+t.IsTrue(generated.find("runtime->dispatchGuestBranch(rdram, ctx, 0xB000u") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1574:                     "truncated trailing JAL should still emit the 
+call dispatch");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1575:            t.IsTrue(generated.find("0xA100u, 0xA108u") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1576:                     "truncated trailing JAL should still pass the 
+fallthrough to runtime dispatch");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1577:            t.IsTrue(generated.find("// JAL 0xB000 - Handled by 
+branch logic") == std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1578:                     "truncated trailing JAL must not degrade to 
+comment-only output");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1579:        });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1580:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1593:            Instruction jal = makeJal(0xC000, 0xC010);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1594:            Instruction delay = makeNop(0xC004);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1595:            Instruction targetInst = makeNop(0xC010);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1596:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1597:            CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1598:            std::string generated = gen.generateFunction(func, 
+{jal, delay, targetInst}, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1599:            printGeneratedCode("JAL to internal target becomes 
+goto", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1600:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1601:            t.IsTrue(generated.find("SET_GPR_U32(ctx, 31, 
+0xC008u);") != std::string::npos, "Internal JAL should set RA");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1602:            t.IsTrue(generated.find("goto label_c010;") != 
+std::string::npos, "Internal JAL should use goto");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1603:        });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1604:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1605:        tc.Run("backward internal JAL stays inline and does not 
+return to dispatcher", [](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1606:            Function func;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1607:            func.name = "jal_internal_backward";
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1608:            func.start = 0xC100;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1609:            func.end = 0xC120;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1610:            func.isRecompiled = true;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1613:            Instruction loopHead = makeNop(0xC100);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1614:            Instruction backwardJal = makeJal(0xC108, 0xC100);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1615:            Instruction delay = makeNop(0xC10C);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1616:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1617:            CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1618:            std::string generated = gen.generateFunction(func, 
+{loopHead, backwardJal, delay}, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1619:            printGeneratedCode("backward internal JAL stays inline 
+and does not return to dispatcher", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1620:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1621:            t.IsTrue(generated.find("SET_GPR_U32(ctx, 31, 
+0xC110u);") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1622:                     "backward internal JAL should still set RA");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1623:            t.IsTrue(generated.find("goto label_c100;") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1624:                     "backward internal JAL should still re-enter 
+the internal target directly");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1625:            t.IsTrue(generated.find("if 
+(runtime->shouldPreemptGuestExecution())") == std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1626:                     "backward internal JAL should not expose a 
+mid-call dispatcher return");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1627:        });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1628:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1629:        tc.Run("JALR emits indirect call", [](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1630:            Function func;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1638:            // 0xD004: NOP
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1639:            Instruction jalr = makeJalr(0xD000, 4, 31);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1640:            Instruction delay = makeNop(0xD004);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1641:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1642:            CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1643:            std::string generated = gen.generateFunction(func, 
+{jalr, delay}, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1644:            printGeneratedCode("JALR emits indirect call", 
+generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1645:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1646:            t.IsTrue(generated.find("const uint32_t jumpTarget = 
+GPR_U32(ctx, 4);") != std::string::npos, "JALR should read target from RS");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1647:            t.IsTrue(generated.find("SET_GPR_U32(ctx, 31, 
+0xD008u);") != std::string::npos, "JALR should set link register");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1648:            
+t.IsTrue(generated.find("runtime->dispatchGuestBranch(rdram, ctx, jumpTarget") != std::string::npos, "JALR should dispatch through runtime branch helper");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1649:            
+t.IsTrue(generated.find("PS2Runtime::GuestBranchKind::IndirectCall") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1650:                     "JALR should identify itself as an indirect 
+call");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1651:            t.IsTrue(generated.find("0xD000u, 0xD008u") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1652:                     "JALR should pass call-site and fallthrough 
+PCs to the runtime helper");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1653:            t.IsFalse(generated.find("jumpTarget == 0u") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1654:                      "JALR must not silently turn target 0 into a 
+successful call return");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1655:        }); 
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1680:            CodeGenerator gen({}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1681:            CodeGenerator::AnalysisResult analysis = 
+gen.collectInternalBranchTargets(func, instructions);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1682:            t.IsTrue(analysis.resumeEntryPoints.contains(0x1104u),
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1683:                     "mid-function backward loop head should be 
+resumable so preemption can return to the dispatcher");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1684:
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1685:            std::string generated = gen.generateFunction(func, 
+instructions, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1686:            printGeneratedCode("backward BEQ returns to the 
+dispatcher through a resumable loop head", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1687:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1688:            t.IsTrue(generated.find("label_1104:") != 
+std::string::npos, "target should emit a label");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1689:            t.IsTrue(generated.find("switch (ctx->pc)") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1690:                     "resumable backward loop heads should emit a 
+wrapper resume switch");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1691:            t.IsTrue(generated.find("case 0x1104u: goto 
+label_1104;") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1692:                     "mid-function backward loop head should be 
+re-enterable after returning to the dispatcher");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1693:            t.IsTrue(generated.find("ctx->pc = 0x1104u;") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1694:                     "backward internal branch should preserve the 
+loop target in ctx->pc");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1695:            t.IsTrue(generated.find("if 
+(runtime->eeCheckpointDue()) {") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1696:                     "backward internal branch should consult the 
+EE event checkpoint before re-entering the loop");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1697:            t.IsTrue(generated.find("return;") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1700:                     "backward internal branch should no longer 
+emit an unconditional cooperative-yield call");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1701:            t.IsTrue(generated.find("goto label_1104;") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1702:                     "backward internal branch should still 
+re-enter the in-function label when it keeps the current slice");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1703:        });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1704:
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1705:        tc.Run("branch-likely places delay slot only in taken 
+path", [](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1706:            Function func;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1707:            func.name = "branch_likely";
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1708:            func.start = 0x1200;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1709:            func.end = 0x1220;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1710:            func.isRecompiled = true;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1711:            func.isStub = false;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1712:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1713:            Instruction br{};
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1714:            br.address = 0x1200;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1715:            br.opcode = OPCODE_BEQL;   // likely
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1716:            br.rs = 1;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1717:            br.rt = 2;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1729:            delay.raw = 0;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1730:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1731:            Instruction target = makeNop(0x1208);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1732:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1733:            CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1734:            std::string generated = gen.generateFunction(func, { 
+br, delay, target }, false);
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1735:            printGeneratedCode("branch-likely places delay slot 
+only in taken path", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1736: 
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1737:            t.IsTrue(generated.find("SET_GPR_S32(ctx, 7,") != 
+std::string::npos, "delay slot should be translated");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1738:            t.IsTrue(generated.find("if (branch_taken_0x1200)") != 
+std::string::npos, "should generate branch_taken variable and if for likely branch");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1739:        });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1740:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1741:        tc.Run("sign branches compare the full 64-bit register", 
+[](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1742:            // libmpeg polls IPU_CMD with ld and bgezl; a 32-bit 
+test reads DATA bit 31 as BUSY.
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1743:            const auto conditionFor = [](uint8_t opcode, uint8_t 
+rt) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1744:                Function func;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1745:                func.name = "sign_branch";
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1746:                func.start = 0x1300;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1747:                func.end = 0x1310;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1756:                br.simmediate = 1;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1757:                br.isBranch = true;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1758:                br.hasDelaySlot = true;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1759:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1760:                CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1761:                return gen.generateFunction(func, {br, 
+makeNop(0x1304), makeNop(0x1308)}, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1762:            };
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1763:            t.IsTrue(conditionFor(OPCODE_REGIMM, 
+REGIMM_BGEZL).find("GPR_S64(ctx, 17) >= 0") != std::string::npos, "bgezl should test 64 bits");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1764:            t.IsTrue(conditionFor(OPCODE_REGIMM, 
+REGIMM_BLTZ).find("GPR_S64(ctx, 17) < 0") != std::string::npos, "bltz should test 64 bits");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1765:            t.IsTrue(conditionFor(OPCODE_BLEZ, 
+0).find("GPR_S64(ctx, 17) <= 0") != std::string::npos, "blez should test 64 bits");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1766:            t.IsTrue(conditionFor(OPCODE_BGTZ, 
+0).find("GPR_S64(ctx, 17) > 0") != std::string::npos, "bgtz should test 64 bits");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1767:        });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1768:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1769:        tc.Run("JR $31 returns through dynamic target without 
+broad local switch", [](TestCase &t) {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1770:            Function func;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1771:            func.name = "jr_ra_return";
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1772:            func.start = 0x1300;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1773:            func.end = 0x1340;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1783:            // JR $31 at 0x1314 with delay slot at 0x1318
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1784:            Instruction jr = makeJr(0x1314, 31);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1785:            Instruction jrDelay = makeNop(0x1318);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1786:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1787:            CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1788:            std::string generated = gen.generateFunction(func, { 
+jal, jalDelay, atReturn, atTarget, jr, jrDelay }, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1789:            printGeneratedCode("JR $31 returns through dynamic 
+target without broad local switch", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1790:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1791:            t.IsTrue(generated.find("const uint32_t jumpTarget = 
+GPR_U32(ctx, 31);") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1792:                     "JR $31 should still read the dynamic return 
+target");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1793:            t.IsFalse(generated.find("switch (jumpTarget)") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1794:                      "JR $31 should not emit a broad local switch 
+over internal labels");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1795:            t.IsTrue(generated.find("label_1308:") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1796:                     "internal JAL return address should still be 
+emitted as a label");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1797:            t.IsTrue(generated.find("        return;") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1798:                     "JR $31 should return to the 
+dispatcher/runtime after setting ctx->pc");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1799:            
+t.IsTrue(generated.find("PS2Runtime::GuestBranchKind::Return") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1800:                     "JR $31 should use the Return branch kind for 
+precise diagnostics");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1815:            Instruction atReturn = makeNop(0x1508);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1816:            Instruction atTarget = makeNop(0x1510);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1817:            Instruction jr = makeJr(0x1514, 31);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1818:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1819:            CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1820:            std::string generated = gen.generateFunction(func, 
+{jal, jalDelay, atReturn, atTarget, jr}, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1821:            printGeneratedCode("trailing JR $31 without decoded 
+delay slot still emits return flow", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1822:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1823:            t.IsTrue(generated.find("const uint32_t jumpTarget = 
+GPR_U32(ctx, 31);") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1824:                     "truncated trailing JR should still read the 
+return target");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1825:            t.IsFalse(generated.find("switch (jumpTarget)") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1826:                      "truncated trailing JR should not emit a 
+broad local return-target switch");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1827:            t.IsTrue(generated.find("label_1508:") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1828:                     "truncated trailing JR should still include 
+the internal return label");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1829:            t.IsTrue(generated.find("// JR $31 - Handled by branch 
+logic") == std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1830:                     "truncated trailing JR must not degrade to 
+comment-only output");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1831:            
+t.IsTrue(generated.find("PS2Runtime::GuestBranchKind::Return") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1832:                     "truncated JR $31 should still use return 
+diagnostics");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1852:            CodeGenerator gen({}, {});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1853:            CodeGenerator::AnalysisResult analysis = 
+gen.collectInternalBranchTargets(func, {i0, jr, delay, i3});
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1854:            gen.setResumeEntryTargets({{func.start, 
+std::vector<uint32_t>(
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1855:                                                        
+analysis.indirectFallbackEntryPoints.begin(),
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1856:                                                        
+analysis.indirectFallbackEntryPoints.end())}});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1857:            std::string generated = gen.generateFunction(func, 
+{i0, jr, delay, i3}, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1858:            printGeneratedCode("unresolved JR non-RA uses 
+dispatcher resume entries without broad local switch", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1859:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1860:            t.IsFalse(generated.find("switch (jumpTarget)") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1861:                      "unresolved JR via non-RA register should 
+not emit a broad local switch over internal labels");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1862:            t.IsTrue(generated.find("switch (ctx->pc)") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1863:                     "JR fallback labels should be promoted to 
+dispatcher resume sites");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1864:            t.IsTrue(generated.find("case 0x140cu: goto 
+label_140c;") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1865:                     "owner resume switch should include internal 
+fallback labels");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1866:            t.IsTrue(generated.find("ctx->pc = jumpTarget;") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1867:                     "unresolved JR should hand the dynamic target 
+back through ctx->pc");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1868:            
+t.IsTrue(generated.find("PS2Runtime::GuestBranchKind::IndirectJump") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1869:                     "unresolved non-RA JR should use 
+indirect-jump diagnostics");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2068:            t.IsFalse(analysis.resumeEntryPoints.contains(0x1620u),
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2069:                      "configured JR table targets should stay 
+in-function dispatch labels");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2070:            t.IsFalse(analysis.resumeEntryPoints.contains(0x1630u),
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2071:                      "configured JR table targets should not 
+become dispatcher resume sites");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2072:
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2073:            std::string generated = gen.generateFunction(
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2074:                func,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2075:                {lui, addiu, sll, addu, lw, jr, jrDelay, target0, 
+target1},
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2076:                false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2077:            printGeneratedCode("configured jump table addresses 
+drive JR dispatch targets", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2078:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2079:            t.IsTrue(generated.find("switch (jumpTarget)") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2080:                     "JR should emit a switch");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2081:            t.IsTrue(generated.find("case 0x1620u: goto 
+label_1620;") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2082:                     "configured table target 0x1620 should be 
+emitted");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2083:            t.IsTrue(generated.find("case 0x1630u: goto 
+label_1630;") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2084:                     "configured table target 0x1630 should be 
+emitted");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2085:            t.IsTrue(generated.find("switch (ctx->pc)") == 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2103:            Instruction atTarget = makeNop(0x1510);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2104:            Instruction jalr = makeJalr(0x1514, 4, 31);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2105:            Instruction jalrDelay = makeNop(0x1518);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2106:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2107:            CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2108:            std::string generated = gen.generateFunction(func, 
+{jal, jalDelay, atReturn, atTarget, jalr, jalrDelay}, false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2109:            printGeneratedCode("unresolved JALR uses runtime 
+dispatch without broad local switch", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2110:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2111:            t.IsFalse(generated.find("switch (jumpTarget)") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2112:                      "unresolved JALR should not emit a broad 
+local switch over every internal label");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2113:            
+t.IsTrue(generated.find("runtime->dispatchGuestBranch(rdram, ctx, jumpTarget") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2114:                     "unresolved JALR should dispatch through the 
+runtime branch helper");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2115:            
+t.IsTrue(generated.find("PS2Runtime::GuestBranchKind::IndirectCall") != std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2116:                     "JALR should retain indirect-call dispatch 
+kind");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2117:            t.IsTrue(generated.find("0x1514u, 0x151Cu") != 
+std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2118:                     "JALR should pass call-site and fallthrough 
+PCs to runtime dispatch");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2119:        });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2120:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2169:            tailDelay.rt = 29;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2170:            tailDelay.simmediate = 0x20;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2171:            tailDelay.raw = 0;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2172:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2173:            CodeGenerator gen({}, {});
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2174:            std::string generated = gen.generateFunction(
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2175:                func,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2176:                {prolog, saveRa, jalr, jalrDelay, restoreRa, 
+tailJump, tailDelay},
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2177:                false);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2178:            printGeneratedCode("JALR fallback should not expose 
+epilogue tail-jump labels", generated);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2179:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2180:            t.IsTrue(generated.find("case 0x2014u: goto 
+label_2014;") == std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2181:                     "jalr fallback should not dispatch directly 
+to epilogue tail-jump block");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2182:            t.IsTrue(generated.find("case 0x2018u: goto 
+label_2018;") == std::string::npos,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2183:                     "jalr fallback should not dispatch directly 
+to tail-jump delay slot");
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2184:        });
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2185:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2186:        tc.Run("VU random helpers emit line comments on separate 
+lines", [](TestCase &t) {
+
+========== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h ==========
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:20:	struct Section;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:21:    class RecompilerReporter;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:22:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:23:	extern const std::unordered_set<std::string> kKeywords;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:24:
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:25:    class CodeGenerator
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:26:    {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:27:    public:
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:28:	    explicit CodeGenerator(const std::vector<Symbol> 
+&symbols, const std::vector<Section> &sections);
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:29:        ~CodeGenerator();
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:30:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:31:        struct BootstrapInfo
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:32:        {
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:33:            bool valid = false;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:34:            uint32_t entry = 0;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:35:            uint32_t bssStart = 0;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:36:            uint32_t bssEnd = 0;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:37:            uint32_t gp = 0;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:38:            std::string entryName;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:39:        };
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:40:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:41:        using AnalysisResult = ControlFlowAnalysisResult;
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:42:
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:43:        std::string generateFunction(const Function 
+&function, const std::vector<Instruction> &instructions, const bool &useHeaders);
+> D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:44:        std::string generateFunctionRegistration(const 
+std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:45:        std::string handleBranchDelaySlots(const Instruction 
+&branchInst, const Instruction &delaySlot,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:46:                                           const Function 
+&function, const AnalysisResult &analysisResult);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:47:        std::string handleBranchDelaySlots(const Instruction 
+&branchInst, const Instruction &delaySlot,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:48:                                           const Function 
+&function, const AnalysisResult &analysisResult,
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:49:                                           std::string 
+delaySlotOverride);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:50:
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:51:        void setRenamedFunctions(const 
+std::unordered_map<uint32_t, std::string> &renames);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:52:        void setBootstrapInfo(const BootstrapInfo &info);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:53:        void setRelocationCallNames(const 
+std::unordered_map<uint32_t, std::string> &callNames);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:54:        void setConfiguredJumpTables(const 
+std::vector<JumpTable> &jumpTables);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:55:        void setResumeEntryTargets(const 
+std::unordered_map<uint32_t, std::vector<uint32_t>> &resumeTargetsByOwner);
+  D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h:56:        void setEmitInstructionComments(bool 
+emitInstructionComments);
+
+
