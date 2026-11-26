@@ -1,0 +1,639 @@
+MARK OF KRI — FPU COVERAGE INVENTORY
+Generated: 2026-11-26 01:15:21
+Root: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+Files scanned: 166
+Mode: READ ONLY
+
+========== SOURCE MATCHES ==========
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\code_generator.cpp:9: #include "ps2recomp/Translators/fpu_translator.h"
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\code_generator.cpp:251: std::string CodeGenerator::translateFPUInstruction(const Instruction &inst)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\code_generator.cpp:253: return FpuTranslator(*this).translate(inst);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:68: (m_branchInst.opcode == OPCODE_COP1 && m_branchInst.rs == COP1_BC &&
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:69: (m_branchInst.rt == COP1_BC_BCFL || m_branchInst.rt == COP1_BC_BCTL)) ||
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:430: case OPCODE_COP1:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:431: if (m_branchInst.rs == COP1_BC)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:434: return (bcCond == COP1_BC_BCF || bcCond == COP1_BC_BCFL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:435: ? "!(ctx->fcr31 & 0x800000)"
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:436: : "(ctx->fcr31 & 0x800000)";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:1: #include "ps2recomp/Translators/fpu_translator.h"
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:13: FpuTranslator::FpuTranslator(CodeGenerator &codeGenerator)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:18: std::string FpuTranslator::translate(const Instruction &inst)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:21: uint32_t ft = inst.rt;    // FPU source register
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:22: uint32_t fs = inst.rd;    // FPU source register
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:23: uint32_t fd = inst.sa;    // FPU destination register
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:28: case COP1_MF:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:30: case COP1_MT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:32: case COP1_CF:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:34: return fmt::format("SET_GPR_U32(ctx, {}, ctx->fcr31);", ft); // FCR31 contains status/control
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:36: return fmt::format("SET_GPR_U32(ctx, {}, 0x00000000);", ft); // FCR0 is the FPU implementation register
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:38: case COP1_CT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:40: return fmt::format("ctx->fcr31 = GPR_U32(ctx, {}) & 0x0183FFFF;", ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:44: case COP1_BC:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:45: return "// FPU branch instruction - handled elsewhere";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:46: case COP1_S:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:49: case COP1_S_ADD:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:50: return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:51: case COP1_S_SUB:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:52: return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:53: case COP1_S_MUL:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:54: return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:55: case COP1_S_DIV:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:57: return fmt::format("{{ if (ctx->f[{}] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ "
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:58: "ctx->f[{}] = FPU_DIV_S(ctx->f[{}], ctx->f[{}]); }}",
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:60: case COP1_S_SQRT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:61: // The R5900 encodes SQRT.S as fd, ft (fs is zero), unlike MIPS-I's fd, fs.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:62: return fmt::format("ctx->f[{}] = FPU_SQRT_S(ctx->f[{}]);", fd, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:63: case COP1_S_ABS:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:64: return fmt::format("ctx->f[{}] = FPU_ABS_S(ctx->f[{}]);", fd, fs);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:65: case COP1_S_MOV:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:66: return fmt::format("ctx->f[{}] = FPU_MOV_S(ctx->f[{}]);", fd, fs);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:67: case COP1_S_NEG:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:68: return fmt::format("ctx->f[{}] = FPU_NEG_S(ctx->f[{}]);", fd, fs);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:69: case COP1_S_CVT_W:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:70: return fmt::format("{{ int32_t tmp = FPU_CVT_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:71: case COP1_S_RSQRT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:72: // RSQRT.S fd, fs, ft computes fs / sqrt(ft), not 1 / sqrt(fs).
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:73: return fmt::format("ctx->f[{}] = FPU_RSQRT_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:74: case COP1_S_ADDA:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:75: return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:76: case COP1_S_SUBA:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:77: return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:78: case COP1_S_MULA:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:79: return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:80: case COP1_S_MADD:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:81: return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:82: case COP1_S_MSUB:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:83: return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:84: case COP1_S_MADDA:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:85: return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:86: case COP1_S_MSUBA:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:87: return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:88: case COP1_S_MAX:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:90: case COP1_S_MIN:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:92: case COP1_S_C_F:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:93: return fmt::format("ctx->fcr31 &= ~0x800000;");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:94: case COP1_S_C_UN:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:95: return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:96: case COP1_S_C_EQ:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:97: return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:98: case COP1_S_C_UEQ:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:99: return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:100: case COP1_S_C_OLT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:101: return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:102: case COP1_S_C_ULT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:103: return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:104: case COP1_S_C_OLE:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:105: return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:106: case COP1_S_C_ULE:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:107: return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:108: case COP1_S_C_SF:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:109: return fmt::format("ctx->fcr31 &= ~0x800000;");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:110: case COP1_S_C_NGLE:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:111: return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:112: case COP1_S_C_SEQ:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:113: return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:114: case COP1_S_C_NGL:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:115: return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:116: case COP1_S_C_LT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:117: return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:118: case COP1_S_C_NGE:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:119: return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:120: case COP1_S_C_LE:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:121: return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:122: case COP1_S_C_NGT:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:123: return fmt::format("ctx->fcr31 = (FPU_C_NGT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:125: return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.S instruction: function 0x{:X}", function));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:127: case COP1_W:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:130: case COP1_W_CVT_S:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:131: return fmt::format("{{ int32_t tmp; std::memcpy(&tmp, &ctx->f[{}], sizeof(tmp)); ctx->f[{}] = FPU_CVT_S_W(tmp); }}", fs, fd);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:133: return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.W instruction: function 0x{:X}", function));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:136: return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU instruction: format 0x{:X}, function 0x{:X}", format, function));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\instruction_translator.cpp:150: case OPCODE_COP1:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\instruction_translator.cpp:151: return m_codeGenerator.translateFPUInstruction(inst);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:181: if (inst.opcode == OPCODE_COP1)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:183: decodeCOP1(inst);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:806: void R5900Decoder::decodeCOP1(Instruction &inst) const
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:810: if (format == COP1_MF || format == COP1_CF)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:815: else if (format == COP1_MT)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:819: else if (format == COP1_BC)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:825: else if (format == COP1_S || format == COP1_W || format == COP1_L)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:828: format == COP1_S && inst.function >= COP1_S_C_F;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp:836: if (format == COP1_CT)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:142: // FPU registers (COP1)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:144: float f_acc;    // FPU accumulator
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:145: uint32_t fcr31; // Control/status register
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:144: // PS2 float semantics (EE FPU and VU0 macro mode). The PS2 format has no Inf, NaN or denormals:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:151: // One case is left to the host: ADD.S/SUB.S/MUL.S and the vector operations do not look for an operand with
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:153: // Checked against the hardware results in ps2autotests (tests/cpu/ee_fpu).
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:904: // FPU (COP1) operations
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:905: #define FPU_SET_ACC(ctx, res) (ctx->f_acc = res)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:906: #define FPU_ADD_S(a, b) ps2_fadd((float)(a), (float)(b))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:907: #define FPU_SUB_S(a, b) ps2_fsub((float)(a), (float)(b))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:908: #define FPU_MUL_S(a, b) ps2_fmul((float)(a), (float)(b))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:909: #define FPU_DIV_S(a, b) ps2_fdiv((float)(a), (float)(b))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:910: #define FPU_RSQRT_S(a, b) ps2_frsqrt((float)(a), (float)(b))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:911: #define FPU_SQRT_S(a) ps2_fsqrt((float)(a))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:912: #define FPU_ABS_S(a) fabsf((float)(a))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:913: #define FPU_MOV_S(a) ((float)(a))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:914: #define FPU_NEG_S(a) (-(float)(a))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:915: static inline int32_t ps2_fpu_cvt_w_s(float value)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:936: #define FPU_ROUND_L_S(a) ((int64_t)roundf((float)(a)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:937: #define FPU_TRUNC_L_S(a) ((int64_t)(float)(a))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:938: #define FPU_CEIL_L_S(a) ((int64_t)ceilf((float)(a)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:939: #define FPU_FLOOR_L_S(a) ((int64_t)floorf((float)(a)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:940: #define FPU_ROUND_W_S(a) ((int32_t)nearbyintf((float)(a)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:941: #define FPU_TRUNC_W_S(a) ((int32_t)(float)(a))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:942: #define FPU_CEIL_W_S(a) ((int32_t)ceilf((float)(a)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:943: #define FPU_FLOOR_W_S(a) ((int32_t)floorf((float)(a)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:944: #define FPU_CVT_S_W(a) ((float)(int32_t)(a))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:945: #define FPU_CVT_S_L(a) ((float)(int64_t)(a))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:946: #define FPU_CVT_W_S(a) ps2_fpu_cvt_w_s((float)(a))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:947: #define FPU_CVT_L_S(a) ((int64_t)(float)(a))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:948: #define FPU_C_F_S(a, b) (0)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:949: #define FPU_C_UN_S(a, b) (isnan((float)(a)) || isnan((float)(b)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:950: #define FPU_C_EQ_S(a, b) ((float)(a) == (float)(b))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:951: #define FPU_C_UEQ_S(a, b) ((float)(a) == (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:952: #define FPU_C_OLT_S(a, b) ((float)(a) < (float)(b))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:953: #define FPU_C_ULT_S(a, b) ((float)(a) < (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:954: #define FPU_C_OLE_S(a, b) ((float)(a) <= (float)(b))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:955: #define FPU_C_ULE_S(a, b) ((float)(a) <= (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:956: #define FPU_C_SF_S(a, b) (0)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:957: #define FPU_C_NGLE_S(a, b) (isnan((float)(a)) || isnan((float)(b)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:958: #define FPU_C_SEQ_S(a, b) ((float)(a) == (float)(b))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:959: #define FPU_C_NGL_S(a, b) ((float)(a) == (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:960: #define FPU_C_LT_S(a, b) ((float)(a) < (float)(b))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:961: #define FPU_C_NGE_S(a, b) ((float)(a) < (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:962: #define FPU_C_LE_S(a, b) ((float)(a) <= (float)(b))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:963: #define FPU_C_NGT_S(a, b) ((float)(a) <= (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_ipu.cpp:957: if (dc.length == 0u)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_ipu.cpp:959: skipBits(dc.length);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:314: const std::size_t colon = generic.find(':');
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:317: const std::size_t slash = generic.find_first_of("/\\");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vita_runtime.cpp:17: std::fputs(text, stdout); // Vita TTY (capturable via PrincessLog etc.)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:633: m_fdiv.statusDi = statusDi & 0x30u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:771: const uint32_t currentDi = m_fdiv.statusDi & 0x30u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:999: cfc1.opcode = OPCODE_COP1;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1000: cfc1.rs = COP1_CF;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1007: t.IsTrue(cfc1Code.find("ctx->fcr31") != std::string::npos, "CFC1 FCR31 should read fcr31");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1011: ctc1.opcode = OPCODE_COP1;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1012: ctc1.rs = COP1_CT;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1018: t.IsTrue(ctc1Code.find("ctx->fcr31 = GPR_U32(ctx, 4) & 0x0183FFFF") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1019: "CTC1 FCR31 should mask and write fcr31");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1020: t.IsTrue(ctc1Code.find("ignored") == std::string::npos, "CTC1 FCR31 should not be ignored");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1023: tc.Run("SQRT.S reads its operand from ft", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1026: // 0x46160504: sqrt.s $f20, $f22 as the EE encodes it, with the fs field zero.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1028: sqrt.opcode = OPCODE_COP1;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1029: sqrt.rs = COP1_S;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1032: sqrt.sa = 20;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1033: sqrt.function = COP1_S_SQRT;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1036: printGeneratedCode("SQRT.S reads its operand from ft", code);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1037: t.IsTrue(code.find("ctx->f[20] = FPU_SQRT_S(ctx->f[22])") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1038: "SQRT.S should take the square root of ft into fd");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1741: tc.Run("COP1 BC1 variants generate correct branch and delay-slot paths", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1744: func.name = "cop1_branch";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1751: branch.opcode = OPCODE_COP1;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1752: branch.rs = COP1_BC;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1774: t.IsTrue(branchPos != std::string::npos, "COP1 branch should emit a conditional path");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1775: t.IsTrue(delayPos != std::string::npos, "COP1 delay slot should be translated");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1777: t.IsTrue(generated.find("!(ctx->fcr31 & 0x800000)") != std::string::npos, "BC1F/BC1FL should test a clear condition bit");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1779: t.IsTrue(generated.find("(ctx->fcr31 & 0x800000)") != std::string::npos, "BC1T/BC1TL should test a set condition bit");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1787: check(0x1400, COP1_BC_BCF, true, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1788: check(0x1420, COP1_BC_BCT, false, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1789: check(0x1440, COP1_BC_BCFL, true, true);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1790: check(0x1460, COP1_BC_BCTL, false, true);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\fpu_execution_main.cpp:5: void register_generated_fpu_execution_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\fpu_execution_main.cpp:9: register_generated_fpu_execution_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:18: std::cerr << "Usage: generate_fpu_execution_fixture <output.cpp>\n";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:27: {"generated_fpu_adda", COP1_S_ADDA},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:28: {"generated_fpu_suba", COP1_S_SUBA},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:29: {"generated_fpu_mula", COP1_S_MULA},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:30: {"generated_fpu_madd", COP1_S_MADD},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:31: {"generated_fpu_msub", COP1_S_MSUB},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:32: {"generated_fpu_madda", COP1_S_MADDA},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:33: {"generated_fpu_msuba", COP1_S_MSUBA}
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:37: {"generated_fpu_add", COP1_S_ADD},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:38: {"generated_fpu_sub", COP1_S_SUB},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:39: {"generated_fpu_mul", COP1_S_MUL},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:40: {"generated_fpu_div", COP1_S_DIV},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:41: {"generated_fpu_sqrt", COP1_S_SQRT},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:42: {"generated_fpu_abs", COP1_S_ABS},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:43: {"generated_fpu_mov", COP1_S_MOV},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:44: {"generated_fpu_neg", COP1_S_NEG},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:45: {"generated_fpu_rsqrt", COP1_S_RSQRT},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:46: {"generated_fpu_max", COP1_S_MAX},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:47: {"generated_fpu_min", COP1_S_MIN},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:48: {"generated_fpu_cvt_w", COP1_S_CVT_W}
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:65: inst.opcode = OPCODE_COP1;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:66: inst.rs = COP1_S;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:87: mula.opcode = OPCODE_COP1;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:88: mula.rs = COP1_S;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:92: mula.function = COP1_S_MULA;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:96: madda.opcode = OPCODE_COP1;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:97: madda.rs = COP1_S;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:100: madda.sa = 3;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:101: madda.function = COP1_S_MADDA;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:104: sequence.name = "generated_fpu_sequence_mula_madda";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:119: inst.opcode = OPCODE_COP1;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:120: inst.rs = COP1_S;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:137: {"generated_fpu_c_f",    COP1_S_C_F},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:138: {"generated_fpu_c_un",   COP1_S_C_UN},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:139: {"generated_fpu_c_eq",   COP1_S_C_EQ},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:140: {"generated_fpu_c_ueq",  COP1_S_C_UEQ},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:141: {"generated_fpu_c_olt",  COP1_S_C_OLT},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:142: {"generated_fpu_c_ult",  COP1_S_C_ULT},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:143: {"generated_fpu_c_ole",  COP1_S_C_OLE},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:144: {"generated_fpu_c_ule",  COP1_S_C_ULE},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:145: {"generated_fpu_c_sf",   COP1_S_C_SF},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:146: {"generated_fpu_c_ngle", COP1_S_C_NGLE},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:147: {"generated_fpu_c_seq",  COP1_S_C_SEQ},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:148: {"generated_fpu_c_ngl",  COP1_S_C_NGL},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:149: {"generated_fpu_c_lt",   COP1_S_C_LT},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:150: {"generated_fpu_c_nge",  COP1_S_C_NGE},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:151: {"generated_fpu_c_le",   COP1_S_C_LE},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:152: {"generated_fpu_c_ngt",  COP1_S_C_NGT},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:162: inst.opcode = OPCODE_COP1;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:163: inst.rs = COP1_S;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:9: using GeneratedFpuFunction =
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:12: void generated_fpu_adda(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:13: void generated_fpu_suba(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:14: void generated_fpu_mula(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:15: void generated_fpu_madd(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:16: void generated_fpu_msub(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:17: void generated_fpu_madda(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:18: void generated_fpu_msuba(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:19: void generated_fpu_add(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:20: void generated_fpu_sub(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:21: void generated_fpu_mul(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:22: void generated_fpu_div(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:23: void generated_fpu_sqrt(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:24: void generated_fpu_abs(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:25: void generated_fpu_mov(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:26: void generated_fpu_neg(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:27: void generated_fpu_rsqrt(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:28: void generated_fpu_max(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:29: void generated_fpu_min(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:30: void generated_fpu_cvt_w(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:31: void generated_fpu_sequence_mula_madda(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:32: void generated_fpu_c_f(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:33: void generated_fpu_c_un(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:34: void generated_fpu_c_eq(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:35: void generated_fpu_c_ueq(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:36: void generated_fpu_c_olt(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:37: void generated_fpu_c_ult(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:38: void generated_fpu_c_ole(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:39: void generated_fpu_c_ule(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:40: void generated_fpu_c_sf(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:41: void generated_fpu_c_ngle(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:42: void generated_fpu_c_seq(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:43: void generated_fpu_c_ngl(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:44: void generated_fpu_c_lt(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:45: void generated_fpu_c_nge(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:46: void generated_fpu_c_le(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:47: void generated_fpu_c_ngt(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:49: static R5900Context makeGeneratedFpuContext()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:59: void register_generated_fpu_execution_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:61: MiniTest::Case("GeneratedFPUExecution", [](TestCase& tc)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:64: // COP1.S comparison execution coverage.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:65: tc.Run("generated COP1.S comparisons", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:69: auto run = [&](GeneratedFpuFunction fn, float fs, float ft, bool initialCondition) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:73: ctx.fcr31 = initialCondition ? 0x800000u : 0u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:75: return (ctx.fcr31 & 0x800000u) != 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:80: t.IsFalse(run(generated_fpu_c_f, 1.0f, 2.0f, false), "C.F false");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:81: t.IsFalse(run(generated_fpu_c_f, 1.0f, 2.0f, true), "C.F clears condition");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:82: t.IsFalse(run(generated_fpu_c_un, 1.0f, 2.0f, false), "C.UN ordered");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:83: t.IsTrue(run(generated_fpu_c_un, qnan, 2.0f, false), "C.UN unordered");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:84: t.IsTrue(run(generated_fpu_c_eq, 2.0f, 2.0f, false), "C.EQ equal");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:85: t.IsFalse(run(generated_fpu_c_eq, 1.0f, 2.0f, true), "C.EQ unequal");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:86: t.IsTrue(run(generated_fpu_c_ueq, qnan, 2.0f, false), "C.UEQ unordered");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:87: t.IsFalse(run(generated_fpu_c_ueq, 1.0f, 2.0f, true), "C.UEQ unequal");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:88: t.IsTrue(run(generated_fpu_c_olt, 1.0f, 2.0f, false), "C.OLT less");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:89: t.IsFalse(run(generated_fpu_c_olt, 2.0f, 1.0f, true), "C.OLT greater");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:90: t.IsTrue(run(generated_fpu_c_ult, qnan, 2.0f, false), "C.ULT unordered");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:91: t.IsFalse(run(generated_fpu_c_ult, 2.0f, 1.0f, true), "C.ULT greater");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:92: t.IsTrue(run(generated_fpu_c_ole, 1.0f, 2.0f, false), "C.OLE less");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:93: t.IsFalse(run(generated_fpu_c_ole, 2.0f, 1.0f, true), "C.OLE greater");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:94: t.IsTrue(run(generated_fpu_c_ule, qnan, 2.0f, false), "C.ULE unordered");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:95: t.IsFalse(run(generated_fpu_c_ule, 2.0f, 1.0f, true), "C.ULE greater");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:96: t.IsFalse(run(generated_fpu_c_sf, 1.0f, 2.0f, false), "C.SF false");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:97: t.IsFalse(run(generated_fpu_c_sf, 1.0f, 2.0f, true), "C.SF clears condition");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:98: t.IsTrue(run(generated_fpu_c_ngle, qnan, 2.0f, false), "C.NGLE unordered");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:99: t.IsFalse(run(generated_fpu_c_ngle, 1.0f, 2.0f, true), "C.NGLE ordered");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:100: t.IsTrue(run(generated_fpu_c_seq, 2.0f, 2.0f, false), "C.SEQ equal");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:101: t.IsFalse(run(generated_fpu_c_seq, 1.0f, 2.0f, true), "C.SEQ unequal");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:102: t.IsTrue(run(generated_fpu_c_ngl, qnan, 2.0f, false), "C.NGL unordered");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:103: t.IsFalse(run(generated_fpu_c_ngl, 1.0f, 2.0f, true), "C.NGL unequal");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:104: t.IsTrue(run(generated_fpu_c_lt, 1.0f, 2.0f, false), "C.LT less");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:105: t.IsFalse(run(generated_fpu_c_lt, 2.0f, 1.0f, true), "C.LT greater");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:106: t.IsTrue(run(generated_fpu_c_nge, qnan, 2.0f, false), "C.NGE unordered");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:107: t.IsFalse(run(generated_fpu_c_nge, 2.0f, 1.0f, true), "C.NGE greater");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:108: t.IsTrue(run(generated_fpu_c_le, 1.0f, 2.0f, false), "C.LE less");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:109: t.IsFalse(run(generated_fpu_c_le, 2.0f, 1.0f, true), "C.LE greater");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:110: t.IsTrue(run(generated_fpu_c_ngt, qnan, 2.0f, false), "C.NGT unordered");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:111: t.IsFalse(run(generated_fpu_c_ngt, 2.0f, 1.0f, true), "C.NGT greater");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:115: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:117: generated_fpu_adda(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:123: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:124: generated_fpu_suba(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:130: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:131: generated_fpu_mula(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:136: tc.Run("generated MADD.S writes destination FPR", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:137: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:138: generated_fpu_madd(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:139: t.Equals(ctx.f[3], 11.0f, "MADD.S destination");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:140: t.Equals(ctx.pc, 0x100034u, "MADD.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:143: tc.Run("generated MSUB.S writes destination FPR", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:144: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:145: generated_fpu_msub(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:146: t.Equals(ctx.f[3], -1.0f, "MSUB.S destination");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:147: t.Equals(ctx.pc, 0x100044u, "MSUB.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:150: tc.Run("generated MADDA.S updates live accumulator", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:151: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:152: generated_fpu_madda(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:153: t.Equals(ctx.f_acc, 11.0f, "MADDA.S accumulator");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:154: t.Equals(ctx.pc, 0x100054u, "MADDA.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:157: tc.Run("generated MSUBA.S updates live accumulator", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:158: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:159: generated_fpu_msuba(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:160: t.Equals(ctx.f_acc, -1.0f, "MSUBA.S accumulator");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:161: t.Equals(ctx.pc, 0x100064u, "MSUBA.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:164: tc.Run("generated ADD.S writes destination FPR", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:165: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:166: generated_fpu_add(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:167: t.Equals(ctx.f[3], 5.0f, "ADD.S destination");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:168: t.Equals(ctx.pc, 0x100084u, "ADD.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:170: tc.Run("generated SUB.S writes destination FPR", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:171: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:172: generated_fpu_sub(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:173: t.Equals(ctx.f[3], -1.0f, "SUB.S destination");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:174: t.Equals(ctx.pc, 0x100094u, "SUB.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:176: tc.Run("generated MUL.S writes destination FPR", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:177: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:178: generated_fpu_mul(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:179: t.Equals(ctx.f[3], 6.0f, "MUL.S destination");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:180: t.Equals(ctx.pc, 0x1000A4u, "MUL.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:182: tc.Run("generated DIV.S writes destination FPR", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:183: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:184: generated_fpu_div(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:185: t.Equals(ctx.f[3], 0.6666667f, "DIV.S destination");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:186: t.Equals(ctx.pc, 0x1000B4u, "DIV.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:188: tc.Run("generated SQRT.S reads ft", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:189: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:190: generated_fpu_sqrt(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:191: t.Equals(ctx.f[3], 1.7320508f, "SQRT.S destination");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:192: t.Equals(ctx.pc, 0x1000C4u, "SQRT.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:194: tc.Run("generated ABS.S writes destination FPR", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:195: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:197: generated_fpu_abs(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:198: t.Equals(ctx.f[3], 2.0f, "ABS.S destination");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:199: t.Equals(ctx.pc, 0x1000D4u, "ABS.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:201: tc.Run("generated MOV.S writes destination FPR", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:202: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:203: generated_fpu_mov(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:204: t.Equals(ctx.f[3], 2.0f, "MOV.S destination");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:205: t.Equals(ctx.pc, 0x1000E4u, "MOV.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:207: tc.Run("generated NEG.S writes destination FPR", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:208: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:209: generated_fpu_neg(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:210: t.Equals(ctx.f[3], -2.0f, "NEG.S destination");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:211: t.Equals(ctx.pc, 0x1000F4u, "NEG.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:213: tc.Run("generated RSQRT.S writes destination FPR", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:214: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:215: generated_fpu_rsqrt(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:216: t.Equals(ctx.f[3], 1.1547005f, "RSQRT.S destination");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:217: t.Equals(ctx.pc, 0x100104u, "RSQRT.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:219: tc.Run("generated MAX.S writes destination FPR", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:220: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:221: generated_fpu_max(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:222: t.Equals(ctx.f[3], 3.0f, "MAX.S destination");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:223: t.Equals(ctx.pc, 0x100114u, "MAX.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:225: tc.Run("generated MIN.S writes destination FPR", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:226: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:227: generated_fpu_min(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:228: t.Equals(ctx.f[3], 2.0f, "MIN.S destination");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:229: t.Equals(ctx.pc, 0x100124u, "MIN.S final PC");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:231: tc.Run("generated MAX.S and MIN.S preserve current NaN operand-order behavior", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:244: GeneratedFpuFunction function;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:252: { generated_fpu_max, "MAX.S NaN fs", 0x7FC00000u, 0x3F800000u, 0x7FC00000u },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:253: { generated_fpu_max, "MAX.S NaN ft", 0x3F800000u, 0x7FC00000u, 0x3F800000u },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:254: { generated_fpu_min, "MIN.S NaN fs", 0x7FC00000u, 0x3F800000u, 0x7FC00000u },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:255: { generated_fpu_min, "MIN.S NaN ft", 0x3F800000u, 0x7FC00000u, 0x3F800000u }
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:259: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:267: tc.Run("generated MAX.S and MIN.S preserve first-operand signed zero", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:275: GeneratedFpuFunction function;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:283: { generated_fpu_max, "MAX.S +0 fs, -0 ft", 0x00000000u, 0x80000000u, 0x00000000u },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:284: { generated_fpu_max, "MAX.S -0 fs, +0 ft", 0x80000000u, 0x00000000u, 0x80000000u },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:285: { generated_fpu_min, "MIN.S +0 fs, -0 ft", 0x00000000u, 0x80000000u, 0x00000000u },
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:286: { generated_fpu_min, "MIN.S -0 fs, +0 ft", 0x80000000u, 0x00000000u, 0x80000000u }
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:290: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:297: tc.Run("generated CVT.W.S truncates toward zero independent of FCR31 rounding mode", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:303: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:305: ctx.fcr31 = mode;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:306: generated_fpu_cvt_w(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:311: "CVT.W.S truncation result for FCR31 mode " + std::to_string(mode));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:316: tc.Run("generated CVT.W.S saturates overflow and NaN according to source sign", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:339: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:341: ctx.fcr31 = mode;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:342: generated_fpu_cvt_w(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:348: std::string(edge.label) + " (FCR31 mode " +
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:353: tc.Run("generated COP1.S comparisons update FCR31 condition bit", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:357: GeneratedFpuFunction fn;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:363: {"C.F",    generated_fpu_c_f,    false, false},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:364: {"C.UN",   generated_fpu_c_un,   false, true},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:365: {"C.EQ",   generated_fpu_c_eq,   false, false},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:366: {"C.UEQ",  generated_fpu_c_ueq,  false, true},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:367: {"C.OLT",  generated_fpu_c_olt,  true,  false},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:368: {"C.ULT",  generated_fpu_c_ult,  true,  true},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:369: {"C.OLE",  generated_fpu_c_ole,  true,  false},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:370: {"C.ULE",  generated_fpu_c_ule,  true,  true},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:371: {"C.SF",   generated_fpu_c_sf,   false, false},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:372: {"C.NGLE", generated_fpu_c_ngle, false, true},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:373: {"C.SEQ",  generated_fpu_c_seq,  false, false},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:374: {"C.NGL",  generated_fpu_c_ngl,  false, true},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:375: {"C.LT",   generated_fpu_c_lt,   true,  false},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:376: {"C.NGE",  generated_fpu_c_nge,  true,  true},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:377: {"C.LE",   generated_fpu_c_le,   true,  false},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:378: {"C.NGT",  generated_fpu_c_ngt,  true,  true},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:388: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:391: ctx.fcr31 = 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:393: c.fn(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:397: ctx.fcr31 & conditionBit,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:403: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:406: ctx.fcr31 = conditionBit;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:408: c.fn(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:412: ctx.fcr31 & conditionBit,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:418: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:421: ctx.fcr31 = 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:423: c.fn(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:426: c.unorderedTrue ? conditionBit : 0u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:427: ctx.fcr31 & conditionBit,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:433: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:436: ctx.fcr31 = 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:438: c.fn(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:441: c.unorderedTrue ? conditionBit : 0u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:442: ctx.fcr31 & conditionBit,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:448: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:451: ctx.fcr31 = 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:453: c.fn(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:456: std::strcmp(c.name, "C.EQ") == 0 ||
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:457: std::strcmp(c.name, "C.UEQ") == 0 ||
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:458: std::strcmp(c.name, "C.SEQ") == 0 ||
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:459: std::strcmp(c.name, "C.NGL") == 0 ||
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:460: std::strcmp(c.name, "C.OLE") == 0 ||
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:461: std::strcmp(c.name, "C.ULE") == 0 ||
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:462: std::strcmp(c.name, "C.LE") == 0 ||
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:463: std::strcmp(c.name, "C.NGT") == 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:467: ctx.fcr31 & conditionBit,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:472: tc.Run("generated MULA.S then MADDA.S consumes live accumulator", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:473: auto ctx = makeGeneratedFpuContext();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:475: generated_fpu_sequence_mula_madda(nullptr, &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp:476: t.Equals(ctx.f_acc, 12.0f, "MADDA.S consumes MULA.S accumulator");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:22: void register_generated_fpu_execution_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:47: register_generated_fpu_execution_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:38: Instruction makeCop1S(uint32_t function, uint8_t fd, uint8_t fs, uint8_t ft)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:41: inst.opcode = OPCODE_COP1;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:42: inst.rs = COP1_S;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:64: // 1: the hardware does not round to nearest (ADD.S and MUL.S drop the low bits, the divide unit has its
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:66: // 2: an ADD.S/SUB.S/MUL.S operand has exponent 0 and a non-zero mantissa. The hardware reads it as
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:81: return bitsOf(FPU_ADD_S(fs, ft));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:83: return bitsOf(FPU_SUB_S(fs, ft));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:85: return bitsOf(FPU_MUL_S(fs, ft));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:87: return bitsOf(FPU_DIV_S(fs, ft));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:89: return bitsOf(FPU_SQRT_S(fs));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:90: return bitsOf(FPU_RSQRT_S(fs, ft));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:105: tc.Run("FPU results match the PS2 hardware results from ps2autotests", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:127: t.Equals(bitsOf(FPU_ADD_S(twoPow128, 0.0f)), kTwoPow128, "2^128 + 0 should stay 2^128");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:128: t.Equals(bitsOf(FPU_MUL_S(twoPow128, 0.5f)), 0x7F000000u, "2^128 * 0.5 should be 2^127");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:129: t.Equals(bitsOf(FPU_MUL_S(floatOf(0x7F000000u), 2.0f)), kTwoPow128, "2^127 * 2 should be 2^128, not saturated");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:130: t.Equals(bitsOf(FPU_ADD_S(floatOf(0x7F000000u), floatOf(0x7F000000u))), kTwoPow128, "2^127 + 2^127 should be 2^128");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:131: t.Equals(bitsOf(FPU_SUB_S(floatOf(0x7FC00000u), twoPow128)), 0x7F000000u, "1.5*2^128 - 2^128 should be 2^127");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:132: t.Equals(bitsOf(FPU_DIV_S(floatOf(0x7FC00000u), 3.0f)), 0x7F000000u, "1.5*2^128 / 3 should be 2^127");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:133: t.Equals(bitsOf(FPU_SQRT_S(twoPow128)), 0x5F800000u, "sqrt(2^128) should be 2^64");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:136: tc.Run("FPU results saturate at 0x7FFFFFFF and flush below 2^-126", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:140: t.Equals(bitsOf(FPU_ADD_S(maxf, maxf)), kPlusMax, "max + max should saturate to +max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:141: t.Equals(bitsOf(FPU_ADD_S(minf, minf)), kMinusMax, "-max + -max should saturate to -max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:142: t.Equals(bitsOf(FPU_SUB_S(maxf, minf)), kPlusMax, "max - (-max) should saturate to +max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:143: t.Equals(bitsOf(FPU_MUL_S(maxf, 2.0f)), kPlusMax, "max * 2 should saturate to +max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:144: t.Equals(bitsOf(FPU_MUL_S(maxf, -2.0f)), kMinusMax, "max * -2 should saturate to -max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:145: t.Equals(bitsOf(FPU_DIV_S(maxf, 0.5f)), kPlusMax, "max / 0.5 should saturate to +max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:146: t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00800000u), 0.5f)), 0x00000000u, "2^-126 * 0.5 should flush to +0");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:147: t.Equals(bitsOf(FPU_MUL_S(floatOf(0x80800000u), 0.5f)), 0x80000000u, "-2^-126 * 0.5 should flush to -0");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:148: t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00000001u), 1.0f)), 0x00000000u, "a result with exponent 0 should flush to +0");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:149: t.Equals(bitsOf(FPU_ADD_S(1.0f, 2.0f)), bitsOf(3.0f), "ordinary addition should be unchanged");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:150: t.Equals(bitsOf(FPU_MUL_S(1.5f, 4.0f)), bitsOf(6.0f), "ordinary multiplication should be unchanged");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:153: tc.Run("FPU DIV.S by zero gives +-max with the sign of fs xor ft", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:155: t.Equals(bitsOf(FPU_DIV_S(1.0f, 0.0f)), kPlusMax, "1/+0 should be +max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:156: t.Equals(bitsOf(FPU_DIV_S(-1.0f, 0.0f)), kMinusMax, "-1/+0 should be -max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:157: t.Equals(bitsOf(FPU_DIV_S(1.0f, -0.0f)), kMinusMax, "1/-0 should be -max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:158: t.Equals(bitsOf(FPU_DIV_S(-1.0f, -0.0f)), kPlusMax, "-1/-0 should be +max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:159: t.Equals(bitsOf(FPU_DIV_S(0.0f, 0.0f)), kPlusMax, "0/0 should be +max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:160: t.Equals(bitsOf(FPU_DIV_S(1.0f, floatOf(0x00000001u))), kPlusMax, "an exponent-0 divisor should count as zero");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:161: t.Equals(bitsOf(FPU_DIV_S(6.0f, 3.0f)), bitsOf(2.0f), "ordinary division should be unchanged");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:164: tc.Run("FPU RSQRT.S computes fs / sqrt(|ft|) and takes the sign of fs alone on a zero ft", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:166: t.Equals(bitsOf(FPU_RSQRT_S(4.0f, 16.0f)), bitsOf(1.0f), "4 / sqrt(16) should be 1");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:167: t.Equals(bitsOf(FPU_RSQRT_S(1.0f, 4.0f)), bitsOf(0.5f), "1 / sqrt(4) should be 0.5");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:168: t.Equals(bitsOf(FPU_RSQRT_S(1.0f, -4.0f)), bitsOf(0.5f), "the sign of the radicand should be ignored");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:169: t.Equals(bitsOf(FPU_RSQRT_S(2.0f, 0.0f)), kPlusMax, "x / sqrt(+0) should be +max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:170: t.Equals(bitsOf(FPU_RSQRT_S(2.0f, -0.0f)), kPlusMax, "x / sqrt(-0) should be +max: the sign of ft is ignored");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:171: t.Equals(bitsOf(FPU_RSQRT_S(-2.0f, 0.0f)), kMinusMax, "-x / sqrt(+0) should be -max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:172: t.Equals(bitsOf(FPU_RSQRT_S(-2.0f, -0.0f)), kMinusMax, "-x / sqrt(-0) should be -max");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:175: tc.Run("FPU SQRT.S takes the square root of the magnitude", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:177: t.Equals(bitsOf(FPU_SQRT_S(16.0f)), bitsOf(4.0f), "sqrt(16) should be 4");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:178: t.Equals(bitsOf(FPU_SQRT_S(-16.0f)), bitsOf(4.0f), "sqrt(-16) should be 4");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:179: t.Equals(bitsOf(FPU_SQRT_S(-0.0f)), bitsOf(0.0f), "sqrt(-0) should be +0");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:214: tc.Run("DIV.S and RSQRT.S translate to the PS2 semantics helpers", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:219: const std::string div = gen.translateInstruction(makeCop1S(COP1_S_DIV, 2, 3, 4));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:220: t.IsTrue(div.find("ctx->f[2] = FPU_DIV_S(ctx->f[3], ctx->f[4])") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:221: "DIV.S should write fs / ft to fd but got: " + div);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:222: t.IsTrue(div.find("INFINITY") == std::string::npos, "DIV.S must not produce IEEE infinity but got: " + div);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:224: const std::string rsqrt = gen.translateInstruction(makeCop1S(COP1_S_RSQRT, 2, 3, 4));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:225: t.IsTrue(rsqrt.find("ctx->f[2] = FPU_RSQRT_S(ctx->f[3], ctx->f[4])") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:226: "RSQRT.S should compute fs / sqrt(ft) but got: " + rsqrt);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:228: tc.Run("R5900 reserved FPU.W conversion encodings are unhandled while CVT.W.S remains supported", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:233: COP1_S_ROUND_W,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:234: COP1_S_TRUNC_W,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:235: COP1_S_CEIL_W,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:236: COP1_S_FLOOR_W
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:241: const std::string translated = gen.translateInstruction(makeCop1S(function, 2, 3, 4));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:243: "Reserved FPU.S encoding must generate an unhandled-instruction exception: " + translated);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:244: t.IsTrue(translated.find("Unhandled FPU.S instruction") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:245: "Reserved FPU.S encoding must identify the unhandled instruction: " + translated);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:248: const std::string cvt = gen.translateInstruction(makeCop1S(COP1_S_CVT_W, 2, 3, 4));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:249: t.IsTrue(cvt.find("FPU_CVT_W_S(ctx->f[3])") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:250: "CVT.W.S must retain its conversion operation: " + cvt);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:251: t.IsTrue(cvt.find("&ctx->f[2]") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:252: "CVT.W.S must write its result to fd: " + cvt);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:254: tc.Run("FPU accumulator instructions translate to correct accumulator and destination operations", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:258: const std::string adda = gen.translateInstruction(makeCop1S(COP1_S_ADDA, 0, 3, 4));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:259: const std::string suba = gen.translateInstruction(makeCop1S(COP1_S_SUBA, 0, 3, 4));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:260: const std::string mula = gen.translateInstruction(makeCop1S(COP1_S_MULA, 0, 3, 4));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:261: const std::string madd = gen.translateInstruction(makeCop1S(COP1_S_MADD, 2, 3, 4));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:262: const std::string msub = gen.translateInstruction(makeCop1S(COP1_S_MSUB, 2, 3, 4));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:263: const std::string madda = gen.translateInstruction(makeCop1S(COP1_S_MADDA, 0, 3, 4));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:264: const std::string msuba = gen.translateInstruction(makeCop1S(COP1_S_MSUBA, 0, 3, 4));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:266: t.IsTrue(adda.find("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[3], ctx->f[4]))") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:269: t.IsTrue(suba.find("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[3], ctx->f[4]))") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:272: t.IsTrue(mula.find("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[3], ctx->f[4]))") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:275: t.IsTrue(madd.find("ctx->f[2] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[3], ctx->f[4]))") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:276: "MADD.S must add the product to the accumulator and write fd: " + madd);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:278: t.IsTrue(msub.find("ctx->f[2] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[3], ctx->f[4]))") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:279: "MSUB.S must subtract the product from the accumulator and write fd: " + msub);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:281: t.IsTrue(madda.find("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[3], ctx->f[4])))") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:282: "MADDA.S must update the accumulator with accumulator plus product: " + madda);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:284: t.IsTrue(msuba.find("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[3], ctx->f[4])))") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:285: "MSUBA.S must update the accumulator with accumulator minus product: " + msuba);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:287: tc.Run("FPU accumulator operations update runtime context correctly", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:295: FPU_SET_ACC(pCtx, FPU_ADD_S(ctx.f[3], ctx.f[4]));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:299: FPU_SET_ACC(pCtx, FPU_SUB_S(ctx.f[3], ctx.f[4]));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:303: FPU_SET_ACC(pCtx, FPU_MUL_S(ctx.f[3], ctx.f[4]));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:307: ctx.f[2] = FPU_ADD_S(ctx.f_acc, FPU_MUL_S(ctx.f[3], ctx.f[4]));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:308: t.Equals(bitsOf(ctx.f[2]), bitsOf(11.0f), "MADD.S writes accumulator + product to fd");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:309: t.Equals(bitsOf(ctx.f_acc), bitsOf(5.0f), "MADD.S leaves f_acc unchanged");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:312: ctx.f[2] = FPU_SUB_S(ctx.f_acc, FPU_MUL_S(ctx.f[3], ctx.f[4]));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:313: t.Equals(bitsOf(ctx.f[2]), bitsOf(-1.0f), "MSUB.S writes accumulator - product to fd");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:314: t.Equals(bitsOf(ctx.f_acc), bitsOf(5.0f), "MSUB.S leaves f_acc unchanged");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:317: FPU_SET_ACC(pCtx, FPU_ADD_S(ctx.f_acc, FPU_MUL_S(ctx.f[3], ctx.f[4])));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:318: t.Equals(bitsOf(ctx.f_acc), bitsOf(11.0f), "MADDA.S updates f_acc with accumulator + product");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:321: FPU_SET_ACC(pCtx, FPU_SUB_S(ctx.f_acc, FPU_MUL_S(ctx.f[3], ctx.f[4])));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:322: t.Equals(bitsOf(ctx.f_acc), bitsOf(-1.0f), "MSUBA.S updates f_acc with accumulator - product");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:220: tc.Run("COP1 transfers set correct register modification flags", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:223: const uint32_t mfc1 = (OPCODE_COP1 << 26) | (COP1_MF << 21) | (3 << 16) | (4 << 11);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:224: const uint32_t mfc1Zero = (OPCODE_COP1 << 26) | (COP1_MF << 21) | (0 << 16) | (4 << 11);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:225: const uint32_t cfc1 = (OPCODE_COP1 << 26) | (COP1_CF << 21) | (5 << 16) | (31 << 11);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:226: const uint32_t mtc1 = (OPCODE_COP1 << 26) | (COP1_MT << 21) | (6 << 16) | (7 << 11);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:227: const uint32_t ctc1 = (OPCODE_COP1 << 26) | (COP1_CT << 21) | (8 << 16) | (31 << 11);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:239: t.IsTrue(e.modificationInfo.modifiesControl, "CTC1 should modify FPU control state");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:242: tc.Run("COP1 BC1F and BC1T set branch and delay-slot flags", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:245: const uint32_t bcf = (OPCODE_COP1 << 26) | (COP1_BC << 21) |
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:246: (COP1_BC_BCF << 16) | 4;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:247: const uint32_t bct = (OPCODE_COP1 << 26) | (COP1_BC << 21) |
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:248: (COP1_BC_BCT << 16) | 4;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:261: tc.Run("all four COP1 BC1 variants set branch and delay-slot flags", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:264: const uint32_t raw = (OPCODE_COP1 << 26) | (COP1_BC << 21) |
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:269: decodeBranch(0xB100, COP1_BC_BCF),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:270: decodeBranch(0xB104, COP1_BC_BCT),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:271: decodeBranch(0xB108, COP1_BC_BCFL),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:272: decodeBranch(0xB10C, COP1_BC_BCTL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:282: tc.Run("COP1 arithmetic modifies FPR while comparisons modify control only", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:285: const uint32_t subS = (OPCODE_COP1 << 26) | (COP1_S << 21) |
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:286: (2 << 16) | (3 << 11) | (4 << 6) | COP1_S_SUB;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:287: const uint32_t sqrtS = (OPCODE_COP1 << 26) | (COP1_S << 21) |
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:288: (2 << 16) | (4 << 6) | COP1_S_SQRT;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:289: const uint32_t compareEq = (OPCODE_COP1 << 26) | (COP1_S << 21) |
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:290: (2 << 16) | (3 << 11) | COP1_S_C_EQ;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:291: const uint32_t compareLt = (OPCODE_COP1 << 26) | (COP1_S << 21) |
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:292: (2 << 16) | (3 << 11) | COP1_S_C_LT;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:299: t.IsTrue(a.modificationInfo.modifiesFPR, "SUB.S should modify FPR");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:300: t.IsTrue(b.modificationInfo.modifiesFPR, "SQRT.S should modify FPR");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:301: t.IsFalse(c.modificationInfo.modifiesFPR, "C.EQ.S should not modify FPR");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:302: t.IsTrue(c.modificationInfo.modifiesControl, "C.EQ.S should modify FPU condition state");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:303: t.IsFalse(d.modificationInfo.modifiesFPR, "C.LT.S should not modify FPR");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:304: t.IsTrue(d.modificationInfo.modifiesControl, "C.LT.S should modify FPU condition state");
+
+========== CURRENT VERIFIED BASELINE ==========
+COP1.S isolated suite: 25/25 PASS
+Full suite: 556/556 PASS
+
+========== AUDIT LIMITATIONS ==========
+Text matches are inventory evidence, not proof of execution coverage.
+Instruction support must be traced through decoder, translator, runtime, and tests.
+No source files were modified.
