@@ -1,0 +1,2464 @@
+MARK OF KRI — CVT.S.W RESULT REVIEW
+Generated: 2026-11-26 01:24:00
+Mode: READ ONLY
+
+================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp
+--- Lines 109-118 ---
+  109: 
+  110:     names.emplace(sequenceAddress, sequence.name);
+  111: 
+  112:     // CVT.S.W uses COP1.W, not COP1.S.
+  113:     {
+  114:         constexpr uint32_t address = base + 0x140u;
+  115: 
+  116:         Instruction inst{};
+  117:         inst.address = address;
+  118:         inst.opcode = OPCODE_COP1;
+--- Lines 120-129 ---
+  120:         inst.rt = 0;
+  121:         inst.rd = 1;
+  122:         inst.sa = 3;
+  123:         inst.function = COP1_W_CVT_S;
+  124: 
+  125:         Function function{};
+  126:         function.name = "generated_fpu_cvt_s_w";
+  127:         function.start = address;
+  128:         function.end = address + 4u;
+  129:         function.instructions.push_back(inst);
+--- Lines 123-132 ---
+  123:         inst.function = COP1_W_CVT_S;
+  124: 
+  125:         Function function{};
+  126:         function.name = "generated_fpu_cvt_s_w";
+  127:         function.start = address;
+  128:         function.end = address + 4u;
+  129:         function.instructions.push_back(inst);
+  130: 
+  131:         names.emplace(address, function.name);
+  132:         functions.push_back(function);
+================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp
+--- Lines 28-37 ---
+   28: void generated_fpu_max(uint8_t*, R5900Context*, PS2Runtime*);
+   29: void generated_fpu_min(uint8_t*, R5900Context*, PS2Runtime*);
+   30: void generated_fpu_cvt_w(uint8_t*, R5900Context*, PS2Runtime*);
+   31: void generated_fpu_cvt_s_w(uint8_t*, R5900Context*, PS2Runtime*);
+   32: void generated_fpu_sequence_mula_madda(uint8_t*, R5900Context*, PS2Runtime*);
+   33: void generated_fpu_c_f(uint8_t*, R5900Context*, PS2Runtime*);
+   34: void generated_fpu_c_un(uint8_t*, R5900Context*, PS2Runtime*);
+   35: void generated_fpu_c_eq(uint8_t*, R5900Context*, PS2Runtime*);
+   36: void generated_fpu_c_ueq(uint8_t*, R5900Context*, PS2Runtime*);
+   37: void generated_fpu_c_olt(uint8_t*, R5900Context*, PS2Runtime*);
+--- Lines 295-304 ---
+  295:                 t.Equals(bitsOf(ctx.f[3]), test.expected, test.name);
+  296:             }
+  297:         });
+  298:         tc.Run("generated CVT.S.W converts signed word to single", [](TestCase& t) {
+  299:             struct Case {
+  300:                 int32_t input;
+  301:                 float expected;
+  302:             };
+  303: 
+  304:             const Case cases[] = {
+--- Lines 318-327 ---
+  318:                 std::memcpy(&ctx.f[1], &test.input, sizeof(test.input));
+  319:                 ctx.f[3] = -999.0f;
+  320: 
+  321:                 generated_fpu_cvt_s_w(nullptr, &ctx, nullptr);
+  322: 
+  323:                 t.Equals(ctx.f[3], test.expected,
+  324:                     "CVT.S.W destination conversion");
+  325: 
+  326:                 int32_t sourceAfter = 0;
+  327:                 std::memcpy(&sourceAfter, &ctx.f[1], sizeof(sourceAfter));
+--- Lines 321-330 ---
+  321:                 generated_fpu_cvt_s_w(nullptr, &ctx, nullptr);
+  322: 
+  323:                 t.Equals(ctx.f[3], test.expected,
+  324:                     "CVT.S.W destination conversion");
+  325: 
+  326:                 int32_t sourceAfter = 0;
+  327:                 std::memcpy(&sourceAfter, &ctx.f[1], sizeof(sourceAfter));
+  328:                 t.Equals(sourceAfter, test.input,
+  329:                     "CVT.S.W source FPR preservation");
+  330: 
+--- Lines 326-335 ---
+  326:                 int32_t sourceAfter = 0;
+  327:                 std::memcpy(&sourceAfter, &ctx.f[1], sizeof(sourceAfter));
+  328:                 t.Equals(sourceAfter, test.input,
+  329:                     "CVT.S.W source FPR preservation");
+  330: 
+  331:                 t.Equals(ctx.pc, 0x100144u, "CVT.S.W final PC");
+  332:             }
+  333:         });
+  334:         tc.Run("generated CVT.W.S truncates toward zero independent of FCR31 rounding mode", [](TestCase& t) {
+  335:             const float inputs[] = { 3.75f, -3.75f, 2.5f, -2.5f };
+--- Lines 328-337 ---
+  328:                 t.Equals(sourceAfter, test.input,
+  329:                     "CVT.S.W source FPR preservation");
+  330: 
+  331:                 t.Equals(ctx.pc, 0x100144u, "CVT.S.W final PC");
+  332:             }
+  333:         });
+  334:         tc.Run("generated CVT.W.S truncates toward zero independent of FCR31 rounding mode", [](TestCase& t) {
+  335:             const float inputs[] = { 3.75f, -3.75f, 2.5f, -2.5f };
+  336:             const int32_t expected[] = { 3, -3, 2, -2 };
+  337: 
+================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\generated_fpu_execution_fixture.cpp
+--- Lines 9-18 ---
+    9:     PS_LOG_ENTRY("generated_fpu_adda");
+   10: #endif
+   11: 
+   12:     ctx->pc = 0x100000u;
+   13: 
+   14:     ctx->pc = 0x100000u;
+   15:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[1], ctx->f[2]));
+   16:     ctx->pc = 0x100004u;
+   17: }
+   18: 
+--- Lines 11-20 ---
+   11: 
+   12:     ctx->pc = 0x100000u;
+   13: 
+   14:     ctx->pc = 0x100000u;
+   15:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[1], ctx->f[2]));
+   16:     ctx->pc = 0x100004u;
+   17: }
+   18: 
+   19: 
+   20: // Function: generated_fpu_suba
+--- Lines 13-22 ---
+   13: 
+   14:     ctx->pc = 0x100000u;
+   15:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[1], ctx->f[2]));
+   16:     ctx->pc = 0x100004u;
+   17: }
+   18: 
+   19: 
+   20: // Function: generated_fpu_suba
+   21: // Address: 0x100010 - 0x100014
+   22: void generated_fpu_suba(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 24-33 ---
+   24:     PS_LOG_ENTRY("generated_fpu_suba");
+   25: #endif
+   26: 
+   27:     ctx->pc = 0x100010u;
+   28: 
+   29:     ctx->pc = 0x100010u;
+   30:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[1], ctx->f[2]));
+   31:     ctx->pc = 0x100014u;
+   32: }
+   33: 
+--- Lines 26-35 ---
+   26: 
+   27:     ctx->pc = 0x100010u;
+   28: 
+   29:     ctx->pc = 0x100010u;
+   30:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[1], ctx->f[2]));
+   31:     ctx->pc = 0x100014u;
+   32: }
+   33: 
+   34: 
+   35: // Function: generated_fpu_mula
+--- Lines 28-37 ---
+   28: 
+   29:     ctx->pc = 0x100010u;
+   30:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[1], ctx->f[2]));
+   31:     ctx->pc = 0x100014u;
+   32: }
+   33: 
+   34: 
+   35: // Function: generated_fpu_mula
+   36: // Address: 0x100020 - 0x100024
+   37: void generated_fpu_mula(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 39-48 ---
+   39:     PS_LOG_ENTRY("generated_fpu_mula");
+   40: #endif
+   41: 
+   42:     ctx->pc = 0x100020u;
+   43: 
+   44:     ctx->pc = 0x100020u;
+   45:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   46:     ctx->pc = 0x100024u;
+   47: }
+   48: 
+--- Lines 41-50 ---
+   41: 
+   42:     ctx->pc = 0x100020u;
+   43: 
+   44:     ctx->pc = 0x100020u;
+   45:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   46:     ctx->pc = 0x100024u;
+   47: }
+   48: 
+   49: 
+   50: // Function: generated_fpu_madd
+--- Lines 43-52 ---
+   43: 
+   44:     ctx->pc = 0x100020u;
+   45:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   46:     ctx->pc = 0x100024u;
+   47: }
+   48: 
+   49: 
+   50: // Function: generated_fpu_madd
+   51: // Address: 0x100030 - 0x100034
+   52: void generated_fpu_madd(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 54-63 ---
+   54:     PS_LOG_ENTRY("generated_fpu_madd");
+   55: #endif
+   56: 
+   57:     ctx->pc = 0x100030u;
+   58: 
+   59:     ctx->pc = 0x100030u;
+   60:     ctx->f[3] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   61:     ctx->pc = 0x100034u;
+   62: }
+   63: 
+--- Lines 56-65 ---
+   56: 
+   57:     ctx->pc = 0x100030u;
+   58: 
+   59:     ctx->pc = 0x100030u;
+   60:     ctx->f[3] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   61:     ctx->pc = 0x100034u;
+   62: }
+   63: 
+   64: 
+   65: // Function: generated_fpu_msub
+--- Lines 57-66 ---
+   57:     ctx->pc = 0x100030u;
+   58: 
+   59:     ctx->pc = 0x100030u;
+   60:     ctx->f[3] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   61:     ctx->pc = 0x100034u;
+   62: }
+   63: 
+   64: 
+   65: // Function: generated_fpu_msub
+   66: // Address: 0x100040 - 0x100044
+--- Lines 58-67 ---
+   58: 
+   59:     ctx->pc = 0x100030u;
+   60:     ctx->f[3] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   61:     ctx->pc = 0x100034u;
+   62: }
+   63: 
+   64: 
+   65: // Function: generated_fpu_msub
+   66: // Address: 0x100040 - 0x100044
+   67: void generated_fpu_msub(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 69-78 ---
+   69:     PS_LOG_ENTRY("generated_fpu_msub");
+   70: #endif
+   71: 
+   72:     ctx->pc = 0x100040u;
+   73: 
+   74:     ctx->pc = 0x100040u;
+   75:     ctx->f[3] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   76:     ctx->pc = 0x100044u;
+   77: }
+   78: 
+--- Lines 71-80 ---
+   71: 
+   72:     ctx->pc = 0x100040u;
+   73: 
+   74:     ctx->pc = 0x100040u;
+   75:     ctx->f[3] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   76:     ctx->pc = 0x100044u;
+   77: }
+   78: 
+   79: 
+   80: // Function: generated_fpu_madda
+--- Lines 72-81 ---
+   72:     ctx->pc = 0x100040u;
+   73: 
+   74:     ctx->pc = 0x100040u;
+   75:     ctx->f[3] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   76:     ctx->pc = 0x100044u;
+   77: }
+   78: 
+   79: 
+   80: // Function: generated_fpu_madda
+   81: // Address: 0x100050 - 0x100054
+--- Lines 73-82 ---
+   73: 
+   74:     ctx->pc = 0x100040u;
+   75:     ctx->f[3] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   76:     ctx->pc = 0x100044u;
+   77: }
+   78: 
+   79: 
+   80: // Function: generated_fpu_madda
+   81: // Address: 0x100050 - 0x100054
+   82: void generated_fpu_madda(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 84-93 ---
+   84:     PS_LOG_ENTRY("generated_fpu_madda");
+   85: #endif
+   86: 
+   87:     ctx->pc = 0x100050u;
+   88: 
+   89:     ctx->pc = 0x100050u;
+   90:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+   91:     ctx->pc = 0x100054u;
+   92: }
+   93: 
+--- Lines 86-95 ---
+   86: 
+   87:     ctx->pc = 0x100050u;
+   88: 
+   89:     ctx->pc = 0x100050u;
+   90:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+   91:     ctx->pc = 0x100054u;
+   92: }
+   93: 
+   94: 
+   95: // Function: generated_fpu_msuba
+--- Lines 88-97 ---
+   88: 
+   89:     ctx->pc = 0x100050u;
+   90:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+   91:     ctx->pc = 0x100054u;
+   92: }
+   93: 
+   94: 
+   95: // Function: generated_fpu_msuba
+   96: // Address: 0x100060 - 0x100064
+   97: void generated_fpu_msuba(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 99-108 ---
+   99:     PS_LOG_ENTRY("generated_fpu_msuba");
+  100: #endif
+  101: 
+  102:     ctx->pc = 0x100060u;
+  103: 
+  104:     ctx->pc = 0x100060u;
+  105:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  106:     ctx->pc = 0x100064u;
+  107: }
+  108: 
+--- Lines 101-110 ---
+  101: 
+  102:     ctx->pc = 0x100060u;
+  103: 
+  104:     ctx->pc = 0x100060u;
+  105:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  106:     ctx->pc = 0x100064u;
+  107: }
+  108: 
+  109: 
+  110: // Function: generated_fpu_add
+--- Lines 103-112 ---
+  103: 
+  104:     ctx->pc = 0x100060u;
+  105:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  106:     ctx->pc = 0x100064u;
+  107: }
+  108: 
+  109: 
+  110: // Function: generated_fpu_add
+  111: // Address: 0x100080 - 0x100084
+  112: void generated_fpu_add(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 114-123 ---
+  114:     PS_LOG_ENTRY("generated_fpu_add");
+  115: #endif
+  116: 
+  117:     ctx->pc = 0x100080u;
+  118: 
+  119:     ctx->pc = 0x100080u;
+  120:     ctx->f[3] = FPU_ADD_S(ctx->f[1], ctx->f[2]);
+  121:     ctx->pc = 0x100084u;
+  122: }
+  123: 
+--- Lines 116-125 ---
+  116: 
+  117:     ctx->pc = 0x100080u;
+  118: 
+  119:     ctx->pc = 0x100080u;
+  120:     ctx->f[3] = FPU_ADD_S(ctx->f[1], ctx->f[2]);
+  121:     ctx->pc = 0x100084u;
+  122: }
+  123: 
+  124: 
+  125: // Function: generated_fpu_sub
+--- Lines 117-126 ---
+  117:     ctx->pc = 0x100080u;
+  118: 
+  119:     ctx->pc = 0x100080u;
+  120:     ctx->f[3] = FPU_ADD_S(ctx->f[1], ctx->f[2]);
+  121:     ctx->pc = 0x100084u;
+  122: }
+  123: 
+  124: 
+  125: // Function: generated_fpu_sub
+  126: // Address: 0x100090 - 0x100094
+--- Lines 118-127 ---
+  118: 
+  119:     ctx->pc = 0x100080u;
+  120:     ctx->f[3] = FPU_ADD_S(ctx->f[1], ctx->f[2]);
+  121:     ctx->pc = 0x100084u;
+  122: }
+  123: 
+  124: 
+  125: // Function: generated_fpu_sub
+  126: // Address: 0x100090 - 0x100094
+  127: void generated_fpu_sub(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 129-138 ---
+  129:     PS_LOG_ENTRY("generated_fpu_sub");
+  130: #endif
+  131: 
+  132:     ctx->pc = 0x100090u;
+  133: 
+  134:     ctx->pc = 0x100090u;
+  135:     ctx->f[3] = FPU_SUB_S(ctx->f[1], ctx->f[2]);
+  136:     ctx->pc = 0x100094u;
+  137: }
+  138: 
+--- Lines 131-140 ---
+  131: 
+  132:     ctx->pc = 0x100090u;
+  133: 
+  134:     ctx->pc = 0x100090u;
+  135:     ctx->f[3] = FPU_SUB_S(ctx->f[1], ctx->f[2]);
+  136:     ctx->pc = 0x100094u;
+  137: }
+  138: 
+  139: 
+  140: // Function: generated_fpu_mul
+--- Lines 132-141 ---
+  132:     ctx->pc = 0x100090u;
+  133: 
+  134:     ctx->pc = 0x100090u;
+  135:     ctx->f[3] = FPU_SUB_S(ctx->f[1], ctx->f[2]);
+  136:     ctx->pc = 0x100094u;
+  137: }
+  138: 
+  139: 
+  140: // Function: generated_fpu_mul
+  141: // Address: 0x1000a0 - 0x1000a4
+--- Lines 133-142 ---
+  133: 
+  134:     ctx->pc = 0x100090u;
+  135:     ctx->f[3] = FPU_SUB_S(ctx->f[1], ctx->f[2]);
+  136:     ctx->pc = 0x100094u;
+  137: }
+  138: 
+  139: 
+  140: // Function: generated_fpu_mul
+  141: // Address: 0x1000a0 - 0x1000a4
+  142: void generated_fpu_mul(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 144-153 ---
+  144:     PS_LOG_ENTRY("generated_fpu_mul");
+  145: #endif
+  146: 
+  147:     ctx->pc = 0x1000a0u;
+  148: 
+  149:     ctx->pc = 0x1000a0u;
+  150:     ctx->f[3] = FPU_MUL_S(ctx->f[1], ctx->f[2]);
+  151:     ctx->pc = 0x1000a4u;
+  152: }
+  153: 
+--- Lines 146-155 ---
+  146: 
+  147:     ctx->pc = 0x1000a0u;
+  148: 
+  149:     ctx->pc = 0x1000a0u;
+  150:     ctx->f[3] = FPU_MUL_S(ctx->f[1], ctx->f[2]);
+  151:     ctx->pc = 0x1000a4u;
+  152: }
+  153: 
+  154: 
+  155: // Function: generated_fpu_div
+--- Lines 147-156 ---
+  147:     ctx->pc = 0x1000a0u;
+  148: 
+  149:     ctx->pc = 0x1000a0u;
+  150:     ctx->f[3] = FPU_MUL_S(ctx->f[1], ctx->f[2]);
+  151:     ctx->pc = 0x1000a4u;
+  152: }
+  153: 
+  154: 
+  155: // Function: generated_fpu_div
+  156: // Address: 0x1000b0 - 0x1000b4
+--- Lines 148-157 ---
+  148: 
+  149:     ctx->pc = 0x1000a0u;
+  150:     ctx->f[3] = FPU_MUL_S(ctx->f[1], ctx->f[2]);
+  151:     ctx->pc = 0x1000a4u;
+  152: }
+  153: 
+  154: 
+  155: // Function: generated_fpu_div
+  156: // Address: 0x1000b0 - 0x1000b4
+  157: void generated_fpu_div(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 159-168 ---
+  159:     PS_LOG_ENTRY("generated_fpu_div");
+  160: #endif
+  161: 
+  162:     ctx->pc = 0x1000b0u;
+  163: 
+  164:     ctx->pc = 0x1000b0u;
+  165:     { if (ctx->f[2] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ ctx->f[3] = FPU_DIV_S(ctx->f[1], ctx->f[2]); }
+  166:     ctx->pc = 0x1000b4u;
+  167: }
+  168: 
+--- Lines 161-170 ---
+  161: 
+  162:     ctx->pc = 0x1000b0u;
+  163: 
+  164:     ctx->pc = 0x1000b0u;
+  165:     { if (ctx->f[2] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ ctx->f[3] = FPU_DIV_S(ctx->f[1], ctx->f[2]); }
+  166:     ctx->pc = 0x1000b4u;
+  167: }
+  168: 
+  169: 
+  170: // Function: generated_fpu_sqrt
+--- Lines 162-171 ---
+  162:     ctx->pc = 0x1000b0u;
+  163: 
+  164:     ctx->pc = 0x1000b0u;
+  165:     { if (ctx->f[2] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ ctx->f[3] = FPU_DIV_S(ctx->f[1], ctx->f[2]); }
+  166:     ctx->pc = 0x1000b4u;
+  167: }
+  168: 
+  169: 
+  170: // Function: generated_fpu_sqrt
+  171: // Address: 0x1000c0 - 0x1000c4
+--- Lines 163-172 ---
+  163: 
+  164:     ctx->pc = 0x1000b0u;
+  165:     { if (ctx->f[2] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ ctx->f[3] = FPU_DIV_S(ctx->f[1], ctx->f[2]); }
+  166:     ctx->pc = 0x1000b4u;
+  167: }
+  168: 
+  169: 
+  170: // Function: generated_fpu_sqrt
+  171: // Address: 0x1000c0 - 0x1000c4
+  172: void generated_fpu_sqrt(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 174-183 ---
+  174:     PS_LOG_ENTRY("generated_fpu_sqrt");
+  175: #endif
+  176: 
+  177:     ctx->pc = 0x1000c0u;
+  178: 
+  179:     ctx->pc = 0x1000c0u;
+  180:     ctx->f[3] = FPU_SQRT_S(ctx->f[2]);
+  181:     ctx->pc = 0x1000c4u;
+  182: }
+  183: 
+--- Lines 176-185 ---
+  176: 
+  177:     ctx->pc = 0x1000c0u;
+  178: 
+  179:     ctx->pc = 0x1000c0u;
+  180:     ctx->f[3] = FPU_SQRT_S(ctx->f[2]);
+  181:     ctx->pc = 0x1000c4u;
+  182: }
+  183: 
+  184: 
+  185: // Function: generated_fpu_abs
+--- Lines 177-186 ---
+  177:     ctx->pc = 0x1000c0u;
+  178: 
+  179:     ctx->pc = 0x1000c0u;
+  180:     ctx->f[3] = FPU_SQRT_S(ctx->f[2]);
+  181:     ctx->pc = 0x1000c4u;
+  182: }
+  183: 
+  184: 
+  185: // Function: generated_fpu_abs
+  186: // Address: 0x1000d0 - 0x1000d4
+--- Lines 178-187 ---
+  178: 
+  179:     ctx->pc = 0x1000c0u;
+  180:     ctx->f[3] = FPU_SQRT_S(ctx->f[2]);
+  181:     ctx->pc = 0x1000c4u;
+  182: }
+  183: 
+  184: 
+  185: // Function: generated_fpu_abs
+  186: // Address: 0x1000d0 - 0x1000d4
+  187: void generated_fpu_abs(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 189-198 ---
+  189:     PS_LOG_ENTRY("generated_fpu_abs");
+  190: #endif
+  191: 
+  192:     ctx->pc = 0x1000d0u;
+  193: 
+  194:     ctx->pc = 0x1000d0u;
+  195:     ctx->f[3] = FPU_ABS_S(ctx->f[1]);
+  196:     ctx->pc = 0x1000d4u;
+  197: }
+  198: 
+--- Lines 191-200 ---
+  191: 
+  192:     ctx->pc = 0x1000d0u;
+  193: 
+  194:     ctx->pc = 0x1000d0u;
+  195:     ctx->f[3] = FPU_ABS_S(ctx->f[1]);
+  196:     ctx->pc = 0x1000d4u;
+  197: }
+  198: 
+  199: 
+  200: // Function: generated_fpu_mov
+--- Lines 192-201 ---
+  192:     ctx->pc = 0x1000d0u;
+  193: 
+  194:     ctx->pc = 0x1000d0u;
+  195:     ctx->f[3] = FPU_ABS_S(ctx->f[1]);
+  196:     ctx->pc = 0x1000d4u;
+  197: }
+  198: 
+  199: 
+  200: // Function: generated_fpu_mov
+  201: // Address: 0x1000e0 - 0x1000e4
+--- Lines 193-202 ---
+  193: 
+  194:     ctx->pc = 0x1000d0u;
+  195:     ctx->f[3] = FPU_ABS_S(ctx->f[1]);
+  196:     ctx->pc = 0x1000d4u;
+  197: }
+  198: 
+  199: 
+  200: // Function: generated_fpu_mov
+  201: // Address: 0x1000e0 - 0x1000e4
+  202: void generated_fpu_mov(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 204-213 ---
+  204:     PS_LOG_ENTRY("generated_fpu_mov");
+  205: #endif
+  206: 
+  207:     ctx->pc = 0x1000e0u;
+  208: 
+  209:     ctx->pc = 0x1000e0u;
+  210:     ctx->f[3] = FPU_MOV_S(ctx->f[1]);
+  211:     ctx->pc = 0x1000e4u;
+  212: }
+  213: 
+--- Lines 206-215 ---
+  206: 
+  207:     ctx->pc = 0x1000e0u;
+  208: 
+  209:     ctx->pc = 0x1000e0u;
+  210:     ctx->f[3] = FPU_MOV_S(ctx->f[1]);
+  211:     ctx->pc = 0x1000e4u;
+  212: }
+  213: 
+  214: 
+  215: // Function: generated_fpu_neg
+--- Lines 207-216 ---
+  207:     ctx->pc = 0x1000e0u;
+  208: 
+  209:     ctx->pc = 0x1000e0u;
+  210:     ctx->f[3] = FPU_MOV_S(ctx->f[1]);
+  211:     ctx->pc = 0x1000e4u;
+  212: }
+  213: 
+  214: 
+  215: // Function: generated_fpu_neg
+  216: // Address: 0x1000f0 - 0x1000f4
+--- Lines 208-217 ---
+  208: 
+  209:     ctx->pc = 0x1000e0u;
+  210:     ctx->f[3] = FPU_MOV_S(ctx->f[1]);
+  211:     ctx->pc = 0x1000e4u;
+  212: }
+  213: 
+  214: 
+  215: // Function: generated_fpu_neg
+  216: // Address: 0x1000f0 - 0x1000f4
+  217: void generated_fpu_neg(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 219-228 ---
+  219:     PS_LOG_ENTRY("generated_fpu_neg");
+  220: #endif
+  221: 
+  222:     ctx->pc = 0x1000f0u;
+  223: 
+  224:     ctx->pc = 0x1000f0u;
+  225:     ctx->f[3] = FPU_NEG_S(ctx->f[1]);
+  226:     ctx->pc = 0x1000f4u;
+  227: }
+  228: 
+--- Lines 221-230 ---
+  221: 
+  222:     ctx->pc = 0x1000f0u;
+  223: 
+  224:     ctx->pc = 0x1000f0u;
+  225:     ctx->f[3] = FPU_NEG_S(ctx->f[1]);
+  226:     ctx->pc = 0x1000f4u;
+  227: }
+  228: 
+  229: 
+  230: // Function: generated_fpu_rsqrt
+--- Lines 222-231 ---
+  222:     ctx->pc = 0x1000f0u;
+  223: 
+  224:     ctx->pc = 0x1000f0u;
+  225:     ctx->f[3] = FPU_NEG_S(ctx->f[1]);
+  226:     ctx->pc = 0x1000f4u;
+  227: }
+  228: 
+  229: 
+  230: // Function: generated_fpu_rsqrt
+  231: // Address: 0x100100 - 0x100104
+--- Lines 223-232 ---
+  223: 
+  224:     ctx->pc = 0x1000f0u;
+  225:     ctx->f[3] = FPU_NEG_S(ctx->f[1]);
+  226:     ctx->pc = 0x1000f4u;
+  227: }
+  228: 
+  229: 
+  230: // Function: generated_fpu_rsqrt
+  231: // Address: 0x100100 - 0x100104
+  232: void generated_fpu_rsqrt(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 234-243 ---
+  234:     PS_LOG_ENTRY("generated_fpu_rsqrt");
+  235: #endif
+  236: 
+  237:     ctx->pc = 0x100100u;
+  238: 
+  239:     ctx->pc = 0x100100u;
+  240:     ctx->f[3] = FPU_RSQRT_S(ctx->f[1], ctx->f[2]);
+  241:     ctx->pc = 0x100104u;
+  242: }
+  243: 
+--- Lines 236-245 ---
+  236: 
+  237:     ctx->pc = 0x100100u;
+  238: 
+  239:     ctx->pc = 0x100100u;
+  240:     ctx->f[3] = FPU_RSQRT_S(ctx->f[1], ctx->f[2]);
+  241:     ctx->pc = 0x100104u;
+  242: }
+  243: 
+  244: 
+  245: // Function: generated_fpu_max
+--- Lines 237-246 ---
+  237:     ctx->pc = 0x100100u;
+  238: 
+  239:     ctx->pc = 0x100100u;
+  240:     ctx->f[3] = FPU_RSQRT_S(ctx->f[1], ctx->f[2]);
+  241:     ctx->pc = 0x100104u;
+  242: }
+  243: 
+  244: 
+  245: // Function: generated_fpu_max
+  246: // Address: 0x100110 - 0x100114
+--- Lines 238-247 ---
+  238: 
+  239:     ctx->pc = 0x100100u;
+  240:     ctx->f[3] = FPU_RSQRT_S(ctx->f[1], ctx->f[2]);
+  241:     ctx->pc = 0x100104u;
+  242: }
+  243: 
+  244: 
+  245: // Function: generated_fpu_max
+  246: // Address: 0x100110 - 0x100114
+  247: void generated_fpu_max(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 249-258 ---
+  249:     PS_LOG_ENTRY("generated_fpu_max");
+  250: #endif
+  251: 
+  252:     ctx->pc = 0x100110u;
+  253: 
+  254:     ctx->pc = 0x100110u;
+  255:     ctx->f[3] = std::max(ctx->f[1], ctx->f[2]);
+  256:     ctx->pc = 0x100114u;
+  257: }
+  258: 
+--- Lines 251-260 ---
+  251: 
+  252:     ctx->pc = 0x100110u;
+  253: 
+  254:     ctx->pc = 0x100110u;
+  255:     ctx->f[3] = std::max(ctx->f[1], ctx->f[2]);
+  256:     ctx->pc = 0x100114u;
+  257: }
+  258: 
+  259: 
+  260: // Function: generated_fpu_min
+--- Lines 252-261 ---
+  252:     ctx->pc = 0x100110u;
+  253: 
+  254:     ctx->pc = 0x100110u;
+  255:     ctx->f[3] = std::max(ctx->f[1], ctx->f[2]);
+  256:     ctx->pc = 0x100114u;
+  257: }
+  258: 
+  259: 
+  260: // Function: generated_fpu_min
+  261: // Address: 0x100120 - 0x100124
+--- Lines 253-262 ---
+  253: 
+  254:     ctx->pc = 0x100110u;
+  255:     ctx->f[3] = std::max(ctx->f[1], ctx->f[2]);
+  256:     ctx->pc = 0x100114u;
+  257: }
+  258: 
+  259: 
+  260: // Function: generated_fpu_min
+  261: // Address: 0x100120 - 0x100124
+  262: void generated_fpu_min(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 264-273 ---
+  264:     PS_LOG_ENTRY("generated_fpu_min");
+  265: #endif
+  266: 
+  267:     ctx->pc = 0x100120u;
+  268: 
+  269:     ctx->pc = 0x100120u;
+  270:     ctx->f[3] = std::min(ctx->f[1], ctx->f[2]);
+  271:     ctx->pc = 0x100124u;
+  272: }
+  273: 
+--- Lines 266-275 ---
+  266: 
+  267:     ctx->pc = 0x100120u;
+  268: 
+  269:     ctx->pc = 0x100120u;
+  270:     ctx->f[3] = std::min(ctx->f[1], ctx->f[2]);
+  271:     ctx->pc = 0x100124u;
+  272: }
+  273: 
+  274: 
+  275: // Function: generated_fpu_cvt_w
+--- Lines 267-276 ---
+  267:     ctx->pc = 0x100120u;
+  268: 
+  269:     ctx->pc = 0x100120u;
+  270:     ctx->f[3] = std::min(ctx->f[1], ctx->f[2]);
+  271:     ctx->pc = 0x100124u;
+  272: }
+  273: 
+  274: 
+  275: // Function: generated_fpu_cvt_w
+  276: // Address: 0x100130 - 0x100134
+--- Lines 268-277 ---
+  268: 
+  269:     ctx->pc = 0x100120u;
+  270:     ctx->f[3] = std::min(ctx->f[1], ctx->f[2]);
+  271:     ctx->pc = 0x100124u;
+  272: }
+  273: 
+  274: 
+  275: // Function: generated_fpu_cvt_w
+  276: // Address: 0x100130 - 0x100134
+  277: void generated_fpu_cvt_w(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 279-288 ---
+  279:     PS_LOG_ENTRY("generated_fpu_cvt_w");
+  280: #endif
+  281: 
+  282:     ctx->pc = 0x100130u;
+  283: 
+  284:     ctx->pc = 0x100130u;
+  285:     { int32_t tmp = FPU_CVT_W_S(ctx->f[1]); std::memcpy(&ctx->f[3], &tmp, sizeof(tmp)); }
+  286:     ctx->pc = 0x100134u;
+  287: }
+  288: 
+--- Lines 281-290 ---
+  281: 
+  282:     ctx->pc = 0x100130u;
+  283: 
+  284:     ctx->pc = 0x100130u;
+  285:     { int32_t tmp = FPU_CVT_W_S(ctx->f[1]); std::memcpy(&ctx->f[3], &tmp, sizeof(tmp)); }
+  286:     ctx->pc = 0x100134u;
+  287: }
+  288: 
+  289: 
+  290: // Function: generated_fpu_sequence_mula_madda
+--- Lines 282-291 ---
+  282:     ctx->pc = 0x100130u;
+  283: 
+  284:     ctx->pc = 0x100130u;
+  285:     { int32_t tmp = FPU_CVT_W_S(ctx->f[1]); std::memcpy(&ctx->f[3], &tmp, sizeof(tmp)); }
+  286:     ctx->pc = 0x100134u;
+  287: }
+  288: 
+  289: 
+  290: // Function: generated_fpu_sequence_mula_madda
+  291: // Address: 0x100070 - 0x100078
+--- Lines 283-292 ---
+  283: 
+  284:     ctx->pc = 0x100130u;
+  285:     { int32_t tmp = FPU_CVT_W_S(ctx->f[1]); std::memcpy(&ctx->f[3], &tmp, sizeof(tmp)); }
+  286:     ctx->pc = 0x100134u;
+  287: }
+  288: 
+  289: 
+  290: // Function: generated_fpu_sequence_mula_madda
+  291: // Address: 0x100070 - 0x100078
+  292: void generated_fpu_sequence_mula_madda(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 294-303 ---
+  294:     PS_LOG_ENTRY("generated_fpu_sequence_mula_madda");
+  295: #endif
+  296: 
+  297:     ctx->pc = 0x100070u;
+  298: 
+  299:     ctx->pc = 0x100070u;
+  300:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+  301:     ctx->pc = 0x100074u;
+  302:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  303:     ctx->pc = 0x100078u;
+--- Lines 296-305 ---
+  296: 
+  297:     ctx->pc = 0x100070u;
+  298: 
+  299:     ctx->pc = 0x100070u;
+  300:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+  301:     ctx->pc = 0x100074u;
+  302:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  303:     ctx->pc = 0x100078u;
+  304: }
+  305: 
+--- Lines 298-306 ---
+  298: 
+  299:     ctx->pc = 0x100070u;
+  300:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+  301:     ctx->pc = 0x100074u;
+  302:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  303:     ctx->pc = 0x100078u;
+  304: }
+  305: 
+  306: 
+--- Lines 300-306 ---
+  300:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+  301:     ctx->pc = 0x100074u;
+  302:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  303:     ctx->pc = 0x100078u;
+  304: }
+  305: 
+  306: 
+================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xTest\generated_fpu_execution_fixture.cpp
+--- Lines 9-18 ---
+    9:     PS_LOG_ENTRY("generated_fpu_adda");
+   10: #endif
+   11: 
+   12:     ctx->pc = 0x100000u;
+   13: 
+   14:     ctx->pc = 0x100000u;
+   15:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[1], ctx->f[2]));
+   16:     ctx->pc = 0x100004u;
+   17: }
+   18: 
+--- Lines 11-20 ---
+   11: 
+   12:     ctx->pc = 0x100000u;
+   13: 
+   14:     ctx->pc = 0x100000u;
+   15:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[1], ctx->f[2]));
+   16:     ctx->pc = 0x100004u;
+   17: }
+   18: 
+   19: 
+   20: // Function: generated_fpu_suba
+--- Lines 13-22 ---
+   13: 
+   14:     ctx->pc = 0x100000u;
+   15:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[1], ctx->f[2]));
+   16:     ctx->pc = 0x100004u;
+   17: }
+   18: 
+   19: 
+   20: // Function: generated_fpu_suba
+   21: // Address: 0x100010 - 0x100014
+   22: void generated_fpu_suba(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 24-33 ---
+   24:     PS_LOG_ENTRY("generated_fpu_suba");
+   25: #endif
+   26: 
+   27:     ctx->pc = 0x100010u;
+   28: 
+   29:     ctx->pc = 0x100010u;
+   30:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[1], ctx->f[2]));
+   31:     ctx->pc = 0x100014u;
+   32: }
+   33: 
+--- Lines 26-35 ---
+   26: 
+   27:     ctx->pc = 0x100010u;
+   28: 
+   29:     ctx->pc = 0x100010u;
+   30:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[1], ctx->f[2]));
+   31:     ctx->pc = 0x100014u;
+   32: }
+   33: 
+   34: 
+   35: // Function: generated_fpu_mula
+--- Lines 28-37 ---
+   28: 
+   29:     ctx->pc = 0x100010u;
+   30:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[1], ctx->f[2]));
+   31:     ctx->pc = 0x100014u;
+   32: }
+   33: 
+   34: 
+   35: // Function: generated_fpu_mula
+   36: // Address: 0x100020 - 0x100024
+   37: void generated_fpu_mula(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 39-48 ---
+   39:     PS_LOG_ENTRY("generated_fpu_mula");
+   40: #endif
+   41: 
+   42:     ctx->pc = 0x100020u;
+   43: 
+   44:     ctx->pc = 0x100020u;
+   45:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   46:     ctx->pc = 0x100024u;
+   47: }
+   48: 
+--- Lines 41-50 ---
+   41: 
+   42:     ctx->pc = 0x100020u;
+   43: 
+   44:     ctx->pc = 0x100020u;
+   45:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   46:     ctx->pc = 0x100024u;
+   47: }
+   48: 
+   49: 
+   50: // Function: generated_fpu_madd
+--- Lines 43-52 ---
+   43: 
+   44:     ctx->pc = 0x100020u;
+   45:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   46:     ctx->pc = 0x100024u;
+   47: }
+   48: 
+   49: 
+   50: // Function: generated_fpu_madd
+   51: // Address: 0x100030 - 0x100034
+   52: void generated_fpu_madd(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 54-63 ---
+   54:     PS_LOG_ENTRY("generated_fpu_madd");
+   55: #endif
+   56: 
+   57:     ctx->pc = 0x100030u;
+   58: 
+   59:     ctx->pc = 0x100030u;
+   60:     ctx->f[3] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   61:     ctx->pc = 0x100034u;
+   62: }
+   63: 
+--- Lines 56-65 ---
+   56: 
+   57:     ctx->pc = 0x100030u;
+   58: 
+   59:     ctx->pc = 0x100030u;
+   60:     ctx->f[3] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   61:     ctx->pc = 0x100034u;
+   62: }
+   63: 
+   64: 
+   65: // Function: generated_fpu_msub
+--- Lines 57-66 ---
+   57:     ctx->pc = 0x100030u;
+   58: 
+   59:     ctx->pc = 0x100030u;
+   60:     ctx->f[3] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   61:     ctx->pc = 0x100034u;
+   62: }
+   63: 
+   64: 
+   65: // Function: generated_fpu_msub
+   66: // Address: 0x100040 - 0x100044
+--- Lines 58-67 ---
+   58: 
+   59:     ctx->pc = 0x100030u;
+   60:     ctx->f[3] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   61:     ctx->pc = 0x100034u;
+   62: }
+   63: 
+   64: 
+   65: // Function: generated_fpu_msub
+   66: // Address: 0x100040 - 0x100044
+   67: void generated_fpu_msub(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 69-78 ---
+   69:     PS_LOG_ENTRY("generated_fpu_msub");
+   70: #endif
+   71: 
+   72:     ctx->pc = 0x100040u;
+   73: 
+   74:     ctx->pc = 0x100040u;
+   75:     ctx->f[3] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   76:     ctx->pc = 0x100044u;
+   77: }
+   78: 
+--- Lines 71-80 ---
+   71: 
+   72:     ctx->pc = 0x100040u;
+   73: 
+   74:     ctx->pc = 0x100040u;
+   75:     ctx->f[3] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   76:     ctx->pc = 0x100044u;
+   77: }
+   78: 
+   79: 
+   80: // Function: generated_fpu_madda
+--- Lines 72-81 ---
+   72:     ctx->pc = 0x100040u;
+   73: 
+   74:     ctx->pc = 0x100040u;
+   75:     ctx->f[3] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   76:     ctx->pc = 0x100044u;
+   77: }
+   78: 
+   79: 
+   80: // Function: generated_fpu_madda
+   81: // Address: 0x100050 - 0x100054
+--- Lines 73-82 ---
+   73: 
+   74:     ctx->pc = 0x100040u;
+   75:     ctx->f[3] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   76:     ctx->pc = 0x100044u;
+   77: }
+   78: 
+   79: 
+   80: // Function: generated_fpu_madda
+   81: // Address: 0x100050 - 0x100054
+   82: void generated_fpu_madda(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 84-93 ---
+   84:     PS_LOG_ENTRY("generated_fpu_madda");
+   85: #endif
+   86: 
+   87:     ctx->pc = 0x100050u;
+   88: 
+   89:     ctx->pc = 0x100050u;
+   90:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+   91:     ctx->pc = 0x100054u;
+   92: }
+   93: 
+--- Lines 86-95 ---
+   86: 
+   87:     ctx->pc = 0x100050u;
+   88: 
+   89:     ctx->pc = 0x100050u;
+   90:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+   91:     ctx->pc = 0x100054u;
+   92: }
+   93: 
+   94: 
+   95: // Function: generated_fpu_msuba
+--- Lines 88-97 ---
+   88: 
+   89:     ctx->pc = 0x100050u;
+   90:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+   91:     ctx->pc = 0x100054u;
+   92: }
+   93: 
+   94: 
+   95: // Function: generated_fpu_msuba
+   96: // Address: 0x100060 - 0x100064
+   97: void generated_fpu_msuba(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 99-108 ---
+   99:     PS_LOG_ENTRY("generated_fpu_msuba");
+  100: #endif
+  101: 
+  102:     ctx->pc = 0x100060u;
+  103: 
+  104:     ctx->pc = 0x100060u;
+  105:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  106:     ctx->pc = 0x100064u;
+  107: }
+  108: 
+--- Lines 101-110 ---
+  101: 
+  102:     ctx->pc = 0x100060u;
+  103: 
+  104:     ctx->pc = 0x100060u;
+  105:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  106:     ctx->pc = 0x100064u;
+  107: }
+  108: 
+  109: 
+  110: // Function: generated_fpu_cvt_s_w
+--- Lines 103-112 ---
+  103: 
+  104:     ctx->pc = 0x100060u;
+  105:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  106:     ctx->pc = 0x100064u;
+  107: }
+  108: 
+  109: 
+  110: // Function: generated_fpu_cvt_s_w
+  111: // Address: 0x100140 - 0x100144
+  112: void generated_fpu_cvt_s_w(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 107-116 ---
+  107: }
+  108: 
+  109: 
+  110: // Function: generated_fpu_cvt_s_w
+  111: // Address: 0x100140 - 0x100144
+  112: void generated_fpu_cvt_s_w(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  113: #ifdef PS2_FUNCTION_LOG_TRACKER
+  114:     PS_LOG_ENTRY("generated_fpu_cvt_s_w");
+  115: #endif
+  116: 
+--- Lines 109-118 ---
+  109: 
+  110: // Function: generated_fpu_cvt_s_w
+  111: // Address: 0x100140 - 0x100144
+  112: void generated_fpu_cvt_s_w(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  113: #ifdef PS2_FUNCTION_LOG_TRACKER
+  114:     PS_LOG_ENTRY("generated_fpu_cvt_s_w");
+  115: #endif
+  116: 
+  117:     ctx->pc = 0x100140u;
+  118: 
+--- Lines 111-120 ---
+  111: // Address: 0x100140 - 0x100144
+  112: void generated_fpu_cvt_s_w(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  113: #ifdef PS2_FUNCTION_LOG_TRACKER
+  114:     PS_LOG_ENTRY("generated_fpu_cvt_s_w");
+  115: #endif
+  116: 
+  117:     ctx->pc = 0x100140u;
+  118: 
+  119:     ctx->pc = 0x100140u;
+  120:     { int32_t tmp; std::memcpy(&tmp, &ctx->f[1], sizeof(tmp)); ctx->f[3] = FPU_CVT_S_W(tmp); }
+--- Lines 114-123 ---
+  114:     PS_LOG_ENTRY("generated_fpu_cvt_s_w");
+  115: #endif
+  116: 
+  117:     ctx->pc = 0x100140u;
+  118: 
+  119:     ctx->pc = 0x100140u;
+  120:     { int32_t tmp; std::memcpy(&tmp, &ctx->f[1], sizeof(tmp)); ctx->f[3] = FPU_CVT_S_W(tmp); }
+  121:     ctx->pc = 0x100144u;
+  122: }
+  123: 
+--- Lines 116-125 ---
+  116: 
+  117:     ctx->pc = 0x100140u;
+  118: 
+  119:     ctx->pc = 0x100140u;
+  120:     { int32_t tmp; std::memcpy(&tmp, &ctx->f[1], sizeof(tmp)); ctx->f[3] = FPU_CVT_S_W(tmp); }
+  121:     ctx->pc = 0x100144u;
+  122: }
+  123: 
+  124: 
+  125: // Function: generated_fpu_add
+--- Lines 117-126 ---
+  117:     ctx->pc = 0x100140u;
+  118: 
+  119:     ctx->pc = 0x100140u;
+  120:     { int32_t tmp; std::memcpy(&tmp, &ctx->f[1], sizeof(tmp)); ctx->f[3] = FPU_CVT_S_W(tmp); }
+  121:     ctx->pc = 0x100144u;
+  122: }
+  123: 
+  124: 
+  125: // Function: generated_fpu_add
+  126: // Address: 0x100080 - 0x100084
+--- Lines 118-127 ---
+  118: 
+  119:     ctx->pc = 0x100140u;
+  120:     { int32_t tmp; std::memcpy(&tmp, &ctx->f[1], sizeof(tmp)); ctx->f[3] = FPU_CVT_S_W(tmp); }
+  121:     ctx->pc = 0x100144u;
+  122: }
+  123: 
+  124: 
+  125: // Function: generated_fpu_add
+  126: // Address: 0x100080 - 0x100084
+  127: void generated_fpu_add(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 129-138 ---
+  129:     PS_LOG_ENTRY("generated_fpu_add");
+  130: #endif
+  131: 
+  132:     ctx->pc = 0x100080u;
+  133: 
+  134:     ctx->pc = 0x100080u;
+  135:     ctx->f[3] = FPU_ADD_S(ctx->f[1], ctx->f[2]);
+  136:     ctx->pc = 0x100084u;
+  137: }
+  138: 
+--- Lines 131-140 ---
+  131: 
+  132:     ctx->pc = 0x100080u;
+  133: 
+  134:     ctx->pc = 0x100080u;
+  135:     ctx->f[3] = FPU_ADD_S(ctx->f[1], ctx->f[2]);
+  136:     ctx->pc = 0x100084u;
+  137: }
+  138: 
+  139: 
+  140: // Function: generated_fpu_sub
+--- Lines 132-141 ---
+  132:     ctx->pc = 0x100080u;
+  133: 
+  134:     ctx->pc = 0x100080u;
+  135:     ctx->f[3] = FPU_ADD_S(ctx->f[1], ctx->f[2]);
+  136:     ctx->pc = 0x100084u;
+  137: }
+  138: 
+  139: 
+  140: // Function: generated_fpu_sub
+  141: // Address: 0x100090 - 0x100094
+--- Lines 133-142 ---
+  133: 
+  134:     ctx->pc = 0x100080u;
+  135:     ctx->f[3] = FPU_ADD_S(ctx->f[1], ctx->f[2]);
+  136:     ctx->pc = 0x100084u;
+  137: }
+  138: 
+  139: 
+  140: // Function: generated_fpu_sub
+  141: // Address: 0x100090 - 0x100094
+  142: void generated_fpu_sub(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 144-153 ---
+  144:     PS_LOG_ENTRY("generated_fpu_sub");
+  145: #endif
+  146: 
+  147:     ctx->pc = 0x100090u;
+  148: 
+  149:     ctx->pc = 0x100090u;
+  150:     ctx->f[3] = FPU_SUB_S(ctx->f[1], ctx->f[2]);
+  151:     ctx->pc = 0x100094u;
+  152: }
+  153: 
+--- Lines 146-155 ---
+  146: 
+  147:     ctx->pc = 0x100090u;
+  148: 
+  149:     ctx->pc = 0x100090u;
+  150:     ctx->f[3] = FPU_SUB_S(ctx->f[1], ctx->f[2]);
+  151:     ctx->pc = 0x100094u;
+  152: }
+  153: 
+  154: 
+  155: // Function: generated_fpu_mul
+--- Lines 147-156 ---
+  147:     ctx->pc = 0x100090u;
+  148: 
+  149:     ctx->pc = 0x100090u;
+  150:     ctx->f[3] = FPU_SUB_S(ctx->f[1], ctx->f[2]);
+  151:     ctx->pc = 0x100094u;
+  152: }
+  153: 
+  154: 
+  155: // Function: generated_fpu_mul
+  156: // Address: 0x1000a0 - 0x1000a4
+--- Lines 148-157 ---
+  148: 
+  149:     ctx->pc = 0x100090u;
+  150:     ctx->f[3] = FPU_SUB_S(ctx->f[1], ctx->f[2]);
+  151:     ctx->pc = 0x100094u;
+  152: }
+  153: 
+  154: 
+  155: // Function: generated_fpu_mul
+  156: // Address: 0x1000a0 - 0x1000a4
+  157: void generated_fpu_mul(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 159-168 ---
+  159:     PS_LOG_ENTRY("generated_fpu_mul");
+  160: #endif
+  161: 
+  162:     ctx->pc = 0x1000a0u;
+  163: 
+  164:     ctx->pc = 0x1000a0u;
+  165:     ctx->f[3] = FPU_MUL_S(ctx->f[1], ctx->f[2]);
+  166:     ctx->pc = 0x1000a4u;
+  167: }
+  168: 
+--- Lines 161-170 ---
+  161: 
+  162:     ctx->pc = 0x1000a0u;
+  163: 
+  164:     ctx->pc = 0x1000a0u;
+  165:     ctx->f[3] = FPU_MUL_S(ctx->f[1], ctx->f[2]);
+  166:     ctx->pc = 0x1000a4u;
+  167: }
+  168: 
+  169: 
+  170: // Function: generated_fpu_div
+--- Lines 162-171 ---
+  162:     ctx->pc = 0x1000a0u;
+  163: 
+  164:     ctx->pc = 0x1000a0u;
+  165:     ctx->f[3] = FPU_MUL_S(ctx->f[1], ctx->f[2]);
+  166:     ctx->pc = 0x1000a4u;
+  167: }
+  168: 
+  169: 
+  170: // Function: generated_fpu_div
+  171: // Address: 0x1000b0 - 0x1000b4
+--- Lines 163-172 ---
+  163: 
+  164:     ctx->pc = 0x1000a0u;
+  165:     ctx->f[3] = FPU_MUL_S(ctx->f[1], ctx->f[2]);
+  166:     ctx->pc = 0x1000a4u;
+  167: }
+  168: 
+  169: 
+  170: // Function: generated_fpu_div
+  171: // Address: 0x1000b0 - 0x1000b4
+  172: void generated_fpu_div(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 174-183 ---
+  174:     PS_LOG_ENTRY("generated_fpu_div");
+  175: #endif
+  176: 
+  177:     ctx->pc = 0x1000b0u;
+  178: 
+  179:     ctx->pc = 0x1000b0u;
+  180:     { if (ctx->f[2] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ ctx->f[3] = FPU_DIV_S(ctx->f[1], ctx->f[2]); }
+  181:     ctx->pc = 0x1000b4u;
+  182: }
+  183: 
+--- Lines 176-185 ---
+  176: 
+  177:     ctx->pc = 0x1000b0u;
+  178: 
+  179:     ctx->pc = 0x1000b0u;
+  180:     { if (ctx->f[2] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ ctx->f[3] = FPU_DIV_S(ctx->f[1], ctx->f[2]); }
+  181:     ctx->pc = 0x1000b4u;
+  182: }
+  183: 
+  184: 
+  185: // Function: generated_fpu_sqrt
+--- Lines 177-186 ---
+  177:     ctx->pc = 0x1000b0u;
+  178: 
+  179:     ctx->pc = 0x1000b0u;
+  180:     { if (ctx->f[2] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ ctx->f[3] = FPU_DIV_S(ctx->f[1], ctx->f[2]); }
+  181:     ctx->pc = 0x1000b4u;
+  182: }
+  183: 
+  184: 
+  185: // Function: generated_fpu_sqrt
+  186: // Address: 0x1000c0 - 0x1000c4
+--- Lines 178-187 ---
+  178: 
+  179:     ctx->pc = 0x1000b0u;
+  180:     { if (ctx->f[2] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ ctx->f[3] = FPU_DIV_S(ctx->f[1], ctx->f[2]); }
+  181:     ctx->pc = 0x1000b4u;
+  182: }
+  183: 
+  184: 
+  185: // Function: generated_fpu_sqrt
+  186: // Address: 0x1000c0 - 0x1000c4
+  187: void generated_fpu_sqrt(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 189-198 ---
+  189:     PS_LOG_ENTRY("generated_fpu_sqrt");
+  190: #endif
+  191: 
+  192:     ctx->pc = 0x1000c0u;
+  193: 
+  194:     ctx->pc = 0x1000c0u;
+  195:     ctx->f[3] = FPU_SQRT_S(ctx->f[2]);
+  196:     ctx->pc = 0x1000c4u;
+  197: }
+  198: 
+--- Lines 191-200 ---
+  191: 
+  192:     ctx->pc = 0x1000c0u;
+  193: 
+  194:     ctx->pc = 0x1000c0u;
+  195:     ctx->f[3] = FPU_SQRT_S(ctx->f[2]);
+  196:     ctx->pc = 0x1000c4u;
+  197: }
+  198: 
+  199: 
+  200: // Function: generated_fpu_abs
+--- Lines 192-201 ---
+  192:     ctx->pc = 0x1000c0u;
+  193: 
+  194:     ctx->pc = 0x1000c0u;
+  195:     ctx->f[3] = FPU_SQRT_S(ctx->f[2]);
+  196:     ctx->pc = 0x1000c4u;
+  197: }
+  198: 
+  199: 
+  200: // Function: generated_fpu_abs
+  201: // Address: 0x1000d0 - 0x1000d4
+--- Lines 193-202 ---
+  193: 
+  194:     ctx->pc = 0x1000c0u;
+  195:     ctx->f[3] = FPU_SQRT_S(ctx->f[2]);
+  196:     ctx->pc = 0x1000c4u;
+  197: }
+  198: 
+  199: 
+  200: // Function: generated_fpu_abs
+  201: // Address: 0x1000d0 - 0x1000d4
+  202: void generated_fpu_abs(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 204-213 ---
+  204:     PS_LOG_ENTRY("generated_fpu_abs");
+  205: #endif
+  206: 
+  207:     ctx->pc = 0x1000d0u;
+  208: 
+  209:     ctx->pc = 0x1000d0u;
+  210:     ctx->f[3] = FPU_ABS_S(ctx->f[1]);
+  211:     ctx->pc = 0x1000d4u;
+  212: }
+  213: 
+--- Lines 206-215 ---
+  206: 
+  207:     ctx->pc = 0x1000d0u;
+  208: 
+  209:     ctx->pc = 0x1000d0u;
+  210:     ctx->f[3] = FPU_ABS_S(ctx->f[1]);
+  211:     ctx->pc = 0x1000d4u;
+  212: }
+  213: 
+  214: 
+  215: // Function: generated_fpu_mov
+--- Lines 207-216 ---
+  207:     ctx->pc = 0x1000d0u;
+  208: 
+  209:     ctx->pc = 0x1000d0u;
+  210:     ctx->f[3] = FPU_ABS_S(ctx->f[1]);
+  211:     ctx->pc = 0x1000d4u;
+  212: }
+  213: 
+  214: 
+  215: // Function: generated_fpu_mov
+  216: // Address: 0x1000e0 - 0x1000e4
+--- Lines 208-217 ---
+  208: 
+  209:     ctx->pc = 0x1000d0u;
+  210:     ctx->f[3] = FPU_ABS_S(ctx->f[1]);
+  211:     ctx->pc = 0x1000d4u;
+  212: }
+  213: 
+  214: 
+  215: // Function: generated_fpu_mov
+  216: // Address: 0x1000e0 - 0x1000e4
+  217: void generated_fpu_mov(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 219-228 ---
+  219:     PS_LOG_ENTRY("generated_fpu_mov");
+  220: #endif
+  221: 
+  222:     ctx->pc = 0x1000e0u;
+  223: 
+  224:     ctx->pc = 0x1000e0u;
+  225:     ctx->f[3] = FPU_MOV_S(ctx->f[1]);
+  226:     ctx->pc = 0x1000e4u;
+  227: }
+  228: 
+--- Lines 221-230 ---
+  221: 
+  222:     ctx->pc = 0x1000e0u;
+  223: 
+  224:     ctx->pc = 0x1000e0u;
+  225:     ctx->f[3] = FPU_MOV_S(ctx->f[1]);
+  226:     ctx->pc = 0x1000e4u;
+  227: }
+  228: 
+  229: 
+  230: // Function: generated_fpu_neg
+--- Lines 222-231 ---
+  222:     ctx->pc = 0x1000e0u;
+  223: 
+  224:     ctx->pc = 0x1000e0u;
+  225:     ctx->f[3] = FPU_MOV_S(ctx->f[1]);
+  226:     ctx->pc = 0x1000e4u;
+  227: }
+  228: 
+  229: 
+  230: // Function: generated_fpu_neg
+  231: // Address: 0x1000f0 - 0x1000f4
+--- Lines 223-232 ---
+  223: 
+  224:     ctx->pc = 0x1000e0u;
+  225:     ctx->f[3] = FPU_MOV_S(ctx->f[1]);
+  226:     ctx->pc = 0x1000e4u;
+  227: }
+  228: 
+  229: 
+  230: // Function: generated_fpu_neg
+  231: // Address: 0x1000f0 - 0x1000f4
+  232: void generated_fpu_neg(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 234-243 ---
+  234:     PS_LOG_ENTRY("generated_fpu_neg");
+  235: #endif
+  236: 
+  237:     ctx->pc = 0x1000f0u;
+  238: 
+  239:     ctx->pc = 0x1000f0u;
+  240:     ctx->f[3] = FPU_NEG_S(ctx->f[1]);
+  241:     ctx->pc = 0x1000f4u;
+  242: }
+  243: 
+--- Lines 236-245 ---
+  236: 
+  237:     ctx->pc = 0x1000f0u;
+  238: 
+  239:     ctx->pc = 0x1000f0u;
+  240:     ctx->f[3] = FPU_NEG_S(ctx->f[1]);
+  241:     ctx->pc = 0x1000f4u;
+  242: }
+  243: 
+  244: 
+  245: // Function: generated_fpu_rsqrt
+--- Lines 237-246 ---
+  237:     ctx->pc = 0x1000f0u;
+  238: 
+  239:     ctx->pc = 0x1000f0u;
+  240:     ctx->f[3] = FPU_NEG_S(ctx->f[1]);
+  241:     ctx->pc = 0x1000f4u;
+  242: }
+  243: 
+  244: 
+  245: // Function: generated_fpu_rsqrt
+  246: // Address: 0x100100 - 0x100104
+--- Lines 238-247 ---
+  238: 
+  239:     ctx->pc = 0x1000f0u;
+  240:     ctx->f[3] = FPU_NEG_S(ctx->f[1]);
+  241:     ctx->pc = 0x1000f4u;
+  242: }
+  243: 
+  244: 
+  245: // Function: generated_fpu_rsqrt
+  246: // Address: 0x100100 - 0x100104
+  247: void generated_fpu_rsqrt(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 249-258 ---
+  249:     PS_LOG_ENTRY("generated_fpu_rsqrt");
+  250: #endif
+  251: 
+  252:     ctx->pc = 0x100100u;
+  253: 
+  254:     ctx->pc = 0x100100u;
+  255:     ctx->f[3] = FPU_RSQRT_S(ctx->f[1], ctx->f[2]);
+  256:     ctx->pc = 0x100104u;
+  257: }
+  258: 
+--- Lines 251-260 ---
+  251: 
+  252:     ctx->pc = 0x100100u;
+  253: 
+  254:     ctx->pc = 0x100100u;
+  255:     ctx->f[3] = FPU_RSQRT_S(ctx->f[1], ctx->f[2]);
+  256:     ctx->pc = 0x100104u;
+  257: }
+  258: 
+  259: 
+  260: // Function: generated_fpu_max
+--- Lines 252-261 ---
+  252:     ctx->pc = 0x100100u;
+  253: 
+  254:     ctx->pc = 0x100100u;
+  255:     ctx->f[3] = FPU_RSQRT_S(ctx->f[1], ctx->f[2]);
+  256:     ctx->pc = 0x100104u;
+  257: }
+  258: 
+  259: 
+  260: // Function: generated_fpu_max
+  261: // Address: 0x100110 - 0x100114
+--- Lines 253-262 ---
+  253: 
+  254:     ctx->pc = 0x100100u;
+  255:     ctx->f[3] = FPU_RSQRT_S(ctx->f[1], ctx->f[2]);
+  256:     ctx->pc = 0x100104u;
+  257: }
+  258: 
+  259: 
+  260: // Function: generated_fpu_max
+  261: // Address: 0x100110 - 0x100114
+  262: void generated_fpu_max(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 264-273 ---
+  264:     PS_LOG_ENTRY("generated_fpu_max");
+  265: #endif
+  266: 
+  267:     ctx->pc = 0x100110u;
+  268: 
+  269:     ctx->pc = 0x100110u;
+  270:     ctx->f[3] = std::max(ctx->f[1], ctx->f[2]);
+  271:     ctx->pc = 0x100114u;
+  272: }
+  273: 
+--- Lines 266-275 ---
+  266: 
+  267:     ctx->pc = 0x100110u;
+  268: 
+  269:     ctx->pc = 0x100110u;
+  270:     ctx->f[3] = std::max(ctx->f[1], ctx->f[2]);
+  271:     ctx->pc = 0x100114u;
+  272: }
+  273: 
+  274: 
+  275: // Function: generated_fpu_min
+--- Lines 267-276 ---
+  267:     ctx->pc = 0x100110u;
+  268: 
+  269:     ctx->pc = 0x100110u;
+  270:     ctx->f[3] = std::max(ctx->f[1], ctx->f[2]);
+  271:     ctx->pc = 0x100114u;
+  272: }
+  273: 
+  274: 
+  275: // Function: generated_fpu_min
+  276: // Address: 0x100120 - 0x100124
+--- Lines 268-277 ---
+  268: 
+  269:     ctx->pc = 0x100110u;
+  270:     ctx->f[3] = std::max(ctx->f[1], ctx->f[2]);
+  271:     ctx->pc = 0x100114u;
+  272: }
+  273: 
+  274: 
+  275: // Function: generated_fpu_min
+  276: // Address: 0x100120 - 0x100124
+  277: void generated_fpu_min(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 279-288 ---
+  279:     PS_LOG_ENTRY("generated_fpu_min");
+  280: #endif
+  281: 
+  282:     ctx->pc = 0x100120u;
+  283: 
+  284:     ctx->pc = 0x100120u;
+  285:     ctx->f[3] = std::min(ctx->f[1], ctx->f[2]);
+  286:     ctx->pc = 0x100124u;
+  287: }
+  288: 
+--- Lines 281-290 ---
+  281: 
+  282:     ctx->pc = 0x100120u;
+  283: 
+  284:     ctx->pc = 0x100120u;
+  285:     ctx->f[3] = std::min(ctx->f[1], ctx->f[2]);
+  286:     ctx->pc = 0x100124u;
+  287: }
+  288: 
+  289: 
+  290: // Function: generated_fpu_cvt_w
+--- Lines 282-291 ---
+  282:     ctx->pc = 0x100120u;
+  283: 
+  284:     ctx->pc = 0x100120u;
+  285:     ctx->f[3] = std::min(ctx->f[1], ctx->f[2]);
+  286:     ctx->pc = 0x100124u;
+  287: }
+  288: 
+  289: 
+  290: // Function: generated_fpu_cvt_w
+  291: // Address: 0x100130 - 0x100134
+--- Lines 283-292 ---
+  283: 
+  284:     ctx->pc = 0x100120u;
+  285:     ctx->f[3] = std::min(ctx->f[1], ctx->f[2]);
+  286:     ctx->pc = 0x100124u;
+  287: }
+  288: 
+  289: 
+  290: // Function: generated_fpu_cvt_w
+  291: // Address: 0x100130 - 0x100134
+  292: void generated_fpu_cvt_w(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 294-303 ---
+  294:     PS_LOG_ENTRY("generated_fpu_cvt_w");
+  295: #endif
+  296: 
+  297:     ctx->pc = 0x100130u;
+  298: 
+  299:     ctx->pc = 0x100130u;
+  300:     { int32_t tmp = FPU_CVT_W_S(ctx->f[1]); std::memcpy(&ctx->f[3], &tmp, sizeof(tmp)); }
+  301:     ctx->pc = 0x100134u;
+  302: }
+  303: 
+--- Lines 296-305 ---
+  296: 
+  297:     ctx->pc = 0x100130u;
+  298: 
+  299:     ctx->pc = 0x100130u;
+  300:     { int32_t tmp = FPU_CVT_W_S(ctx->f[1]); std::memcpy(&ctx->f[3], &tmp, sizeof(tmp)); }
+  301:     ctx->pc = 0x100134u;
+  302: }
+  303: 
+  304: 
+  305: // Function: generated_fpu_c_f
+--- Lines 297-306 ---
+  297:     ctx->pc = 0x100130u;
+  298: 
+  299:     ctx->pc = 0x100130u;
+  300:     { int32_t tmp = FPU_CVT_W_S(ctx->f[1]); std::memcpy(&ctx->f[3], &tmp, sizeof(tmp)); }
+  301:     ctx->pc = 0x100134u;
+  302: }
+  303: 
+  304: 
+  305: // Function: generated_fpu_c_f
+  306: // Address: 0x100180 - 0x100184
+--- Lines 298-307 ---
+  298: 
+  299:     ctx->pc = 0x100130u;
+  300:     { int32_t tmp = FPU_CVT_W_S(ctx->f[1]); std::memcpy(&ctx->f[3], &tmp, sizeof(tmp)); }
+  301:     ctx->pc = 0x100134u;
+  302: }
+  303: 
+  304: 
+  305: // Function: generated_fpu_c_f
+  306: // Address: 0x100180 - 0x100184
+  307: void generated_fpu_c_f(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 309-318 ---
+  309:     PS_LOG_ENTRY("generated_fpu_c_f");
+  310: #endif
+  311: 
+  312:     ctx->pc = 0x100180u;
+  313: 
+  314:     ctx->pc = 0x100180u;
+  315:     ctx->fcr31 &= ~0x800000;
+  316:     ctx->pc = 0x100184u;
+  317: }
+  318: 
+--- Lines 311-320 ---
+  311: 
+  312:     ctx->pc = 0x100180u;
+  313: 
+  314:     ctx->pc = 0x100180u;
+  315:     ctx->fcr31 &= ~0x800000;
+  316:     ctx->pc = 0x100184u;
+  317: }
+  318: 
+  319: 
+  320: // Function: generated_fpu_c_un
+--- Lines 313-322 ---
+  313: 
+  314:     ctx->pc = 0x100180u;
+  315:     ctx->fcr31 &= ~0x800000;
+  316:     ctx->pc = 0x100184u;
+  317: }
+  318: 
+  319: 
+  320: // Function: generated_fpu_c_un
+  321: // Address: 0x100190 - 0x100194
+  322: void generated_fpu_c_un(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 324-333 ---
+  324:     PS_LOG_ENTRY("generated_fpu_c_un");
+  325: #endif
+  326: 
+  327:     ctx->pc = 0x100190u;
+  328: 
+  329:     ctx->pc = 0x100190u;
+  330:     ctx->fcr31 = (FPU_C_UN_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  331:     ctx->pc = 0x100194u;
+  332: }
+  333: 
+--- Lines 326-335 ---
+  326: 
+  327:     ctx->pc = 0x100190u;
+  328: 
+  329:     ctx->pc = 0x100190u;
+  330:     ctx->fcr31 = (FPU_C_UN_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  331:     ctx->pc = 0x100194u;
+  332: }
+  333: 
+  334: 
+  335: // Function: generated_fpu_c_eq
+--- Lines 328-337 ---
+  328: 
+  329:     ctx->pc = 0x100190u;
+  330:     ctx->fcr31 = (FPU_C_UN_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  331:     ctx->pc = 0x100194u;
+  332: }
+  333: 
+  334: 
+  335: // Function: generated_fpu_c_eq
+  336: // Address: 0x1001a0 - 0x1001a4
+  337: void generated_fpu_c_eq(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 339-348 ---
+  339:     PS_LOG_ENTRY("generated_fpu_c_eq");
+  340: #endif
+  341: 
+  342:     ctx->pc = 0x1001a0u;
+  343: 
+  344:     ctx->pc = 0x1001a0u;
+  345:     ctx->fcr31 = (FPU_C_EQ_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  346:     ctx->pc = 0x1001a4u;
+  347: }
+  348: 
+--- Lines 341-350 ---
+  341: 
+  342:     ctx->pc = 0x1001a0u;
+  343: 
+  344:     ctx->pc = 0x1001a0u;
+  345:     ctx->fcr31 = (FPU_C_EQ_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  346:     ctx->pc = 0x1001a4u;
+  347: }
+  348: 
+  349: 
+  350: // Function: generated_fpu_c_ueq
+--- Lines 343-352 ---
+  343: 
+  344:     ctx->pc = 0x1001a0u;
+  345:     ctx->fcr31 = (FPU_C_EQ_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  346:     ctx->pc = 0x1001a4u;
+  347: }
+  348: 
+  349: 
+  350: // Function: generated_fpu_c_ueq
+  351: // Address: 0x1001b0 - 0x1001b4
+  352: void generated_fpu_c_ueq(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 354-363 ---
+  354:     PS_LOG_ENTRY("generated_fpu_c_ueq");
+  355: #endif
+  356: 
+  357:     ctx->pc = 0x1001b0u;
+  358: 
+  359:     ctx->pc = 0x1001b0u;
+  360:     ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  361:     ctx->pc = 0x1001b4u;
+  362: }
+  363: 
+--- Lines 356-365 ---
+  356: 
+  357:     ctx->pc = 0x1001b0u;
+  358: 
+  359:     ctx->pc = 0x1001b0u;
+  360:     ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  361:     ctx->pc = 0x1001b4u;
+  362: }
+  363: 
+  364: 
+  365: // Function: generated_fpu_c_olt
+--- Lines 358-367 ---
+  358: 
+  359:     ctx->pc = 0x1001b0u;
+  360:     ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  361:     ctx->pc = 0x1001b4u;
+  362: }
+  363: 
+  364: 
+  365: // Function: generated_fpu_c_olt
+  366: // Address: 0x1001c0 - 0x1001c4
+  367: void generated_fpu_c_olt(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 369-378 ---
+  369:     PS_LOG_ENTRY("generated_fpu_c_olt");
+  370: #endif
+  371: 
+  372:     ctx->pc = 0x1001c0u;
+  373: 
+  374:     ctx->pc = 0x1001c0u;
+  375:     ctx->fcr31 = (FPU_C_OLT_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  376:     ctx->pc = 0x1001c4u;
+  377: }
+  378: 
+--- Lines 371-380 ---
+  371: 
+  372:     ctx->pc = 0x1001c0u;
+  373: 
+  374:     ctx->pc = 0x1001c0u;
+  375:     ctx->fcr31 = (FPU_C_OLT_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  376:     ctx->pc = 0x1001c4u;
+  377: }
+  378: 
+  379: 
+  380: // Function: generated_fpu_c_ult
+--- Lines 373-382 ---
+  373: 
+  374:     ctx->pc = 0x1001c0u;
+  375:     ctx->fcr31 = (FPU_C_OLT_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  376:     ctx->pc = 0x1001c4u;
+  377: }
+  378: 
+  379: 
+  380: // Function: generated_fpu_c_ult
+  381: // Address: 0x1001d0 - 0x1001d4
+  382: void generated_fpu_c_ult(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 384-393 ---
+  384:     PS_LOG_ENTRY("generated_fpu_c_ult");
+  385: #endif
+  386: 
+  387:     ctx->pc = 0x1001d0u;
+  388: 
+  389:     ctx->pc = 0x1001d0u;
+  390:     ctx->fcr31 = (FPU_C_ULT_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  391:     ctx->pc = 0x1001d4u;
+  392: }
+  393: 
+--- Lines 386-395 ---
+  386: 
+  387:     ctx->pc = 0x1001d0u;
+  388: 
+  389:     ctx->pc = 0x1001d0u;
+  390:     ctx->fcr31 = (FPU_C_ULT_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  391:     ctx->pc = 0x1001d4u;
+  392: }
+  393: 
+  394: 
+  395: // Function: generated_fpu_c_ole
+--- Lines 388-397 ---
+  388: 
+  389:     ctx->pc = 0x1001d0u;
+  390:     ctx->fcr31 = (FPU_C_ULT_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  391:     ctx->pc = 0x1001d4u;
+  392: }
+  393: 
+  394: 
+  395: // Function: generated_fpu_c_ole
+  396: // Address: 0x1001e0 - 0x1001e4
+  397: void generated_fpu_c_ole(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 399-408 ---
+  399:     PS_LOG_ENTRY("generated_fpu_c_ole");
+  400: #endif
+  401: 
+  402:     ctx->pc = 0x1001e0u;
+  403: 
+  404:     ctx->pc = 0x1001e0u;
+  405:     ctx->fcr31 = (FPU_C_OLE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  406:     ctx->pc = 0x1001e4u;
+  407: }
+  408: 
+--- Lines 401-410 ---
+  401: 
+  402:     ctx->pc = 0x1001e0u;
+  403: 
+  404:     ctx->pc = 0x1001e0u;
+  405:     ctx->fcr31 = (FPU_C_OLE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  406:     ctx->pc = 0x1001e4u;
+  407: }
+  408: 
+  409: 
+  410: // Function: generated_fpu_c_ule
+--- Lines 403-412 ---
+  403: 
+  404:     ctx->pc = 0x1001e0u;
+  405:     ctx->fcr31 = (FPU_C_OLE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  406:     ctx->pc = 0x1001e4u;
+  407: }
+  408: 
+  409: 
+  410: // Function: generated_fpu_c_ule
+  411: // Address: 0x1001f0 - 0x1001f4
+  412: void generated_fpu_c_ule(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 414-423 ---
+  414:     PS_LOG_ENTRY("generated_fpu_c_ule");
+  415: #endif
+  416: 
+  417:     ctx->pc = 0x1001f0u;
+  418: 
+  419:     ctx->pc = 0x1001f0u;
+  420:     ctx->fcr31 = (FPU_C_ULE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  421:     ctx->pc = 0x1001f4u;
+  422: }
+  423: 
+--- Lines 416-425 ---
+  416: 
+  417:     ctx->pc = 0x1001f0u;
+  418: 
+  419:     ctx->pc = 0x1001f0u;
+  420:     ctx->fcr31 = (FPU_C_ULE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  421:     ctx->pc = 0x1001f4u;
+  422: }
+  423: 
+  424: 
+  425: // Function: generated_fpu_c_sf
+--- Lines 418-427 ---
+  418: 
+  419:     ctx->pc = 0x1001f0u;
+  420:     ctx->fcr31 = (FPU_C_ULE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  421:     ctx->pc = 0x1001f4u;
+  422: }
+  423: 
+  424: 
+  425: // Function: generated_fpu_c_sf
+  426: // Address: 0x100200 - 0x100204
+  427: void generated_fpu_c_sf(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 429-438 ---
+  429:     PS_LOG_ENTRY("generated_fpu_c_sf");
+  430: #endif
+  431: 
+  432:     ctx->pc = 0x100200u;
+  433: 
+  434:     ctx->pc = 0x100200u;
+  435:     ctx->fcr31 &= ~0x800000;
+  436:     ctx->pc = 0x100204u;
+  437: }
+  438: 
+--- Lines 431-440 ---
+  431: 
+  432:     ctx->pc = 0x100200u;
+  433: 
+  434:     ctx->pc = 0x100200u;
+  435:     ctx->fcr31 &= ~0x800000;
+  436:     ctx->pc = 0x100204u;
+  437: }
+  438: 
+  439: 
+  440: // Function: generated_fpu_c_ngle
+--- Lines 433-442 ---
+  433: 
+  434:     ctx->pc = 0x100200u;
+  435:     ctx->fcr31 &= ~0x800000;
+  436:     ctx->pc = 0x100204u;
+  437: }
+  438: 
+  439: 
+  440: // Function: generated_fpu_c_ngle
+  441: // Address: 0x100210 - 0x100214
+  442: void generated_fpu_c_ngle(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 444-453 ---
+  444:     PS_LOG_ENTRY("generated_fpu_c_ngle");
+  445: #endif
+  446: 
+  447:     ctx->pc = 0x100210u;
+  448: 
+  449:     ctx->pc = 0x100210u;
+  450:     ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  451:     ctx->pc = 0x100214u;
+  452: }
+  453: 
+--- Lines 446-455 ---
+  446: 
+  447:     ctx->pc = 0x100210u;
+  448: 
+  449:     ctx->pc = 0x100210u;
+  450:     ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  451:     ctx->pc = 0x100214u;
+  452: }
+  453: 
+  454: 
+  455: // Function: generated_fpu_c_seq
+--- Lines 448-457 ---
+  448: 
+  449:     ctx->pc = 0x100210u;
+  450:     ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  451:     ctx->pc = 0x100214u;
+  452: }
+  453: 
+  454: 
+  455: // Function: generated_fpu_c_seq
+  456: // Address: 0x100220 - 0x100224
+  457: void generated_fpu_c_seq(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 459-468 ---
+  459:     PS_LOG_ENTRY("generated_fpu_c_seq");
+  460: #endif
+  461: 
+  462:     ctx->pc = 0x100220u;
+  463: 
+  464:     ctx->pc = 0x100220u;
+  465:     ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  466:     ctx->pc = 0x100224u;
+  467: }
+  468: 
+--- Lines 461-470 ---
+  461: 
+  462:     ctx->pc = 0x100220u;
+  463: 
+  464:     ctx->pc = 0x100220u;
+  465:     ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  466:     ctx->pc = 0x100224u;
+  467: }
+  468: 
+  469: 
+  470: // Function: generated_fpu_c_ngl
+--- Lines 463-472 ---
+  463: 
+  464:     ctx->pc = 0x100220u;
+  465:     ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  466:     ctx->pc = 0x100224u;
+  467: }
+  468: 
+  469: 
+  470: // Function: generated_fpu_c_ngl
+  471: // Address: 0x100230 - 0x100234
+  472: void generated_fpu_c_ngl(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 474-483 ---
+  474:     PS_LOG_ENTRY("generated_fpu_c_ngl");
+  475: #endif
+  476: 
+  477:     ctx->pc = 0x100230u;
+  478: 
+  479:     ctx->pc = 0x100230u;
+  480:     ctx->fcr31 = (FPU_C_NGL_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  481:     ctx->pc = 0x100234u;
+  482: }
+  483: 
+--- Lines 476-485 ---
+  476: 
+  477:     ctx->pc = 0x100230u;
+  478: 
+  479:     ctx->pc = 0x100230u;
+  480:     ctx->fcr31 = (FPU_C_NGL_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  481:     ctx->pc = 0x100234u;
+  482: }
+  483: 
+  484: 
+  485: // Function: generated_fpu_c_lt
+--- Lines 478-487 ---
+  478: 
+  479:     ctx->pc = 0x100230u;
+  480:     ctx->fcr31 = (FPU_C_NGL_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  481:     ctx->pc = 0x100234u;
+  482: }
+  483: 
+  484: 
+  485: // Function: generated_fpu_c_lt
+  486: // Address: 0x100240 - 0x100244
+  487: void generated_fpu_c_lt(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 489-498 ---
+  489:     PS_LOG_ENTRY("generated_fpu_c_lt");
+  490: #endif
+  491: 
+  492:     ctx->pc = 0x100240u;
+  493: 
+  494:     ctx->pc = 0x100240u;
+  495:     ctx->fcr31 = (FPU_C_LT_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  496:     ctx->pc = 0x100244u;
+  497: }
+  498: 
+--- Lines 491-500 ---
+  491: 
+  492:     ctx->pc = 0x100240u;
+  493: 
+  494:     ctx->pc = 0x100240u;
+  495:     ctx->fcr31 = (FPU_C_LT_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  496:     ctx->pc = 0x100244u;
+  497: }
+  498: 
+  499: 
+  500: // Function: generated_fpu_c_nge
+--- Lines 493-502 ---
+  493: 
+  494:     ctx->pc = 0x100240u;
+  495:     ctx->fcr31 = (FPU_C_LT_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  496:     ctx->pc = 0x100244u;
+  497: }
+  498: 
+  499: 
+  500: // Function: generated_fpu_c_nge
+  501: // Address: 0x100250 - 0x100254
+  502: void generated_fpu_c_nge(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 504-513 ---
+  504:     PS_LOG_ENTRY("generated_fpu_c_nge");
+  505: #endif
+  506: 
+  507:     ctx->pc = 0x100250u;
+  508: 
+  509:     ctx->pc = 0x100250u;
+  510:     ctx->fcr31 = (FPU_C_NGE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  511:     ctx->pc = 0x100254u;
+  512: }
+  513: 
+--- Lines 506-515 ---
+  506: 
+  507:     ctx->pc = 0x100250u;
+  508: 
+  509:     ctx->pc = 0x100250u;
+  510:     ctx->fcr31 = (FPU_C_NGE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  511:     ctx->pc = 0x100254u;
+  512: }
+  513: 
+  514: 
+  515: // Function: generated_fpu_c_le
+--- Lines 508-517 ---
+  508: 
+  509:     ctx->pc = 0x100250u;
+  510:     ctx->fcr31 = (FPU_C_NGE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  511:     ctx->pc = 0x100254u;
+  512: }
+  513: 
+  514: 
+  515: // Function: generated_fpu_c_le
+  516: // Address: 0x100260 - 0x100264
+  517: void generated_fpu_c_le(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 519-528 ---
+  519:     PS_LOG_ENTRY("generated_fpu_c_le");
+  520: #endif
+  521: 
+  522:     ctx->pc = 0x100260u;
+  523: 
+  524:     ctx->pc = 0x100260u;
+  525:     ctx->fcr31 = (FPU_C_LE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  526:     ctx->pc = 0x100264u;
+  527: }
+  528: 
+--- Lines 521-530 ---
+  521: 
+  522:     ctx->pc = 0x100260u;
+  523: 
+  524:     ctx->pc = 0x100260u;
+  525:     ctx->fcr31 = (FPU_C_LE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  526:     ctx->pc = 0x100264u;
+  527: }
+  528: 
+  529: 
+  530: // Function: generated_fpu_c_ngt
+--- Lines 523-532 ---
+  523: 
+  524:     ctx->pc = 0x100260u;
+  525:     ctx->fcr31 = (FPU_C_LE_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  526:     ctx->pc = 0x100264u;
+  527: }
+  528: 
+  529: 
+  530: // Function: generated_fpu_c_ngt
+  531: // Address: 0x100270 - 0x100274
+  532: void generated_fpu_c_ngt(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 534-543 ---
+  534:     PS_LOG_ENTRY("generated_fpu_c_ngt");
+  535: #endif
+  536: 
+  537:     ctx->pc = 0x100270u;
+  538: 
+  539:     ctx->pc = 0x100270u;
+  540:     ctx->fcr31 = (FPU_C_NGT_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  541:     ctx->pc = 0x100274u;
+  542: }
+  543: 
+--- Lines 536-545 ---
+  536: 
+  537:     ctx->pc = 0x100270u;
+  538: 
+  539:     ctx->pc = 0x100270u;
+  540:     ctx->fcr31 = (FPU_C_NGT_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  541:     ctx->pc = 0x100274u;
+  542: }
+  543: 
+  544: 
+  545: // Function: generated_fpu_sequence_mula_madda
+--- Lines 538-547 ---
+  538: 
+  539:     ctx->pc = 0x100270u;
+  540:     ctx->fcr31 = (FPU_C_NGT_S(ctx->f[1], ctx->f[2])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  541:     ctx->pc = 0x100274u;
+  542: }
+  543: 
+  544: 
+  545: // Function: generated_fpu_sequence_mula_madda
+  546: // Address: 0x100070 - 0x100078
+  547: void generated_fpu_sequence_mula_madda(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+--- Lines 549-558 ---
+  549:     PS_LOG_ENTRY("generated_fpu_sequence_mula_madda");
+  550: #endif
+  551: 
+  552:     ctx->pc = 0x100070u;
+  553: 
+  554:     ctx->pc = 0x100070u;
+  555:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+  556:     ctx->pc = 0x100074u;
+  557:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  558:     ctx->pc = 0x100078u;
+--- Lines 551-560 ---
+  551: 
+  552:     ctx->pc = 0x100070u;
+  553: 
+  554:     ctx->pc = 0x100070u;
+  555:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+  556:     ctx->pc = 0x100074u;
+  557:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  558:     ctx->pc = 0x100078u;
+  559: }
+  560: 
+--- Lines 553-561 ---
+  553: 
+  554:     ctx->pc = 0x100070u;
+  555:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+  556:     ctx->pc = 0x100074u;
+  557:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  558:     ctx->pc = 0x100078u;
+  559: }
+  560: 
+  561: 
+--- Lines 555-561 ---
+  555:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+  556:     ctx->pc = 0x100074u;
+  557:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  558:     ctx->pc = 0x100078u;
+  559: }
+  560: 
+  561: 
+
+================================================================================
+LOG: D:\Downloads\MarkOfKri_Audits\CVT_SW_BUILD_20261126_012210.log
+Log lines: 10
+Log bytes: 849
+
+================================================================================
+LOG: D:\Downloads\MarkOfKri_Audits\CVT_SW_ISOLATED_20261126_012210.log
+Log lines: 34
+Log bytes: 4702
+[33m  [Run]: [0mgenerated ABS.S writes destination FPR [32m  [Passed][0m
+[33m  [Run]: [0mgenerated ADD.S writes destination FPR [32m  [Passed][0m
+[33m  [Run]: [0mgenerated ADDA.S updates live accumulator [32m  [Passed][0m
+[33m  [Run]: [0mgenerated COP1.S comparisons [32m  [Passed][0m
+[33m  [Run]: [0mgenerated COP1.S comparisons update FCR31 condition bit [32m  [Passed][0m
+[33m  [Run]: [0mgenerated CVT.S.W converts signed word to single [32m  [Passed][0m
+[33m  [Run]: [0mgenerated CVT.W.S saturates overflow and NaN according to source sign [32m  [Passed][0m
+[33m  [Run]: [0mgenerated CVT.W.S truncates toward zero independent of FCR31 rounding mode [32m  [Passed][0m
+[33m  [Run]: [0mgenerated DIV.S writes destination FPR [32m  [Passed][0m
+[33m  [Run]: [0mgenerated MADD.S writes destination FPR [32m  [Passed][0m
+[33m  [Run]: [0mgenerated MADDA.S updates live accumulator [32m  [Passed][0m
+[33m  [Run]: [0mgenerated MAX.S and MIN.S preserve current NaN operand-order behavior [32m  [Passed][0m
+[33m  [Run]: [0mgenerated MAX.S and MIN.S preserve first-operand signed zero [32m  [Passed][0m
+[33m  [Run]: [0mgenerated MAX.S writes destination FPR [32m  [Passed][0m
+[33m  [Run]: [0mgenerated MIN.S writes destination FPR [32m  [Passed][0m
+[33m  [Run]: [0mgenerated MOV.S writes destination FPR [32m  [Passed][0m
+[33m  [Run]: [0mgenerated MSUB.S writes destination FPR [32m  [Passed][0m
+[33m  [Run]: [0mgenerated MSUBA.S updates live accumulator [32m  [Passed][0m
+[33m  [Run]: [0mgenerated MUL.S writes destination FPR [32m  [Passed][0m
+[33m  [Run]: [0mgenerated MULA.S then MADDA.S consumes live accumulator [32m  [Passed][0m
+[33m  [Run]: [0mgenerated MULA.S updates live accumulator [32m  [Passed][0m
+[33m  [Run]: [0mgenerated NEG.S writes destination FPR [32m  [Passed][0m
+[33m  [Run]: [0mgenerated RSQRT.S writes destination FPR [32m  [Passed][0m
+[33m  [Run]: [0mgenerated SQRT.S reads ft [32m  [Passed][0m
+[33m  [Run]: [0mgenerated SUB.S writes destination FPR [32m  [Passed][0m
+[33m  [Run]: [0mgenerated SUBA.S updates live accumulator [32m  [Passed][0m
+Total Tests: 26
+Passed: 26
+Failed: 0
+
+================================================================================
+LOG: D:\Downloads\MarkOfKri_Audits\CVT_SW_FULL_20261126_012210.log
+Log lines: 813
+Log bytes: 162756
+[33m  [Run]: [0mVIF UNPACK bit15 adds TOPS to destination address [32m  [Passed][0m
+[33m  [Run]: [0mVIF UNPACK num zero uploads 256 vectors [32m  [Passed][0m
+[33m  [Run]: [0mVIF control commands update MARK MASK ROW and COL registers [32m  [Passed][0m
+[33m  [Run]: [0mVIF double-buffer OFFSET BASE and MSCAL update TOPS and ITOPS [32m  [Passed][0m
+[33m  [Run]: [0mVIF fill write uses STMASK and STROW when WL>CL [32m  [Passed][0m
+[33m  [Run]: [0mVIF irq command sets STAT.INT and CODE until FBRST.STC clears it [32m  [Passed][0m
+[33m  [Run]: [0mVIF masked UNPACK uses data row col and protect selectors [32m  [Passed][0m
+[32m  [Passed][0m
+[32m  [Passed][0m
+[33m  [Run]: [0mVIF1 DMA DIRECT forwards payload to GIF callback and clears channel [32m  [Passed][0m
+[32m  [Passed][0m
+[33m  [Run]: [0mVIF1 DMA chain ignores tag high bytes when TTE is disabled [32m  [Passed][0m
+[33m  [Run]: [0mVIF1 DMA chain latches terminal tag bits in CHCR [32m  [Passed][0m
+[33m  [Run]: [0mVIF1 DMA chain preserves compact tag high bytes for DIRECT packets [32m  [Passed][0m
+[33m  [Run]: [0mVIF1 DMA chain preserves compact tag high bytes when qwc is zero [32m  [Passed][0m
+[33m  [Run]: [0mVIF1 DMA chain transfers REF tag high bytes when TTE is enabled [32m  [Passed][0m
+[33m  [Run]: [0mVIF1 FIFO MSKPATH3 is visible through GIF_STAT [32m  [Passed][0m
+[33m  [Run]: [0mVIF1 packet builders keep chain qwc live before terminate [32m  [Passed][0m
+[33m  [Run]: [0mVU0 code and data windows map through EE addresses [32m  [Passed][0m
+[33m  [Run]: [0mfast memory helpers wrap safely at RAM boundary [32m  [Passed][0m
+[33m  [Run]: [0mnative GIF image upload reads SPR-flagged ref payloads from scratchpad [32m  [Passed][0m
+[33m  [Run]: [0mnative GIF image upload recognizes canonical load-image chain [32m  [Passed][0m
+[32m  [Passed][0m
+[33m  [Run]: [0msceDmaRecvN copies scratchpad data back to RDRAM [32m  [Passed][0m
+[33m  [Run]: [0msceDmaReset re-enables DMAC DMAE [32m  [Passed][0m
+[32m  [Passed][0m
+[32m  [Passed][0m
+[33m  [Run]: [0mscratchpad alias accesses the same bytes as base [32m  [Passed][0m
+[33m  [Run]: [0mtoIPU DMA advances only as the IPU input FIFO drains [32m  [Passed][0m
+[33m  [Run]: [0mtoSPR source chain gathers ref-tagged blocks into scratchpad [32m  [Passed][0m
+[33m  [Run]: [0mtranslateAddress handles kseg and uncached aliases [32m  [Passed][0m
+[33m  [Run]: [0munaligned accesses throw [32m  [Passed][0m
+[33m  [Run]: [0muncached aliases map to same RDRAM bytes [32m  [Passed][0m
+[33m  [Run]: [0mJAL return addresses get resumable entry wrappers [32m  [Passed][0m
+[33m  [Run]: [0mJAL to an already-known function still discovers the return entry [32m  [Passed][0m
+[32m  [Passed][0m
+[33m  [Run]: [0madditional entries split at nearest discovered boundary [32m  [Passed][0m
+[33m  [Run]: [0mblock starts after unconditional transfers become resume entries of their function [32m  [Passed][0m
+[33m  [Run]: [0mconfig manager loads modern and legacy guest entry hints [32m  [Passed][0m
+[33m  [Run]: [0mconfig manager parses jump_tables table entries [32m  [Passed][0m
+[32m  [Passed][0m
+[32m  [Passed][0m
+[33m  [Run]: [0mdiscovery ignores synthetic entry wrappers [32m  [Passed][0m
+[33m  [Run]: [0melf parser discovers address-taken callbacks in stripped ELFs [32m  [Passed][0m
+[33m  [Run]: [0melf parser ignores STT_FUNC symbols in non-executable sections [32m  [Passed][0m
+[33m  [Run]: [0melf parser keeps VU microprograms out of EE code discovery [32m  [Passed][0m
+[33m  [Run]: [0melf parser keeps switch jump table labels inside their function [32m  [Passed][0m
+[33m  [Run]: [0melf parser supplements partial DWARF with address-taken callbacks [32m  [Passed][0m
+[33m  [Run]: [0mentry reslice handles entries without containing function [32m  [Passed][0m
+[33m  [Run]: [0mentry reslice trims earlier entries after late discovery [32m  [Passed][0m
+[33m  [Run]: [0mentry starting at jr ra is capped to return thunk [32m  [Passed][0m
+[33m  [Run]: [0mgame helpers are not classified as runtime stubs [32m  [Passed][0m
+[33m  [Run]: [0mghidra map replaces JAL fallback-only auto starts [32m  [Passed][0m
+[32m  [Passed][0m
+[32m  [Passed][0m
+[33m  [Run]: [0mnon-executable section targets are ignored [32m  [Passed][0m
+[33m  [Run]: [0mrespect max length for .cpp filenames [32m  [Passed][0m
+[33m  [Run]: [0mruntime call resolution includes Veronica compatibility aliases [32m  [Passed][0m
+[33m  [Run]: [0msame-function JAL return addresses get entry wrappers but targets stay labels [32m  [Passed][0m
+[32m  [Passed][0m
+
+No files modified.
