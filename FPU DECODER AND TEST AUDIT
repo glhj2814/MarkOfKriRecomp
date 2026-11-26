@@ -1,0 +1,2375 @@
+MARK OF KRI - FPU DECODER AND TEST AUDIT
+Generated: 11/25/2026 17:05:09
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h =====
+LINE 10: inline constexpr uint32_t MIPS_JUMP_TARGET_SHIFT = 2u;
+      inline constexpr uint32_t MIPS_JUMP_REGION_MASK = 0xF0000000u;
+  
+      // R5900 general-purpose register indices used by the encoded RS/RT/RD fields.
+      enum GprRegisters : uint32_t
+
+LINE 53: OPCODE_SPECIAL = 0x00, // Special instructions group (see SpecialFunctions)
+          OPCODE_REGIMM = 0x01,  // RegImm instructions group (see RegimmFunctions)
+          OPCODE_J = 0x02,       // Jump
+          OPCODE_JAL = 0x03,     // Jump and Link
+          OPCODE_BEQ = 0x04,     // Branch on Equal
+
+LINE 54: OPCODE_REGIMM = 0x01,  // RegImm instructions group (see RegimmFunctions)
+          OPCODE_J = 0x02,       // Jump
+          OPCODE_JAL = 0x03,     // Jump and Link
+          OPCODE_BEQ = 0x04,     // Branch on Equal
+          OPCODE_BNE = 0x05,     // Branch on Not Equal
+
+LINE 85: OPCODE_MMI = 0x1C,    // PS2 specific MMI instructions group (see MMIFunctions)
+  
+          OPCODE_LQ = 0x1E, // PS2 specific 128-bit load
+          OPCODE_SQ = 0x1F, // PS2 specific 128-bit store
+  
+
+LINE 129: // SPECIAL Function (bits 5-0) for OPCODE_SPECIAL
+      enum SpecialFunctions
+      {
+          SPECIAL_SLL = 0x00, // Shift Word Left Logical
+  
+
+LINE 130: enum SpecialFunctions
+      {
+          SPECIAL_SLL = 0x00, // Shift Word Left Logical
+  
+          SPECIAL_SRL = 0x02,  // Shift Word Right Logical
+
+LINE 201: enum RegimmFunctions
+      {
+          REGIMM_BLTZ = 0x00,  // Branch on Less Than Zero
+          REGIMM_BGEZ = 0x01,  // Branch on Greater Than or Equal to Zero
+          REGIMM_BLTZL = 0x02, // Branch on Less Than Zero Likely
+
+LINE 225: // MMI Function Field (bits 5-0) for OPCODE_MMI (0x1C)
+      enum MMIFunctions
+      {
+          MMI_MADD = 0x00,  // Multiply Add Word (to LO/HI)
+          MMI_MADDU = 0x01, // Multiply Add Unsigned Word (to LO/HI)
+
+LINE 226: enum MMIFunctions
+      {
+          MMI_MADD = 0x00,  // Multiply Add Word (to LO/HI)
+          MMI_MADDU = 0x01, // Multiply Add Unsigned Word (to LO/HI)
+          MMI_MSUB = 0x02,  // Multiply Subtract Word (Not listed in provided doc table, but valid MMI)
+
+LINE 234: MMI_MMI0 = 0x08, // Group MMI0 instructions (see MMI0Functions)
+          MMI_MMI2 = 0x09, // Group MMI2 instructions (see MMI2Functions)
+  
+          MMI_MFHI1 = 0x10, // Move From HI1 Register
+          MMI_MTHI1 = 0x11, // Move To HI1 Register
+
+LINE 235: MMI_MMI2 = 0x09, // Group MMI2 instructions (see MMI2Functions)
+  
+          MMI_MFHI1 = 0x10, // Move From HI1 Register
+          MMI_MTHI1 = 0x11, // Move To HI1 Register
+          MMI_MFLO1 = 0x12, // Move From LO1 Register
+
+LINE 250: MMI_MMI1 = 0x28, // Group MMI1 instructions (see MMI1Functions)
+          MMI_MMI3 = 0x29, // Group MMI3 instructions (see MMI3Functions)
+  
+          MMI_PMFHL = 0x30, // Parallel Move From HI/LO Register (see PMFHLFunctions for 'sa' field)
+          MMI_PMTHL = 0x31, // Parallel Move To HI/LO Register (see PMFHLFunctions for 'sa' field)
+
+LINE 251: MMI_MMI3 = 0x29, // Group MMI3 instructions (see MMI3Functions)
+  
+          MMI_PMFHL = 0x30, // Parallel Move From HI/LO Register (see PMFHLFunctions for 'sa' field)
+          MMI_PMTHL = 0x31, // Parallel Move To HI/LO Register (see PMFHLFunctions for 'sa' field)
+  
+
+LINE 253: MMI_PMFHL = 0x30, // Parallel Move From HI/LO Register (see PMFHLFunctions for 'sa' field)
+          MMI_PMTHL = 0x31, // Parallel Move To HI/LO Register (see PMFHLFunctions for 'sa' field)
+  
+          MMI_PSLLH = 0x34, // Parallel Shift Left Logical Halfword
+  
+
+LINE 254: MMI_PMTHL = 0x31, // Parallel Move To HI/LO Register (see PMFHLFunctions for 'sa' field)
+  
+          MMI_PSLLH = 0x34, // Parallel Shift Left Logical Halfword
+  
+          MMI_PSRLH = 0x36, // Parallel Shift Right Logical Halfword
+
+LINE 267: // PS2-specific MMI0 Sub-Function Field (bits 0-5 within MMI_MMI0 group)
+      enum MMI0Functions
+      {
+          MMI0_PADDW = 0x00,
+          MMI0_PSUBW = 0x01,
+
+LINE 268: enum MMI0Functions
+      {
+          MMI0_PADDW = 0x00,
+          MMI0_PSUBW = 0x01,
+          MMI0_PCGTW = 0x02,
+
+LINE 297: // PS2-specific MMI1 Sub-Function Field (bits 0-5 within MMI_MMI1 group)
+      enum MMI1Functions
+      {
+          MMI1_PABSW = 0x01,
+          MMI1_PCEQW = 0x02,
+
+LINE 298: enum MMI1Functions
+      {
+          MMI1_PABSW = 0x01,
+          MMI1_PCEQW = 0x02,
+          MMI1_PMINW = 0x03,
+
+LINE 320: // PS2-specific MMI2 Sub-Function Field (bits 0-5 within MMI_MMI2 group)
+      enum MMI2Functions
+      {
+          MMI2_PMADDW = 0x00,
+          MMI2_PSLLVW = 0x02,
+
+LINE 321: enum MMI2Functions
+      {
+          MMI2_PMADDW = 0x00,
+          MMI2_PSLLVW = 0x02,
+          MMI2_PSRLVW = 0x03,
+
+LINE 347: // PS2-specific MMI3 Sub-Function Field (bits 0-5 within MMI_MMI3 group)
+      enum MMI3Functions
+      {
+          MMI3_PMADDUW = 0x00,
+          MMI3_PSRAVW = 0x03,
+
+LINE 348: enum MMI3Functions
+      {
+          MMI3_PMADDUW = 0x00,
+          MMI3_PSRAVW = 0x03,
+          MMI3_PMTHI = 0x08, // Move To HI register
+
+LINE 365: // PMFHL/PMTHL Sub-Function Field ('sa' field, bits 10-6)
+      enum PMFHLFunctions
+      {
+          PMFHL_LW = 0x00,  // Load Word / Lower Word
+          PMFHL_UW = 0x01,  // Upper Word
+
+LINE 366: enum PMFHLFunctions
+      {
+          PMFHL_LW = 0x00,  // Load Word / Lower Word
+          PMFHL_UW = 0x01,  // Upper Word
+          PMFHL_SLW = 0x02, // Signed Lower Word
+
+LINE 381: COP0_CO = 0x10  // COP0 Operation group (fmt=10000) (see Cop0CoFunctions)
+      };
+  
+      // COP0 CO Function Field (bits 5-0) for COP0_CO Format
+      enum Cop0CoFunctions
+
+LINE 384: // COP0 CO Function Field (bits 5-0) for COP0_CO Format
+      enum Cop0CoFunctions
+      {
+          COP0_CO_TLBR = 0x01,  // TLB Read
+          COP0_CO_TLBWI = 0x02, // TLB Write Indexed
+
+LINE 385: enum Cop0CoFunctions
+      {
+          COP0_CO_TLBR = 0x01,  // TLB Read
+          COP0_CO_TLBWI = 0x02, // TLB Write Indexed
+  
+
+LINE 451: COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+          COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+      };
+  
+      // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+
+LINE 452: COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+      };
+  
+      // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+      enum Cop1FunctionsS
+
+LINE 455: // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+      enum Cop1FunctionsS
+      {
+          COP1_S_ADD = 0x00,  // ADD.S
+          COP1_S_SUB = 0x01,  // SUB.S
+
+LINE 456: enum Cop1FunctionsS
+      {
+          COP1_S_ADD = 0x00,  // ADD.S
+          COP1_S_SUB = 0x01,  // SUB.S
+          COP1_S_MUL = 0x02,  // MUL.S
+
+LINE 476: // --- Additional Arithmetic/Functions (from FPU.S table) ---
+          COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+          COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+          COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+          COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+
+LINE 480: COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+          COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+          COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+          COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+          COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+
+LINE 481: COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+          COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+          COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+          COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  
+
+LINE 482: COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+          COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+          COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  
+          // --- Conversions (from FPU.S table) ---
+
+LINE 483: COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+          COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  
+          // --- Conversions (from FPU.S table) ---
+          COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+
+LINE 484: COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  
+          // --- Conversions (from FPU.S table) ---
+          COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+          COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+
+LINE 513: // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+      enum Cop1FunctionsW
+      {
+          COP1_W_CVT_S = 0x20, // CVT.S.W (Convert Word Integer to Single Float)
+                               // 0x21 --- (Standard MIPS: CVT.D.W - requires double-precision)
+
+LINE 514: enum Cop1FunctionsW
+      {
+          COP1_W_CVT_S = 0x20, // CVT.S.W (Convert Word Integer to Single Float)
+                               // 0x21 --- (Standard MIPS: CVT.D.W - requires double-precision)
+                               // 0x24 --- (Standard MIPS: CVT.W.W - Nop?)
+
+LINE 552: // VU0 Macro Function Field (bits 5-0) for COP2_CO Format (Special1 Table)
+      enum VU0MacroSpecial1Functions : uint8_t
+      {
+          VU0_S1_VADDx = 0x00,
+          VU0_S1_VADDy = 0x01,
+
+LINE 553: enum VU0MacroSpecial1Functions : uint8_t
+      {
+          VU0_S1_VADDx = 0x00,
+          VU0_S1_VADDy = 0x01,
+          VU0_S1_VADDz = 0x02,
+
+LINE 612: // VU0 Macro Function Field (bits 5-0) for COP2_CO Format (Special2 Table)
+      enum VU0MacroSpecial2Functions : uint8_t
+      {
+          VU0_S2_VADDAx = 0x00,
+          VU0_S2_VADDAy = 0x01,
+
+LINE 613: enum VU0MacroSpecial2Functions : uint8_t
+      {
+          VU0_S2_VADDAx = 0x00,
+          VU0_S2_VADDAy = 0x01,
+          VU0_S2_VADDAz = 0x02,
+
+LINE 682: // // VU0 macro instruction function codes (subset - there are many more)
+      // enum VU0MacroFunctions
+      // {
+      //     VU0_VADD = 0x00,
+      //     VU0_VSUB = 0x01,
+
+LINE 683: // enum VU0MacroFunctions
+      // {
+      //     VU0_VADD = 0x00,
+      //     VU0_VSUB = 0x01,
+      //     VU0_VMUL = 0x02,
+
+LINE 709: //     VU0_CTCVU = 0x18,  // Control To VU0 with specific functionality
+      //     VU0_VMTIR = 0x1C,  // Move To VU0 I Register
+      //     VU0_VCLIP = 0x1E,  // VU0 Clipping operation
+      //     VU0_VLDQ = 0x1F    // VU0 Load/Store Quad with Decrement
+      // };
+
+LINE 731: enum VU0OPSFunctions
+      {
+          VU0OPS_QMFC2_NI = 0x00, // Non-incrementing QMFC2
+          VU0OPS_QMFC2_I = 0x01,  // Incrementing QMFC2
+          VU0OPS_QMTC2_NI = 0x02, // Non-incrementing QMTC2
+
+LINE 741: VU0OPS_VMTIR = 0x3C     // Move to VU0 I Register with function code
+      };
+  
+      enum VU0OPSFunctionsExtra
+      {
+
+LINE 744: enum VU0OPSFunctionsExtra
+      {
+          VU0_VCALLMS_DIRECT = 0x00,
+          VU0_VCALLMS_REG = 0x01
+      };
+
+LINE 753: VU0_FIELD_SHIFT = 21,  // Shift amount for field selection
+          VU0_STORE_BIT = 0x80,  // Bit indicating store operation
+          VU0_SUBOP_MASK = 0x1F, // Mask for sub-operation code
+          VU0_SUBOP_SHIFT = 6,   // Shift amount for sub-operation
+          VU0_SQC0 = 0x8         // SQC0 instruction code
+
+LINE 756: VU0_SUBOP_SHIFT = 6,   // Shift amount for sub-operation
+          VU0_SQC0 = 0x8         // SQC0 instruction code
+      };
+  
+      enum VU0FormatsExtra
+
+LINE 774: #define FUNCTION(inst) ((inst) & 0x3F)
+  #define IMMEDIATE(inst) ((inst) & 0xFFFF)
+  #define SIMMEDIATE(inst) ((int32_t)(int16_t)((inst) & 0xFFFF))
+  #define TARGET(inst) ((inst) & 0x3FFFFFF)
+  #define COP_FUNCT(inst) ((uint8_t)((inst) & 0x3F))                    // Function field for COPz CO instructions
+
+LINE 778: #define COP_FUNCT(inst) ((uint8_t)((inst) & 0x3F))                    // Function field for COPz CO instructions
+  #define FPU_FMT(inst) ((uint8_t)(((inst) >> 21) & 0x1F))              // Format field for FPU instructions
+  #define FT(inst) RT(inst)                                             // Target FPU register
+  #define FS(inst) RD(inst)                                             // Source FPU register
+  #define FD(inst) SA(inst)                                             // Destination FPU register
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\r5900_decoder.h =====
+LINE 1: #ifndef PS2RECOMP_R5900_DECODER_H
+  #define PS2RECOMP_R5900_DECODER_H
+  
+  #include "ps2recomp/types.h"
+  #include "ps2recomp/instructions.h"
+
+LINE 2: #define PS2RECOMP_R5900_DECODER_H
+  
+  #include "ps2recomp/types.h"
+  #include "ps2recomp/instructions.h"
+  #include <cstdint>
+
+LINE 12: class R5900Decoder
+      {
+      public:
+          R5900Decoder();
+          ~R5900Decoder();
+
+LINE 15: R5900Decoder();
+          ~R5900Decoder();
+  
+          static std::string disassembleInstruction(uint32_t address, uint32_t rawInstruction);
+          static std::string disassembleInstruction(const Instruction &inst);
+
+LINE 16: ~R5900Decoder();
+  
+          static std::string disassembleInstruction(uint32_t address, uint32_t rawInstruction);
+          static std::string disassembleInstruction(const Instruction &inst);
+  
+
+LINE 21: Instruction decodeInstruction(uint32_t address, uint32_t rawInstruction, bool includeDisassembly = true) const;
+  
+          bool isBranchInstruction(const Instruction &inst) const;
+          bool isJumpInstruction(const Instruction &inst) const;
+          bool isCallInstruction(const Instruction &inst) const;
+
+LINE 37: void decodeRType(Instruction &inst) const;
+          void decodeIType(Instruction &inst) const;
+          void decodeJType(Instruction &inst) const;
+   
+          void decodeSpecial(Instruction &inst) const;
+
+LINE 38: void decodeIType(Instruction &inst) const;
+          void decodeJType(Instruction &inst) const;
+   
+          void decodeSpecial(Instruction &inst) const;
+          void decodeRegimm(Instruction &inst) const;
+
+LINE 39: void decodeJType(Instruction &inst) const;
+   
+          void decodeSpecial(Instruction &inst) const;
+          void decodeRegimm(Instruction &inst) const;
+          
+
+LINE 41: void decodeSpecial(Instruction &inst) const;
+          void decodeRegimm(Instruction &inst) const;
+          
+          void decodeCOP0(Instruction& inst) const;
+          void decodeCOP1(Instruction &inst) const;
+
+LINE 42: void decodeRegimm(Instruction &inst) const;
+          
+          void decodeCOP0(Instruction& inst) const;
+          void decodeCOP1(Instruction &inst) const;
+          void decodeCOP2(Instruction &inst) const;
+
+LINE 44: void decodeCOP0(Instruction& inst) const;
+          void decodeCOP1(Instruction &inst) const;
+          void decodeCOP2(Instruction &inst) const;
+  
+          void decodeMMI(Instruction &inst) const;
+
+LINE 45: void decodeCOP1(Instruction &inst) const;
+          void decodeCOP2(Instruction &inst) const;
+  
+          void decodeMMI(Instruction &inst) const;
+          void decodeMMI0(Instruction &inst) const;
+
+LINE 46: void decodeCOP2(Instruction &inst) const;
+  
+          void decodeMMI(Instruction &inst) const;
+          void decodeMMI0(Instruction &inst) const;
+          void decodeMMI1(Instruction &inst) const;
+
+LINE 48: void decodeMMI(Instruction &inst) const;
+          void decodeMMI0(Instruction &inst) const;
+          void decodeMMI1(Instruction &inst) const;
+          void decodeMMI2(Instruction &inst) const;
+          void decodeMMI3(Instruction &inst) const;
+
+LINE 49: void decodeMMI0(Instruction &inst) const;
+          void decodeMMI1(Instruction &inst) const;
+          void decodeMMI2(Instruction &inst) const;
+          void decodeMMI3(Instruction &inst) const;
+          
+
+LINE 50: void decodeMMI1(Instruction &inst) const;
+          void decodeMMI2(Instruction &inst) const;
+          void decodeMMI3(Instruction &inst) const;
+          
+          void decodePMFHL(Instruction &inst) const;
+
+LINE 51: void decodeMMI2(Instruction &inst) const;
+          void decodeMMI3(Instruction &inst) const;
+          
+          void decodePMFHL(Instruction &inst) const;
+      };
+
+LINE 52: void decodeMMI3(Instruction &inst) const;
+          
+          void decodePMFHL(Instruction &inst) const;
+      };
+  
+
+LINE 54: void decodePMFHL(Instruction &inst) const;
+      };
+  
+  } // namespace ps2recomp
+  
+
+LINE 59: #endif // PS2RECOMP_R5900_DECODER_H
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp =====
+LINE 1: #include "ps2recomp/r5900_decoder.h"
+  #include "rabbitizer.h"
+  #include <iostream>
+  #include <vector>
+  
+
+LINE 22: R5900Decoder::R5900Decoder()
+      {
+      }
+  
+      R5900Decoder::~R5900Decoder()
+
+LINE 26: R5900Decoder::~R5900Decoder()
+      {
+      }
+  
+      std::string R5900Decoder::disassembleInstruction(uint32_t address, uint32_t rawInstruction)
+
+LINE 30: std::string R5900Decoder::disassembleInstruction(uint32_t address, uint32_t rawInstruction)
+      {
+          RabbitizerInstruction rabbitizerInst;
+          RabbitizerInstructionR5900_init(&rabbitizerInst, rawInstruction, address);
+          RabbitizerInstructionR5900_processUniqueId(&rabbitizerInst);
+
+LINE 42: std::string R5900Decoder::disassembleInstruction(const Instruction &inst)
+      {
+          if (!inst.disassembly.empty())
+          {
+              return inst.disassembly;
+
+LINE 52: Instruction R5900Decoder::decodeInstruction(uint32_t address, uint32_t rawInstruction, bool includeDisassembly) const
+      {
+          Instruction inst;
+  
+          inst.address = address;
+
+LINE 63: inst.function = FUNCTION(rawInstruction);
+          inst.immediate = IMMEDIATE(rawInstruction);
+          inst.simmediate = SIMMEDIATE(rawInstruction);
+          inst.target = TARGET(rawInstruction);
+  
+
+LINE 82: inst.mmiFunction = 0;
+          inst.pmfhlVariation = 0;
+          inst.vuFunction = 0;
+          inst.mmioAddress = 0;
+  
+
+LINE 84: inst.vuFunction = 0;
+          inst.mmioAddress = 0;
+  
+          inst.vectorInfo.isVector = false;
+          inst.vectorInfo.usesQReg = false;
+
+LINE 109: inst.isCall = RabbitizerInstruction_isFunctionCall(&rabbitizerInst);
+          inst.isReturn = RabbitizerInstruction_isReturn(&rabbitizerInst) ||
+                          rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret;
+          inst.hasDelaySlot = RabbitizerInstruction_hasDelaySlot(&rabbitizerInst);
+  
+
+LINE 183: decodeCOP2(inst);
+          }
+          else if (inst.opcode == OPCODE_LWC2 || inst.opcode == OPCODE_LDC2)
+          {
+              inst.isVU = true;
+
+LINE 203: decodeSpecial(inst);
+          }
+          else if (inst.opcode == OPCODE_MMI)
+          {
+              decodeMMI(inst);
+
+LINE 207: decodeMMI(inst);
+          }
+  
+          if (inst.isMMI || inst.isVU)
+          {
+
+LINE 226: void R5900Decoder::decodeRType(Instruction &inst) const
+      {
+          // R-type instructions already have all fields set correctly
+          if (inst.rd != 0)
+              inst.modificationInfo.modifiesGPR = true;
+
+LINE 233: void R5900Decoder::decodeIType(Instruction &inst) const
+      {
+          // I-type instructions already have all fields set correctly
+          if (!inst.isStore && !inst.isBranch && inst.rt != 0)
+          {
+
+LINE 242: void R5900Decoder::decodeJType(Instruction &inst) const
+      {
+          // J-type instructions already have all fields set correctly
+          inst.isJump = true;
+          inst.hasDelaySlot = true;
+
+LINE 255: void R5900Decoder::decodeSpecial(Instruction &inst) const
+      {
+          if (inst.rd != 0)
+              inst.modificationInfo.modifiesGPR = true;
+  
+
+LINE 260: switch (inst.function)
+          {
+          case SPECIAL_JR:
+              inst.isJump = true;
+              inst.hasDelaySlot = true;
+
+LINE 398: void R5900Decoder::decodeRegimm(Instruction &inst) const
+      {
+          uint32_t rt = inst.rt;
+  
+          switch (rt)
+
+LINE 450: void R5900Decoder::decodeMMI(Instruction &inst) const
+      {
+          inst.isMMI = true;
+          inst.isMultimedia = true;
+          inst.modificationInfo.modifiesGPR = true; // Most MMI ops write to rd GPR
+
+LINE 458: // The function field is actually determined by the lowest 6 bits (as in R-type)
+          uint32_t mmiFunction = inst.function;
+  
+          uint32_t rs = inst.rs;
+  
+
+LINE 459: uint32_t mmiFunction = inst.function;
+  
+          uint32_t rs = inst.rs;
+  
+          if (mmiFunction == MMI_MMI0)
+
+LINE 463: if (mmiFunction == MMI_MMI0)
+          {
+              decodeMMI0(inst);
+              return;
+          }
+
+LINE 465: decodeMMI0(inst);
+              return;
+          }
+          if (mmiFunction == MMI_MMI1)
+          {
+
+LINE 468: if (mmiFunction == MMI_MMI1)
+          {
+              decodeMMI1(inst);
+              return;
+          }
+
+LINE 470: decodeMMI1(inst);
+              return;
+          }
+          if (mmiFunction == MMI_MMI2)
+          {
+
+LINE 473: if (mmiFunction == MMI_MMI2)
+          {
+              decodeMMI2(inst);
+              return;
+          }
+
+LINE 475: decodeMMI2(inst);
+              return;
+          }
+          if (mmiFunction == MMI_MMI3)
+          {
+
+LINE 478: if (mmiFunction == MMI_MMI3)
+          {
+              decodeMMI3(inst);
+              return;
+          }
+
+LINE 480: decodeMMI3(inst);
+              return;
+          }
+  
+          switch (mmiFunction)
+
+LINE 484: switch (mmiFunction)
+          {
+          case MMI_PLZCW:
+              // Parallel leading zero/one count word
+              break;
+
+LINE 540: decodePMFHL(inst);
+              break;
+          default:
+              std::cerr << "Unknown MMI function: " << std::hex << mmiFunction << std::endl;
+              break;
+
+LINE 543: std::cerr << "Unknown MMI function: " << std::hex << mmiFunction << std::endl;
+              break;
+          }
+      }
+  
+
+LINE 548: void R5900Decoder::decodeMMI0(Instruction &inst) const
+      {
+          inst.mmiType = 0;
+          inst.mmiFunction = inst.sa;
+  
+
+LINE 551: inst.mmiFunction = inst.sa;
+  
+          uint32_t sa = inst.sa;
+  
+          switch (sa)
+
+LINE 597: void R5900Decoder::decodeMMI1(Instruction &inst) const
+      {
+          inst.mmiType = 1;
+          inst.mmiFunction = inst.sa;
+  
+
+LINE 600: inst.mmiFunction = inst.sa;
+  
+          uint32_t subFunction = inst.function & 0x3F;
+  
+          uint32_t sa = inst.sa;
+
+LINE 602: uint32_t subFunction = inst.function & 0x3F;
+  
+          uint32_t sa = inst.sa;
+  
+          switch (sa)
+
+LINE 647: void R5900Decoder::decodeMMI2(Instruction &inst) const
+      {
+          inst.mmiType = 2;
+          inst.mmiFunction = inst.sa;
+  
+
+LINE 650: inst.mmiFunction = inst.sa;
+  
+          if (inst.sa == MMI2_PMADDW || inst.sa == MMI2_PMSUBW ||
+              inst.sa == MMI2_PMULTW || inst.sa == MMI2_PDIVW || inst.sa == MMI2_PDIVBW ||
+              inst.sa == MMI2_PMADDH || inst.sa == MMI2_PHMADH ||
+
+LINE 718: void R5900Decoder::decodeMMI3(Instruction &inst) const
+      {
+          inst.mmiType = 3;
+          inst.mmiFunction = inst.sa;
+  
+
+LINE 721: inst.mmiFunction = inst.sa;
+  
+          uint32_t sa = inst.sa;
+  
+          switch (sa)
+
+LINE 738: inst.mmiFunction = MMI3_PMTHI;
+              inst.modificationInfo.modifiesGPR = false;
+              inst.modificationInfo.modifiesControl = true; // HI register is modified
+              break;
+  
+
+LINE 744: inst.mmiFunction = MMI3_PMTLO;
+              inst.modificationInfo.modifiesGPR = false;
+              inst.modificationInfo.modifiesControl = true; // LO register is modified
+              break;
+  
+
+LINE 781: void R5900Decoder::decodeCOP0(Instruction &inst) const
+      {
+          // COP0 (System Control) instructions
+          uint8_t format = inst.rs;
+          inst.modificationInfo.modifiesControl = true; // Assume COP0 always modifies some control state
+
+LINE 790: else if (format == COP0_CO && inst.function == COP0_CO_ERET)
+          {
+              inst.isReturn = true;
+              inst.hasDelaySlot = false;
+          } // ERET is special
+
+LINE 802: void R5900Decoder::decodeCOP1(Instruction &inst) const
+      {
+          uint8_t format = inst.rs;
+          if (format == COP1_MF || format == COP1_CF)
+          {
+
+LINE 820: if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+          {
+              inst.modificationInfo.modifiesControl = true;
+          } // FCR31
+      }
+
+LINE 826: void R5900Decoder::decodeCOP2(Instruction &inst) const
+      {
+          uint8_t format = inst.rs;
+          inst.isVU = true;
+          inst.isMultimedia = true;
+
+LINE 866: { // Refine based on specific VU function
+              const uint8_t special1Func = static_cast<uint8_t>(inst.function & 0x3F);
+              const bool isSpecial2 = special1Func >= 0x3C;
+              const uint8_t special2Func = static_cast<uint8_t>((((inst.raw >> 6) & 0x1F) << 2) | (inst.raw & 0x3));
+              const uint8_t vuFunc = isSpecial2 ? special2Func : special1Func;
+
+LINE 867: const uint8_t special1Func = static_cast<uint8_t>(inst.function & 0x3F);
+              const bool isSpecial2 = special1Func >= 0x3C;
+              const uint8_t special2Func = static_cast<uint8_t>((((inst.raw >> 6) & 0x1F) << 2) | (inst.raw & 0x3));
+              const uint8_t vuFunc = isSpecial2 ? special2Func : special1Func;
+  
+
+LINE 958: void R5900Decoder::decodePMFHL(Instruction &inst) const
+      {
+          uint32_t saField = inst.sa;
+  
+          switch (saField)
+
+LINE 985: bool R5900Decoder::isBranchInstruction(const Instruction &inst) const
+      {
+          return inst.isBranch;
+      }
+  
+
+LINE 990: bool R5900Decoder::isJumpInstruction(const Instruction &inst) const
+      {
+          return inst.isJump;
+      }
+  
+
+LINE 995: bool R5900Decoder::isCallInstruction(const Instruction &inst) const
+      {
+          return inst.isCall;
+      }
+  
+
+LINE 1000: bool R5900Decoder::isReturnInstruction(const Instruction &inst) const
+      {
+          return inst.isReturn;
+      }
+  
+
+LINE 1005: bool R5900Decoder::isMMIInstruction(const Instruction &inst) const
+      {
+          return inst.isMMI;
+      }
+  
+
+LINE 1010: bool R5900Decoder::isVUInstruction(const Instruction &inst) const
+      {
+          return inst.isVU;
+      }
+  
+
+LINE 1015: bool R5900Decoder::isStore(const Instruction &inst) const
+      {
+          return inst.isStore;
+      }
+  
+
+LINE 1020: bool R5900Decoder::isLoad(const Instruction &inst) const
+      {
+          return inst.isLoad;
+      }
+  
+
+LINE 1025: bool R5900Decoder::hasDelaySlot(const Instruction &inst) const
+      {
+          return inst.hasDelaySlot;
+      }
+  
+
+LINE 1030: uint32_t R5900Decoder::getBranchTarget(const Instruction &inst) const
+      {
+          if (!inst.isBranch)
+          {
+              return 0;
+
+LINE 1041: uint32_t R5900Decoder::getJumpTarget(const Instruction &inst) const
+      {
+          if (!inst.isJump)
+          {
+              return 0;
+
+LINE 1049: (inst.function == SPECIAL_JR || inst.function == SPECIAL_JALR))
+          {
+              // JR/JALR: target is in the rs register (can't be determined statically)
+              return 0;
+          }
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp =====
+LINE 21: uint32_t ft = inst.rt;    // FPU source register
+          uint32_t fs = inst.rd;    // FPU source register
+          uint32_t fd = inst.sa;    // FPU destination register
+          uint32_t function = inst.function;
+  
+
+LINE 22: uint32_t fs = inst.rd;    // FPU source register
+          uint32_t fd = inst.sa;    // FPU destination register
+          uint32_t function = inst.function;
+  
+          switch (format)
+
+LINE 23: uint32_t fd = inst.sa;    // FPU destination register
+          uint32_t function = inst.function;
+  
+          switch (format)
+          {
+
+LINE 24: uint32_t function = inst.function;
+  
+          switch (format)
+          {
+          case COP1_MF:
+
+LINE 33: if (fs == 31)
+                  return fmt::format("SET_GPR_U32(ctx, {}, ctx->fcr31);", ft); // FCR31 contains status/control
+              if (fs == 0)
+                  return fmt::format("SET_GPR_U32(ctx, {}, 0x00000000);", ft); // FCR0 is the FPU implementation register
+              return fmt::format("SET_GPR_U32(ctx, {}, 0); // Unimplemented FCR{}", ft, fs);
+
+LINE 35: if (fs == 0)
+                  return fmt::format("SET_GPR_U32(ctx, {}, 0x00000000);", ft); // FCR0 is the FPU implementation register
+              return fmt::format("SET_GPR_U32(ctx, {}, 0); // Unimplemented FCR{}", ft, fs);
+          case COP1_CT:
+              if (fs == 31)
+
+LINE 39: if (fs == 31)
+                  return fmt::format("ctx->fcr31 = GPR_U32(ctx, {}) & 0x0183FFFF;", ft);
+              else
+                  return fmt::format("// CTC1 to FCR{} ignored", fs);
+              return "";
+
+LINE 47: switch (function)
+              {
+              case COP1_S_ADD:
+                  return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+              case COP1_S_SUB:
+
+LINE 83: return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+              case COP1_S_SUBA:
+                  return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+              case COP1_S_MULA:
+                  return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+
+LINE 85: return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+              case COP1_S_MULA:
+                  return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+              case COP1_S_MADD:
+                  return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+
+LINE 86: case COP1_S_MULA:
+                  return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+              case COP1_S_MADD:
+                  return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+              case COP1_S_MSUB:
+
+LINE 87: return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+              case COP1_S_MADD:
+                  return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+              case COP1_S_MSUB:
+                  return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+
+LINE 88: case COP1_S_MADD:
+                  return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+              case COP1_S_MSUB:
+                  return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+              case COP1_S_MADDA:
+
+LINE 89: return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+              case COP1_S_MSUB:
+                  return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+              case COP1_S_MADDA:
+                  return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+
+LINE 90: case COP1_S_MSUB:
+                  return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+              case COP1_S_MADDA:
+                  return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+              case COP1_S_MSUBA:
+
+LINE 91: return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+              case COP1_S_MADDA:
+                  return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+              case COP1_S_MSUBA:
+                  return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+
+LINE 92: case COP1_S_MADDA:
+                  return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+              case COP1_S_MSUBA:
+                  return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+              case COP1_S_MAX:
+
+LINE 93: return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+              case COP1_S_MSUBA:
+                  return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+              case COP1_S_MAX:
+                  return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+
+LINE 94: case COP1_S_MSUBA:
+                  return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+              case COP1_S_MAX:
+                  return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+              case COP1_S_MIN:
+
+LINE 95: return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+              case COP1_S_MAX:
+                  return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+              case COP1_S_MIN:
+                  return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+
+LINE 133: return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.S instruction: function 0x{:X}", function));
+              }
+          case COP1_W:
+              switch (function)
+              {
+
+LINE 136: switch (function)
+              {
+              case COP1_W_CVT_S:
+                  return fmt::format("{{ int32_t tmp; std::memcpy(&tmp, &ctx->f[{}], sizeof(tmp)); ctx->f[{}] = FPU_CVT_S_W(tmp); }}", fs, fd);
+              default:
+
+LINE 141: return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.W instruction: function 0x{:X}", function));
+              }
+          default:
+              return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU instruction: format 0x{:X}, function 0x{:X}", format, function));
+          }
+
+LINE 144: return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU instruction: format 0x{:X}, function 0x{:X}", format, function));
+          }
+      }
+  
+  }
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp =====
+LINE 37: Instruction makeCop1S(uint32_t function, uint8_t fd, uint8_t fs, uint8_t ft)
+      {
+          Instruction inst{};
+          inst.opcode = OPCODE_COP1;
+          inst.rs = COP1_S;
+
+LINE 45: inst.function = function;
+          return inst;
+      }
+  
+      uint32_t laneBits(__m128 v, int lane)
+
+LINE 76: const float fs = floatOf(v.fs);
+          const float ft = floatOf(v.ft);
+          const std::string op = v.op;
+          if (op == "add")
+              return bitsOf(FPU_ADD_S(fs, ft));
+
+LINE 77: const float ft = floatOf(v.ft);
+          const std::string op = v.op;
+          if (op == "add")
+              return bitsOf(FPU_ADD_S(fs, ft));
+          if (op == "sub")
+
+LINE 100: void register_ps2_float_semantics_tests()
+  {
+      MiniTest::Case("PS2FloatSemantics", [](TestCase &tc)
+      {
+          tc.Run("FPU results match the PS2 hardware results from ps2autotests", [](TestCase &t)
+
+LINE 217: // fd = f2, fs = f3, ft = f4 (all distinct so a wrong operand shows up)
+              const std::string div = gen.translateInstruction(makeCop1S(COP1_S_DIV, 2, 3, 4));
+              t.IsTrue(div.find("ctx->f[2] = FPU_DIV_S(ctx->f[3], ctx->f[4])") != std::string::npos,
+                       "DIV.S should write fs / ft to fd but got: " + div);
+              t.IsTrue(div.find("INFINITY") == std::string::npos, "DIV.S must not produce IEEE infinity but got: " + div);
+
+LINE 218: const std::string div = gen.translateInstruction(makeCop1S(COP1_S_DIV, 2, 3, 4));
+              t.IsTrue(div.find("ctx->f[2] = FPU_DIV_S(ctx->f[3], ctx->f[4])") != std::string::npos,
+                       "DIV.S should write fs / ft to fd but got: " + div);
+              t.IsTrue(div.find("INFINITY") == std::string::npos, "DIV.S must not produce IEEE infinity but got: " + div);
+  
+
+LINE 223: const std::string rsqrt = gen.translateInstruction(makeCop1S(COP1_S_RSQRT, 2, 3, 4));
+              t.IsTrue(rsqrt.find("ctx->f[2] = FPU_RSQRT_S(ctx->f[3], ctx->f[4])") != std::string::npos,
+                       "RSQRT.S should compute fs / sqrt(ft) but got: " + rsqrt);
+          });
+      });
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp =====
+LINE 127: inst.function = SPECIAL_JALR;
+      inst.rs = rs;
+      inst.rd = rd; // Destination for link address (default 31)
+      inst.hasDelaySlot = true;
+      inst.raw = (OPCODE_SPECIAL << 26) | (rs << 21) | (0 << 16) | (rd << 11) | (0 << 6) | SPECIAL_JALR;
+
+LINE 140: inst.function = SPECIAL_JR;
+      inst.rs = rs;
+      inst.hasDelaySlot = true;
+      inst.raw = (OPCODE_SPECIAL << 26) | (rs << 21) | SPECIAL_JR;
+      return inst;
+
+LINE 152: inst.function = SPECIAL_SYSCALL;
+      inst.hasDelaySlot = false;
+      inst.raw = (OPCODE_SPECIAL << 26) | SPECIAL_SYSCALL;
+      return inst;
+  }
+
+LINE 167: void register_code_generator_tests()
+  {
+      MiniTest::Case("CodeGenerator", [](TestCase &tc)
+                     {
+      tc.Run("Generated sources cannot be shadowed by stale local declaration headers", [](TestCase &t) {
+
+LINE 172: Function func;
+          func.name = "header_lookup";
+          func.start = 0x8F00;
+          func.end = 0x8F04;
+          func.isRecompiled = true;
+
+LINE 179: gen.setRenamedFunctions({{func.start, "header_lookup_0x8f00"}});
+  
+          const std::string generated = gen.generateFunction(func, {makeNop(func.start)}, true);
+          const std::string registration = gen.generateFunctionRegistration({func}, {});
+  
+
+LINE 181: const std::string generated = gen.generateFunction(func, {makeNop(func.start)}, true);
+          const std::string registration = gen.generateFunctionRegistration({func}, {});
+  
+          t.IsTrue(generated.find("#include <ps2_recompiled_functions.h>") != std::string::npos,
+                   "function sources must resolve declarations through the configured include path");
+
+LINE 182: const std::string registration = gen.generateFunctionRegistration({func}, {});
+  
+          t.IsTrue(generated.find("#include <ps2_recompiled_functions.h>") != std::string::npos,
+                   "function sources must resolve declarations through the configured include path");
+          t.IsTrue(generated.find("#include <ps2_recompiled_stubs.h>") != std::string::npos,
+
+LINE 184: t.IsTrue(generated.find("#include <ps2_recompiled_functions.h>") != std::string::npos,
+                   "function sources must resolve declarations through the configured include path");
+          t.IsTrue(generated.find("#include <ps2_recompiled_stubs.h>") != std::string::npos,
+                   "function sources must resolve stub declarations through the configured include path");
+          t.IsTrue(registration.find("#include <ps2_recompiled_functions.h>") != std::string::npos,
+
+LINE 185: "function sources must resolve declarations through the configured include path");
+          t.IsTrue(generated.find("#include <ps2_recompiled_stubs.h>") != std::string::npos,
+                   "function sources must resolve stub declarations through the configured include path");
+          t.IsTrue(registration.find("#include <ps2_recompiled_functions.h>") != std::string::npos,
+                   "the registration source must use the same unambiguous declaration header");
+
+LINE 187: "function sources must resolve stub declarations through the configured include path");
+          t.IsTrue(registration.find("#include <ps2_recompiled_functions.h>") != std::string::npos,
+                   "the registration source must use the same unambiguous declaration header");
+          t.IsTrue(registration.find("#include <ps2_recompiled_stubs.h>") != std::string::npos,
+                   "the registration source must use the same unambiguous stub header");
+
+LINE 188: t.IsTrue(registration.find("#include <ps2_recompiled_functions.h>") != std::string::npos,
+                   "the registration source must use the same unambiguous declaration header");
+          t.IsTrue(registration.find("#include <ps2_recompiled_stubs.h>") != std::string::npos,
+                   "the registration source must use the same unambiguous stub header");
+      });
+
+LINE 209: Function func;
+          func.name = "syscall_resume";
+          func.start = 0x9000;
+          func.end = 0x9008;
+          func.isRecompiled = true;
+
+LINE 218: syscall.function = SPECIAL_SYSCALL;
+          syscall.raw = (0x44u << 6) | SPECIAL_SYSCALL;
+  
+          Instruction after = makeNop(0x9004);
+  
+
+LINE 224: const std::string generated = gen.generateFunction(func, {syscall, after}, false);
+          const size_t continuation = generated.find("ctx->pc = 0x9004u;");
+          const size_t dispatch = generated.find("runtime->handleSyscall(rdram, ctx, 0x44u);");
+  
+          t.IsTrue(continuation != std::string::npos,
+
+LINE 237: Function func;
+          func.name = "syscall_resume_entry";
+          func.start = 0x9100;
+          func.end = 0x9108;
+          func.isRecompiled = true;
+
+LINE 246: syscall.function = SPECIAL_SYSCALL;
+          syscall.raw = (0x83u << 6) | SPECIAL_SYSCALL;
+  
+          Instruction after = makeNop(0x9104);
+          CodeGenerator gen({}, {});
+
+LINE 257: const std::string generated = gen.generateFunction(func, {syscall, after}, false);
+          t.IsTrue(generated.find("case 0x9104u: goto label_9104;") != std::string::npos,
+                   "the owner wrapper must resume directly after the syscall");
+  
+          gen.setRenamedFunctions({{0x9100u, "syscall_resume_entry_0x9100"}});
+
+LINE 261: gen.setRenamedFunctions({{0x9100u, "syscall_resume_entry_0x9100"}});
+          gen.setResumeEntryTargets({{0x9100u,
+                                      std::vector<uint32_t>(analysis.resumeEntryPoints.begin(),
+                                                            analysis.resumeEntryPoints.end())}});
+          const std::string registration = gen.generateFunctionRegistration({func}, {});
+
+LINE 265: const std::string registration = gen.generateFunctionRegistration({func}, {});
+          t.IsTrue(registration.find(
+                       "g_ps2RecompiledFunctionTable[1] = syscall_resume_entry_0x9100; // 0x9104") !=
+                       std::string::npos,
+                   "the syscall continuation must register to the owner wrapper");
+
+LINE 267: "g_ps2RecompiledFunctionTable[1] = syscall_resume_entry_0x9100; // 0x9104") !=
+                       std::string::npos,
+                   "the syscall continuation must register to the owner wrapper");
+      });
+  
+
+LINE 277: mult.function = SPECIAL_MULT;
+          mult.rs = 4;
+          mult.rt = 5;
+          mult.rd = 3;
+  
+
+LINE 300: mult1.function = MMI_MULT1;
+          mult1.rs = 8;
+          mult1.rt = 9;
+          mult1.rd = 10;
+  
+
+LINE 313: Function func;
+          func.name = "mmio_store";
+          func.start = 0x1000;
+          func.end = 0x1010;
+          func.isRecompiled = true;
+
+LINE 325: std::string generated = gen.generateFunction(func, instructions, false);
+          printGeneratedCode("constant MMIO store emits direct runtime store", generated);
+  
+          t.IsTrue(generated.find("runtime->Store32(rdram, ctx, 0x1000E020u, GPR_U32(ctx, 2));") != std::string::npos,
+                   "constant MMIO SW should emit a direct runtime Store32");
+
+LINE 350: Function func;
+          func.name = "rdram_access";
+          func.start = 0x2000;
+          func.end = 0x2014;
+          func.isRecompiled = true;
+
+LINE 363: std::string generated = gen.generateFunction(func, instructions, false);
+          printGeneratedCode("constant RDRAM load and store emit fast memory access", generated);
+  
+          t.IsTrue(generated.find("SET_GPR_S32(ctx, 3, (int32_t)FAST_READ32(0x123460u));") != std::string::npos,
+                   "constant RDRAM LW should emit FAST_READ32 with the resolved address");
+
+LINE 377: Function func;
+          func.name = "gif_dma_kick";
+          func.start = 0x3000;
+          func.end = 0x3030;
+          func.isRecompiled = true;
+
+LINE 399: std::string generated = gen.generateFunction(func, instructions, false);
+          printGeneratedCode("known GIF DMA MMIO sequence emits native kick helper", generated);
+  
+          t.IsTrue(generated.find("uint32_t gifDmaKickValue_3024_2 = GPR_U32(ctx, 4);") != std::string::npos,
+                   "dynamic GIF TADR source should be captured when the store is coalesced");
+
+LINE 413: Function func;
+          func.name = "loadImage_like";
+          func.start = 0x2E7C90;
+          func.end = 0x2E7CC8;
+          func.isRecompiled = true;
+
+LINE 436: std::string generated = gen.generateFunction(func, instructions, false);
+          printGeneratedCode("GIF DMA kick coalesces when CHCR store is a return delay slot", generated);
+  
+          t.IsTrue(generated.find("label_2e7c9c:") != std::string::npos,
+                   "test should cover a branch target inside the GIF DMA setup");
+
+LINE 452: Function func;
+              func.name = "test_func";
+              func.start = 0x1000;
+          func.end = 0x1020;
+          func.isRecompiled = true;
+
+LINE 459: // Build a small function:
+          // 0x1000: nop
+          // 0x1004: beq $1,$1, target (0x100c) with delay slot at 0x1008
+          // 0x1008: nop (delay slot)
+          // 0x100c: nop (branch target)
+
+LINE 473: std::string generated = gen.generateFunction(func, instructions, false);
+          printGeneratedCode("emits labels and gotos for internal branches", generated);
+  
+          t.IsTrue(generated.find("label_100c:") != std::string::npos, "branch target should emit a label");
+          t.IsTrue(generated.find("goto label_100c;") != std::string::npos, "internal branch should jump via goto");
+
+LINE 482: Function func;
+          func.name = "delay_slot_label";
+          func.start = 0x2000;
+          func.end = 0x2020;
+          func.isRecompiled = true;
+
+LINE 496: std::string generated = gen.generateFunction(func, instructions, false);
+          printGeneratedCode("labels delay slot when it is a branch target", generated);
+  
+          t.IsTrue(generated.find("label_2004:") != std::string::npos, "delay slot that is a target should emit a label");
+          t.IsTrue(generated.find("goto label_2004;") != std::string::npos, "branch to delay slot should use goto");
+
+LINE 503: tc.Run("control-flow analysis keeps same-function JAL target internal and promotes only the return pc", [](TestCase &t) {
+          Function func;
+          func.name = "same_function_call";
+          func.start = 0x1000;
+          func.end = 0x101C;
+
+LINE 504: Function func;
+          func.name = "same_function_call";
+          func.start = 0x1000;
+          func.end = 0x101C;
+          func.isRecompiled = true;
+
+LINE 505: func.name = "same_function_call";
+          func.start = 0x1000;
+          func.end = 0x101C;
+          func.isRecompiled = true;
+          func.isStub = false;
+
+LINE 520: std::vector<Function> functions{func};
+          std::vector<Section> sections = {
+              {".text", 0x1000u, 0x100u, 0u, true, false, false, true, nullptr}
+          };
+  
+
+LINE 527: gen.collectInternalBranchTargets(func, instructions, &functions);
+  
+          t.IsTrue(analysis.entryPoints.contains(0x100Cu),
+                   "same-function JAL target should stay as an internal label target");
+          t.IsTrue(analysis.resumeEntryPoints.contains(0x1008u),
+
+LINE 530: "same-function JAL target should stay as an internal label target");
+          t.IsTrue(analysis.resumeEntryPoints.contains(0x1008u),
+                   "same-function JAL should mark the fallthrough pc as resumable");
+          t.IsFalse(analysis.externalEntryPoints.contains(0x100Cu),
+                    "same-function JAL target should not become an external entry candidate");
+
+LINE 532: "same-function JAL should mark the fallthrough pc as resumable");
+          t.IsFalse(analysis.externalEntryPoints.contains(0x100Cu),
+                    "same-function JAL target should not become an external entry candidate");
+      });
+  
+
+LINE 534: "same-function JAL target should not become an external entry candidate");
+      });
+  
+      tc.Run("control-flow analysis reports cross-function mid-function jumps as external entry candidates", [](TestCase &t) {
+          Function caller;
+
+LINE 537: tc.Run("control-flow analysis reports cross-function mid-function jumps as external entry candidates", [](TestCase &t) {
+          Function caller;
+          caller.name = "caller";
+          caller.start = 0x4000;
+          caller.end = 0x4008;
+
+LINE 538: Function caller;
+          caller.name = "caller";
+          caller.start = 0x4000;
+          caller.end = 0x4008;
+          caller.isRecompiled = true;
+
+LINE 545: Function target;
+          target.name = "target";
+          target.start = 0x5000;
+          target.end = 0x5010;
+          target.isRecompiled = true;
+
+LINE 560: std::vector<Function> functions{caller, target};
+          std::vector<Section> sections = {
+              {".text", 0x4000u, 0x2000u, 0u, true, false, false, true, nullptr}
+          };
+  
+
+LINE 567: gen.collectInternalBranchTargets(caller, instructions, &functions);
+  
+          t.IsTrue(analysis.externalEntryPoints.contains(0x5004u),
+                   "cross-function jump into the middle of a function should become an external entry candidate");
+      });
+
+LINE 570: "cross-function jump into the middle of a function should become an external entry candidate");
+      });
+  
+      tc.Run("control-flow analysis promotes JALR fallthrough as a resumable entry", [](TestCase &t) {
+          Function func;
+
+LINE 574: Function func;
+          func.name = "jalr_resume";
+          func.start = 0x1200;
+          func.end = 0x1218;
+          func.isRecompiled = true;
+
+LINE 589: std::vector<Function> functions{func};
+          std::vector<Section> sections = {
+              {".text", 0x1200u, 0x100u, 0u, true, false, false, true, nullptr}
+          };
+  
+
+LINE 596: gen.collectInternalBranchTargets(func, instructions, &functions);
+  
+          t.IsTrue(analysis.resumeEntryPoints.contains(0x120Cu),
+                   "JALR should mark its return/fallthrough pc as resumable");
+          t.IsTrue(analysis.entryPoints.contains(0x120Cu),
+
+LINE 605: Function func;
+          func.name = "unresolved_jr_fallback";
+          func.start = 0x3100;
+          func.end = 0x3120;
+          func.isRecompiled = true;
+
+LINE 624: "unresolved JR should register internal labels as resumable entries for the owning function");
+          t.IsTrue(analysis.entryPoints.contains(0x310Cu),
+                   "unresolved JR fallback targets should still emit labels in the owner");
+          t.IsFalse(analysis.jumpTableTargets.contains(0x3104u),
+                    "unresolved JR should not pretend it has a resolved local jump table");
+
+LINE 632: Function func;
+          func.name = "unresolved_jalr_fallback";
+          func.start = 0x3200;
+          func.end = 0x3220;
+          func.isRecompiled = true;
+
+LINE 651: "unresolved JALR should register internal labels as resumable entries for the owning function");
+          t.IsTrue(analysis.entryPoints.contains(0x320Cu),
+                   "unresolved JALR fallback targets should still emit labels in the owner");
+          t.IsFalse(analysis.jumpTableTargets.contains(0x3204u),
+                    "unresolved JALR should not pretend it has a resolved local jump table");
+
+LINE 661: Function func;
+          func.name = "syscall_wrapper";
+          func.start = 0x4000;
+          func.end = 0x4010;
+          func.isRecompiled = true;
+
+LINE 688: Function func;
+          func.name = "resume_owner";
+          func.start = 0x6000;
+          func.end = 0x6010;
+          func.isRecompiled = true;
+
+LINE 705: std::string generated = gen.generateFunction(func, instructions, false);
+          printGeneratedCode("resume entry targets emit a top-level pc switch in the owner wrapper", generated);
+  
+          t.IsTrue(generated.find("switch (ctx->pc)") != std::string::npos,
+                   "owner wrapper should dispatch resumable pcs with a switch");
+
+LINE 717: Function func;
+          func.name = "resume_owner";
+          func.start = 0x7000;
+          func.end = 0x7010;
+          func.isRecompiled = true;
+
+LINE 725: gen.setRenamedFunctions({{0x7000u, "resume_owner_0x7000"}});
+          gen.setResumeEntryTargets({{0x7000u, {0x7008u, 0x700Cu}}});
+  
+          std::string registration = gen.generateFunctionRegistration({func}, {});
+          printGeneratedCode("resume entry targets register to the owner wrapper", registration);
+
+LINE 728: std::string registration = gen.generateFunctionRegistration({func}, {});
+          printGeneratedCode("resume entry targets register to the owner wrapper", registration);
+  
+          t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[2] = resume_owner_0x7000; // 0x7008") != std::string::npos,
+                   "resume entry pc should register to the owner wrapper");
+
+LINE 731: t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[2] = resume_owner_0x7000; // 0x7008") != std::string::npos,
+                   "resume entry pc should register to the owner wrapper");
+          t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[3] = resume_owner_0x7000; // 0x700c") != std::string::npos,
+                   "multiple resume pcs should register to the same owner wrapper");
+      });
+
+LINE 733: t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[3] = resume_owner_0x7000; // 0x700c") != std::string::npos,
+                   "multiple resume pcs should register to the same owner wrapper");
+      });
+  
+      tc.Run("configured internal guest handlers register to their owner wrapper", [](TestCase &t) {
+
+LINE 738: Function owner;
+          owner.name = "sdk_bootstrap_owner";
+          owner.start = 0x7000;
+          owner.end = 0x7020;
+          owner.isRecompiled = true;
+
+LINE 748: std::vector<Function> functions{owner};
+          std::unordered_map<uint32_t, std::vector<Instruction>> decoded{{owner.start, instructions}};
+          std::unordered_map<uint32_t, std::vector<uint32_t>> targetsByOwner;
+  
+          const size_t added = PS2Recompiler::CollectInternalEntryTargets(
+
+LINE 749: std::unordered_map<uint32_t, std::vector<Instruction>> decoded{{owner.start, instructions}};
+          std::unordered_map<uint32_t, std::vector<uint32_t>> targetsByOwner;
+  
+          const size_t added = PS2Recompiler::CollectInternalEntryTargets(
+              functions, decoded, {0x7008u, 0x7018u}, targetsByOwner);
+
+LINE 753: functions, decoded, {0x7008u, 0x7018u}, targetsByOwner);
+  
+          t.IsTrue(added == 2u,
+                   "both address-qualified internal handlers should be promoted");
+          t.IsTrue(targetsByOwner.at(owner.start).size() == 2u,
+
+LINE 761: gen.setRenamedFunctions({{owner.start, "sdk_bootstrap_owner_0x7000"}});
+          gen.setResumeEntryTargets(targetsByOwner);
+  
+          const std::string generated = gen.generateFunction(owner, instructions, false);
+          const std::string registration = gen.generateFunctionRegistration(functions, {});
+
+LINE 764: const std::string generated = gen.generateFunction(owner, instructions, false);
+          const std::string registration = gen.generateFunctionRegistration(functions, {});
+  
+          t.IsTrue(generated.find("case 0x7008u: goto label_7008;") != std::string::npos,
+                   "the owner must enter directly at the first installed handler");
+
+LINE 765: const std::string registration = gen.generateFunctionRegistration(functions, {});
+  
+          t.IsTrue(generated.find("case 0x7008u: goto label_7008;") != std::string::npos,
+                   "the owner must enter directly at the first installed handler");
+          t.IsTrue(generated.find("case 0x7018u: goto label_7018;") != std::string::npos,
+
+LINE 777: tc.Run("external mid-function entry can register to the owner wrapper", [](TestCase &t) {
+          Function caller;
+          caller.name = "caller";
+          caller.start = 0x4000;
+          caller.end = 0x4008;
+
+LINE 778: Function caller;
+          caller.name = "caller";
+          caller.start = 0x4000;
+          caller.end = 0x4008;
+          caller.isRecompiled = true;
+
+LINE 785: Function owner;
+          owner.name = "owner";
+          owner.start = 0x5000;
+          owner.end = 0x5010;
+          owner.isRecompiled = true;
+
+LINE 800: std::vector<Function> functions{caller, owner};
+          std::vector<Section> sections = {
+              {".text", 0x4000u, 0x2000u, 0u, true, false, false, true, nullptr}
+          };
+  
+
+LINE 807: gen.collectInternalBranchTargets(caller, callerInstructions, &functions);
+  
+          t.IsTrue(analysis.externalEntryPoints.contains(0x5004u),
+                   "cross-function jump should identify the mid-function target as externally reachable");
+  
+
+LINE 810: "cross-function jump should identify the mid-function target as externally reachable");
+  
+          gen.setRenamedFunctions({{0x5000u, "owner_0x5000"}});
+          gen.setResumeEntryTargets({{0x5000u, {0x5004u}}});
+  
+
+LINE 812: gen.setRenamedFunctions({{0x5000u, "owner_0x5000"}});
+          gen.setResumeEntryTargets({{0x5000u, {0x5004u}}});
+  
+          std::string registration = gen.generateFunctionRegistration({owner}, {});
+          printGeneratedCode("external mid-function entry can register to the owner wrapper", registration);
+
+LINE 815: std::string registration = gen.generateFunctionRegistration({owner}, {});
+          printGeneratedCode("external mid-function entry can register to the owner wrapper", registration);
+  
+          t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[1] = owner_0x5000; // 0x5004") != std::string::npos,
+                   "mid-function external entry should register back to the owner wrapper");
+
+LINE 816: printGeneratedCode("external mid-function entry can register to the owner wrapper", registration);
+  
+          t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[1] = owner_0x5000; // 0x5004") != std::string::npos,
+                   "mid-function external entry should register back to the owner wrapper");
+      });
+
+LINE 818: t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[1] = owner_0x5000; // 0x5004") != std::string::npos,
+                   "mid-function external entry should register back to the owner wrapper");
+      });
+  
+      tc.Run("branches outside function still set pc", [](TestCase &t) {
+
+LINE 819: "mid-function external entry should register back to the owner wrapper");
+      });
+  
+      tc.Run("branches outside function still set pc", [](TestCase &t) {
+          Function func;
+
+LINE 822: tc.Run("branches outside function still set pc", [](TestCase &t) {
+          Function func;
+          func.name = "external_branch";
+          func.start = 0x3000;
+          func.end = 0x3020;
+
+LINE 823: Function func;
+          func.name = "external_branch";
+          func.start = 0x3000;
+          func.end = 0x3020;
+          func.isRecompiled = true;
+
+LINE 830: // Branch targets outside the function range
+          std::vector<Instruction> instructions;
+          instructions.push_back(makeBranch(0x3000, 4)); // target = 0x3014 (inside) -> make it outside by adjusting end? easier: set end smaller? Instead use large offset
+          instructions.clear();
+          Instruction br = makeBranch(0x3000, 0x100); // target far outside
+
+LINE 839: std::string generated = gen.generateFunction(func, instructions, false);
+          printGeneratedCode("branches outside function still set pc", generated);
+  
+          t.IsTrue(generated.find("ctx->pc = 0x") != std::string::npos, "external branch should set ctx->pc");
+          t.IsTrue(generated.find("goto label_") == std::string::npos, "external branch should not use goto");
+
+LINE 840: printGeneratedCode("branches outside function still set pc", generated);
+  
+          t.IsTrue(generated.find("ctx->pc = 0x") != std::string::npos, "external branch should set ctx->pc");
+          t.IsTrue(generated.find("goto label_") == std::string::npos, "external branch should not use goto");
+      });
+
+LINE 847: Function func;
+          func.name = "call_symbol";
+          func.start = 0x4000;
+          func.end = 0x4018;
+          func.isRecompiled = true;
+
+LINE 857: targetSym.isFunction = true;
+  
+          Instruction j{};
+          j.address = 0x4000;
+          j.opcode = OPCODE_J;
+
+LINE 871: std::string generated = gen.generateFunction(func, instructions, false);
+          printGeneratedCode("jumps to known symbols call by name", generated);
+  
+          t.IsTrue(generated.find("target_func(rdram, ctx, runtime); return;") != std::string::npos,
+                   "jump to known function should emit direct call");
+
+LINE 875: "jump to known function should emit direct call");
+      });
+  
+      tc.Run("jump to unknown target sets pc", [](TestCase &t) {
+              Function func;
+
+LINE 879: Function func;
+              func.name = "jump_unknown";
+              func.start = 0x6000;
+              func.end = 0x6010;
+              func.isRecompiled = true;
+
+LINE 897: std::string generated = gen.generateFunction(func, instructions, false);
+              printGeneratedCode("jump to unknown target sets pc", generated);
+  
+              t.IsTrue(generated.find("ctx->pc = 0x") != std::string::npos, "unknown jump target should set ctx->pc");
+              t.IsTrue(generated.find("goto label_") == std::string::npos, "external jump should not use goto");
+
+LINE 904: tc.Run("renamed function used in jump table", [](TestCase &t) {
+              Function func;
+              func.name = "jt_func";
+              func.start = 0x7000;
+              func.end = 0x7010;
+
+LINE 905: Function func;
+              func.name = "jt_func";
+              func.start = 0x7000;
+              func.end = 0x7010;
+              func.isRecompiled = true;
+
+LINE 921: gen.setRenamedFunctions({{0x8000, "renamed_target"}});
+  
+              std::string sw = gen.generateJumpTableSwitch(inst, 0x0, entries);
+              printGeneratedCode("renamed function used in jump table", sw);
+  
+
+LINE 924: printGeneratedCode("renamed function used in jump table", sw);
+  
+          t.IsTrue(sw.find("renamed_target(rdram, ctx, runtime);") != std::string::npos,
+                   "jump table should use renamed function name");
+          });
+
+LINE 927: "jump table should use renamed function name");
+          });
+  
+          tc.Run("reserved identifiers are sanitized and used in calls", [](TestCase &t) {
+              Function func;
+
+LINE 931: Function func;
+              func.name = "__is_pointer";
+              func.start = 0x9000;
+              func.end = 0x9010;
+              func.isRecompiled = true;
+
+LINE 941: targetSym.isFunction = true;
+  
+              Instruction j{};
+              j.address = 0x8000;
+              j.opcode = OPCODE_J;
+
+LINE 954: gen.setRenamedFunctions({{targetSym.address, "ps2___is_pointer"}});
+  
+              std::string generated = gen.generateFunction(func, instructions, false);
+              printGeneratedCode("reserved identifiers are sanitized and used in calls", generated);
+  
+
+LINE 956: std::string generated = gen.generateFunction(func, instructions, false);
+              printGeneratedCode("reserved identifiers are sanitized and used in calls", generated);
+  
+              t.IsTrue(generated.find("void ps2___is_pointer(") != std::string::npos,
+                       "definition should use sanitized name");
+
+LINE 1033: sqrt.function = COP1_S_SQRT;
+  
+              std::string code = gen.translateInstruction(sqrt);
+              printGeneratedCode("SQRT.S reads its operand from ft", code);
+              t.IsTrue(code.find("ctx->f[20] = FPU_SQRT_S(ctx->f[22])") != std::string::npos,
+
+LINE 1153: andInst.function = SPECIAL_AND;
+              andInst.rs = 2;
+              andInst.rt = 3;
+              andInst.rd = 1;
+  
+
+LINE 1164: orInst.function = SPECIAL_OR;
+              orInst.rs = 4;
+              orInst.rt = 5;
+              orInst.rd = 6;
+  
+
+LINE 1175: xorInst.function = SPECIAL_XOR;
+              xorInst.rs = 7;
+              xorInst.rt = 8;
+              xorInst.rd = 9;
+  
+
+LINE 1186: norInst.function = SPECIAL_NOR;
+              norInst.rs = 10;
+              norInst.rt = 11;
+              norInst.rd = 12;
+  
+
+LINE 1220: qfsrv.function = MMI_MMI1;
+              qfsrv.sa = MMI1_QFSRV;
+              qfsrv.rd = 3;
+              qfsrv.rs = 4;
+              qfsrv.rt = 5;
+
+LINE 1237: pcpyld.function = MMI_MMI2;
+              pcpyld.sa = MMI2_PCPYLD;
+              pcpyld.rd = 6;
+              pcpyld.rs = 7;
+              pcpyld.rt = 8;
+
+LINE 1254: uint8_t function;
+                  uint8_t subfunction;
+              };
+  
+              const std::vector<UnaryMmiCase> cases = {
+
+LINE 1255: uint8_t subfunction;
+              };
+  
+              const std::vector<UnaryMmiCase> cases = {
+                  {"PEXEH", MMI_MMI2, MMI2_PEXEH},
+
+LINE 1273: inst.function = item.function;
+                  inst.sa = item.subfunction;
+                  inst.rd = 3;
+                  inst.rs = 4;
+                  inst.rt = 5;
+
+LINE 1274: inst.sa = item.subfunction;
+                  inst.rd = 3;
+                  inst.rs = 4;
+                  inst.rt = 5;
+  
+
+LINE 1311: inst.function = value;
+                  inst.vectorInfo.vectorField = 0xF;
+  
+                  std::string out = gen.translateInstruction(inst);
+                  std::ostringstream msg;
+
+LINE 1327: inst.function = 0x3C; // force Special2 path
+                  inst.vectorInfo.vectorField = 0xF;
+  
+                  uint32_t upper = (value >> 2) & 0x1F;
+                  uint32_t lower = value & 0x3;
+
+LINE 1348: inst.function = VU0_S1_VADD;
+              inst.vectorInfo.vectorField = 0xF;
+  
+              CodeGenerator gen({}, {});
+              std::string out = gen.translateInstruction(inst);
+
+LINE 1367: inst.function = VU0_S1_VADDq;
+              inst.vectorInfo.vectorField = 0x9;
+  
+              CodeGenerator gen({}, {});
+              std::string out = gen.translateInstruction(inst);
+
+LINE 1384: inst.function = 0;
+              inst.vectorInfo.vectorField = 0xE;
+  
+              CodeGenerator gen({}, {});
+              const std::vector<std::pair<const char *, std::string>> emitted = {
+
+LINE 1449: inst.function = 0x3C; // force Special2 path
+              inst.vectorInfo.vectorField = 0xF;
+  
+              uint32_t upper = (VU0_S2_VABS >> 2) & 0x1F;
+              uint32_t lower = VU0_S2_VABS & 0x3;
+
+LINE 1470: inst.function = 0x3C; // force Special2 path
+              inst.vectorInfo.vectorField = 0xF;
+  
+              uint32_t upper = (VU0_S2_VLQI >> 2) & 0x1F;
+              uint32_t lower = VU0_S2_VLQI & 0x3;
+
+LINE 1485: tc.Run("JAL to known function emits call and check", [](TestCase &t) {
+              Function func;
+              func.name = "jal_test";
+              func.start = 0xA000;
+              func.end = 0xA020;
+
+LINE 1486: Function func;
+              func.name = "jal_test";
+              func.start = 0xA000;
+              func.end = 0xA020;
+              func.isRecompiled = true;
+
+LINE 1496: targetSym.isFunction = true;
+  
+              // 0xA000: JAL 0xB000
+              // 0xA004: NOP (delay slot)
+              Instruction jal = makeJal(0xA000, 0xB000);
+
+LINE 1504: std::string generated = gen.generateFunction(func, {jal, delay}, false);
+              printGeneratedCode("JAL to known function emits call and check", generated);
+  
+              // Expect:
+              // SET_GPR_U32(ctx, 31, 0xA008u);
+
+LINE 1505: printGeneratedCode("JAL to known function emits call and check", generated);
+  
+              // Expect:
+              // SET_GPR_U32(ctx, 31, 0xA008u);
+              // ctx->pc = 0xA004u;
+
+LINE 1523: Function func;
+              func.name = "jal_syscall_resume";
+              func.start = 0xA040;
+              func.end = 0xA048;
+              func.isRecompiled = true;
+
+LINE 1532: target.isFunction = true;
+  
+              CodeGenerator gen({target}, {});
+              gen.setRelocationCallNames({{0xA040u, "GetThreadId"}});
+              const std::string generated = gen.generateFunction(
+
+LINE 1536: const std::string generated = gen.generateFunction(
+                  func, {makeJal(0xA040, 0xB040), makeNop(0xA044)}, false);
+              const size_t continuation = generated.find("ctx->pc = 0xA048u;");
+              const size_t handler = generated.find("ps2_syscalls::GetThreadId(rdram, ctx, runtime);");
+  
+
+LINE 1551: tc.Run("trailing JAL without decoded delay slot still emits call flow", [](TestCase &t) {
+              Function func;
+              func.name = "jal_truncated";
+              func.start = 0xA100;
+              func.end = 0xA108;
+
+LINE 1552: Function func;
+              func.name = "jal_truncated";
+              func.start = 0xA100;
+              func.end = 0xA108;
+              func.isRecompiled = true;
+
+LINE 1562: targetSym.isFunction = true;
+  
+              Instruction jal = makeJal(0xA100, 0xB000);
+  
+              CodeGenerator gen({targetSym}, {});
+
+LINE 1567: std::string generated = gen.generateFunction(func, {jal}, false);
+              printGeneratedCode("trailing JAL without decoded delay slot still emits call flow", generated);
+  
+              t.IsTrue(generated.find("SET_GPR_U32(ctx, 31, 0xA108u);") != std::string::npos,
+                       "truncated trailing JAL should still set RA");
+
+LINE 1568: printGeneratedCode("trailing JAL without decoded delay slot still emits call flow", generated);
+  
+              t.IsTrue(generated.find("SET_GPR_U32(ctx, 31, 0xA108u);") != std::string::npos,
+                       "truncated trailing JAL should still set RA");
+              t.IsTrue(generated.find("runtime->dispatchGuestBranch(rdram, ctx, 0xB000u") != std::string::npos,
+
+LINE 1581: Function func;
+              func.name = "jal_internal";
+              func.start = 0xC000;
+              func.end = 0xC020;
+              func.isRecompiled = true;
+
+LINE 1597: std::string generated = gen.generateFunction(func, {jal, delay, targetInst}, false);
+              printGeneratedCode("JAL to internal target becomes goto", generated);
+  
+              t.IsTrue(generated.find("SET_GPR_U32(ctx, 31, 0xC008u);") != std::string::npos, "Internal JAL should set RA");
+              t.IsTrue(generated.find("goto label_c010;") != std::string::npos, "Internal JAL should use goto");
+
+LINE 1605: Function func;
+              func.name = "jal_internal_backward";
+              func.start = 0xC100;
+              func.end = 0xC120;
+              func.isRecompiled = true;
+
+LINE 1617: std::string generated = gen.generateFunction(func, {loopHead, backwardJal, delay}, false);
+              printGeneratedCode("backward internal JAL stays inline and does not return to dispatcher", generated);
+  
+              t.IsTrue(generated.find("SET_GPR_U32(ctx, 31, 0xC110u);") != std::string::npos,
+                       "backward internal JAL should still set RA");
+
+LINE 1629: Function func;
+              func.name = "jalr_test";
+              func.start = 0xD000;
+              func.end = 0xD020;
+              func.isRecompiled = true;
+
+LINE 1642: std::string generated = gen.generateFunction(func, {jalr, delay}, false);
+              printGeneratedCode("JALR emits indirect call", generated);
+  
+              t.IsTrue(generated.find("const uint32_t jumpTarget = GPR_U32(ctx, 4);") != std::string::npos, "JALR should read target from RS");
+              t.IsTrue(generated.find("SET_GPR_U32(ctx, 31, 0xD008u);") != std::string::npos, "JALR should set link register");
+
+LINE 1657: Function func;
+              func.name = "backward_branch";
+              func.start = 0x1100;
+              func.end = 0x1120;
+              func.isRecompiled = true;
+
+LINE 1682: "mid-function backward loop head should be resumable so preemption can return to the dispatcher");
+  
+              std::string generated = gen.generateFunction(func, instructions, false);
+              printGeneratedCode("backward BEQ returns to the dispatcher through a resumable loop head", generated);
+  
+
+LINE 1684: std::string generated = gen.generateFunction(func, instructions, false);
+              printGeneratedCode("backward BEQ returns to the dispatcher through a resumable loop head", generated);
+  
+              t.IsTrue(generated.find("label_1104:") != std::string::npos, "target should emit a label");
+              t.IsTrue(generated.find("switch (ctx->pc)") != std::string::npos,
+
+LINE 1691: "mid-function backward loop head should be re-enterable after returning to the dispatcher");
+              t.IsTrue(generated.find("ctx->pc = 0x1104u;") != std::string::npos,
+                       "backward internal branch should preserve the loop target in ctx->pc");
+              t.IsTrue(generated.find("if (runtime->eeCheckpointDue()) {") != std::string::npos,
+                       "backward internal branch should consult the EE event checkpoint before re-entering the loop");
+
+LINE 1701: "backward internal branch should still re-enter the in-function label when it keeps the current slice");
+          });
+  
+          tc.Run("branch-likely places delay slot only in taken path", [](TestCase &t) {
+              Function func;
+
+LINE 1705: Function func;
+              func.name = "branch_likely";
+              func.start = 0x1200;
+              func.end = 0x1220;
+              func.isRecompiled = true;
+
+LINE 1733: std::string generated = gen.generateFunction(func, { br, delay, target }, false);
+              printGeneratedCode("branch-likely places delay slot only in taken path", generated);
+   
+              t.IsTrue(generated.find("SET_GPR_S32(ctx, 7,") != std::string::npos, "delay slot should be translated");
+              t.IsTrue(generated.find("if (branch_taken_0x1200)") != std::string::npos, "should generate branch_taken variable and if for likely branch");
+
+LINE 1743: Function func;
+                  func.name = "sign_branch";
+                  func.start = 0x1300;
+                  func.end = 0x1310;
+                  func.isRecompiled = true;
+
+LINE 1760: return gen.generateFunction(func, {br, makeNop(0x1304), makeNop(0x1308)}, false);
+              };
+              t.IsTrue(conditionFor(OPCODE_REGIMM, REGIMM_BGEZL).find("GPR_S64(ctx, 17) >= 0") != std::string::npos, "bgezl should test 64 bits");
+              t.IsTrue(conditionFor(OPCODE_REGIMM, REGIMM_BLTZ).find("GPR_S64(ctx, 17) < 0") != std::string::npos, "bltz should test 64 bits");
+              t.IsTrue(conditionFor(OPCODE_BLEZ, 0).find("GPR_S64(ctx, 17) <= 0") != std::string::npos, "blez should test 64 bits");
+
+LINE 1769: Function func;
+              func.name = "jr_ra_return";
+              func.start = 0x1300;
+              func.end = 0x1340;
+              func.isRecompiled = true;
+
+LINE 1787: std::string generated = gen.generateFunction(func, { jal, jalDelay, atReturn, atTarget, jr, jrDelay }, false);
+              printGeneratedCode("JR $31 returns through dynamic target without broad local switch", generated);
+  
+              t.IsTrue(generated.find("const uint32_t jumpTarget = GPR_U32(ctx, 31);") != std::string::npos,
+                       "JR $31 should still read the dynamic return target");
+
+LINE 1804: tc.Run("trailing JR $31 without decoded delay slot still emits return flow", [](TestCase &t) {
+              Function func;
+              func.name = "jr_ra_truncated";
+              func.start = 0x1500;
+              func.end = 0x1540;
+
+LINE 1805: Function func;
+              func.name = "jr_ra_truncated";
+              func.start = 0x1500;
+              func.end = 0x1540;
+              func.isRecompiled = true;
+
+LINE 1819: std::string generated = gen.generateFunction(func, {jal, jalDelay, atReturn, atTarget, jr}, false);
+              printGeneratedCode("trailing JR $31 without decoded delay slot still emits return flow", generated);
+  
+              t.IsTrue(generated.find("const uint32_t jumpTarget = GPR_U32(ctx, 31);") != std::string::npos,
+                       "truncated trailing JR should still read the return target");
+
+LINE 1820: printGeneratedCode("trailing JR $31 without decoded delay slot still emits return flow", generated);
+  
+              t.IsTrue(generated.find("const uint32_t jumpTarget = GPR_U32(ctx, 31);") != std::string::npos,
+                       "truncated trailing JR should still read the return target");
+              t.IsFalse(generated.find("switch (jumpTarget)") != std::string::npos,
+
+LINE 1835: Function func;
+              func.name = "jr_non_ra_dispatcher_resume";
+              func.start = 0x1400;
+              func.end = 0x1420;
+              func.isRecompiled = true;
+
+LINE 1856: std::string generated = gen.generateFunction(func, {i0, jr, delay, i3}, false);
+              printGeneratedCode("unresolved JR non-RA uses dispatcher resume entries without broad local switch", generated);
+  
+              t.IsFalse(generated.find("switch (jumpTarget)") != std::string::npos,
+                        "unresolved JR via non-RA register should not emit a broad local switch over internal labels");
+
+LINE 1874: // next function had no entry, so the game stopped when it took that case.
+              constexpr uint32_t tableAddress = 0x00200000u;
+              constexpr uint32_t start = 0x1700u;
+              constexpr uint32_t prologueLength = 60u;
+  
+
+LINE 1879: Function func;
+              func.name = "jr_far_bound_jump_table";
+              func.start = start;
+              func.isRecompiled = true;
+              func.isStub = false;
+
+LINE 1923: sll.function = SPECIAL_SLL;
+              sll.rd = 15;
+              sll.rt = 12;
+              sll.sa = 2;
+              push(sll);
+
+LINE 1939: addu.function = SPECIAL_ADDU;
+              addu.rs = 15;
+              addu.rt = 14;
+              addu.rd = 15;
+              push(addu);
+
+LINE 2002: Function func;
+              func.name = "jr_configured_jump_table";
+              func.start = 0x1600;
+              func.end = 0x1640;
+              func.isRecompiled = true;
+
+LINE 2028: sll.function = SPECIAL_SLL;
+              sll.rd = 8;
+              sll.rt = 4;
+              sll.sa = 2;
+  
+
+LINE 2036: addu.function = SPECIAL_ADDU;
+              addu.rs = 9;
+              addu.rt = 8;
+              addu.rd = 9;
+  
+
+LINE 2068: "configured JR table targets should stay in-function dispatch labels");
+              t.IsFalse(analysis.resumeEntryPoints.contains(0x1630u),
+                        "configured JR table targets should not become dispatcher resume sites");
+  
+              std::string generated = gen.generateFunction(
+
+LINE 2072: std::string generated = gen.generateFunction(
+                  func,
+                  {lui, addiu, sll, addu, lw, jr, jrDelay, target0, target1},
+                  false);
+              printGeneratedCode("configured jump table addresses drive JR dispatch targets", generated);
+
+LINE 2091: Function func;
+              func.name = "jalr_runtime_fallback";
+              func.start = 0x1500;
+              func.end = 0x1530;
+              func.isRecompiled = true;
+
+LINE 2098: // A call-like setup so there are multiple in-function labels available.
+              Instruction jal = makeJal(0x1500, 0x1510);
+              Instruction jalDelay = makeNop(0x1504);
+              Instruction atReturn = makeNop(0x1508);
+              Instruction atTarget = makeNop(0x1510);
+
+LINE 2107: std::string generated = gen.generateFunction(func, {jal, jalDelay, atReturn, atTarget, jalr, jalrDelay}, false);
+              printGeneratedCode("unresolved JALR uses runtime dispatch without broad local switch", generated);
+  
+              t.IsFalse(generated.find("switch (jumpTarget)") != std::string::npos,
+                        "unresolved JALR should not emit a broad local switch over every internal label");
+
+LINE 2121: Function func;
+              func.name = "jalr_epilogue_guard";
+              func.start = 0x2000;
+              func.end = 0x2030;
+              func.isRecompiled = true;
+
+LINE 2173: std::string generated = gen.generateFunction(
+                  func,
+                  {prolog, saveRa, jalr, jalrDelay, restoreRa, tailJump, tailDelay},
+                  false);
+              printGeneratedCode("JALR fallback should not expose epilogue tail-jump labels", generated);
+
+LINE 2209: t.IsTrue(vrxor.find("// Apply a simple mixing function similar to PS2's LFSR\n"
+                                  "    __m128i mixed") != std::string::npos,
+                       "VRXOR should keep the LFSR comment on its own line");
+          });
+  
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp =====
+LINE 5: void register_code_generator_tests();
+  void register_r5900_decoder_tests();
+  void register_elf_analyzer_tests();
+  void register_pad_input_tests();
+  void register_ps2_runtime_io_tests();
+
+LINE 6: void register_r5900_decoder_tests();
+  void register_elf_analyzer_tests();
+  void register_pad_input_tests();
+  void register_ps2_runtime_io_tests();
+  void register_ps2_runtime_kernel_tests();
+
+LINE 7: void register_elf_analyzer_tests();
+  void register_pad_input_tests();
+  void register_ps2_runtime_io_tests();
+  void register_ps2_runtime_kernel_tests();
+  void register_ps2_runtime_interrupt_tests();
+
+LINE 8: void register_pad_input_tests();
+  void register_ps2_runtime_io_tests();
+  void register_ps2_runtime_kernel_tests();
+  void register_ps2_runtime_interrupt_tests();
+  void register_ps2_memory_tests();
+
+LINE 9: void register_ps2_runtime_io_tests();
+  void register_ps2_runtime_kernel_tests();
+  void register_ps2_runtime_interrupt_tests();
+  void register_ps2_memory_tests();
+  void register_ps2_vu1_tests();
+
+LINE 10: void register_ps2_runtime_kernel_tests();
+  void register_ps2_runtime_interrupt_tests();
+  void register_ps2_memory_tests();
+  void register_ps2_vu1_tests();
+  void register_ps2_vu_tests();
+
+LINE 11: void register_ps2_runtime_interrupt_tests();
+  void register_ps2_memory_tests();
+  void register_ps2_vu1_tests();
+  void register_ps2_vu_tests();
+  void register_ps2_gs_tests();
+
+LINE 12: void register_ps2_memory_tests();
+  void register_ps2_vu1_tests();
+  void register_ps2_vu_tests();
+  void register_ps2_gs_tests();
+  void register_ps2_iop_tests();
+
+LINE 13: void register_ps2_vu1_tests();
+  void register_ps2_vu_tests();
+  void register_ps2_gs_tests();
+  void register_ps2_iop_tests();
+  void register_ps2_sif_rpc_tests();
+
+LINE 14: void register_ps2_vu_tests();
+  void register_ps2_gs_tests();
+  void register_ps2_iop_tests();
+  void register_ps2_sif_rpc_tests();
+  void register_ps2_sif_dma_tests();
+
+LINE 15: void register_ps2_gs_tests();
+  void register_ps2_iop_tests();
+  void register_ps2_sif_rpc_tests();
+  void register_ps2_sif_dma_tests();
+  void register_ps2_recompiler_tests();
+
+LINE 16: void register_ps2_iop_tests();
+  void register_ps2_sif_rpc_tests();
+  void register_ps2_sif_dma_tests();
+  void register_ps2_recompiler_tests();
+  void register_ps2_runtime_expansion_tests();
+
+LINE 17: void register_ps2_sif_rpc_tests();
+  void register_ps2_sif_dma_tests();
+  void register_ps2_recompiler_tests();
+  void register_ps2_runtime_expansion_tests();
+  void register_ps2_float_semantics_tests();
+
+LINE 18: void register_ps2_sif_dma_tests();
+  void register_ps2_recompiler_tests();
+  void register_ps2_runtime_expansion_tests();
+  void register_ps2_float_semantics_tests();
+  void register_ps2_audio_stream_tests();
+
+LINE 19: void register_ps2_recompiler_tests();
+  void register_ps2_runtime_expansion_tests();
+  void register_ps2_float_semantics_tests();
+  void register_ps2_audio_stream_tests();
+  void reset_ps2_test_function_table();
+
+LINE 20: void register_ps2_runtime_expansion_tests();
+  void register_ps2_float_semantics_tests();
+  void register_ps2_audio_stream_tests();
+  void reset_ps2_test_function_table();
+  
+
+LINE 21: void register_ps2_float_semantics_tests();
+  void register_ps2_audio_stream_tests();
+  void reset_ps2_test_function_table();
+  
+  int main()
+
+LINE 22: void register_ps2_audio_stream_tests();
+  void reset_ps2_test_function_table();
+  
+  int main()
+  {
+
+LINE 23: void reset_ps2_test_function_table();
+  
+  int main()
+  {
+      MiniTest::BeforeEach(reset_ps2_test_function_table);
+
+LINE 27: MiniTest::BeforeEach(reset_ps2_test_function_table);
+  
+      register_code_generator_tests();
+      register_r5900_decoder_tests();
+      register_elf_analyzer_tests();
+
+LINE 29: register_code_generator_tests();
+      register_r5900_decoder_tests();
+      register_elf_analyzer_tests();
+      register_pad_input_tests();
+      register_ps2_runtime_io_tests();
+
+LINE 30: register_r5900_decoder_tests();
+      register_elf_analyzer_tests();
+      register_pad_input_tests();
+      register_ps2_runtime_io_tests();
+      register_ps2_runtime_kernel_tests();
+
+LINE 31: register_elf_analyzer_tests();
+      register_pad_input_tests();
+      register_ps2_runtime_io_tests();
+      register_ps2_runtime_kernel_tests();
+      register_ps2_runtime_interrupt_tests();
+
+LINE 32: register_pad_input_tests();
+      register_ps2_runtime_io_tests();
+      register_ps2_runtime_kernel_tests();
+      register_ps2_runtime_interrupt_tests();
+      register_ps2_memory_tests();
+
+LINE 33: register_ps2_runtime_io_tests();
+      register_ps2_runtime_kernel_tests();
+      register_ps2_runtime_interrupt_tests();
+      register_ps2_memory_tests();
+      register_ps2_vu1_tests();
+
+LINE 34: register_ps2_runtime_kernel_tests();
+      register_ps2_runtime_interrupt_tests();
+      register_ps2_memory_tests();
+      register_ps2_vu1_tests();
+      register_ps2_vu_tests();
+
+LINE 35: register_ps2_runtime_interrupt_tests();
+      register_ps2_memory_tests();
+      register_ps2_vu1_tests();
+      register_ps2_vu_tests();
+      register_ps2_gs_tests();
+
+LINE 36: register_ps2_memory_tests();
+      register_ps2_vu1_tests();
+      register_ps2_vu_tests();
+      register_ps2_gs_tests();
+      register_ps2_iop_tests();
+
+LINE 37: register_ps2_vu1_tests();
+      register_ps2_vu_tests();
+      register_ps2_gs_tests();
+      register_ps2_iop_tests();
+      register_ps2_sif_rpc_tests();
+
+LINE 38: register_ps2_vu_tests();
+      register_ps2_gs_tests();
+      register_ps2_iop_tests();
+      register_ps2_sif_rpc_tests();
+      register_ps2_sif_dma_tests();
+
+LINE 39: register_ps2_gs_tests();
+      register_ps2_iop_tests();
+      register_ps2_sif_rpc_tests();
+      register_ps2_sif_dma_tests();
+      register_ps2_recompiler_tests();
+
+LINE 40: register_ps2_iop_tests();
+      register_ps2_sif_rpc_tests();
+      register_ps2_sif_dma_tests();
+      register_ps2_recompiler_tests();
+      register_ps2_runtime_expansion_tests();
+
+LINE 41: register_ps2_sif_rpc_tests();
+      register_ps2_sif_dma_tests();
+      register_ps2_recompiler_tests();
+      register_ps2_runtime_expansion_tests();
+      register_ps2_float_semantics_tests();
+
+LINE 42: register_ps2_sif_dma_tests();
+      register_ps2_recompiler_tests();
+      register_ps2_runtime_expansion_tests();
+      register_ps2_float_semantics_tests();
+      register_ps2_audio_stream_tests();
+
+LINE 43: register_ps2_recompiler_tests();
+      register_ps2_runtime_expansion_tests();
+      register_ps2_float_semantics_tests();
+      register_ps2_audio_stream_tests();
+      int res = MiniTest::Run();
+
+LINE 44: register_ps2_runtime_expansion_tests();
+      register_ps2_float_semantics_tests();
+      register_ps2_audio_stream_tests();
+      int res = MiniTest::Run();
+      std::cout.flush();
+
+LINE 45: register_ps2_float_semantics_tests();
+      register_ps2_audio_stream_tests();
+      int res = MiniTest::Run();
+      std::cout.flush();
+      std::cerr.flush();
+
+LINE 46: register_ps2_audio_stream_tests();
+      int res = MiniTest::Run();
+      std::cout.flush();
+      std::cerr.flush();
+      std::_Exit(res);
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\CMakeLists.txt =====
+LINE 14: add_library(ps2_test_function_table OBJECT
+      src/test_function_table.cpp
+  )
+  
+  target_include_directories(ps2_test_function_table PRIVATE
+
+LINE 15: src/test_function_table.cpp
+  )
+  
+  target_include_directories(ps2_test_function_table PRIVATE
+      ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+
+LINE 18: target_include_directories(ps2_test_function_table PRIVATE
+      ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+      ${CMAKE_SOURCE_DIR}/ps2xIOP/include
+  )
+  
+
+LINE 25: src/r5900_decoder_tests.cpp
+      src/elf_analyzer_tests.cpp
+      src/pad_input_tests.cpp
+      src/ps2_runtime_io_tests.cpp
+      src/ps2_runtime_kernel_tests.cpp
+
+LINE 63: add_executable(ps2x_tests
+      src/main.cpp
+      $<TARGET_OBJECTS:ps2_test_function_table>
+  )
+  
+
+LINE 65: $<TARGET_OBJECTS:ps2_test_function_table>
+  )
+  
+  option(PRINT_GENERATED_CODE "Print generated code in tests" OFF)
+  if(PRINT_GENERATED_CODE)
+
+LINE 71: target_compile_definitions(ps2x_tests PRIVATE PRINT_GENERATED_CODE)
+      target_compile_definitions(ps2_test_lib PRIVATE PRINT_GENERATED_CODE)
+  endif()
+  
+  target_include_directories(ps2x_tests PRIVATE
+
+LINE 75: target_include_directories(ps2x_tests PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/ps2xRecomp/include
+      ${CMAKE_SOURCE_DIR}/ps2xAnalyzer/include
+      ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+
+LINE 82: target_link_libraries(ps2x_tests PRIVATE
+      ps2_test_lib
+      ps2_recomp_lib
+      ps2_analyzer_lib
+      ps2_runtime
+
+LINE 93: target_link_options(ps2x_tests PRIVATE "/STACK:8388608")
+  elseif(MINGW)
+      target_link_options(ps2x_tests PRIVATE "--stack,8388608")
+  endif()
+  
+
+LINE 95: target_link_options(ps2x_tests PRIVATE "--stack,8388608")
+  endif()
+  
+  if(COMMAND ps2x_stage_ffmpeg_runtime_dlls)
+      ps2x_stage_ffmpeg_runtime_dlls(ps2x_tests)
+
+LINE 99: ps2x_stage_ffmpeg_runtime_dlls(ps2x_tests)
+  endif()
+  
+  include("${CMAKE_SOURCE_DIR}/ps2xRuntime/cmake/ReleaseMode.cmake")
+  
+
+LINE 106: EnableFastReleaseMode(ps2x_tests)
+  endif()
