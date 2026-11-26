@@ -1,0 +1,3411 @@
+MARK OF KRI — COP1 FUNCTION BOUNDARY AUDIT
+Generated: 11/25/2026 17:20:49
+Source: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp
+
+===== MATCH AT LINE 52 =====
+   41: 
+   42:     std::string R5900Decoder::disassembleInstruction(const Instruction &inst)
+   43:     {
+   44:         if (!inst.disassembly.empty())
+   45:         {
+   46:             return inst.disassembly;
+   47:         }
+   48: 
+   49:         return disassembleInstruction(inst.address, inst.raw);
+   50:     }
+   51: 
+   52:     Instruction R5900Decoder::decodeInstruction(uint32_t address, uint32_t rawInstruction, bool includeDisassembly) const
+   53:     {
+   54:         Instruction inst;
+   55: 
+   56:         inst.address = address;
+   57:         inst.raw = rawInstruction;
+   58:         inst.opcode = OPCODE(rawInstruction);
+   59:         inst.rs = RS(rawInstruction);
+   60:         inst.rt = RT(rawInstruction);
+   61:         inst.rd = RD(rawInstruction);
+   62:         inst.sa = SA(rawInstruction);
+   63:         inst.function = FUNCTION(rawInstruction);
+   64:         inst.immediate = IMMEDIATE(rawInstruction);
+   65:         inst.simmediate = SIMMEDIATE(rawInstruction);
+   66:         inst.target = TARGET(rawInstruction);
+   67: 
+   68:         inst.isMMI = false;
+   69:         inst.isVU = false;
+   70:         inst.isBranch = false;
+   71:         inst.isJump = false;
+   72:         inst.isCall = false;
+   73:         inst.isReturn = false;
+   74:         inst.hasDelaySlot = false;
+   75:         inst.isMultimedia = false;
+
+===== MATCH AT LINE 93 =====
+   82:         inst.mmiFunction = 0;
+   83:         inst.pmfhlVariation = 0;
+   84:         inst.vuFunction = 0;
+   85:         inst.mmioAddress = 0;
+   86: 
+   87:         inst.vectorInfo.isVector = false;
+   88:         inst.vectorInfo.usesQReg = false;
+   89:         inst.vectorInfo.usesPReg = false;
+   90:         inst.vectorInfo.modifiesMAC = false;
+   91:         inst.vectorInfo.vectorField = 0xF; // All fields (xyzw)
+   92: 
+   93:         inst.modificationInfo.modifiesGPR = false;
+   94:         inst.modificationInfo.modifiesFPR = false;
+   95:         inst.modificationInfo.modifiesVFR = false;
+   96:         inst.modificationInfo.modifiesVIR = false;
+   97:         inst.modificationInfo.modifiesVIC = false;
+   98:         inst.modificationInfo.modifiesMemory = false;
+   99:         inst.modificationInfo.modifiesControl = false;
+  100: 
+  101:         RabbitizerInstruction rabbitizerInst;
+  102:         RabbitizerInstructionR5900_init(&rabbitizerInst, rawInstruction, address);
+  103:         RabbitizerInstructionR5900_processUniqueId(&rabbitizerInst);
+  104: 
+  105:         const RabbitizerInstrDescriptor *desc = rabbitizerInst.descriptor;
+  106: 
+  107:         inst.isBranch = RabbitizerInstrDescriptor_isBranch(desc);
+  108:         inst.isJump = RabbitizerInstrDescriptor_isJump(desc);
+  109:         inst.isCall = RabbitizerInstruction_isFunctionCall(&rabbitizerInst);
+  110:         inst.isReturn = RabbitizerInstruction_isReturn(&rabbitizerInst) ||
+  111:                         rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret;
+  112:         inst.hasDelaySlot = RabbitizerInstruction_hasDelaySlot(&rabbitizerInst);
+  113: 
+  114:         inst.isLoad = RabbitizerInstrDescriptor_doesLoad(desc);
+  115:         inst.isStore = RabbitizerInstrDescriptor_doesStore(desc);
+  116: 
+
+===== MATCH AT LINE 94 =====
+   83:         inst.pmfhlVariation = 0;
+   84:         inst.vuFunction = 0;
+   85:         inst.mmioAddress = 0;
+   86: 
+   87:         inst.vectorInfo.isVector = false;
+   88:         inst.vectorInfo.usesQReg = false;
+   89:         inst.vectorInfo.usesPReg = false;
+   90:         inst.vectorInfo.modifiesMAC = false;
+   91:         inst.vectorInfo.vectorField = 0xF; // All fields (xyzw)
+   92: 
+   93:         inst.modificationInfo.modifiesGPR = false;
+   94:         inst.modificationInfo.modifiesFPR = false;
+   95:         inst.modificationInfo.modifiesVFR = false;
+   96:         inst.modificationInfo.modifiesVIR = false;
+   97:         inst.modificationInfo.modifiesVIC = false;
+   98:         inst.modificationInfo.modifiesMemory = false;
+   99:         inst.modificationInfo.modifiesControl = false;
+  100: 
+  101:         RabbitizerInstruction rabbitizerInst;
+  102:         RabbitizerInstructionR5900_init(&rabbitizerInst, rawInstruction, address);
+  103:         RabbitizerInstructionR5900_processUniqueId(&rabbitizerInst);
+  104: 
+  105:         const RabbitizerInstrDescriptor *desc = rabbitizerInst.descriptor;
+  106: 
+  107:         inst.isBranch = RabbitizerInstrDescriptor_isBranch(desc);
+  108:         inst.isJump = RabbitizerInstrDescriptor_isJump(desc);
+  109:         inst.isCall = RabbitizerInstruction_isFunctionCall(&rabbitizerInst);
+  110:         inst.isReturn = RabbitizerInstruction_isReturn(&rabbitizerInst) ||
+  111:                         rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret;
+  112:         inst.hasDelaySlot = RabbitizerInstruction_hasDelaySlot(&rabbitizerInst);
+  113: 
+  114:         inst.isLoad = RabbitizerInstrDescriptor_doesLoad(desc);
+  115:         inst.isStore = RabbitizerInstrDescriptor_doesStore(desc);
+  116: 
+  117:         inst.isMMI = inst.opcode == OPCODE_MMI;
+
+===== MATCH AT LINE 99 =====
+   88:         inst.vectorInfo.usesQReg = false;
+   89:         inst.vectorInfo.usesPReg = false;
+   90:         inst.vectorInfo.modifiesMAC = false;
+   91:         inst.vectorInfo.vectorField = 0xF; // All fields (xyzw)
+   92: 
+   93:         inst.modificationInfo.modifiesGPR = false;
+   94:         inst.modificationInfo.modifiesFPR = false;
+   95:         inst.modificationInfo.modifiesVFR = false;
+   96:         inst.modificationInfo.modifiesVIR = false;
+   97:         inst.modificationInfo.modifiesVIC = false;
+   98:         inst.modificationInfo.modifiesMemory = false;
+   99:         inst.modificationInfo.modifiesControl = false;
+  100: 
+  101:         RabbitizerInstruction rabbitizerInst;
+  102:         RabbitizerInstructionR5900_init(&rabbitizerInst, rawInstruction, address);
+  103:         RabbitizerInstructionR5900_processUniqueId(&rabbitizerInst);
+  104: 
+  105:         const RabbitizerInstrDescriptor *desc = rabbitizerInst.descriptor;
+  106: 
+  107:         inst.isBranch = RabbitizerInstrDescriptor_isBranch(desc);
+  108:         inst.isJump = RabbitizerInstrDescriptor_isJump(desc);
+  109:         inst.isCall = RabbitizerInstruction_isFunctionCall(&rabbitizerInst);
+  110:         inst.isReturn = RabbitizerInstruction_isReturn(&rabbitizerInst) ||
+  111:                         rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret;
+  112:         inst.hasDelaySlot = RabbitizerInstruction_hasDelaySlot(&rabbitizerInst);
+  113: 
+  114:         inst.isLoad = RabbitizerInstrDescriptor_doesLoad(desc);
+  115:         inst.isStore = RabbitizerInstrDescriptor_doesStore(desc);
+  116: 
+  117:         inst.isMMI = inst.opcode == OPCODE_MMI;
+  118:         inst.isVU = inst.opcode == OPCODE_COP2 ||
+  119:                     inst.opcode == OPCODE_LWC2 ||
+  120:                     inst.opcode == OPCODE_LDC2 ||
+  121:                     inst.opcode == OPCODE_SWC2 ||
+  122:                     inst.opcode == OPCODE_SDC2;
+
+===== MATCH AT LINE 124 =====
+  113: 
+  114:         inst.isLoad = RabbitizerInstrDescriptor_doesLoad(desc);
+  115:         inst.isStore = RabbitizerInstrDescriptor_doesStore(desc);
+  116: 
+  117:         inst.isMMI = inst.opcode == OPCODE_MMI;
+  118:         inst.isVU = inst.opcode == OPCODE_COP2 ||
+  119:                     inst.opcode == OPCODE_LWC2 ||
+  120:                     inst.opcode == OPCODE_LDC2 ||
+  121:                     inst.opcode == OPCODE_SWC2 ||
+  122:                     inst.opcode == OPCODE_SDC2;
+  123: 
+  124:         bool modifiesGpr = false;
+  125:         if (RabbitizerInstrDescriptor_modifiesRs(desc) && inst.rs != 0)
+  126:         {
+  127:             modifiesGpr = true;
+  128:         }
+  129:         if (RabbitizerInstrDescriptor_modifiesRt(desc) && inst.rt != 0)
+  130:         {
+  131:             modifiesGpr = true;
+  132:         }
+  133:         if (RabbitizerInstrDescriptor_modifiesRd(desc) && inst.rd != 0)
+  134:         {
+  135:             modifiesGpr = true;
+  136:         }
+  137:         if (RabbitizerInstrDescriptor_doesLink(desc))
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+  141:         inst.modificationInfo.modifiesGPR = modifiesGpr;
+  142: 
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  145:                                             RabbitizerInstrDescriptor_modifiesFd(desc);
+  146: 
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+
+===== MATCH AT LINE 127 =====
+  116: 
+  117:         inst.isMMI = inst.opcode == OPCODE_MMI;
+  118:         inst.isVU = inst.opcode == OPCODE_COP2 ||
+  119:                     inst.opcode == OPCODE_LWC2 ||
+  120:                     inst.opcode == OPCODE_LDC2 ||
+  121:                     inst.opcode == OPCODE_SWC2 ||
+  122:                     inst.opcode == OPCODE_SDC2;
+  123: 
+  124:         bool modifiesGpr = false;
+  125:         if (RabbitizerInstrDescriptor_modifiesRs(desc) && inst.rs != 0)
+  126:         {
+  127:             modifiesGpr = true;
+  128:         }
+  129:         if (RabbitizerInstrDescriptor_modifiesRt(desc) && inst.rt != 0)
+  130:         {
+  131:             modifiesGpr = true;
+  132:         }
+  133:         if (RabbitizerInstrDescriptor_modifiesRd(desc) && inst.rd != 0)
+  134:         {
+  135:             modifiesGpr = true;
+  136:         }
+  137:         if (RabbitizerInstrDescriptor_doesLink(desc))
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+  141:         inst.modificationInfo.modifiesGPR = modifiesGpr;
+  142: 
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  145:                                             RabbitizerInstrDescriptor_modifiesFd(desc);
+  146: 
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  148:         inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+  149:                                                 RabbitizerInstrDescriptor_isJump(desc) ||
+  150:                                                 RabbitizerInstrDescriptor_isTrap(desc) ||
+
+===== MATCH AT LINE 131 =====
+  120:                     inst.opcode == OPCODE_LDC2 ||
+  121:                     inst.opcode == OPCODE_SWC2 ||
+  122:                     inst.opcode == OPCODE_SDC2;
+  123: 
+  124:         bool modifiesGpr = false;
+  125:         if (RabbitizerInstrDescriptor_modifiesRs(desc) && inst.rs != 0)
+  126:         {
+  127:             modifiesGpr = true;
+  128:         }
+  129:         if (RabbitizerInstrDescriptor_modifiesRt(desc) && inst.rt != 0)
+  130:         {
+  131:             modifiesGpr = true;
+  132:         }
+  133:         if (RabbitizerInstrDescriptor_modifiesRd(desc) && inst.rd != 0)
+  134:         {
+  135:             modifiesGpr = true;
+  136:         }
+  137:         if (RabbitizerInstrDescriptor_doesLink(desc))
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+  141:         inst.modificationInfo.modifiesGPR = modifiesGpr;
+  142: 
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  145:                                             RabbitizerInstrDescriptor_modifiesFd(desc);
+  146: 
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  148:         inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+  149:                                                 RabbitizerInstrDescriptor_isJump(desc) ||
+  150:                                                 RabbitizerInstrDescriptor_isTrap(desc) ||
+  151:                                                 RabbitizerInstrDescriptor_modifiesHI(desc) ||
+  152:                                                 RabbitizerInstrDescriptor_modifiesLO(desc);
+  153: 
+  154:         if (rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret)
+
+===== MATCH AT LINE 135 =====
+  124:         bool modifiesGpr = false;
+  125:         if (RabbitizerInstrDescriptor_modifiesRs(desc) && inst.rs != 0)
+  126:         {
+  127:             modifiesGpr = true;
+  128:         }
+  129:         if (RabbitizerInstrDescriptor_modifiesRt(desc) && inst.rt != 0)
+  130:         {
+  131:             modifiesGpr = true;
+  132:         }
+  133:         if (RabbitizerInstrDescriptor_modifiesRd(desc) && inst.rd != 0)
+  134:         {
+  135:             modifiesGpr = true;
+  136:         }
+  137:         if (RabbitizerInstrDescriptor_doesLink(desc))
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+  141:         inst.modificationInfo.modifiesGPR = modifiesGpr;
+  142: 
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  145:                                             RabbitizerInstrDescriptor_modifiesFd(desc);
+  146: 
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  148:         inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+  149:                                                 RabbitizerInstrDescriptor_isJump(desc) ||
+  150:                                                 RabbitizerInstrDescriptor_isTrap(desc) ||
+  151:                                                 RabbitizerInstrDescriptor_modifiesHI(desc) ||
+  152:                                                 RabbitizerInstrDescriptor_modifiesLO(desc);
+  153: 
+  154:         if (rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret)
+  155:         {
+  156:             inst.isReturn = true;
+  157:             inst.hasDelaySlot = false;
+  158:             inst.modificationInfo.modifiesControl = true;
+
+===== MATCH AT LINE 139 =====
+  128:         }
+  129:         if (RabbitizerInstrDescriptor_modifiesRt(desc) && inst.rt != 0)
+  130:         {
+  131:             modifiesGpr = true;
+  132:         }
+  133:         if (RabbitizerInstrDescriptor_modifiesRd(desc) && inst.rd != 0)
+  134:         {
+  135:             modifiesGpr = true;
+  136:         }
+  137:         if (RabbitizerInstrDescriptor_doesLink(desc))
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+  141:         inst.modificationInfo.modifiesGPR = modifiesGpr;
+  142: 
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  145:                                             RabbitizerInstrDescriptor_modifiesFd(desc);
+  146: 
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  148:         inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+  149:                                                 RabbitizerInstrDescriptor_isJump(desc) ||
+  150:                                                 RabbitizerInstrDescriptor_isTrap(desc) ||
+  151:                                                 RabbitizerInstrDescriptor_modifiesHI(desc) ||
+  152:                                                 RabbitizerInstrDescriptor_modifiesLO(desc);
+  153: 
+  154:         if (rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret)
+  155:         {
+  156:             inst.isReturn = true;
+  157:             inst.hasDelaySlot = false;
+  158:             inst.modificationInfo.modifiesControl = true;
+  159:         }
+  160: 
+  161:         if (inst.opcode == OPCODE_LL || inst.opcode == OPCODE_LLD)
+  162:         {
+
+===== MATCH AT LINE 141 =====
+  130:         {
+  131:             modifiesGpr = true;
+  132:         }
+  133:         if (RabbitizerInstrDescriptor_modifiesRd(desc) && inst.rd != 0)
+  134:         {
+  135:             modifiesGpr = true;
+  136:         }
+  137:         if (RabbitizerInstrDescriptor_doesLink(desc))
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+  141:         inst.modificationInfo.modifiesGPR = modifiesGpr;
+  142: 
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  145:                                             RabbitizerInstrDescriptor_modifiesFd(desc);
+  146: 
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  148:         inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+  149:                                                 RabbitizerInstrDescriptor_isJump(desc) ||
+  150:                                                 RabbitizerInstrDescriptor_isTrap(desc) ||
+  151:                                                 RabbitizerInstrDescriptor_modifiesHI(desc) ||
+  152:                                                 RabbitizerInstrDescriptor_modifiesLO(desc);
+  153: 
+  154:         if (rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret)
+  155:         {
+  156:             inst.isReturn = true;
+  157:             inst.hasDelaySlot = false;
+  158:             inst.modificationInfo.modifiesControl = true;
+  159:         }
+  160: 
+  161:         if (inst.opcode == OPCODE_LL || inst.opcode == OPCODE_LLD)
+  162:         {
+  163:             inst.isLoad = true;
+  164:             inst.modificationInfo.modifiesControl = true;
+
+===== MATCH AT LINE 143 =====
+  132:         }
+  133:         if (RabbitizerInstrDescriptor_modifiesRd(desc) && inst.rd != 0)
+  134:         {
+  135:             modifiesGpr = true;
+  136:         }
+  137:         if (RabbitizerInstrDescriptor_doesLink(desc))
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+  141:         inst.modificationInfo.modifiesGPR = modifiesGpr;
+  142: 
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  145:                                             RabbitizerInstrDescriptor_modifiesFd(desc);
+  146: 
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  148:         inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+  149:                                                 RabbitizerInstrDescriptor_isJump(desc) ||
+  150:                                                 RabbitizerInstrDescriptor_isTrap(desc) ||
+  151:                                                 RabbitizerInstrDescriptor_modifiesHI(desc) ||
+  152:                                                 RabbitizerInstrDescriptor_modifiesLO(desc);
+  153: 
+  154:         if (rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret)
+  155:         {
+  156:             inst.isReturn = true;
+  157:             inst.hasDelaySlot = false;
+  158:             inst.modificationInfo.modifiesControl = true;
+  159:         }
+  160: 
+  161:         if (inst.opcode == OPCODE_LL || inst.opcode == OPCODE_LLD)
+  162:         {
+  163:             inst.isLoad = true;
+  164:             inst.modificationInfo.modifiesControl = true;
+  165:             if (inst.rt != 0)
+  166:             {
+
+===== MATCH AT LINE 148 =====
+  137:         if (RabbitizerInstrDescriptor_doesLink(desc))
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+  141:         inst.modificationInfo.modifiesGPR = modifiesGpr;
+  142: 
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  145:                                             RabbitizerInstrDescriptor_modifiesFd(desc);
+  146: 
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  148:         inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+  149:                                                 RabbitizerInstrDescriptor_isJump(desc) ||
+  150:                                                 RabbitizerInstrDescriptor_isTrap(desc) ||
+  151:                                                 RabbitizerInstrDescriptor_modifiesHI(desc) ||
+  152:                                                 RabbitizerInstrDescriptor_modifiesLO(desc);
+  153: 
+  154:         if (rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret)
+  155:         {
+  156:             inst.isReturn = true;
+  157:             inst.hasDelaySlot = false;
+  158:             inst.modificationInfo.modifiesControl = true;
+  159:         }
+  160: 
+  161:         if (inst.opcode == OPCODE_LL || inst.opcode == OPCODE_LLD)
+  162:         {
+  163:             inst.isLoad = true;
+  164:             inst.modificationInfo.modifiesControl = true;
+  165:             if (inst.rt != 0)
+  166:             {
+  167:                 inst.modificationInfo.modifiesGPR = true;
+  168:             }
+  169:         }
+  170: 
+  171:         if (inst.opcode == OPCODE_SC || inst.opcode == OPCODE_SCD)
+
+===== MATCH AT LINE 158 =====
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  148:         inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+  149:                                                 RabbitizerInstrDescriptor_isJump(desc) ||
+  150:                                                 RabbitizerInstrDescriptor_isTrap(desc) ||
+  151:                                                 RabbitizerInstrDescriptor_modifiesHI(desc) ||
+  152:                                                 RabbitizerInstrDescriptor_modifiesLO(desc);
+  153: 
+  154:         if (rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret)
+  155:         {
+  156:             inst.isReturn = true;
+  157:             inst.hasDelaySlot = false;
+  158:             inst.modificationInfo.modifiesControl = true;
+  159:         }
+  160: 
+  161:         if (inst.opcode == OPCODE_LL || inst.opcode == OPCODE_LLD)
+  162:         {
+  163:             inst.isLoad = true;
+  164:             inst.modificationInfo.modifiesControl = true;
+  165:             if (inst.rt != 0)
+  166:             {
+  167:                 inst.modificationInfo.modifiesGPR = true;
+  168:             }
+  169:         }
+  170: 
+  171:         if (inst.opcode == OPCODE_SC || inst.opcode == OPCODE_SCD)
+  172:         {
+  173:             inst.isStore = true;
+  174:             inst.modificationInfo.modifiesControl = true;
+  175:             if (inst.rt != 0)
+  176:             {
+  177:                 inst.modificationInfo.modifiesGPR = true; // success flag to rt
+  178:             }
+  179:         }
+  180: 
+  181:         if (inst.opcode == OPCODE_COP1)
+
+===== MATCH AT LINE 164 =====
+  153: 
+  154:         if (rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret)
+  155:         {
+  156:             inst.isReturn = true;
+  157:             inst.hasDelaySlot = false;
+  158:             inst.modificationInfo.modifiesControl = true;
+  159:         }
+  160: 
+  161:         if (inst.opcode == OPCODE_LL || inst.opcode == OPCODE_LLD)
+  162:         {
+  163:             inst.isLoad = true;
+  164:             inst.modificationInfo.modifiesControl = true;
+  165:             if (inst.rt != 0)
+  166:             {
+  167:                 inst.modificationInfo.modifiesGPR = true;
+  168:             }
+  169:         }
+  170: 
+  171:         if (inst.opcode == OPCODE_SC || inst.opcode == OPCODE_SCD)
+  172:         {
+  173:             inst.isStore = true;
+  174:             inst.modificationInfo.modifiesControl = true;
+  175:             if (inst.rt != 0)
+  176:             {
+  177:                 inst.modificationInfo.modifiesGPR = true; // success flag to rt
+  178:             }
+  179:         }
+  180: 
+  181:         if (inst.opcode == OPCODE_COP1)
+  182:         {
+  183:             decodeCOP1(inst);
+  184:         }
+  185:         else if (inst.opcode == OPCODE_COP2)
+  186:         {
+  187:             decodeCOP2(inst);
+
+===== MATCH AT LINE 167 =====
+  156:             inst.isReturn = true;
+  157:             inst.hasDelaySlot = false;
+  158:             inst.modificationInfo.modifiesControl = true;
+  159:         }
+  160: 
+  161:         if (inst.opcode == OPCODE_LL || inst.opcode == OPCODE_LLD)
+  162:         {
+  163:             inst.isLoad = true;
+  164:             inst.modificationInfo.modifiesControl = true;
+  165:             if (inst.rt != 0)
+  166:             {
+  167:                 inst.modificationInfo.modifiesGPR = true;
+  168:             }
+  169:         }
+  170: 
+  171:         if (inst.opcode == OPCODE_SC || inst.opcode == OPCODE_SCD)
+  172:         {
+  173:             inst.isStore = true;
+  174:             inst.modificationInfo.modifiesControl = true;
+  175:             if (inst.rt != 0)
+  176:             {
+  177:                 inst.modificationInfo.modifiesGPR = true; // success flag to rt
+  178:             }
+  179:         }
+  180: 
+  181:         if (inst.opcode == OPCODE_COP1)
+  182:         {
+  183:             decodeCOP1(inst);
+  184:         }
+  185:         else if (inst.opcode == OPCODE_COP2)
+  186:         {
+  187:             decodeCOP2(inst);
+  188:         }
+  189:         else if (inst.opcode == OPCODE_LWC2 || inst.opcode == OPCODE_LDC2)
+  190:         {
+
+===== MATCH AT LINE 174 =====
+  163:             inst.isLoad = true;
+  164:             inst.modificationInfo.modifiesControl = true;
+  165:             if (inst.rt != 0)
+  166:             {
+  167:                 inst.modificationInfo.modifiesGPR = true;
+  168:             }
+  169:         }
+  170: 
+  171:         if (inst.opcode == OPCODE_SC || inst.opcode == OPCODE_SCD)
+  172:         {
+  173:             inst.isStore = true;
+  174:             inst.modificationInfo.modifiesControl = true;
+  175:             if (inst.rt != 0)
+  176:             {
+  177:                 inst.modificationInfo.modifiesGPR = true; // success flag to rt
+  178:             }
+  179:         }
+  180: 
+  181:         if (inst.opcode == OPCODE_COP1)
+  182:         {
+  183:             decodeCOP1(inst);
+  184:         }
+  185:         else if (inst.opcode == OPCODE_COP2)
+  186:         {
+  187:             decodeCOP2(inst);
+  188:         }
+  189:         else if (inst.opcode == OPCODE_LWC2 || inst.opcode == OPCODE_LDC2)
+  190:         {
+  191:             inst.isVU = true;
+  192:             inst.modificationInfo.modifiesVFR = true;
+  193:         }
+  194:         else if (inst.opcode == OPCODE_SWC2 || inst.opcode == OPCODE_SDC2)
+  195:         {
+  196:             inst.isVU = true;
+  197:             inst.modificationInfo.modifiesMemory = true;
+
+===== MATCH AT LINE 177 =====
+  166:             {
+  167:                 inst.modificationInfo.modifiesGPR = true;
+  168:             }
+  169:         }
+  170: 
+  171:         if (inst.opcode == OPCODE_SC || inst.opcode == OPCODE_SCD)
+  172:         {
+  173:             inst.isStore = true;
+  174:             inst.modificationInfo.modifiesControl = true;
+  175:             if (inst.rt != 0)
+  176:             {
+  177:                 inst.modificationInfo.modifiesGPR = true; // success flag to rt
+  178:             }
+  179:         }
+  180: 
+  181:         if (inst.opcode == OPCODE_COP1)
+  182:         {
+  183:             decodeCOP1(inst);
+  184:         }
+  185:         else if (inst.opcode == OPCODE_COP2)
+  186:         {
+  187:             decodeCOP2(inst);
+  188:         }
+  189:         else if (inst.opcode == OPCODE_LWC2 || inst.opcode == OPCODE_LDC2)
+  190:         {
+  191:             inst.isVU = true;
+  192:             inst.modificationInfo.modifiesVFR = true;
+  193:         }
+  194:         else if (inst.opcode == OPCODE_SWC2 || inst.opcode == OPCODE_SDC2)
+  195:         {
+  196:             inst.isVU = true;
+  197:             inst.modificationInfo.modifiesMemory = true;
+  198:         }
+  199: 
+  200:         if (inst.opcode == OPCODE_LQ || inst.opcode == OPCODE_SQ)
+
+===== MATCH AT LINE 183 =====
+  172:         {
+  173:             inst.isStore = true;
+  174:             inst.modificationInfo.modifiesControl = true;
+  175:             if (inst.rt != 0)
+  176:             {
+  177:                 inst.modificationInfo.modifiesGPR = true; // success flag to rt
+  178:             }
+  179:         }
+  180: 
+  181:         if (inst.opcode == OPCODE_COP1)
+  182:         {
+  183:             decodeCOP1(inst);
+  184:         }
+  185:         else if (inst.opcode == OPCODE_COP2)
+  186:         {
+  187:             decodeCOP2(inst);
+  188:         }
+  189:         else if (inst.opcode == OPCODE_LWC2 || inst.opcode == OPCODE_LDC2)
+  190:         {
+  191:             inst.isVU = true;
+  192:             inst.modificationInfo.modifiesVFR = true;
+  193:         }
+  194:         else if (inst.opcode == OPCODE_SWC2 || inst.opcode == OPCODE_SDC2)
+  195:         {
+  196:             inst.isVU = true;
+  197:             inst.modificationInfo.modifiesMemory = true;
+  198:         }
+  199: 
+  200:         if (inst.opcode == OPCODE_LQ || inst.opcode == OPCODE_SQ)
+  201:         {
+  202:             inst.isMultimedia = true;
+  203:         }
+  204: 
+  205:         if (inst.opcode == OPCODE_SPECIAL)
+  206:         {
+
+===== MATCH AT LINE 187 =====
+  176:             {
+  177:                 inst.modificationInfo.modifiesGPR = true; // success flag to rt
+  178:             }
+  179:         }
+  180: 
+  181:         if (inst.opcode == OPCODE_COP1)
+  182:         {
+  183:             decodeCOP1(inst);
+  184:         }
+  185:         else if (inst.opcode == OPCODE_COP2)
+  186:         {
+  187:             decodeCOP2(inst);
+  188:         }
+  189:         else if (inst.opcode == OPCODE_LWC2 || inst.opcode == OPCODE_LDC2)
+  190:         {
+  191:             inst.isVU = true;
+  192:             inst.modificationInfo.modifiesVFR = true;
+  193:         }
+  194:         else if (inst.opcode == OPCODE_SWC2 || inst.opcode == OPCODE_SDC2)
+  195:         {
+  196:             inst.isVU = true;
+  197:             inst.modificationInfo.modifiesMemory = true;
+  198:         }
+  199: 
+  200:         if (inst.opcode == OPCODE_LQ || inst.opcode == OPCODE_SQ)
+  201:         {
+  202:             inst.isMultimedia = true;
+  203:         }
+  204: 
+  205:         if (inst.opcode == OPCODE_SPECIAL)
+  206:         {
+  207:             decodeSpecial(inst);
+  208:         }
+  209:         else if (inst.opcode == OPCODE_MMI)
+  210:         {
+
+===== MATCH AT LINE 234 =====
+  223:         }
+  224: 
+  225:         RabbitizerInstructionR5900_destroy(&rabbitizerInst);
+  226: 
+  227:         return inst;
+  228:     }
+  229: 
+  230:     void R5900Decoder::decodeRType(Instruction &inst) const
+  231:     {
+  232:         // R-type instructions already have all fields set correctly
+  233:         if (inst.rd != 0)
+  234:             inst.modificationInfo.modifiesGPR = true;
+  235:     }
+  236: 
+  237:     void R5900Decoder::decodeIType(Instruction &inst) const
+  238:     {
+  239:         // I-type instructions already have all fields set correctly
+  240:         if (!inst.isStore && !inst.isBranch && inst.rt != 0)
+  241:         {
+  242:             inst.modificationInfo.modifiesGPR = true;
+  243:         }
+  244:     }
+  245: 
+  246:     void R5900Decoder::decodeJType(Instruction &inst) const
+  247:     {
+  248:         // J-type instructions already have all fields set correctly
+  249:         inst.isJump = true;
+  250:         inst.hasDelaySlot = true;
+  251:         inst.modificationInfo.modifiesControl = true; // PC
+  252:         if (inst.opcode == OPCODE_JAL)
+  253:         {
+  254:             inst.isCall = true;
+  255:             inst.modificationInfo.modifiesGPR = true; // $ra (r[31])
+  256:         }
+  257:     }
+
+===== MATCH AT LINE 242 =====
+  231:     {
+  232:         // R-type instructions already have all fields set correctly
+  233:         if (inst.rd != 0)
+  234:             inst.modificationInfo.modifiesGPR = true;
+  235:     }
+  236: 
+  237:     void R5900Decoder::decodeIType(Instruction &inst) const
+  238:     {
+  239:         // I-type instructions already have all fields set correctly
+  240:         if (!inst.isStore && !inst.isBranch && inst.rt != 0)
+  241:         {
+  242:             inst.modificationInfo.modifiesGPR = true;
+  243:         }
+  244:     }
+  245: 
+  246:     void R5900Decoder::decodeJType(Instruction &inst) const
+  247:     {
+  248:         // J-type instructions already have all fields set correctly
+  249:         inst.isJump = true;
+  250:         inst.hasDelaySlot = true;
+  251:         inst.modificationInfo.modifiesControl = true; // PC
+  252:         if (inst.opcode == OPCODE_JAL)
+  253:         {
+  254:             inst.isCall = true;
+  255:             inst.modificationInfo.modifiesGPR = true; // $ra (r[31])
+  256:         }
+  257:     }
+  258: 
+  259:     void R5900Decoder::decodeSpecial(Instruction &inst) const
+  260:     {
+  261:         if (inst.rd != 0)
+  262:             inst.modificationInfo.modifiesGPR = true;
+  263: 
+  264:         switch (inst.function)
+  265:         {
+
+===== MATCH AT LINE 251 =====
+  240:         if (!inst.isStore && !inst.isBranch && inst.rt != 0)
+  241:         {
+  242:             inst.modificationInfo.modifiesGPR = true;
+  243:         }
+  244:     }
+  245: 
+  246:     void R5900Decoder::decodeJType(Instruction &inst) const
+  247:     {
+  248:         // J-type instructions already have all fields set correctly
+  249:         inst.isJump = true;
+  250:         inst.hasDelaySlot = true;
+  251:         inst.modificationInfo.modifiesControl = true; // PC
+  252:         if (inst.opcode == OPCODE_JAL)
+  253:         {
+  254:             inst.isCall = true;
+  255:             inst.modificationInfo.modifiesGPR = true; // $ra (r[31])
+  256:         }
+  257:     }
+  258: 
+  259:     void R5900Decoder::decodeSpecial(Instruction &inst) const
+  260:     {
+  261:         if (inst.rd != 0)
+  262:             inst.modificationInfo.modifiesGPR = true;
+  263: 
+  264:         switch (inst.function)
+  265:         {
+  266:         case SPECIAL_JR:
+  267:             inst.isJump = true;
+  268:             inst.hasDelaySlot = true;
+  269:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify GPR itself
+  270:             inst.modificationInfo.modifiesControl = true; // PC
+  271:             if (inst.rs == 31)
+  272:             {
+  273:                 // jr $ra is typically a return
+  274:                 inst.isReturn = true;
+
+===== MATCH AT LINE 255 =====
+  244:     }
+  245: 
+  246:     void R5900Decoder::decodeJType(Instruction &inst) const
+  247:     {
+  248:         // J-type instructions already have all fields set correctly
+  249:         inst.isJump = true;
+  250:         inst.hasDelaySlot = true;
+  251:         inst.modificationInfo.modifiesControl = true; // PC
+  252:         if (inst.opcode == OPCODE_JAL)
+  253:         {
+  254:             inst.isCall = true;
+  255:             inst.modificationInfo.modifiesGPR = true; // $ra (r[31])
+  256:         }
+  257:     }
+  258: 
+  259:     void R5900Decoder::decodeSpecial(Instruction &inst) const
+  260:     {
+  261:         if (inst.rd != 0)
+  262:             inst.modificationInfo.modifiesGPR = true;
+  263: 
+  264:         switch (inst.function)
+  265:         {
+  266:         case SPECIAL_JR:
+  267:             inst.isJump = true;
+  268:             inst.hasDelaySlot = true;
+  269:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify GPR itself
+  270:             inst.modificationInfo.modifiesControl = true; // PC
+  271:             if (inst.rs == 31)
+  272:             {
+  273:                 // jr $ra is typically a return
+  274:                 inst.isReturn = true;
+  275:             }
+  276:             break;
+  277: 
+  278:         case SPECIAL_JALR:
+
+===== MATCH AT LINE 262 =====
+  251:         inst.modificationInfo.modifiesControl = true; // PC
+  252:         if (inst.opcode == OPCODE_JAL)
+  253:         {
+  254:             inst.isCall = true;
+  255:             inst.modificationInfo.modifiesGPR = true; // $ra (r[31])
+  256:         }
+  257:     }
+  258: 
+  259:     void R5900Decoder::decodeSpecial(Instruction &inst) const
+  260:     {
+  261:         if (inst.rd != 0)
+  262:             inst.modificationInfo.modifiesGPR = true;
+  263: 
+  264:         switch (inst.function)
+  265:         {
+  266:         case SPECIAL_JR:
+  267:             inst.isJump = true;
+  268:             inst.hasDelaySlot = true;
+  269:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify GPR itself
+  270:             inst.modificationInfo.modifiesControl = true; // PC
+  271:             if (inst.rs == 31)
+  272:             {
+  273:                 // jr $ra is typically a return
+  274:                 inst.isReturn = true;
+  275:             }
+  276:             break;
+  277: 
+  278:         case SPECIAL_JALR:
+  279:             inst.isJump = true;
+  280:             inst.isCall = true;
+  281:             inst.hasDelaySlot = true;
+  282:             if (inst.rd == 0)
+  283:                 inst.modificationInfo.modifiesGPR = false; // JALR $zero, $rs is like JR $rs
+  284:             else
+  285:                 inst.modificationInfo.modifiesGPR = true;
+
+===== MATCH AT LINE 269 =====
+  258: 
+  259:     void R5900Decoder::decodeSpecial(Instruction &inst) const
+  260:     {
+  261:         if (inst.rd != 0)
+  262:             inst.modificationInfo.modifiesGPR = true;
+  263: 
+  264:         switch (inst.function)
+  265:         {
+  266:         case SPECIAL_JR:
+  267:             inst.isJump = true;
+  268:             inst.hasDelaySlot = true;
+  269:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify GPR itself
+  270:             inst.modificationInfo.modifiesControl = true; // PC
+  271:             if (inst.rs == 31)
+  272:             {
+  273:                 // jr $ra is typically a return
+  274:                 inst.isReturn = true;
+  275:             }
+  276:             break;
+  277: 
+  278:         case SPECIAL_JALR:
+  279:             inst.isJump = true;
+  280:             inst.isCall = true;
+  281:             inst.hasDelaySlot = true;
+  282:             if (inst.rd == 0)
+  283:                 inst.modificationInfo.modifiesGPR = false; // JALR $zero, $rs is like JR $rs
+  284:             else
+  285:                 inst.modificationInfo.modifiesGPR = true;
+  286:             inst.modificationInfo.modifiesControl = true; // PC
+  287:             break;
+  288: 
+  289:         case SPECIAL_SYSCALL:
+  290:         case SPECIAL_BREAK:
+  291:             // Special handling for syscall/break
+  292:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+
+===== MATCH AT LINE 270 =====
+  259:     void R5900Decoder::decodeSpecial(Instruction &inst) const
+  260:     {
+  261:         if (inst.rd != 0)
+  262:             inst.modificationInfo.modifiesGPR = true;
+  263: 
+  264:         switch (inst.function)
+  265:         {
+  266:         case SPECIAL_JR:
+  267:             inst.isJump = true;
+  268:             inst.hasDelaySlot = true;
+  269:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify GPR itself
+  270:             inst.modificationInfo.modifiesControl = true; // PC
+  271:             if (inst.rs == 31)
+  272:             {
+  273:                 // jr $ra is typically a return
+  274:                 inst.isReturn = true;
+  275:             }
+  276:             break;
+  277: 
+  278:         case SPECIAL_JALR:
+  279:             inst.isJump = true;
+  280:             inst.isCall = true;
+  281:             inst.hasDelaySlot = true;
+  282:             if (inst.rd == 0)
+  283:                 inst.modificationInfo.modifiesGPR = false; // JALR $zero, $rs is like JR $rs
+  284:             else
+  285:                 inst.modificationInfo.modifiesGPR = true;
+  286:             inst.modificationInfo.modifiesControl = true; // PC
+  287:             break;
+  288: 
+  289:         case SPECIAL_SYSCALL:
+  290:         case SPECIAL_BREAK:
+  291:             // Special handling for syscall/break
+  292:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+  293:             inst.modificationInfo.modifiesControl = true; // Changes control flow, potentially registers via handler
+
+===== MATCH AT LINE 283 =====
+  272:             {
+  273:                 // jr $ra is typically a return
+  274:                 inst.isReturn = true;
+  275:             }
+  276:             break;
+  277: 
+  278:         case SPECIAL_JALR:
+  279:             inst.isJump = true;
+  280:             inst.isCall = true;
+  281:             inst.hasDelaySlot = true;
+  282:             if (inst.rd == 0)
+  283:                 inst.modificationInfo.modifiesGPR = false; // JALR $zero, $rs is like JR $rs
+  284:             else
+  285:                 inst.modificationInfo.modifiesGPR = true;
+  286:             inst.modificationInfo.modifiesControl = true; // PC
+  287:             break;
+  288: 
+  289:         case SPECIAL_SYSCALL:
+  290:         case SPECIAL_BREAK:
+  291:             // Special handling for syscall/break
+  292:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+  293:             inst.modificationInfo.modifiesControl = true; // Changes control flow, potentially registers via handler
+  294:             break;
+  295: 
+  296:         case SPECIAL_MFHI:
+  297:         case SPECIAL_MFLO:
+  298:             if (inst.rd == 0)
+  299:                 inst.modificationInfo.modifiesGPR = false;
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+  303:             // HI/LO register operations
+  304:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+
+===== MATCH AT LINE 285 =====
+  274:                 inst.isReturn = true;
+  275:             }
+  276:             break;
+  277: 
+  278:         case SPECIAL_JALR:
+  279:             inst.isJump = true;
+  280:             inst.isCall = true;
+  281:             inst.hasDelaySlot = true;
+  282:             if (inst.rd == 0)
+  283:                 inst.modificationInfo.modifiesGPR = false; // JALR $zero, $rs is like JR $rs
+  284:             else
+  285:                 inst.modificationInfo.modifiesGPR = true;
+  286:             inst.modificationInfo.modifiesControl = true; // PC
+  287:             break;
+  288: 
+  289:         case SPECIAL_SYSCALL:
+  290:         case SPECIAL_BREAK:
+  291:             // Special handling for syscall/break
+  292:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+  293:             inst.modificationInfo.modifiesControl = true; // Changes control flow, potentially registers via handler
+  294:             break;
+  295: 
+  296:         case SPECIAL_MFHI:
+  297:         case SPECIAL_MFLO:
+  298:             if (inst.rd == 0)
+  299:                 inst.modificationInfo.modifiesGPR = false;
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+  303:             // HI/LO register operations
+  304:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+
+===== MATCH AT LINE 286 =====
+  275:             }
+  276:             break;
+  277: 
+  278:         case SPECIAL_JALR:
+  279:             inst.isJump = true;
+  280:             inst.isCall = true;
+  281:             inst.hasDelaySlot = true;
+  282:             if (inst.rd == 0)
+  283:                 inst.modificationInfo.modifiesGPR = false; // JALR $zero, $rs is like JR $rs
+  284:             else
+  285:                 inst.modificationInfo.modifiesGPR = true;
+  286:             inst.modificationInfo.modifiesControl = true; // PC
+  287:             break;
+  288: 
+  289:         case SPECIAL_SYSCALL:
+  290:         case SPECIAL_BREAK:
+  291:             // Special handling for syscall/break
+  292:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+  293:             inst.modificationInfo.modifiesControl = true; // Changes control flow, potentially registers via handler
+  294:             break;
+  295: 
+  296:         case SPECIAL_MFHI:
+  297:         case SPECIAL_MFLO:
+  298:             if (inst.rd == 0)
+  299:                 inst.modificationInfo.modifiesGPR = false;
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+  303:             // HI/LO register operations
+  304:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+
+===== MATCH AT LINE 292 =====
+  281:             inst.hasDelaySlot = true;
+  282:             if (inst.rd == 0)
+  283:                 inst.modificationInfo.modifiesGPR = false; // JALR $zero, $rs is like JR $rs
+  284:             else
+  285:                 inst.modificationInfo.modifiesGPR = true;
+  286:             inst.modificationInfo.modifiesControl = true; // PC
+  287:             break;
+  288: 
+  289:         case SPECIAL_SYSCALL:
+  290:         case SPECIAL_BREAK:
+  291:             // Special handling for syscall/break
+  292:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+  293:             inst.modificationInfo.modifiesControl = true; // Changes control flow, potentially registers via handler
+  294:             break;
+  295: 
+  296:         case SPECIAL_MFHI:
+  297:         case SPECIAL_MFLO:
+  298:             if (inst.rd == 0)
+  299:                 inst.modificationInfo.modifiesGPR = false;
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+  303:             // HI/LO register operations
+  304:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+  310:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+  315:             // R5900 MULT/MULTU also write rd when rd != 0.
+
+===== MATCH AT LINE 293 =====
+  282:             if (inst.rd == 0)
+  283:                 inst.modificationInfo.modifiesGPR = false; // JALR $zero, $rs is like JR $rs
+  284:             else
+  285:                 inst.modificationInfo.modifiesGPR = true;
+  286:             inst.modificationInfo.modifiesControl = true; // PC
+  287:             break;
+  288: 
+  289:         case SPECIAL_SYSCALL:
+  290:         case SPECIAL_BREAK:
+  291:             // Special handling for syscall/break
+  292:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+  293:             inst.modificationInfo.modifiesControl = true; // Changes control flow, potentially registers via handler
+  294:             break;
+  295: 
+  296:         case SPECIAL_MFHI:
+  297:         case SPECIAL_MFLO:
+  298:             if (inst.rd == 0)
+  299:                 inst.modificationInfo.modifiesGPR = false;
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+  303:             // HI/LO register operations
+  304:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+  310:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+  315:             // R5900 MULT/MULTU also write rd when rd != 0.
+  316:             inst.modificationInfo.modifiesGPR = (inst.rd != 0);
+
+===== MATCH AT LINE 299 =====
+  288: 
+  289:         case SPECIAL_SYSCALL:
+  290:         case SPECIAL_BREAK:
+  291:             // Special handling for syscall/break
+  292:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+  293:             inst.modificationInfo.modifiesControl = true; // Changes control flow, potentially registers via handler
+  294:             break;
+  295: 
+  296:         case SPECIAL_MFHI:
+  297:         case SPECIAL_MFLO:
+  298:             if (inst.rd == 0)
+  299:                 inst.modificationInfo.modifiesGPR = false;
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+  303:             // HI/LO register operations
+  304:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+  310:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+  315:             // R5900 MULT/MULTU also write rd when rd != 0.
+  316:             inst.modificationInfo.modifiesGPR = (inst.rd != 0);
+  317:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  318:             break;
+  319:         case SPECIAL_ADD:
+  320:         case SPECIAL_ADDU:
+  321:         case SPECIAL_SUB:
+  322:         case SPECIAL_SUBU:
+
+===== MATCH AT LINE 304 =====
+  293:             inst.modificationInfo.modifiesControl = true; // Changes control flow, potentially registers via handler
+  294:             break;
+  295: 
+  296:         case SPECIAL_MFHI:
+  297:         case SPECIAL_MFLO:
+  298:             if (inst.rd == 0)
+  299:                 inst.modificationInfo.modifiesGPR = false;
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+  303:             // HI/LO register operations
+  304:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+  310:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+  315:             // R5900 MULT/MULTU also write rd when rd != 0.
+  316:             inst.modificationInfo.modifiesGPR = (inst.rd != 0);
+  317:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  318:             break;
+  319:         case SPECIAL_ADD:
+  320:         case SPECIAL_ADDU:
+  321:         case SPECIAL_SUB:
+  322:         case SPECIAL_SUBU:
+  323:         case SPECIAL_AND:
+  324:         case SPECIAL_OR:
+  325:         case SPECIAL_XOR:
+  326:         case SPECIAL_NOR:
+  327:             // ALU operations
+
+===== MATCH AT LINE 305 =====
+  294:             break;
+  295: 
+  296:         case SPECIAL_MFHI:
+  297:         case SPECIAL_MFLO:
+  298:             if (inst.rd == 0)
+  299:                 inst.modificationInfo.modifiesGPR = false;
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+  303:             // HI/LO register operations
+  304:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+  310:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+  315:             // R5900 MULT/MULTU also write rd when rd != 0.
+  316:             inst.modificationInfo.modifiesGPR = (inst.rd != 0);
+  317:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  318:             break;
+  319:         case SPECIAL_ADD:
+  320:         case SPECIAL_ADDU:
+  321:         case SPECIAL_SUB:
+  322:         case SPECIAL_SUBU:
+  323:         case SPECIAL_AND:
+  324:         case SPECIAL_OR:
+  325:         case SPECIAL_XOR:
+  326:         case SPECIAL_NOR:
+  327:             // ALU operations
+  328:             if (inst.rd == 0)
+
+===== MATCH AT LINE 310 =====
+  299:                 inst.modificationInfo.modifiesGPR = false;
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+  303:             // HI/LO register operations
+  304:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+  310:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+  315:             // R5900 MULT/MULTU also write rd when rd != 0.
+  316:             inst.modificationInfo.modifiesGPR = (inst.rd != 0);
+  317:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  318:             break;
+  319:         case SPECIAL_ADD:
+  320:         case SPECIAL_ADDU:
+  321:         case SPECIAL_SUB:
+  322:         case SPECIAL_SUBU:
+  323:         case SPECIAL_AND:
+  324:         case SPECIAL_OR:
+  325:         case SPECIAL_XOR:
+  326:         case SPECIAL_NOR:
+  327:             // ALU operations
+  328:             if (inst.rd == 0)
+  329:                 inst.modificationInfo.modifiesGPR = false;
+  330:             break;
+  331: 
+  332:         case SPECIAL_SLL:
+  333:         case SPECIAL_SRL:
+
+===== MATCH AT LINE 311 =====
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+  303:             // HI/LO register operations
+  304:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+  310:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+  315:             // R5900 MULT/MULTU also write rd when rd != 0.
+  316:             inst.modificationInfo.modifiesGPR = (inst.rd != 0);
+  317:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  318:             break;
+  319:         case SPECIAL_ADD:
+  320:         case SPECIAL_ADDU:
+  321:         case SPECIAL_SUB:
+  322:         case SPECIAL_SUBU:
+  323:         case SPECIAL_AND:
+  324:         case SPECIAL_OR:
+  325:         case SPECIAL_XOR:
+  326:         case SPECIAL_NOR:
+  327:             // ALU operations
+  328:             if (inst.rd == 0)
+  329:                 inst.modificationInfo.modifiesGPR = false;
+  330:             break;
+  331: 
+  332:         case SPECIAL_SLL:
+  333:         case SPECIAL_SRL:
+  334:         case SPECIAL_SRA:
+
+===== MATCH AT LINE 316 =====
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+  310:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+  315:             // R5900 MULT/MULTU also write rd when rd != 0.
+  316:             inst.modificationInfo.modifiesGPR = (inst.rd != 0);
+  317:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  318:             break;
+  319:         case SPECIAL_ADD:
+  320:         case SPECIAL_ADDU:
+  321:         case SPECIAL_SUB:
+  322:         case SPECIAL_SUBU:
+  323:         case SPECIAL_AND:
+  324:         case SPECIAL_OR:
+  325:         case SPECIAL_XOR:
+  326:         case SPECIAL_NOR:
+  327:             // ALU operations
+  328:             if (inst.rd == 0)
+  329:                 inst.modificationInfo.modifiesGPR = false;
+  330:             break;
+  331: 
+  332:         case SPECIAL_SLL:
+  333:         case SPECIAL_SRL:
+  334:         case SPECIAL_SRA:
+  335:         case SPECIAL_SLLV:
+  336:         case SPECIAL_SRLV:
+  337:         case SPECIAL_SRAV:
+  338:             // Shift operations
+  339:             if (inst.rd == 0)
+
+===== MATCH AT LINE 317 =====
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+  310:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+  315:             // R5900 MULT/MULTU also write rd when rd != 0.
+  316:             inst.modificationInfo.modifiesGPR = (inst.rd != 0);
+  317:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  318:             break;
+  319:         case SPECIAL_ADD:
+  320:         case SPECIAL_ADDU:
+  321:         case SPECIAL_SUB:
+  322:         case SPECIAL_SUBU:
+  323:         case SPECIAL_AND:
+  324:         case SPECIAL_OR:
+  325:         case SPECIAL_XOR:
+  326:         case SPECIAL_NOR:
+  327:             // ALU operations
+  328:             if (inst.rd == 0)
+  329:                 inst.modificationInfo.modifiesGPR = false;
+  330:             break;
+  331: 
+  332:         case SPECIAL_SLL:
+  333:         case SPECIAL_SRL:
+  334:         case SPECIAL_SRA:
+  335:         case SPECIAL_SLLV:
+  336:         case SPECIAL_SRLV:
+  337:         case SPECIAL_SRAV:
+  338:             // Shift operations
+  339:             if (inst.rd == 0)
+  340:                 inst.modificationInfo.modifiesGPR = false;
+
+===== MATCH AT LINE 329 =====
+  318:             break;
+  319:         case SPECIAL_ADD:
+  320:         case SPECIAL_ADDU:
+  321:         case SPECIAL_SUB:
+  322:         case SPECIAL_SUBU:
+  323:         case SPECIAL_AND:
+  324:         case SPECIAL_OR:
+  325:         case SPECIAL_XOR:
+  326:         case SPECIAL_NOR:
+  327:             // ALU operations
+  328:             if (inst.rd == 0)
+  329:                 inst.modificationInfo.modifiesGPR = false;
+  330:             break;
+  331: 
+  332:         case SPECIAL_SLL:
+  333:         case SPECIAL_SRL:
+  334:         case SPECIAL_SRA:
+  335:         case SPECIAL_SLLV:
+  336:         case SPECIAL_SRLV:
+  337:         case SPECIAL_SRAV:
+  338:             // Shift operations
+  339:             if (inst.rd == 0)
+  340:                 inst.modificationInfo.modifiesGPR = false;
+  341:             break;
+  342: 
+  343:         // 64-bit specific operations
+  344:         case SPECIAL_DADD:
+  345:         case SPECIAL_DADDU:
+  346:         case SPECIAL_DSUB:
+  347:         case SPECIAL_DSUBU:
+  348:         case SPECIAL_DSLL:
+  349:         case SPECIAL_DSRL:
+  350:         case SPECIAL_DSRA:
+  351:         case SPECIAL_DSLL32:
+  352:         case SPECIAL_DSRL32:
+
+===== MATCH AT LINE 340 =====
+  329:                 inst.modificationInfo.modifiesGPR = false;
+  330:             break;
+  331: 
+  332:         case SPECIAL_SLL:
+  333:         case SPECIAL_SRL:
+  334:         case SPECIAL_SRA:
+  335:         case SPECIAL_SLLV:
+  336:         case SPECIAL_SRLV:
+  337:         case SPECIAL_SRAV:
+  338:             // Shift operations
+  339:             if (inst.rd == 0)
+  340:                 inst.modificationInfo.modifiesGPR = false;
+  341:             break;
+  342: 
+  343:         // 64-bit specific operations
+  344:         case SPECIAL_DADD:
+  345:         case SPECIAL_DADDU:
+  346:         case SPECIAL_DSUB:
+  347:         case SPECIAL_DSUBU:
+  348:         case SPECIAL_DSLL:
+  349:         case SPECIAL_DSRL:
+  350:         case SPECIAL_DSRA:
+  351:         case SPECIAL_DSLL32:
+  352:         case SPECIAL_DSRL32:
+  353:         case SPECIAL_DSRA32:
+  354:         case SPECIAL_DSLLV:
+  355:         case SPECIAL_DSRLV:
+  356:         case SPECIAL_DSRAV:
+  357:             // 64-bit operations
+  358:             if (inst.rd == 0)
+  359:                 inst.modificationInfo.modifiesGPR = false;
+  360:             break;
+  361: 
+  362:         case SPECIAL_MOVZ:
+  363:         case SPECIAL_MOVN:
+
+===== MATCH AT LINE 359 =====
+  348:         case SPECIAL_DSLL:
+  349:         case SPECIAL_DSRL:
+  350:         case SPECIAL_DSRA:
+  351:         case SPECIAL_DSLL32:
+  352:         case SPECIAL_DSRL32:
+  353:         case SPECIAL_DSRA32:
+  354:         case SPECIAL_DSLLV:
+  355:         case SPECIAL_DSRLV:
+  356:         case SPECIAL_DSRAV:
+  357:             // 64-bit operations
+  358:             if (inst.rd == 0)
+  359:                 inst.modificationInfo.modifiesGPR = false;
+  360:             break;
+  361: 
+  362:         case SPECIAL_MOVZ:
+  363:         case SPECIAL_MOVN:
+  364:             if (inst.rd == 0)
+  365:                 inst.modificationInfo.modifiesGPR = false;
+  366:             break;
+  367: 
+  368:         // Set on Less Than
+  369:         case SPECIAL_SLT:
+  370:         case SPECIAL_SLTU:
+  371:             if (inst.rd == 0)
+  372:                 inst.modificationInfo.modifiesGPR = false;
+  373:             break;
+  374: 
+  375:         case SPECIAL_TGE:
+  376:         case SPECIAL_TGEU:
+  377:         case SPECIAL_TLT:
+  378:         case SPECIAL_TLTU:
+  379:         case SPECIAL_TEQ:
+  380:         case SPECIAL_TNE:
+  381:             inst.modificationInfo.modifiesGPR = false;
+  382:             inst.modificationInfo.modifiesControl = true; // Control flow change via trap
+
+===== MATCH AT LINE 365 =====
+  354:         case SPECIAL_DSLLV:
+  355:         case SPECIAL_DSRLV:
+  356:         case SPECIAL_DSRAV:
+  357:             // 64-bit operations
+  358:             if (inst.rd == 0)
+  359:                 inst.modificationInfo.modifiesGPR = false;
+  360:             break;
+  361: 
+  362:         case SPECIAL_MOVZ:
+  363:         case SPECIAL_MOVN:
+  364:             if (inst.rd == 0)
+  365:                 inst.modificationInfo.modifiesGPR = false;
+  366:             break;
+  367: 
+  368:         // Set on Less Than
+  369:         case SPECIAL_SLT:
+  370:         case SPECIAL_SLTU:
+  371:             if (inst.rd == 0)
+  372:                 inst.modificationInfo.modifiesGPR = false;
+  373:             break;
+  374: 
+  375:         case SPECIAL_TGE:
+  376:         case SPECIAL_TGEU:
+  377:         case SPECIAL_TLT:
+  378:         case SPECIAL_TLTU:
+  379:         case SPECIAL_TEQ:
+  380:         case SPECIAL_TNE:
+  381:             inst.modificationInfo.modifiesGPR = false;
+  382:             inst.modificationInfo.modifiesControl = true; // Control flow change via trap
+  383:             break;
+  384: 
+  385:         // PS2 Specific (MFSA/MTSA)
+  386:         case SPECIAL_MFSA: // Modifies rd GPR
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+
+===== MATCH AT LINE 372 =====
+  361: 
+  362:         case SPECIAL_MOVZ:
+  363:         case SPECIAL_MOVN:
+  364:             if (inst.rd == 0)
+  365:                 inst.modificationInfo.modifiesGPR = false;
+  366:             break;
+  367: 
+  368:         // Set on Less Than
+  369:         case SPECIAL_SLT:
+  370:         case SPECIAL_SLTU:
+  371:             if (inst.rd == 0)
+  372:                 inst.modificationInfo.modifiesGPR = false;
+  373:             break;
+  374: 
+  375:         case SPECIAL_TGE:
+  376:         case SPECIAL_TGEU:
+  377:         case SPECIAL_TLT:
+  378:         case SPECIAL_TLTU:
+  379:         case SPECIAL_TEQ:
+  380:         case SPECIAL_TNE:
+  381:             inst.modificationInfo.modifiesGPR = false;
+  382:             inst.modificationInfo.modifiesControl = true; // Control flow change via trap
+  383:             break;
+  384: 
+  385:         // PS2 Specific (MFSA/MTSA)
+  386:         case SPECIAL_MFSA: // Modifies rd GPR
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+  389:             break;
+  390:         case SPECIAL_MTSA: // Modifies SA control register
+  391:             inst.modificationInfo.modifiesGPR = false;
+  392:             inst.modificationInfo.modifiesControl = true; // SA reg
+  393:             break;
+  394: 
+  395:         case SPECIAL_SYNC:
+
+===== MATCH AT LINE 381 =====
+  370:         case SPECIAL_SLTU:
+  371:             if (inst.rd == 0)
+  372:                 inst.modificationInfo.modifiesGPR = false;
+  373:             break;
+  374: 
+  375:         case SPECIAL_TGE:
+  376:         case SPECIAL_TGEU:
+  377:         case SPECIAL_TLT:
+  378:         case SPECIAL_TLTU:
+  379:         case SPECIAL_TEQ:
+  380:         case SPECIAL_TNE:
+  381:             inst.modificationInfo.modifiesGPR = false;
+  382:             inst.modificationInfo.modifiesControl = true; // Control flow change via trap
+  383:             break;
+  384: 
+  385:         // PS2 Specific (MFSA/MTSA)
+  386:         case SPECIAL_MFSA: // Modifies rd GPR
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+  389:             break;
+  390:         case SPECIAL_MTSA: // Modifies SA control register
+  391:             inst.modificationInfo.modifiesGPR = false;
+  392:             inst.modificationInfo.modifiesControl = true; // SA reg
+  393:             break;
+  394: 
+  395:         case SPECIAL_SYNC:
+  396:             inst.modificationInfo.modifiesGPR = false;
+  397:             inst.modificationInfo.modifiesControl = true;
+  398:             break;
+  399:         }
+  400:     }
+  401: 
+  402:     void R5900Decoder::decodeRegimm(Instruction &inst) const
+  403:     {
+  404:         uint32_t rt = inst.rt;
+
+===== MATCH AT LINE 382 =====
+  371:             if (inst.rd == 0)
+  372:                 inst.modificationInfo.modifiesGPR = false;
+  373:             break;
+  374: 
+  375:         case SPECIAL_TGE:
+  376:         case SPECIAL_TGEU:
+  377:         case SPECIAL_TLT:
+  378:         case SPECIAL_TLTU:
+  379:         case SPECIAL_TEQ:
+  380:         case SPECIAL_TNE:
+  381:             inst.modificationInfo.modifiesGPR = false;
+  382:             inst.modificationInfo.modifiesControl = true; // Control flow change via trap
+  383:             break;
+  384: 
+  385:         // PS2 Specific (MFSA/MTSA)
+  386:         case SPECIAL_MFSA: // Modifies rd GPR
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+  389:             break;
+  390:         case SPECIAL_MTSA: // Modifies SA control register
+  391:             inst.modificationInfo.modifiesGPR = false;
+  392:             inst.modificationInfo.modifiesControl = true; // SA reg
+  393:             break;
+  394: 
+  395:         case SPECIAL_SYNC:
+  396:             inst.modificationInfo.modifiesGPR = false;
+  397:             inst.modificationInfo.modifiesControl = true;
+  398:             break;
+  399:         }
+  400:     }
+  401: 
+  402:     void R5900Decoder::decodeRegimm(Instruction &inst) const
+  403:     {
+  404:         uint32_t rt = inst.rt;
+  405: 
+
+===== MATCH AT LINE 388 =====
+  377:         case SPECIAL_TLT:
+  378:         case SPECIAL_TLTU:
+  379:         case SPECIAL_TEQ:
+  380:         case SPECIAL_TNE:
+  381:             inst.modificationInfo.modifiesGPR = false;
+  382:             inst.modificationInfo.modifiesControl = true; // Control flow change via trap
+  383:             break;
+  384: 
+  385:         // PS2 Specific (MFSA/MTSA)
+  386:         case SPECIAL_MFSA: // Modifies rd GPR
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+  389:             break;
+  390:         case SPECIAL_MTSA: // Modifies SA control register
+  391:             inst.modificationInfo.modifiesGPR = false;
+  392:             inst.modificationInfo.modifiesControl = true; // SA reg
+  393:             break;
+  394: 
+  395:         case SPECIAL_SYNC:
+  396:             inst.modificationInfo.modifiesGPR = false;
+  397:             inst.modificationInfo.modifiesControl = true;
+  398:             break;
+  399:         }
+  400:     }
+  401: 
+  402:     void R5900Decoder::decodeRegimm(Instruction &inst) const
+  403:     {
+  404:         uint32_t rt = inst.rt;
+  405: 
+  406:         switch (rt)
+  407:         {
+  408:         case REGIMM_BLTZ:
+  409:         case REGIMM_BGEZ:
+  410:         case REGIMM_BLTZL:
+  411:         case REGIMM_BGEZL:
+
+===== MATCH AT LINE 391 =====
+  380:         case SPECIAL_TNE:
+  381:             inst.modificationInfo.modifiesGPR = false;
+  382:             inst.modificationInfo.modifiesControl = true; // Control flow change via trap
+  383:             break;
+  384: 
+  385:         // PS2 Specific (MFSA/MTSA)
+  386:         case SPECIAL_MFSA: // Modifies rd GPR
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+  389:             break;
+  390:         case SPECIAL_MTSA: // Modifies SA control register
+  391:             inst.modificationInfo.modifiesGPR = false;
+  392:             inst.modificationInfo.modifiesControl = true; // SA reg
+  393:             break;
+  394: 
+  395:         case SPECIAL_SYNC:
+  396:             inst.modificationInfo.modifiesGPR = false;
+  397:             inst.modificationInfo.modifiesControl = true;
+  398:             break;
+  399:         }
+  400:     }
+  401: 
+  402:     void R5900Decoder::decodeRegimm(Instruction &inst) const
+  403:     {
+  404:         uint32_t rt = inst.rt;
+  405: 
+  406:         switch (rt)
+  407:         {
+  408:         case REGIMM_BLTZ:
+  409:         case REGIMM_BGEZ:
+  410:         case REGIMM_BLTZL:
+  411:         case REGIMM_BGEZL:
+  412:             // Branches
+  413:             inst.isBranch = true;
+  414:             inst.hasDelaySlot = true;
+
+===== MATCH AT LINE 392 =====
+  381:             inst.modificationInfo.modifiesGPR = false;
+  382:             inst.modificationInfo.modifiesControl = true; // Control flow change via trap
+  383:             break;
+  384: 
+  385:         // PS2 Specific (MFSA/MTSA)
+  386:         case SPECIAL_MFSA: // Modifies rd GPR
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+  389:             break;
+  390:         case SPECIAL_MTSA: // Modifies SA control register
+  391:             inst.modificationInfo.modifiesGPR = false;
+  392:             inst.modificationInfo.modifiesControl = true; // SA reg
+  393:             break;
+  394: 
+  395:         case SPECIAL_SYNC:
+  396:             inst.modificationInfo.modifiesGPR = false;
+  397:             inst.modificationInfo.modifiesControl = true;
+  398:             break;
+  399:         }
+  400:     }
+  401: 
+  402:     void R5900Decoder::decodeRegimm(Instruction &inst) const
+  403:     {
+  404:         uint32_t rt = inst.rt;
+  405: 
+  406:         switch (rt)
+  407:         {
+  408:         case REGIMM_BLTZ:
+  409:         case REGIMM_BGEZ:
+  410:         case REGIMM_BLTZL:
+  411:         case REGIMM_BGEZL:
+  412:             // Branches
+  413:             inst.isBranch = true;
+  414:             inst.hasDelaySlot = true;
+  415:             inst.modificationInfo.modifiesControl = true; // PC potentially
+
+===== MATCH AT LINE 396 =====
+  385:         // PS2 Specific (MFSA/MTSA)
+  386:         case SPECIAL_MFSA: // Modifies rd GPR
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+  389:             break;
+  390:         case SPECIAL_MTSA: // Modifies SA control register
+  391:             inst.modificationInfo.modifiesGPR = false;
+  392:             inst.modificationInfo.modifiesControl = true; // SA reg
+  393:             break;
+  394: 
+  395:         case SPECIAL_SYNC:
+  396:             inst.modificationInfo.modifiesGPR = false;
+  397:             inst.modificationInfo.modifiesControl = true;
+  398:             break;
+  399:         }
+  400:     }
+  401: 
+  402:     void R5900Decoder::decodeRegimm(Instruction &inst) const
+  403:     {
+  404:         uint32_t rt = inst.rt;
+  405: 
+  406:         switch (rt)
+  407:         {
+  408:         case REGIMM_BLTZ:
+  409:         case REGIMM_BGEZ:
+  410:         case REGIMM_BLTZL:
+  411:         case REGIMM_BGEZL:
+  412:             // Branches
+  413:             inst.isBranch = true;
+  414:             inst.hasDelaySlot = true;
+  415:             inst.modificationInfo.modifiesControl = true; // PC potentially
+  416:             break;
+  417: 
+  418:         case REGIMM_BLTZAL:
+  419:         case REGIMM_BGEZAL:
+
+===== MATCH AT LINE 397 =====
+  386:         case SPECIAL_MFSA: // Modifies rd GPR
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+  389:             break;
+  390:         case SPECIAL_MTSA: // Modifies SA control register
+  391:             inst.modificationInfo.modifiesGPR = false;
+  392:             inst.modificationInfo.modifiesControl = true; // SA reg
+  393:             break;
+  394: 
+  395:         case SPECIAL_SYNC:
+  396:             inst.modificationInfo.modifiesGPR = false;
+  397:             inst.modificationInfo.modifiesControl = true;
+  398:             break;
+  399:         }
+  400:     }
+  401: 
+  402:     void R5900Decoder::decodeRegimm(Instruction &inst) const
+  403:     {
+  404:         uint32_t rt = inst.rt;
+  405: 
+  406:         switch (rt)
+  407:         {
+  408:         case REGIMM_BLTZ:
+  409:         case REGIMM_BGEZ:
+  410:         case REGIMM_BLTZL:
+  411:         case REGIMM_BGEZL:
+  412:             // Branches
+  413:             inst.isBranch = true;
+  414:             inst.hasDelaySlot = true;
+  415:             inst.modificationInfo.modifiesControl = true; // PC potentially
+  416:             break;
+  417: 
+  418:         case REGIMM_BLTZAL:
+  419:         case REGIMM_BGEZAL:
+  420:         case REGIMM_BLTZALL:
+
+===== MATCH AT LINE 415 =====
+  404:         uint32_t rt = inst.rt;
+  405: 
+  406:         switch (rt)
+  407:         {
+  408:         case REGIMM_BLTZ:
+  409:         case REGIMM_BGEZ:
+  410:         case REGIMM_BLTZL:
+  411:         case REGIMM_BGEZL:
+  412:             // Branches
+  413:             inst.isBranch = true;
+  414:             inst.hasDelaySlot = true;
+  415:             inst.modificationInfo.modifiesControl = true; // PC potentially
+  416:             break;
+  417: 
+  418:         case REGIMM_BLTZAL:
+  419:         case REGIMM_BGEZAL:
+  420:         case REGIMM_BLTZALL:
+  421:         case REGIMM_BGEZALL:
+  422:             // Branch and Link
+  423:             inst.isBranch = true;
+  424:             inst.isCall = true;
+  425:             inst.hasDelaySlot = true;
+  426:             inst.modificationInfo.modifiesGPR = true;     // $ra (r[31])
+  427:             inst.modificationInfo.modifiesControl = true; // PC
+  428:             break;
+  429: 
+  430:         case REGIMM_TGEI:
+  431:         case REGIMM_TGEIU:
+  432:         case REGIMM_TLTI:
+  433:         case REGIMM_TLTIU:
+  434:         case REGIMM_TEQI:
+  435:         case REGIMM_TNEI:
+  436:             // Trap Instructions
+  437:             inst.modificationInfo.modifiesControl = true;
+  438:             break;
+
+===== MATCH AT LINE 426 =====
+  415:             inst.modificationInfo.modifiesControl = true; // PC potentially
+  416:             break;
+  417: 
+  418:         case REGIMM_BLTZAL:
+  419:         case REGIMM_BGEZAL:
+  420:         case REGIMM_BLTZALL:
+  421:         case REGIMM_BGEZALL:
+  422:             // Branch and Link
+  423:             inst.isBranch = true;
+  424:             inst.isCall = true;
+  425:             inst.hasDelaySlot = true;
+  426:             inst.modificationInfo.modifiesGPR = true;     // $ra (r[31])
+  427:             inst.modificationInfo.modifiesControl = true; // PC
+  428:             break;
+  429: 
+  430:         case REGIMM_TGEI:
+  431:         case REGIMM_TGEIU:
+  432:         case REGIMM_TLTI:
+  433:         case REGIMM_TLTIU:
+  434:         case REGIMM_TEQI:
+  435:         case REGIMM_TNEI:
+  436:             // Trap Instructions
+  437:             inst.modificationInfo.modifiesControl = true;
+  438:             break;
+  439: 
+  440:         case REGIMM_MTSAB:
+  441:         case REGIMM_MTSAH:
+  442:             // PS2 specific MTSAB/MTSAH instructions (for QMFC2/QMTC2)
+  443:             inst.isMultimedia = true;
+  444:             inst.modificationInfo.modifiesControl = true; // SA register
+  445:             break;
+  446: 
+  447:         default:
+  448:             // Unknown REGIMM instructions
+  449:             std::cerr << "Unknown REGIMM instruction: " << std::hex << inst.raw << std::endl;
+
+===== MATCH AT LINE 427 =====
+  416:             break;
+  417: 
+  418:         case REGIMM_BLTZAL:
+  419:         case REGIMM_BGEZAL:
+  420:         case REGIMM_BLTZALL:
+  421:         case REGIMM_BGEZALL:
+  422:             // Branch and Link
+  423:             inst.isBranch = true;
+  424:             inst.isCall = true;
+  425:             inst.hasDelaySlot = true;
+  426:             inst.modificationInfo.modifiesGPR = true;     // $ra (r[31])
+  427:             inst.modificationInfo.modifiesControl = true; // PC
+  428:             break;
+  429: 
+  430:         case REGIMM_TGEI:
+  431:         case REGIMM_TGEIU:
+  432:         case REGIMM_TLTI:
+  433:         case REGIMM_TLTIU:
+  434:         case REGIMM_TEQI:
+  435:         case REGIMM_TNEI:
+  436:             // Trap Instructions
+  437:             inst.modificationInfo.modifiesControl = true;
+  438:             break;
+  439: 
+  440:         case REGIMM_MTSAB:
+  441:         case REGIMM_MTSAH:
+  442:             // PS2 specific MTSAB/MTSAH instructions (for QMFC2/QMTC2)
+  443:             inst.isMultimedia = true;
+  444:             inst.modificationInfo.modifiesControl = true; // SA register
+  445:             break;
+  446: 
+  447:         default:
+  448:             // Unknown REGIMM instructions
+  449:             std::cerr << "Unknown REGIMM instruction: " << std::hex << inst.raw << std::endl;
+  450:             break;
+
+===== MATCH AT LINE 437 =====
+  426:             inst.modificationInfo.modifiesGPR = true;     // $ra (r[31])
+  427:             inst.modificationInfo.modifiesControl = true; // PC
+  428:             break;
+  429: 
+  430:         case REGIMM_TGEI:
+  431:         case REGIMM_TGEIU:
+  432:         case REGIMM_TLTI:
+  433:         case REGIMM_TLTIU:
+  434:         case REGIMM_TEQI:
+  435:         case REGIMM_TNEI:
+  436:             // Trap Instructions
+  437:             inst.modificationInfo.modifiesControl = true;
+  438:             break;
+  439: 
+  440:         case REGIMM_MTSAB:
+  441:         case REGIMM_MTSAH:
+  442:             // PS2 specific MTSAB/MTSAH instructions (for QMFC2/QMTC2)
+  443:             inst.isMultimedia = true;
+  444:             inst.modificationInfo.modifiesControl = true; // SA register
+  445:             break;
+  446: 
+  447:         default:
+  448:             // Unknown REGIMM instructions
+  449:             std::cerr << "Unknown REGIMM instruction: " << std::hex << inst.raw << std::endl;
+  450:             break;
+  451:         }
+  452:     }
+  453: 
+  454:     void R5900Decoder::decodeMMI(Instruction &inst) const
+  455:     {
+  456:         inst.isMMI = true;
+  457:         inst.isMultimedia = true;
+  458:         inst.modificationInfo.modifiesGPR = true; // Most MMI ops write to rd GPR
+  459:         if (inst.rd == 0)
+  460:             inst.modificationInfo.modifiesGPR = false; // Except if rd is $zero
+
+===== MATCH AT LINE 444 =====
+  433:         case REGIMM_TLTIU:
+  434:         case REGIMM_TEQI:
+  435:         case REGIMM_TNEI:
+  436:             // Trap Instructions
+  437:             inst.modificationInfo.modifiesControl = true;
+  438:             break;
+  439: 
+  440:         case REGIMM_MTSAB:
+  441:         case REGIMM_MTSAH:
+  442:             // PS2 specific MTSAB/MTSAH instructions (for QMFC2/QMTC2)
+  443:             inst.isMultimedia = true;
+  444:             inst.modificationInfo.modifiesControl = true; // SA register
+  445:             break;
+  446: 
+  447:         default:
+  448:             // Unknown REGIMM instructions
+  449:             std::cerr << "Unknown REGIMM instruction: " << std::hex << inst.raw << std::endl;
+  450:             break;
+  451:         }
+  452:     }
+  453: 
+  454:     void R5900Decoder::decodeMMI(Instruction &inst) const
+  455:     {
+  456:         inst.isMMI = true;
+  457:         inst.isMultimedia = true;
+  458:         inst.modificationInfo.modifiesGPR = true; // Most MMI ops write to rd GPR
+  459:         if (inst.rd == 0)
+  460:             inst.modificationInfo.modifiesGPR = false; // Except if rd is $zero
+  461: 
+  462:         // The function field is actually determined by the lowest 6 bits (as in R-type)
+  463:         uint32_t mmiFunction = inst.function;
+  464: 
+  465:         uint32_t rs = inst.rs;
+  466: 
+  467:         if (mmiFunction == MMI_MMI0)
+
+===== MATCH AT LINE 458 =====
+  447:         default:
+  448:             // Unknown REGIMM instructions
+  449:             std::cerr << "Unknown REGIMM instruction: " << std::hex << inst.raw << std::endl;
+  450:             break;
+  451:         }
+  452:     }
+  453: 
+  454:     void R5900Decoder::decodeMMI(Instruction &inst) const
+  455:     {
+  456:         inst.isMMI = true;
+  457:         inst.isMultimedia = true;
+  458:         inst.modificationInfo.modifiesGPR = true; // Most MMI ops write to rd GPR
+  459:         if (inst.rd == 0)
+  460:             inst.modificationInfo.modifiesGPR = false; // Except if rd is $zero
+  461: 
+  462:         // The function field is actually determined by the lowest 6 bits (as in R-type)
+  463:         uint32_t mmiFunction = inst.function;
+  464: 
+  465:         uint32_t rs = inst.rs;
+  466: 
+  467:         if (mmiFunction == MMI_MMI0)
+  468:         {
+  469:             decodeMMI0(inst);
+  470:             return;
+  471:         }
+  472:         if (mmiFunction == MMI_MMI1)
+  473:         {
+  474:             decodeMMI1(inst);
+  475:             return;
+  476:         }
+  477:         if (mmiFunction == MMI_MMI2)
+  478:         {
+  479:             decodeMMI2(inst);
+  480:             return;
+  481:         }
+
+===== MATCH AT LINE 460 =====
+  449:             std::cerr << "Unknown REGIMM instruction: " << std::hex << inst.raw << std::endl;
+  450:             break;
+  451:         }
+  452:     }
+  453: 
+  454:     void R5900Decoder::decodeMMI(Instruction &inst) const
+  455:     {
+  456:         inst.isMMI = true;
+  457:         inst.isMultimedia = true;
+  458:         inst.modificationInfo.modifiesGPR = true; // Most MMI ops write to rd GPR
+  459:         if (inst.rd == 0)
+  460:             inst.modificationInfo.modifiesGPR = false; // Except if rd is $zero
+  461: 
+  462:         // The function field is actually determined by the lowest 6 bits (as in R-type)
+  463:         uint32_t mmiFunction = inst.function;
+  464: 
+  465:         uint32_t rs = inst.rs;
+  466: 
+  467:         if (mmiFunction == MMI_MMI0)
+  468:         {
+  469:             decodeMMI0(inst);
+  470:             return;
+  471:         }
+  472:         if (mmiFunction == MMI_MMI1)
+  473:         {
+  474:             decodeMMI1(inst);
+  475:             return;
+  476:         }
+  477:         if (mmiFunction == MMI_MMI2)
+  478:         {
+  479:             decodeMMI2(inst);
+  480:             return;
+  481:         }
+  482:         if (mmiFunction == MMI_MMI3)
+  483:         {
+
+===== MATCH AT LINE 498 =====
+  487: 
+  488:         switch (mmiFunction)
+  489:         {
+  490:         case MMI_PLZCW:
+  491:             // Parallel leading zero/one count word
+  492:             break;
+  493:         case MMI_MFHI1:
+  494:         case MMI_MFLO1:
+  495:             // Move from HI1/LO1 -> rd
+  496:             if (inst.rd == 0)
+  497:             {
+  498:                 inst.modificationInfo.modifiesGPR = false;
+  499:             }
+  500:             inst.modificationInfo.modifiesControl = false;
+  501:             break;
+  502:         case MMI_MTHI1:
+  503:         case MMI_MTLO1:
+  504:             // Move to HI1/LO1
+  505:             inst.modificationInfo.modifiesGPR = false;
+  506:             inst.modificationInfo.modifiesControl = true;
+  507:             break;
+  508:         case MMI_PSLLH:
+  509:         case MMI_PSRLH:
+  510:         case MMI_PSRAH:
+  511:         case MMI_PSLLW:
+  512:         case MMI_PSRLW:
+  513:         case MMI_PSRAW:
+  514:             // Packed shift instructions; defaults already mark GPR modify (unless rd==0)
+  515:             break;
+  516: 
+  517:         // HI/LO or HI1/LO1 producers/consumers
+  518:         case MMI_MADD:
+  519:         case MMI_MADDU:
+  520:         case MMI_MSUB:
+  521:         case MMI_MSUBU:
+
+===== MATCH AT LINE 500 =====
+  489:         {
+  490:         case MMI_PLZCW:
+  491:             // Parallel leading zero/one count word
+  492:             break;
+  493:         case MMI_MFHI1:
+  494:         case MMI_MFLO1:
+  495:             // Move from HI1/LO1 -> rd
+  496:             if (inst.rd == 0)
+  497:             {
+  498:                 inst.modificationInfo.modifiesGPR = false;
+  499:             }
+  500:             inst.modificationInfo.modifiesControl = false;
+  501:             break;
+  502:         case MMI_MTHI1:
+  503:         case MMI_MTLO1:
+  504:             // Move to HI1/LO1
+  505:             inst.modificationInfo.modifiesGPR = false;
+  506:             inst.modificationInfo.modifiesControl = true;
+  507:             break;
+  508:         case MMI_PSLLH:
+  509:         case MMI_PSRLH:
+  510:         case MMI_PSRAH:
+  511:         case MMI_PSLLW:
+  512:         case MMI_PSRLW:
+  513:         case MMI_PSRAW:
+  514:             // Packed shift instructions; defaults already mark GPR modify (unless rd==0)
+  515:             break;
+  516: 
+  517:         // HI/LO or HI1/LO1 producers/consumers
+  518:         case MMI_MADD:
+  519:         case MMI_MADDU:
+  520:         case MMI_MSUB:
+  521:         case MMI_MSUBU:
+  522:         case MMI_MADD1:
+  523:         case MMI_MADDU1:
+
+===== MATCH AT LINE 505 =====
+  494:         case MMI_MFLO1:
+  495:             // Move from HI1/LO1 -> rd
+  496:             if (inst.rd == 0)
+  497:             {
+  498:                 inst.modificationInfo.modifiesGPR = false;
+  499:             }
+  500:             inst.modificationInfo.modifiesControl = false;
+  501:             break;
+  502:         case MMI_MTHI1:
+  503:         case MMI_MTLO1:
+  504:             // Move to HI1/LO1
+  505:             inst.modificationInfo.modifiesGPR = false;
+  506:             inst.modificationInfo.modifiesControl = true;
+  507:             break;
+  508:         case MMI_PSLLH:
+  509:         case MMI_PSRLH:
+  510:         case MMI_PSRAH:
+  511:         case MMI_PSLLW:
+  512:         case MMI_PSRLW:
+  513:         case MMI_PSRAW:
+  514:             // Packed shift instructions; defaults already mark GPR modify (unless rd==0)
+  515:             break;
+  516: 
+  517:         // HI/LO or HI1/LO1 producers/consumers
+  518:         case MMI_MADD:
+  519:         case MMI_MADDU:
+  520:         case MMI_MSUB:
+  521:         case MMI_MSUBU:
+  522:         case MMI_MADD1:
+  523:         case MMI_MADDU1:
+  524:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // Also writes rd on R5900 I checkd on EE manual
+  525:             inst.modificationInfo.modifiesControl = true;
+  526:             break;
+  527:         case MMI_MULT1:
+  528:         case MMI_MULTU1:
+
+===== MATCH AT LINE 506 =====
+  495:             // Move from HI1/LO1 -> rd
+  496:             if (inst.rd == 0)
+  497:             {
+  498:                 inst.modificationInfo.modifiesGPR = false;
+  499:             }
+  500:             inst.modificationInfo.modifiesControl = false;
+  501:             break;
+  502:         case MMI_MTHI1:
+  503:         case MMI_MTLO1:
+  504:             // Move to HI1/LO1
+  505:             inst.modificationInfo.modifiesGPR = false;
+  506:             inst.modificationInfo.modifiesControl = true;
+  507:             break;
+  508:         case MMI_PSLLH:
+  509:         case MMI_PSRLH:
+  510:         case MMI_PSRAH:
+  511:         case MMI_PSLLW:
+  512:         case MMI_PSRLW:
+  513:         case MMI_PSRAW:
+  514:             // Packed shift instructions; defaults already mark GPR modify (unless rd==0)
+  515:             break;
+  516: 
+  517:         // HI/LO or HI1/LO1 producers/consumers
+  518:         case MMI_MADD:
+  519:         case MMI_MADDU:
+  520:         case MMI_MSUB:
+  521:         case MMI_MSUBU:
+  522:         case MMI_MADD1:
+  523:         case MMI_MADDU1:
+  524:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // Also writes rd on R5900 I checkd on EE manual
+  525:             inst.modificationInfo.modifiesControl = true;
+  526:             break;
+  527:         case MMI_MULT1:
+  528:         case MMI_MULTU1:
+  529:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // same
+
+===== MATCH AT LINE 524 =====
+  513:         case MMI_PSRAW:
+  514:             // Packed shift instructions; defaults already mark GPR modify (unless rd==0)
+  515:             break;
+  516: 
+  517:         // HI/LO or HI1/LO1 producers/consumers
+  518:         case MMI_MADD:
+  519:         case MMI_MADDU:
+  520:         case MMI_MSUB:
+  521:         case MMI_MSUBU:
+  522:         case MMI_MADD1:
+  523:         case MMI_MADDU1:
+  524:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // Also writes rd on R5900 I checkd on EE manual
+  525:             inst.modificationInfo.modifiesControl = true;
+  526:             break;
+  527:         case MMI_MULT1:
+  528:         case MMI_MULTU1:
+  529:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // same
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+  534:             inst.modificationInfo.modifiesGPR = false; // Writes to HI1/LO1
+  535:             inst.modificationInfo.modifiesControl = true;
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+  539:         case MMI3_PMTLO:
+  540:             inst.modificationInfo.modifiesGPR = false; // Writes to HI/LO or HI1/LO1
+  541:             inst.modificationInfo.modifiesControl = true;
+  542:             break;
+  543:         case MMI_PMFHL:
+  544:             decodePMFHL(inst);
+  545:             break;
+  546:         default:
+  547:             std::cerr << "Unknown MMI function: " << std::hex << mmiFunction << std::endl;
+
+===== MATCH AT LINE 525 =====
+  514:             // Packed shift instructions; defaults already mark GPR modify (unless rd==0)
+  515:             break;
+  516: 
+  517:         // HI/LO or HI1/LO1 producers/consumers
+  518:         case MMI_MADD:
+  519:         case MMI_MADDU:
+  520:         case MMI_MSUB:
+  521:         case MMI_MSUBU:
+  522:         case MMI_MADD1:
+  523:         case MMI_MADDU1:
+  524:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // Also writes rd on R5900 I checkd on EE manual
+  525:             inst.modificationInfo.modifiesControl = true;
+  526:             break;
+  527:         case MMI_MULT1:
+  528:         case MMI_MULTU1:
+  529:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // same
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+  534:             inst.modificationInfo.modifiesGPR = false; // Writes to HI1/LO1
+  535:             inst.modificationInfo.modifiesControl = true;
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+  539:         case MMI3_PMTLO:
+  540:             inst.modificationInfo.modifiesGPR = false; // Writes to HI/LO or HI1/LO1
+  541:             inst.modificationInfo.modifiesControl = true;
+  542:             break;
+  543:         case MMI_PMFHL:
+  544:             decodePMFHL(inst);
+  545:             break;
+  546:         default:
+  547:             std::cerr << "Unknown MMI function: " << std::hex << mmiFunction << std::endl;
+  548:             break;
+
+===== MATCH AT LINE 529 =====
+  518:         case MMI_MADD:
+  519:         case MMI_MADDU:
+  520:         case MMI_MSUB:
+  521:         case MMI_MSUBU:
+  522:         case MMI_MADD1:
+  523:         case MMI_MADDU1:
+  524:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // Also writes rd on R5900 I checkd on EE manual
+  525:             inst.modificationInfo.modifiesControl = true;
+  526:             break;
+  527:         case MMI_MULT1:
+  528:         case MMI_MULTU1:
+  529:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // same
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+  534:             inst.modificationInfo.modifiesGPR = false; // Writes to HI1/LO1
+  535:             inst.modificationInfo.modifiesControl = true;
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+  539:         case MMI3_PMTLO:
+  540:             inst.modificationInfo.modifiesGPR = false; // Writes to HI/LO or HI1/LO1
+  541:             inst.modificationInfo.modifiesControl = true;
+  542:             break;
+  543:         case MMI_PMFHL:
+  544:             decodePMFHL(inst);
+  545:             break;
+  546:         default:
+  547:             std::cerr << "Unknown MMI function: " << std::hex << mmiFunction << std::endl;
+  548:             break;
+  549:         }
+  550:     }
+  551: 
+  552:     void R5900Decoder::decodeMMI0(Instruction &inst) const
+
+===== MATCH AT LINE 530 =====
+  519:         case MMI_MADDU:
+  520:         case MMI_MSUB:
+  521:         case MMI_MSUBU:
+  522:         case MMI_MADD1:
+  523:         case MMI_MADDU1:
+  524:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // Also writes rd on R5900 I checkd on EE manual
+  525:             inst.modificationInfo.modifiesControl = true;
+  526:             break;
+  527:         case MMI_MULT1:
+  528:         case MMI_MULTU1:
+  529:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // same
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+  534:             inst.modificationInfo.modifiesGPR = false; // Writes to HI1/LO1
+  535:             inst.modificationInfo.modifiesControl = true;
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+  539:         case MMI3_PMTLO:
+  540:             inst.modificationInfo.modifiesGPR = false; // Writes to HI/LO or HI1/LO1
+  541:             inst.modificationInfo.modifiesControl = true;
+  542:             break;
+  543:         case MMI_PMFHL:
+  544:             decodePMFHL(inst);
+  545:             break;
+  546:         default:
+  547:             std::cerr << "Unknown MMI function: " << std::hex << mmiFunction << std::endl;
+  548:             break;
+  549:         }
+  550:     }
+  551: 
+  552:     void R5900Decoder::decodeMMI0(Instruction &inst) const
+  553:     {
+
+===== MATCH AT LINE 534 =====
+  523:         case MMI_MADDU1:
+  524:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // Also writes rd on R5900 I checkd on EE manual
+  525:             inst.modificationInfo.modifiesControl = true;
+  526:             break;
+  527:         case MMI_MULT1:
+  528:         case MMI_MULTU1:
+  529:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // same
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+  534:             inst.modificationInfo.modifiesGPR = false; // Writes to HI1/LO1
+  535:             inst.modificationInfo.modifiesControl = true;
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+  539:         case MMI3_PMTLO:
+  540:             inst.modificationInfo.modifiesGPR = false; // Writes to HI/LO or HI1/LO1
+  541:             inst.modificationInfo.modifiesControl = true;
+  542:             break;
+  543:         case MMI_PMFHL:
+  544:             decodePMFHL(inst);
+  545:             break;
+  546:         default:
+  547:             std::cerr << "Unknown MMI function: " << std::hex << mmiFunction << std::endl;
+  548:             break;
+  549:         }
+  550:     }
+  551: 
+  552:     void R5900Decoder::decodeMMI0(Instruction &inst) const
+  553:     {
+  554:         inst.mmiType = 0;
+  555:         inst.mmiFunction = inst.sa;
+  556: 
+  557:         uint32_t sa = inst.sa;
+
+===== MATCH AT LINE 535 =====
+  524:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // Also writes rd on R5900 I checkd on EE manual
+  525:             inst.modificationInfo.modifiesControl = true;
+  526:             break;
+  527:         case MMI_MULT1:
+  528:         case MMI_MULTU1:
+  529:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // same
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+  534:             inst.modificationInfo.modifiesGPR = false; // Writes to HI1/LO1
+  535:             inst.modificationInfo.modifiesControl = true;
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+  539:         case MMI3_PMTLO:
+  540:             inst.modificationInfo.modifiesGPR = false; // Writes to HI/LO or HI1/LO1
+  541:             inst.modificationInfo.modifiesControl = true;
+  542:             break;
+  543:         case MMI_PMFHL:
+  544:             decodePMFHL(inst);
+  545:             break;
+  546:         default:
+  547:             std::cerr << "Unknown MMI function: " << std::hex << mmiFunction << std::endl;
+  548:             break;
+  549:         }
+  550:     }
+  551: 
+  552:     void R5900Decoder::decodeMMI0(Instruction &inst) const
+  553:     {
+  554:         inst.mmiType = 0;
+  555:         inst.mmiFunction = inst.sa;
+  556: 
+  557:         uint32_t sa = inst.sa;
+  558: 
+
+===== MATCH AT LINE 540 =====
+  529:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // same
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+  534:             inst.modificationInfo.modifiesGPR = false; // Writes to HI1/LO1
+  535:             inst.modificationInfo.modifiesControl = true;
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+  539:         case MMI3_PMTLO:
+  540:             inst.modificationInfo.modifiesGPR = false; // Writes to HI/LO or HI1/LO1
+  541:             inst.modificationInfo.modifiesControl = true;
+  542:             break;
+  543:         case MMI_PMFHL:
+  544:             decodePMFHL(inst);
+  545:             break;
+  546:         default:
+  547:             std::cerr << "Unknown MMI function: " << std::hex << mmiFunction << std::endl;
+  548:             break;
+  549:         }
+  550:     }
+  551: 
+  552:     void R5900Decoder::decodeMMI0(Instruction &inst) const
+  553:     {
+  554:         inst.mmiType = 0;
+  555:         inst.mmiFunction = inst.sa;
+  556: 
+  557:         uint32_t sa = inst.sa;
+  558: 
+  559:         switch (sa)
+  560:         {
+  561:         case MMI0_PADDW:
+  562:         case MMI0_PSUBW:
+  563:         case MMI0_PCGTW:
+
+===== MATCH AT LINE 541 =====
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+  534:             inst.modificationInfo.modifiesGPR = false; // Writes to HI1/LO1
+  535:             inst.modificationInfo.modifiesControl = true;
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+  539:         case MMI3_PMTLO:
+  540:             inst.modificationInfo.modifiesGPR = false; // Writes to HI/LO or HI1/LO1
+  541:             inst.modificationInfo.modifiesControl = true;
+  542:             break;
+  543:         case MMI_PMFHL:
+  544:             decodePMFHL(inst);
+  545:             break;
+  546:         default:
+  547:             std::cerr << "Unknown MMI function: " << std::hex << mmiFunction << std::endl;
+  548:             break;
+  549:         }
+  550:     }
+  551: 
+  552:     void R5900Decoder::decodeMMI0(Instruction &inst) const
+  553:     {
+  554:         inst.mmiType = 0;
+  555:         inst.mmiFunction = inst.sa;
+  556: 
+  557:         uint32_t sa = inst.sa;
+  558: 
+  559:         switch (sa)
+  560:         {
+  561:         case MMI0_PADDW:
+  562:         case MMI0_PSUBW:
+  563:         case MMI0_PCGTW:
+  564:         case MMI0_PMAXW:
+
+===== MATCH AT LINE 661 =====
+  650: 
+  651:     void R5900Decoder::decodeMMI2(Instruction &inst) const
+  652:     {
+  653:         inst.mmiType = 2;
+  654:         inst.mmiFunction = inst.sa;
+  655: 
+  656:         if (inst.sa == MMI2_PMADDW || inst.sa == MMI2_PMSUBW ||
+  657:             inst.sa == MMI2_PMULTW || inst.sa == MMI2_PDIVW || inst.sa == MMI2_PDIVBW ||
+  658:             inst.sa == MMI2_PMADDH || inst.sa == MMI2_PHMADH ||
+  659:             inst.sa == MMI2_PMSUBH || inst.sa == MMI2_PHMSBH || inst.sa == MMI2_PMULTH)
+  660:         {
+  661:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  662:         }
+  663: 
+  664:         uint32_t sa = inst.sa;
+  665: 
+  666:         switch (sa)
+  667:         {
+  668:         case MMI2_PMADDW:
+  669:         case MMI2_PMSUBW:
+  670:         case MMI2_PMADDH:
+  671:         case MMI2_PHMADH:
+  672:         case MMI2_PMSUBH:
+  673:         case MMI2_PHMSBH:
+  674:         case MMI2_PMULTH:
+  675:             // Multiply/multiply-add operations
+  676:             inst.isMultimedia = true;
+  677:             break;
+  678: 
+  679:         case MMI2_PSLLVW:
+  680:         case MMI2_PSRLVW:
+  681:             // Variable shift operations
+  682:             break;
+  683: 
+  684:         case MMI2_PMFHI:
+
+===== MATCH AT LINE 734 =====
+  723:     {
+  724:         inst.mmiType = 3;
+  725:         inst.mmiFunction = inst.sa;
+  726: 
+  727:         uint32_t sa = inst.sa;
+  728: 
+  729:         switch (sa)
+  730:         {
+  731:         case MMI3_PMADDUW:
+  732:             // Unsigned multiply-add
+  733:             inst.isMultimedia = true;
+  734:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  735:             break;
+  736: 
+  737:         case MMI3_PSRAVW:
+  738:             // Packed shift right arithmetic variable word
+  739:             break;
+  740: 
+  741:         case MMI3_PMTHI:
+  742:             inst.mmiFunction = MMI3_PMTHI;
+  743:             inst.modificationInfo.modifiesGPR = false;
+  744:             inst.modificationInfo.modifiesControl = true; // HI register is modified
+  745:             break;
+  746: 
+  747:         case MMI3_PMTLO:
+  748:             inst.mmiFunction = MMI3_PMTLO;
+  749:             inst.modificationInfo.modifiesGPR = false;
+  750:             inst.modificationInfo.modifiesControl = true; // LO register is modified
+  751:             break;
+  752: 
+  753:         case MMI3_PINTEH:
+  754:             // Interleave even halfwords
+  755:             break;
+  756: 
+  757:         case MMI3_PMULTUW:
+
+===== MATCH AT LINE 743 =====
+  732:             // Unsigned multiply-add
+  733:             inst.isMultimedia = true;
+  734:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  735:             break;
+  736: 
+  737:         case MMI3_PSRAVW:
+  738:             // Packed shift right arithmetic variable word
+  739:             break;
+  740: 
+  741:         case MMI3_PMTHI:
+  742:             inst.mmiFunction = MMI3_PMTHI;
+  743:             inst.modificationInfo.modifiesGPR = false;
+  744:             inst.modificationInfo.modifiesControl = true; // HI register is modified
+  745:             break;
+  746: 
+  747:         case MMI3_PMTLO:
+  748:             inst.mmiFunction = MMI3_PMTLO;
+  749:             inst.modificationInfo.modifiesGPR = false;
+  750:             inst.modificationInfo.modifiesControl = true; // LO register is modified
+  751:             break;
+  752: 
+  753:         case MMI3_PINTEH:
+  754:             // Interleave even halfwords
+  755:             break;
+  756: 
+  757:         case MMI3_PMULTUW:
+  758:         case MMI3_PDIVUW:
+  759:             // Unsigned multiply/divide operations
+  760:             inst.isMultimedia = true;
+  761:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  762:             break;
+  763: 
+  764:         case MMI3_PCPYUD:
+  765:             // Copy upper doubleword
+  766:             break;
+
+===== MATCH AT LINE 744 =====
+  733:             inst.isMultimedia = true;
+  734:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  735:             break;
+  736: 
+  737:         case MMI3_PSRAVW:
+  738:             // Packed shift right arithmetic variable word
+  739:             break;
+  740: 
+  741:         case MMI3_PMTHI:
+  742:             inst.mmiFunction = MMI3_PMTHI;
+  743:             inst.modificationInfo.modifiesGPR = false;
+  744:             inst.modificationInfo.modifiesControl = true; // HI register is modified
+  745:             break;
+  746: 
+  747:         case MMI3_PMTLO:
+  748:             inst.mmiFunction = MMI3_PMTLO;
+  749:             inst.modificationInfo.modifiesGPR = false;
+  750:             inst.modificationInfo.modifiesControl = true; // LO register is modified
+  751:             break;
+  752: 
+  753:         case MMI3_PINTEH:
+  754:             // Interleave even halfwords
+  755:             break;
+  756: 
+  757:         case MMI3_PMULTUW:
+  758:         case MMI3_PDIVUW:
+  759:             // Unsigned multiply/divide operations
+  760:             inst.isMultimedia = true;
+  761:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  762:             break;
+  763: 
+  764:         case MMI3_PCPYUD:
+  765:             // Copy upper doubleword
+  766:             break;
+  767: 
+
+===== MATCH AT LINE 749 =====
+  738:             // Packed shift right arithmetic variable word
+  739:             break;
+  740: 
+  741:         case MMI3_PMTHI:
+  742:             inst.mmiFunction = MMI3_PMTHI;
+  743:             inst.modificationInfo.modifiesGPR = false;
+  744:             inst.modificationInfo.modifiesControl = true; // HI register is modified
+  745:             break;
+  746: 
+  747:         case MMI3_PMTLO:
+  748:             inst.mmiFunction = MMI3_PMTLO;
+  749:             inst.modificationInfo.modifiesGPR = false;
+  750:             inst.modificationInfo.modifiesControl = true; // LO register is modified
+  751:             break;
+  752: 
+  753:         case MMI3_PINTEH:
+  754:             // Interleave even halfwords
+  755:             break;
+  756: 
+  757:         case MMI3_PMULTUW:
+  758:         case MMI3_PDIVUW:
+  759:             // Unsigned multiply/divide operations
+  760:             inst.isMultimedia = true;
+  761:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  762:             break;
+  763: 
+  764:         case MMI3_PCPYUD:
+  765:             // Copy upper doubleword
+  766:             break;
+  767: 
+  768:         case MMI3_POR:
+  769:         case MMI3_PNOR:
+  770:             // Logical operations
+  771:             break;
+  772: 
+
+===== MATCH AT LINE 750 =====
+  739:             break;
+  740: 
+  741:         case MMI3_PMTHI:
+  742:             inst.mmiFunction = MMI3_PMTHI;
+  743:             inst.modificationInfo.modifiesGPR = false;
+  744:             inst.modificationInfo.modifiesControl = true; // HI register is modified
+  745:             break;
+  746: 
+  747:         case MMI3_PMTLO:
+  748:             inst.mmiFunction = MMI3_PMTLO;
+  749:             inst.modificationInfo.modifiesGPR = false;
+  750:             inst.modificationInfo.modifiesControl = true; // LO register is modified
+  751:             break;
+  752: 
+  753:         case MMI3_PINTEH:
+  754:             // Interleave even halfwords
+  755:             break;
+  756: 
+  757:         case MMI3_PMULTUW:
+  758:         case MMI3_PDIVUW:
+  759:             // Unsigned multiply/divide operations
+  760:             inst.isMultimedia = true;
+  761:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  762:             break;
+  763: 
+  764:         case MMI3_PCPYUD:
+  765:             // Copy upper doubleword
+  766:             break;
+  767: 
+  768:         case MMI3_POR:
+  769:         case MMI3_PNOR:
+  770:             // Logical operations
+  771:             break;
+  772: 
+  773:         case MMI3_PEXCH:
+
+===== MATCH AT LINE 761 =====
+  750:             inst.modificationInfo.modifiesControl = true; // LO register is modified
+  751:             break;
+  752: 
+  753:         case MMI3_PINTEH:
+  754:             // Interleave even halfwords
+  755:             break;
+  756: 
+  757:         case MMI3_PMULTUW:
+  758:         case MMI3_PDIVUW:
+  759:             // Unsigned multiply/divide operations
+  760:             inst.isMultimedia = true;
+  761:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  762:             break;
+  763: 
+  764:         case MMI3_PCPYUD:
+  765:             // Copy upper doubleword
+  766:             break;
+  767: 
+  768:         case MMI3_POR:
+  769:         case MMI3_PNOR:
+  770:             // Logical operations
+  771:             break;
+  772: 
+  773:         case MMI3_PEXCH:
+  774:         case MMI3_PCPYH:
+  775:         case MMI3_PEXCW:
+  776:             // Data permutation operations
+  777:             break;
+  778: 
+  779:         default:
+  780:             // Unknown MMI3 operation
+  781:             break;
+  782:         }
+  783:     }
+  784: 
+
+===== MATCH AT LINE 789 =====
+  778: 
+  779:         default:
+  780:             // Unknown MMI3 operation
+  781:             break;
+  782:         }
+  783:     }
+  784: 
+  785:     void R5900Decoder::decodeCOP0(Instruction &inst) const
+  786:     {
+  787:         // COP0 (System Control) instructions
+  788:         uint8_t format = inst.rs;
+  789:         inst.modificationInfo.modifiesControl = true; // Assume COP0 always modifies some control state
+  790:         if (format == COP0_MF && inst.rt != 0)
+  791:         {
+  792:             inst.modificationInfo.modifiesGPR = true;
+  793:         }
+  794:         else if (format == COP0_CO && inst.function == COP0_CO_ERET)
+  795:         {
+  796:             inst.isReturn = true;
+  797:             inst.hasDelaySlot = false;
+  798:         } // ERET is special
+  799:         else if (format == COP0_BC)
+  800:         {
+  801:             inst.isBranch = true;
+  802:             inst.hasDelaySlot = true;
+  803:         }
+  804:     }
+  805: 
+  806:     void R5900Decoder::decodeCOP1(Instruction &inst) const
+  807:     {
+  808:         uint8_t format = inst.rs;
+  809:         if (format == COP1_MF || format == COP1_CF)
+  810:         {
+  811:             if (inst.rt != 0)
+  812:                 inst.modificationInfo.modifiesGPR = true;
+
+===== MATCH AT LINE 792 =====
+  781:             break;
+  782:         }
+  783:     }
+  784: 
+  785:     void R5900Decoder::decodeCOP0(Instruction &inst) const
+  786:     {
+  787:         // COP0 (System Control) instructions
+  788:         uint8_t format = inst.rs;
+  789:         inst.modificationInfo.modifiesControl = true; // Assume COP0 always modifies some control state
+  790:         if (format == COP0_MF && inst.rt != 0)
+  791:         {
+  792:             inst.modificationInfo.modifiesGPR = true;
+  793:         }
+  794:         else if (format == COP0_CO && inst.function == COP0_CO_ERET)
+  795:         {
+  796:             inst.isReturn = true;
+  797:             inst.hasDelaySlot = false;
+  798:         } // ERET is special
+  799:         else if (format == COP0_BC)
+  800:         {
+  801:             inst.isBranch = true;
+  802:             inst.hasDelaySlot = true;
+  803:         }
+  804:     }
+  805: 
+  806:     void R5900Decoder::decodeCOP1(Instruction &inst) const
+  807:     {
+  808:         uint8_t format = inst.rs;
+  809:         if (format == COP1_MF || format == COP1_CF)
+  810:         {
+  811:             if (inst.rt != 0)
+  812:                 inst.modificationInfo.modifiesGPR = true;
+  813:         }
+  814:         else if (format == COP1_BC)
+  815:         {
+
+===== MATCH AT LINE 806 =====
+  795:         {
+  796:             inst.isReturn = true;
+  797:             inst.hasDelaySlot = false;
+  798:         } // ERET is special
+  799:         else if (format == COP0_BC)
+  800:         {
+  801:             inst.isBranch = true;
+  802:             inst.hasDelaySlot = true;
+  803:         }
+  804:     }
+  805: 
+  806:     void R5900Decoder::decodeCOP1(Instruction &inst) const
+  807:     {
+  808:         uint8_t format = inst.rs;
+  809:         if (format == COP1_MF || format == COP1_CF)
+  810:         {
+  811:             if (inst.rt != 0)
+  812:                 inst.modificationInfo.modifiesGPR = true;
+  813:         }
+  814:         else if (format == COP1_BC)
+  815:         {
+  816:             inst.isBranch = true;
+  817:             inst.hasDelaySlot = true;
+  818:             inst.modificationInfo.modifiesControl = true;
+  819:         }
+  820:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  821:         {
+  822:             inst.modificationInfo.modifiesFPR = true;
+  823:         }
+  824:         if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  825:         {
+  826:             inst.modificationInfo.modifiesControl = true;
+  827:         } // FCR31
+  828:     }
+  829: 
+
+===== MATCH AT LINE 812 =====
+  801:             inst.isBranch = true;
+  802:             inst.hasDelaySlot = true;
+  803:         }
+  804:     }
+  805: 
+  806:     void R5900Decoder::decodeCOP1(Instruction &inst) const
+  807:     {
+  808:         uint8_t format = inst.rs;
+  809:         if (format == COP1_MF || format == COP1_CF)
+  810:         {
+  811:             if (inst.rt != 0)
+  812:                 inst.modificationInfo.modifiesGPR = true;
+  813:         }
+  814:         else if (format == COP1_BC)
+  815:         {
+  816:             inst.isBranch = true;
+  817:             inst.hasDelaySlot = true;
+  818:             inst.modificationInfo.modifiesControl = true;
+  819:         }
+  820:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  821:         {
+  822:             inst.modificationInfo.modifiesFPR = true;
+  823:         }
+  824:         if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  825:         {
+  826:             inst.modificationInfo.modifiesControl = true;
+  827:         } // FCR31
+  828:     }
+  829: 
+  830:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  831:     {
+  832:         uint8_t format = inst.rs;
+  833:         inst.isVU = true;
+  834:         inst.isMultimedia = true;
+  835: 
+
+===== MATCH AT LINE 818 =====
+  807:     {
+  808:         uint8_t format = inst.rs;
+  809:         if (format == COP1_MF || format == COP1_CF)
+  810:         {
+  811:             if (inst.rt != 0)
+  812:                 inst.modificationInfo.modifiesGPR = true;
+  813:         }
+  814:         else if (format == COP1_BC)
+  815:         {
+  816:             inst.isBranch = true;
+  817:             inst.hasDelaySlot = true;
+  818:             inst.modificationInfo.modifiesControl = true;
+  819:         }
+  820:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  821:         {
+  822:             inst.modificationInfo.modifiesFPR = true;
+  823:         }
+  824:         if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  825:         {
+  826:             inst.modificationInfo.modifiesControl = true;
+  827:         } // FCR31
+  828:     }
+  829: 
+  830:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  831:     {
+  832:         uint8_t format = inst.rs;
+  833:         inst.isVU = true;
+  834:         inst.isMultimedia = true;
+  835: 
+  836:         switch (format)
+  837:         {
+  838:         case COP2_QMFC2:
+  839:         case COP2_CFC2:
+  840:             if (inst.rt != 0)
+  841:                 inst.modificationInfo.modifiesGPR = true;
+
+===== MATCH AT LINE 822 =====
+  811:             if (inst.rt != 0)
+  812:                 inst.modificationInfo.modifiesGPR = true;
+  813:         }
+  814:         else if (format == COP1_BC)
+  815:         {
+  816:             inst.isBranch = true;
+  817:             inst.hasDelaySlot = true;
+  818:             inst.modificationInfo.modifiesControl = true;
+  819:         }
+  820:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  821:         {
+  822:             inst.modificationInfo.modifiesFPR = true;
+  823:         }
+  824:         if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  825:         {
+  826:             inst.modificationInfo.modifiesControl = true;
+  827:         } // FCR31
+  828:     }
+  829: 
+  830:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  831:     {
+  832:         uint8_t format = inst.rs;
+  833:         inst.isVU = true;
+  834:         inst.isMultimedia = true;
+  835: 
+  836:         switch (format)
+  837:         {
+  838:         case COP2_QMFC2:
+  839:         case COP2_CFC2:
+  840:             if (inst.rt != 0)
+  841:                 inst.modificationInfo.modifiesGPR = true;
+  842:             break;
+  843:         case COP2_QMTC2:
+  844:             inst.modificationInfo.modifiesVFR = true;
+  845:             break; // Modifies VU state
+
+===== MATCH AT LINE 826 =====
+  815:         {
+  816:             inst.isBranch = true;
+  817:             inst.hasDelaySlot = true;
+  818:             inst.modificationInfo.modifiesControl = true;
+  819:         }
+  820:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  821:         {
+  822:             inst.modificationInfo.modifiesFPR = true;
+  823:         }
+  824:         if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  825:         {
+  826:             inst.modificationInfo.modifiesControl = true;
+  827:         } // FCR31
+  828:     }
+  829: 
+  830:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  831:     {
+  832:         uint8_t format = inst.rs;
+  833:         inst.isVU = true;
+  834:         inst.isMultimedia = true;
+  835: 
+  836:         switch (format)
+  837:         {
+  838:         case COP2_QMFC2:
+  839:         case COP2_CFC2:
+  840:             if (inst.rt != 0)
+  841:                 inst.modificationInfo.modifiesGPR = true;
+  842:             break;
+  843:         case COP2_QMTC2:
+  844:             inst.modificationInfo.modifiesVFR = true;
+  845:             break; // Modifies VU state
+  846:         case COP2_CTC2:
+  847:             inst.modificationInfo.modifiesControl = true;
+  848:             break; // Modifies VU control state
+  849:         case COP2_BC:
+
+===== MATCH AT LINE 830 =====
+  819:         }
+  820:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  821:         {
+  822:             inst.modificationInfo.modifiesFPR = true;
+  823:         }
+  824:         if (format == COP1_CT || (format == COP1_S && inst.function >= COP1_S_C_F))
+  825:         {
+  826:             inst.modificationInfo.modifiesControl = true;
+  827:         } // FCR31
+  828:     }
+  829: 
+  830:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  831:     {
+  832:         uint8_t format = inst.rs;
+  833:         inst.isVU = true;
+  834:         inst.isMultimedia = true;
+  835: 
+  836:         switch (format)
+  837:         {
+  838:         case COP2_QMFC2:
+  839:         case COP2_CFC2:
+  840:             if (inst.rt != 0)
+  841:                 inst.modificationInfo.modifiesGPR = true;
+  842:             break;
+  843:         case COP2_QMTC2:
+  844:             inst.modificationInfo.modifiesVFR = true;
+  845:             break; // Modifies VU state
+  846:         case COP2_CTC2:
+  847:             inst.modificationInfo.modifiesControl = true;
+  848:             break; // Modifies VU control state
+  849:         case COP2_BC:
+  850:             inst.isBranch = true;
+  851:             inst.hasDelaySlot = true;
+  852:             inst.modificationInfo.modifiesControl = true;
+  853:             break;
+
+===== MATCH AT LINE 841 =====
+  830:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  831:     {
+  832:         uint8_t format = inst.rs;
+  833:         inst.isVU = true;
+  834:         inst.isMultimedia = true;
+  835: 
+  836:         switch (format)
+  837:         {
+  838:         case COP2_QMFC2:
+  839:         case COP2_CFC2:
+  840:             if (inst.rt != 0)
+  841:                 inst.modificationInfo.modifiesGPR = true;
+  842:             break;
+  843:         case COP2_QMTC2:
+  844:             inst.modificationInfo.modifiesVFR = true;
+  845:             break; // Modifies VU state
+  846:         case COP2_CTC2:
+  847:             inst.modificationInfo.modifiesControl = true;
+  848:             break; // Modifies VU control state
+  849:         case COP2_BC:
+  850:             inst.isBranch = true;
+  851:             inst.hasDelaySlot = true;
+  852:             inst.modificationInfo.modifiesControl = true;
+  853:             break;
+  854:         case COP2_CO: // VU Macro instructions (format >= 0x10)
+  855:         case COP2_CO + 1:
+  856:         case COP2_CO + 2:
+  857:         case COP2_CO + 3:
+  858:         case COP2_CO + 4:
+  859:         case COP2_CO + 5:
+  860:         case COP2_CO + 6:
+  861:         case COP2_CO + 7:
+  862:         case COP2_CO + 8:
+  863:         case COP2_CO + 9:
+  864:         case COP2_CO + 10:
+
+===== MATCH AT LINE 847 =====
+  836:         switch (format)
+  837:         {
+  838:         case COP2_QMFC2:
+  839:         case COP2_CFC2:
+  840:             if (inst.rt != 0)
+  841:                 inst.modificationInfo.modifiesGPR = true;
+  842:             break;
+  843:         case COP2_QMTC2:
+  844:             inst.modificationInfo.modifiesVFR = true;
+  845:             break; // Modifies VU state
+  846:         case COP2_CTC2:
+  847:             inst.modificationInfo.modifiesControl = true;
+  848:             break; // Modifies VU control state
+  849:         case COP2_BC:
+  850:             inst.isBranch = true;
+  851:             inst.hasDelaySlot = true;
+  852:             inst.modificationInfo.modifiesControl = true;
+  853:             break;
+  854:         case COP2_CO: // VU Macro instructions (format >= 0x10)
+  855:         case COP2_CO + 1:
+  856:         case COP2_CO + 2:
+  857:         case COP2_CO + 3:
+  858:         case COP2_CO + 4:
+  859:         case COP2_CO + 5:
+  860:         case COP2_CO + 6:
+  861:         case COP2_CO + 7:
+  862:         case COP2_CO + 8:
+  863:         case COP2_CO + 9:
+  864:         case COP2_CO + 10:
+  865:         case COP2_CO + 11:
+  866:         case COP2_CO + 12:
+  867:         case COP2_CO + 13:
+  868:         case COP2_CO + 14:
+  869:         case COP2_CO + 15:
+  870:         { // Refine based on specific VU function
+
+===== MATCH AT LINE 852 =====
+  841:                 inst.modificationInfo.modifiesGPR = true;
+  842:             break;
+  843:         case COP2_QMTC2:
+  844:             inst.modificationInfo.modifiesVFR = true;
+  845:             break; // Modifies VU state
+  846:         case COP2_CTC2:
+  847:             inst.modificationInfo.modifiesControl = true;
+  848:             break; // Modifies VU control state
+  849:         case COP2_BC:
+  850:             inst.isBranch = true;
+  851:             inst.hasDelaySlot = true;
+  852:             inst.modificationInfo.modifiesControl = true;
+  853:             break;
+  854:         case COP2_CO: // VU Macro instructions (format >= 0x10)
+  855:         case COP2_CO + 1:
+  856:         case COP2_CO + 2:
+  857:         case COP2_CO + 3:
+  858:         case COP2_CO + 4:
+  859:         case COP2_CO + 5:
+  860:         case COP2_CO + 6:
+  861:         case COP2_CO + 7:
+  862:         case COP2_CO + 8:
+  863:         case COP2_CO + 9:
+  864:         case COP2_CO + 10:
+  865:         case COP2_CO + 11:
+  866:         case COP2_CO + 12:
+  867:         case COP2_CO + 13:
+  868:         case COP2_CO + 14:
+  869:         case COP2_CO + 15:
+  870:         { // Refine based on specific VU function
+  871:             const uint8_t special1Func = static_cast<uint8_t>(inst.function & 0x3F);
+  872:             const bool isSpecial2 = special1Func >= 0x3C;
+  873:             const uint8_t special2Func = static_cast<uint8_t>((((inst.raw >> 6) & 0x1F) << 2) | (inst.raw & 0x3));
+  874:             const uint8_t vuFunc = isSpecial2 ? special2Func : special1Func;
+  875: 
+
+===== MATCH AT LINE 890 =====
+  879:             if (vuFunc == VU0_S2_VDIV || vuFunc == VU0_S2_VRSQRT ||
+  880:                 vuFunc == VU0_S2_VMTIR || vuFunc == VU0_S2_VRINIT || vuFunc == VU0_S2_VRXOR)
+  881:             {
+  882:                 inst.vectorInfo.fsf = static_cast<uint8_t>((inst.raw >> 21) & 0x3); // L selector
+  883:             }
+  884:             if (vuFunc == VU0_S2_VDIV || vuFunc == VU0_S2_VSQRT || vuFunc == VU0_S2_VRSQRT)
+  885:             {
+  886:                 inst.vectorInfo.ftf = static_cast<uint8_t>((inst.raw >> 23) & 0x3); // M selector
+  887:             }
+  888: 
+  889:             inst.modificationInfo.modifiesVFR = true;     // Default: Modifies Vector Float Reg
+  890:             inst.modificationInfo.modifiesControl = true; // Default: Modifies Flags/Special Regs (Q, P, I, MAC, Clip...)
+  891: 
+  892:             if (isSpecial2)
+  893:             {
+  894:                 switch (vuFunc)
+  895:                 {
+  896:                 case VU0_S2_VDIV:
+  897:                 case VU0_S2_VSQRT:
+  898:                 case VU0_S2_VRSQRT:
+  899:                     inst.vectorInfo.usesQReg = true;
+  900:                     break;
+  901:                 case VU0_S2_VMTIR:
+  902:                     inst.modificationInfo.modifiesVFR = false;
+  903:                     inst.modificationInfo.modifiesVIC = true;
+  904:                     break;
+  905:                 case VU0_S2_VMFIR:
+  906:                     inst.modificationInfo.modifiesVIR = false;
+  907:                     break; // Reads VI, writes VF
+  908:                 case VU0_S2_VILWR:
+  909:                     inst.modificationInfo.modifiesVFR = false;
+  910:                     inst.modificationInfo.modifiesVIR = true;
+  911:                     inst.isLoad = true;
+  912:                     break;
+  913:                 case VU0_S2_VISWR:
+
+===== MATCH AT LINE 924 =====
+  913:                 case VU0_S2_VISWR:
+  914:                     inst.modificationInfo.modifiesVFR = false;
+  915:                     inst.modificationInfo.modifiesVIR = false;
+  916:                     inst.isStore = true;
+  917:                     inst.modificationInfo.modifiesMemory = true;
+  918:                     break;
+  919:                 case VU0_S2_VRINIT:
+  920:                 case VU0_S2_VRXOR:
+  921:                     inst.modificationInfo.modifiesVFR = false; /* Modifies R */
+  922:                     break;
+  923:                 case VU0_S2_VRGET:
+  924:                     inst.modificationInfo.modifiesControl = false; /* Reads R, writes VF */
+  925:                     break;
+  926:                 case VU0_S2_VRNEXT:
+  927:                     inst.modificationInfo.modifiesControl = true; /* Modifies R */
+  928:                     inst.modificationInfo.modifiesVFR = false;
+  929:                     break;
+  930:                 case VU0_S2_VABS:
+  931:                 case VU0_S2_VMOVE:
+  932:                 case VU0_S2_VMR32:
+  933:                     inst.modificationInfo.modifiesControl = false;
+  934:                     break; // Only VF
+  935:                 case VU0_S2_VNOP:
+  936:                     inst.modificationInfo.modifiesVFR = false;
+  937:                     inst.modificationInfo.modifiesControl = false;
+  938:                     break;
+  939:                 case VU0_S2_VCLIPw:
+  940:                     inst.modificationInfo.modifiesVFR = false; /* Modifies Clip flags */
+  941:                     break;
+  942:                 }
+  943:             }
+  944:             else // Special1 Table
+  945:             {
+  946:                 if (vuFunc >= VU0_S1_VIADD && vuFunc <= VU0_S1_VIOR)
+  947:                 {
+
+===== MATCH AT LINE 927 =====
+  916:                     inst.isStore = true;
+  917:                     inst.modificationInfo.modifiesMemory = true;
+  918:                     break;
+  919:                 case VU0_S2_VRINIT:
+  920:                 case VU0_S2_VRXOR:
+  921:                     inst.modificationInfo.modifiesVFR = false; /* Modifies R */
+  922:                     break;
+  923:                 case VU0_S2_VRGET:
+  924:                     inst.modificationInfo.modifiesControl = false; /* Reads R, writes VF */
+  925:                     break;
+  926:                 case VU0_S2_VRNEXT:
+  927:                     inst.modificationInfo.modifiesControl = true; /* Modifies R */
+  928:                     inst.modificationInfo.modifiesVFR = false;
+  929:                     break;
+  930:                 case VU0_S2_VABS:
+  931:                 case VU0_S2_VMOVE:
+  932:                 case VU0_S2_VMR32:
+  933:                     inst.modificationInfo.modifiesControl = false;
+  934:                     break; // Only VF
+  935:                 case VU0_S2_VNOP:
+  936:                     inst.modificationInfo.modifiesVFR = false;
+  937:                     inst.modificationInfo.modifiesControl = false;
+  938:                     break;
+  939:                 case VU0_S2_VCLIPw:
+  940:                     inst.modificationInfo.modifiesVFR = false; /* Modifies Clip flags */
+  941:                     break;
+  942:                 }
+  943:             }
+  944:             else // Special1 Table
+  945:             {
+  946:                 if (vuFunc >= VU0_S1_VIADD && vuFunc <= VU0_S1_VIOR)
+  947:                 {
+  948:                     inst.modificationInfo.modifiesVFR = false;
+  949:                     inst.modificationInfo.modifiesVIR = true;
+  950:                 } // Integer ops
+
+===== MATCH AT LINE 933 =====
+  922:                     break;
+  923:                 case VU0_S2_VRGET:
+  924:                     inst.modificationInfo.modifiesControl = false; /* Reads R, writes VF */
+  925:                     break;
+  926:                 case VU0_S2_VRNEXT:
+  927:                     inst.modificationInfo.modifiesControl = true; /* Modifies R */
+  928:                     inst.modificationInfo.modifiesVFR = false;
+  929:                     break;
+  930:                 case VU0_S2_VABS:
+  931:                 case VU0_S2_VMOVE:
+  932:                 case VU0_S2_VMR32:
+  933:                     inst.modificationInfo.modifiesControl = false;
+  934:                     break; // Only VF
+  935:                 case VU0_S2_VNOP:
+  936:                     inst.modificationInfo.modifiesVFR = false;
+  937:                     inst.modificationInfo.modifiesControl = false;
+  938:                     break;
+  939:                 case VU0_S2_VCLIPw:
+  940:                     inst.modificationInfo.modifiesVFR = false; /* Modifies Clip flags */
+  941:                     break;
+  942:                 }
+  943:             }
+  944:             else // Special1 Table
+  945:             {
+  946:                 if (vuFunc >= VU0_S1_VIADD && vuFunc <= VU0_S1_VIOR)
+  947:                 {
+  948:                     inst.modificationInfo.modifiesVFR = false;
+  949:                     inst.modificationInfo.modifiesVIR = true;
+  950:                 } // Integer ops
+  951:                 if (vuFunc == VU0_S1_VIADDI)
+  952:                 {
+  953:                     inst.modificationInfo.modifiesVFR = false;
+  954:                     inst.modificationInfo.modifiesVIR = true;
+  955:                 }
+  956:             }
+
+===== MATCH AT LINE 937 =====
+  926:                 case VU0_S2_VRNEXT:
+  927:                     inst.modificationInfo.modifiesControl = true; /* Modifies R */
+  928:                     inst.modificationInfo.modifiesVFR = false;
+  929:                     break;
+  930:                 case VU0_S2_VABS:
+  931:                 case VU0_S2_VMOVE:
+  932:                 case VU0_S2_VMR32:
+  933:                     inst.modificationInfo.modifiesControl = false;
+  934:                     break; // Only VF
+  935:                 case VU0_S2_VNOP:
+  936:                     inst.modificationInfo.modifiesVFR = false;
+  937:                     inst.modificationInfo.modifiesControl = false;
+  938:                     break;
+  939:                 case VU0_S2_VCLIPw:
+  940:                     inst.modificationInfo.modifiesVFR = false; /* Modifies Clip flags */
+  941:                     break;
+  942:                 }
+  943:             }
+  944:             else // Special1 Table
+  945:             {
+  946:                 if (vuFunc >= VU0_S1_VIADD && vuFunc <= VU0_S1_VIOR)
+  947:                 {
+  948:                     inst.modificationInfo.modifiesVFR = false;
+  949:                     inst.modificationInfo.modifiesVIR = true;
+  950:                 } // Integer ops
+  951:                 if (vuFunc == VU0_S1_VIADDI)
+  952:                 {
+  953:                     inst.modificationInfo.modifiesVFR = false;
+  954:                     inst.modificationInfo.modifiesVIR = true;
+  955:                 }
+  956:             }
+  957:             break;
+  958:         }
+  959:         }
+  960:     }
+
+===== COMPLETE BRACE COUNTS =====
+Opening braces: 89
+Closing braces: 89
