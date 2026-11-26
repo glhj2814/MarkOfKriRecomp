@@ -1,0 +1,2279 @@
+MARK OF KRI — GS ALIAS TEST CORRECTION AUDIT
+Timestamp: 2026-11-26 04:08:18
+READ ONLY — NO SOURCE FILES MODIFIED
+
+========== ps2xRuntime\include\runtime\gs\ps2_gs_memory.h ==========
+--- Lines 10-27 ---
+   10: #include "runtime/gs/gs_texture_page_cache.h"
+   11: 
+   12: namespace GSMem
+   13: {
+   14: 	constexpr usz MEMORY_SIZE = 4_mb;
+   15: 	constexpr usz GS_PAGE_SIZE = TexturePageCache::kPageSize;
+   16: 
+   17: 	// these are all the same regardless of storage mode
+   18: 	constexpr usz BLOCKS_PER_PAGE = 32;
+   19: 	constexpr usz COLUMNS_PER_BLOCK = 4;
+   20: 
+   21: 	// note:
+   22: 	// there are others (FFX uses 0x11 as an alias for CT24)
+   23: 	// these are just the official ones
+   24: 	enum class PixelStorageMode
+   25: 	{
+   26: 		C32 = 0x00, // 32 bit color
+   27: 		C24 = 0x01, // 24 bit color
+--- Lines 260-277 ---
+  260: 
+  261: 		// writes the pixel
+  262: 		static constexpr void Write(const PageLookupTableT& table, u8* data, u32 block, u32 bw, u32 x, u32 y, PackedT value);
+  263: 
+  264: 		// reads the pixel
+  265: 		static constexpr auto Read(const PageLookupTableT& table, const u8* data, u32 block, u32 bw, u32 x, u32 y, TexturePageCache* cache = nullptr) -> PackedT;
+  266: 
+  267: 		static_assert(BlocksPerPage() == BLOCKS_PER_PAGE);
+  268: 		static_assert(IsValidPsm(psm));
+  269: 	};
+  270: 
+  271: 	template<PixelStorageMode psm>
+  272: 	constexpr Extent2D PixelStorageTraits<psm>::PageExtent()
+  273: 	{
+  274: 		switch (psm)
+  275: 		{
+  276: 		case C32:
+  277: 		case Z32:
+--- Lines 500-517 ---
+  500: 			break;
+  501: 		}
+  502: 	}
+  503: 
+  504: 	template<PixelStorageMode psm>
+  505: 	constexpr auto PixelStorageTraits<psm>::Read(const PageLookupTableT& table, const u8* data, u32 block, u32 bw, u32 x, u32 y, TexturePageCache* cache) -> PackedT
+  506: 	{
+  507: 		const u32 pixel_addr = Address(table, block, bw, x, y);
+  508: 		const u32 bits = pixel_addr * UnpackedBitWidth(psm) + BitOffset();
+  509: 		const u32 byte_addr = (bits / 8) & (MEMORY_SIZE - sizeof(PackedT));
+  510: 		const u32 shift = bits % 8;
+  511: 
+  512: 		const u8* source = cache ? cache->Resolve(data, byte_addr) : data + byte_addr;
+  513: 		PackedT v;
+  514: 		std::memcpy(&v, source, sizeof(PackedT));
+  515: 
+  516: 		switch (psm)
+  517: 		{
+--- Lines 539-556 ---
+  539: 	}
+  540: 
+  541: 	void InitLookupTables();
+  542: 
+  543:     // Shares swizzle, VRAM wrapping, and lane extraction with the direct reads.
+  544:     u32 ReadTexture(TexturePageCache& cache, const u8* data, u32 psm, u32 bp, u32 bw, u32 x, u32 y);
+  545: 
+  546:     // ReadTexture with the format resolved once, for samplers that fetch many texels of one texture.
+  547:     TextureFetchFn TextureFetcher(u32 psm);
+  548: 
+  549:     // TextureFetcher for the 2x2 texels of a bilinear sample.
+  550:     TextureQuadFetchFn TextureQuadFetcher(u32 psm);
+  551: 
+  552:     // Byte offset of a colour or depth pixel, so a read-modify-write addresses it once.
+  553:     // Null for formats that are not drawable targets.
+  554:     using PixelOffsetFn = u32 (*)(u32 bp, u32 bw, u32 x, u32 y);
+  555:     PixelOffsetFn TargetPixelOffset(u32 psm);
+  556: 
+
+========== ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp ==========
+--- Lines 251-268 ---
+  251:             return 0u;
+  252:         }
+  253:     }
+  254: 
+  255: 
+  256:     // Conservative VRAM page sets, used to decide when the texture page cache must snapshot a page.
+  257:     constexpr uint32_t kVramPageCount = GSMem::MEMORY_SIZE / GSMem::TexturePageCache::kPageSize;
+  258: 
+  259:     struct PageSpan
+  260:     {
+  261:         uint32_t first = 0;
+  262:         uint32_t count = 0;
+  263:     };
+  264: 
+  265:     void psmPageShift(uint32_t psm, uint32_t &widthShift, uint32_t &heightShift)
+  266:     {
+  267:         switch (psm)
+  268:         {
+--- Lines 252-269 ---
+  252:         }
+  253:     }
+  254: 
+  255: 
+  256:     // Conservative VRAM page sets, used to decide when the texture page cache must snapshot a page.
+  257:     constexpr uint32_t kVramPageCount = GSMem::MEMORY_SIZE / GSMem::TexturePageCache::kPageSize;
+  258: 
+  259:     struct PageSpan
+  260:     {
+  261:         uint32_t first = 0;
+  262:         uint32_t count = 0;
+  263:     };
+  264: 
+  265:     void psmPageShift(uint32_t psm, uint32_t &widthShift, uint32_t &heightShift)
+  266:     {
+  267:         switch (psm)
+  268:         {
+  269:         case GS_PSM_CT16:
+--- Lines 696-713 ---
+  696:     {
+  697:         switch (i)
+  698:         {
+  699:         case GS_PSM_CT32:
+  700:             m_readVramFuncs[i] = ReadCT32;
+  701:             m_writeVramFuncs[i] = WriteCT32;
+  702:             break;
+  703:         case GS_PSM_CT24:
+  704:             m_readVramFuncs[i] = ReadCT24;
+  705:             m_writeVramFuncs[i] = WriteCT24;
+  706:             break;
+  707:         case GS_PSM_CT16:
+  708:             m_readVramFuncs[i] = ReadCT16;
+  709:             m_writeVramFuncs[i] = WriteCT16;
+  710:             break;
+  711:         case GS_PSM_CT16S:
+  712:             m_readVramFuncs[i] = ReadCT16S;
+  713:             m_writeVramFuncs[i] = WriteCT16S;
+--- Lines 700-717 ---
+  700:             m_readVramFuncs[i] = ReadCT32;
+  701:             m_writeVramFuncs[i] = WriteCT32;
+  702:             break;
+  703:         case GS_PSM_CT24:
+  704:             m_readVramFuncs[i] = ReadCT24;
+  705:             m_writeVramFuncs[i] = WriteCT24;
+  706:             break;
+  707:         case GS_PSM_CT16:
+  708:             m_readVramFuncs[i] = ReadCT16;
+  709:             m_writeVramFuncs[i] = WriteCT16;
+  710:             break;
+  711:         case GS_PSM_CT16S:
+  712:             m_readVramFuncs[i] = ReadCT16S;
+  713:             m_writeVramFuncs[i] = WriteCT16S;
+  714:             break;
+  715:         case GS_PSM_T8:
+  716:             m_readVramFuncs[i] = ReadP8;
+  717:             m_writeVramFuncs[i] = WriteP8;
+--- Lines 704-721 ---
+  704:             m_readVramFuncs[i] = ReadCT24;
+  705:             m_writeVramFuncs[i] = WriteCT24;
+  706:             break;
+  707:         case GS_PSM_CT16:
+  708:             m_readVramFuncs[i] = ReadCT16;
+  709:             m_writeVramFuncs[i] = WriteCT16;
+  710:             break;
+  711:         case GS_PSM_CT16S:
+  712:             m_readVramFuncs[i] = ReadCT16S;
+  713:             m_writeVramFuncs[i] = WriteCT16S;
+  714:             break;
+  715:         case GS_PSM_T8:
+  716:             m_readVramFuncs[i] = ReadP8;
+  717:             m_writeVramFuncs[i] = WriteP8;
+  718:             break;
+  719:         case GS_PSM_T8H:
+  720:             m_readVramFuncs[i] = ReadP8H;
+  721:             m_writeVramFuncs[i] = WriteP8H;
+--- Lines 708-725 ---
+  708:             m_readVramFuncs[i] = ReadCT16;
+  709:             m_writeVramFuncs[i] = WriteCT16;
+  710:             break;
+  711:         case GS_PSM_CT16S:
+  712:             m_readVramFuncs[i] = ReadCT16S;
+  713:             m_writeVramFuncs[i] = WriteCT16S;
+  714:             break;
+  715:         case GS_PSM_T8:
+  716:             m_readVramFuncs[i] = ReadP8;
+  717:             m_writeVramFuncs[i] = WriteP8;
+  718:             break;
+  719:         case GS_PSM_T8H:
+  720:             m_readVramFuncs[i] = ReadP8H;
+  721:             m_writeVramFuncs[i] = WriteP8H;
+  722:             break;
+  723:         case GS_PSM_T4:
+  724:             m_readVramFuncs[i] = ReadP4;
+  725:             m_writeVramFuncs[i] = WriteP4;
+--- Lines 712-729 ---
+  712:             m_readVramFuncs[i] = ReadCT16S;
+  713:             m_writeVramFuncs[i] = WriteCT16S;
+  714:             break;
+  715:         case GS_PSM_T8:
+  716:             m_readVramFuncs[i] = ReadP8;
+  717:             m_writeVramFuncs[i] = WriteP8;
+  718:             break;
+  719:         case GS_PSM_T8H:
+  720:             m_readVramFuncs[i] = ReadP8H;
+  721:             m_writeVramFuncs[i] = WriteP8H;
+  722:             break;
+  723:         case GS_PSM_T4:
+  724:             m_readVramFuncs[i] = ReadP4;
+  725:             m_writeVramFuncs[i] = WriteP4;
+  726:             break;
+  727:         case GS_PSM_T4HH:
+  728:             m_readVramFuncs[i] = ReadP4HH;
+  729:             m_writeVramFuncs[i] = WriteP4HH;
+--- Lines 716-733 ---
+  716:             m_readVramFuncs[i] = ReadP8;
+  717:             m_writeVramFuncs[i] = WriteP8;
+  718:             break;
+  719:         case GS_PSM_T8H:
+  720:             m_readVramFuncs[i] = ReadP8H;
+  721:             m_writeVramFuncs[i] = WriteP8H;
+  722:             break;
+  723:         case GS_PSM_T4:
+  724:             m_readVramFuncs[i] = ReadP4;
+  725:             m_writeVramFuncs[i] = WriteP4;
+  726:             break;
+  727:         case GS_PSM_T4HH:
+  728:             m_readVramFuncs[i] = ReadP4HH;
+  729:             m_writeVramFuncs[i] = WriteP4HH;
+  730:             break;
+  731:         case GS_PSM_T4HL:
+  732:             m_readVramFuncs[i] = ReadP4HL;
+  733:             m_writeVramFuncs[i] = WriteP4HL;
+--- Lines 720-737 ---
+  720:             m_readVramFuncs[i] = ReadP8H;
+  721:             m_writeVramFuncs[i] = WriteP8H;
+  722:             break;
+  723:         case GS_PSM_T4:
+  724:             m_readVramFuncs[i] = ReadP4;
+  725:             m_writeVramFuncs[i] = WriteP4;
+  726:             break;
+  727:         case GS_PSM_T4HH:
+  728:             m_readVramFuncs[i] = ReadP4HH;
+  729:             m_writeVramFuncs[i] = WriteP4HH;
+  730:             break;
+  731:         case GS_PSM_T4HL:
+  732:             m_readVramFuncs[i] = ReadP4HL;
+  733:             m_writeVramFuncs[i] = WriteP4HL;
+  734:             break;
+  735:         case GS_PSM_Z32:
+  736:             m_readVramFuncs[i] = ReadZ32;
+  737:             m_writeVramFuncs[i] = WriteZ32;
+--- Lines 724-741 ---
+  724:             m_readVramFuncs[i] = ReadP4;
+  725:             m_writeVramFuncs[i] = WriteP4;
+  726:             break;
+  727:         case GS_PSM_T4HH:
+  728:             m_readVramFuncs[i] = ReadP4HH;
+  729:             m_writeVramFuncs[i] = WriteP4HH;
+  730:             break;
+  731:         case GS_PSM_T4HL:
+  732:             m_readVramFuncs[i] = ReadP4HL;
+  733:             m_writeVramFuncs[i] = WriteP4HL;
+  734:             break;
+  735:         case GS_PSM_Z32:
+  736:             m_readVramFuncs[i] = ReadZ32;
+  737:             m_writeVramFuncs[i] = WriteZ32;
+  738:             break;
+  739:         case GS_PSM_Z24:
+  740:             m_readVramFuncs[i] = ReadZ24;
+  741:             m_writeVramFuncs[i] = WriteZ24;
+--- Lines 728-745 ---
+  728:             m_readVramFuncs[i] = ReadP4HH;
+  729:             m_writeVramFuncs[i] = WriteP4HH;
+  730:             break;
+  731:         case GS_PSM_T4HL:
+  732:             m_readVramFuncs[i] = ReadP4HL;
+  733:             m_writeVramFuncs[i] = WriteP4HL;
+  734:             break;
+  735:         case GS_PSM_Z32:
+  736:             m_readVramFuncs[i] = ReadZ32;
+  737:             m_writeVramFuncs[i] = WriteZ32;
+  738:             break;
+  739:         case GS_PSM_Z24:
+  740:             m_readVramFuncs[i] = ReadZ24;
+  741:             m_writeVramFuncs[i] = WriteZ24;
+  742:             break;
+  743:         case GS_PSM_Z16:
+  744:             m_readVramFuncs[i] = ReadZ16;
+  745:             m_writeVramFuncs[i] = WriteZ16;
+--- Lines 732-749 ---
+  732:             m_readVramFuncs[i] = ReadP4HL;
+  733:             m_writeVramFuncs[i] = WriteP4HL;
+  734:             break;
+  735:         case GS_PSM_Z32:
+  736:             m_readVramFuncs[i] = ReadZ32;
+  737:             m_writeVramFuncs[i] = WriteZ32;
+  738:             break;
+  739:         case GS_PSM_Z24:
+  740:             m_readVramFuncs[i] = ReadZ24;
+  741:             m_writeVramFuncs[i] = WriteZ24;
+  742:             break;
+  743:         case GS_PSM_Z16:
+  744:             m_readVramFuncs[i] = ReadZ16;
+  745:             m_writeVramFuncs[i] = WriteZ16;
+  746:             break;
+  747:         case GS_PSM_Z16S:
+  748:             m_readVramFuncs[i] = ReadZ16S;
+  749:             m_writeVramFuncs[i] = WriteZ16S;
+--- Lines 736-753 ---
+  736:             m_readVramFuncs[i] = ReadZ32;
+  737:             m_writeVramFuncs[i] = WriteZ32;
+  738:             break;
+  739:         case GS_PSM_Z24:
+  740:             m_readVramFuncs[i] = ReadZ24;
+  741:             m_writeVramFuncs[i] = WriteZ24;
+  742:             break;
+  743:         case GS_PSM_Z16:
+  744:             m_readVramFuncs[i] = ReadZ16;
+  745:             m_writeVramFuncs[i] = WriteZ16;
+  746:             break;
+  747:         case GS_PSM_Z16S:
+  748:             m_readVramFuncs[i] = ReadZ16S;
+  749:             m_writeVramFuncs[i] = WriteZ16S;
+  750:             break;
+  751:         default:
+  752:             m_readVramFuncs[i] = ReadNull;
+  753:             m_writeVramFuncs[i] = WriteNull;
+--- Lines 740-757 ---
+  740:             m_readVramFuncs[i] = ReadZ24;
+  741:             m_writeVramFuncs[i] = WriteZ24;
+  742:             break;
+  743:         case GS_PSM_Z16:
+  744:             m_readVramFuncs[i] = ReadZ16;
+  745:             m_writeVramFuncs[i] = WriteZ16;
+  746:             break;
+  747:         case GS_PSM_Z16S:
+  748:             m_readVramFuncs[i] = ReadZ16S;
+  749:             m_writeVramFuncs[i] = WriteZ16S;
+  750:             break;
+  751:         default:
+  752:             m_readVramFuncs[i] = ReadNull;
+  753:             m_writeVramFuncs[i] = WriteNull;
+  754:             break;
+  755:         }
+  756:     }
+  757:     Reset();
+--- Lines 744-761 ---
+  744:             m_readVramFuncs[i] = ReadZ16;
+  745:             m_writeVramFuncs[i] = WriteZ16;
+  746:             break;
+  747:         case GS_PSM_Z16S:
+  748:             m_readVramFuncs[i] = ReadZ16S;
+  749:             m_writeVramFuncs[i] = WriteZ16S;
+  750:             break;
+  751:         default:
+  752:             m_readVramFuncs[i] = ReadNull;
+  753:             m_writeVramFuncs[i] = WriteNull;
+  754:             break;
+  755:         }
+  756:     }
+  757:     Reset();
+  758: }
+  759: 
+  760: 
+  761: 
+--- Lines 748-765 ---
+  748:             m_readVramFuncs[i] = ReadZ16S;
+  749:             m_writeVramFuncs[i] = WriteZ16S;
+  750:             break;
+  751:         default:
+  752:             m_readVramFuncs[i] = ReadNull;
+  753:             m_writeVramFuncs[i] = WriteNull;
+  754:             break;
+  755:         }
+  756:     }
+  757:     Reset();
+  758: }
+  759: 
+  760: 
+  761: 
+  762: class GSCpuBackend::RasterWorkers
+  763: {
+  764: public:
+  765:     explicit RasterWorkers(uint32_t participants)
+--- Lines 757-774 ---
+  757:     Reset();
+  758: }
+  759: 
+  760: 
+  761: 
+  762: class GSCpuBackend::RasterWorkers
+  763: {
+  764: public:
+  765:     explicit RasterWorkers(uint32_t participants)
+  766:         : m_participants(participants)
+  767:     {
+  768:         for (uint32_t index = 1; index < participants; ++index)
+  769:             m_threads.emplace_back([this, index]() { loop(index); });
+  770:     }
+  771: 
+  772:     ~RasterWorkers()
+  773:     {
+  774:         {
+--- Lines 1281-1298 ---
+ 1281:     bool parallel = m_pendingPixels >= kMinParallelPixels && RasterParticipants() > 1u;
+ 1282:     // A tracked batch too small to wake the workers is still drawn as a band, on this thread: drawn serially
+ 1283:     // it would get palette loads queued in between wrong (see LoadClutNow).
+ 1284:     bool inlineBand = false;
+ 1285:     uint32_t livePage = 0u;
+ 1286:     if (m_pendingTracked && m_texturePageCache.MatchesVram(m_vram))
+ 1287:     {
+ 1288:         // Bands read pages in place; the serial cache state is rebuilt afterwards from VRAM.
+ 1289:         inlineBand = !parallel;
+ 1290:         parallel = true;
+ 1291:     }
+ 1292:     else if (parallel && m_pendingTracked)
+ 1293:     {
+ 1294:         parallel = false;
+ 1295:     }
+ 1296:     else if (parallel && !m_texturePageCache.LivePage(livePage) && m_texturePageCache.CachedPage(livePage))
+ 1297:     {
+ 1298:         // Workers read pages in place, which matches a copied page only if VRAM still holds the same bytes.
+--- Lines 1291-1308 ---
+ 1291:     }
+ 1292:     else if (parallel && m_pendingTracked)
+ 1293:     {
+ 1294:         parallel = false;
+ 1295:     }
+ 1296:     else if (parallel && !m_texturePageCache.LivePage(livePage) && m_texturePageCache.CachedPage(livePage))
+ 1297:     {
+ 1298:         // Workers read pages in place, which matches a copied page only if VRAM still holds the same bytes.
+ 1299:         if (!m_texturePageCache.MatchesVram(m_vram))
+ 1300:             parallel = false;
+ 1301:         else
+ 1302:             m_texturePageCache.MakeLive();
+ 1303:     }
+ 1304: 
+ 1305:     const int kind = parallel ? (m_pendingTracked ? 0 : 1) : 2;
+ 1306:     if (statsEnabled)
+ 1307:     {
+ 1308:         GSStatCounters &stats = gsStats();
+--- Lines 1294-1311 ---
+ 1294:         parallel = false;
+ 1295:     }
+ 1296:     else if (parallel && !m_texturePageCache.LivePage(livePage) && m_texturePageCache.CachedPage(livePage))
+ 1297:     {
+ 1298:         // Workers read pages in place, which matches a copied page only if VRAM still holds the same bytes.
+ 1299:         if (!m_texturePageCache.MatchesVram(m_vram))
+ 1300:             parallel = false;
+ 1301:         else
+ 1302:             m_texturePageCache.MakeLive();
+ 1303:     }
+ 1304: 
+ 1305:     const int kind = parallel ? (m_pendingTracked ? 0 : 1) : 2;
+ 1306:     if (statsEnabled)
+ 1307:     {
+ 1308:         GSStatCounters &stats = gsStats();
+ 1309:         stats.batches[kind].fetch_add(1u, std::memory_order_relaxed);
+ 1310:         stats.batchPrims[kind].fetch_add(m_pending.size(), std::memory_order_relaxed);
+ 1311:         stats.batchPixels[kind].fetch_add(m_pendingPixels, std::memory_order_relaxed);
+--- Lines 1297-1314 ---
+ 1297:     {
+ 1298:         // Workers read pages in place, which matches a copied page only if VRAM still holds the same bytes.
+ 1299:         if (!m_texturePageCache.MatchesVram(m_vram))
+ 1300:             parallel = false;
+ 1301:         else
+ 1302:             m_texturePageCache.MakeLive();
+ 1303:     }
+ 1304: 
+ 1305:     const int kind = parallel ? (m_pendingTracked ? 0 : 1) : 2;
+ 1306:     if (statsEnabled)
+ 1307:     {
+ 1308:         GSStatCounters &stats = gsStats();
+ 1309:         stats.batches[kind].fetch_add(1u, std::memory_order_relaxed);
+ 1310:         stats.batchPrims[kind].fetch_add(m_pending.size(), std::memory_order_relaxed);
+ 1311:         stats.batchPixels[kind].fetch_add(m_pendingPixels, std::memory_order_relaxed);
+ 1312:     }
+ 1313:     GSStatTimer timer(kind == 0 ? kTimeTracked : kind == 1 ? kTimeUntracked : kTimeSerialBatch);
+ 1314:     if (parallel)
+--- Lines 1328-1345 ---
+ 1328: 
+ 1329: void GSCpuBackend::LaunchInFlight(bool tracked, bool inlineBand)
+ 1330: {
+ 1331:     InFlight &f = m_inflight;
+ 1332:     // The page cached before the batch keeps whatever a sequential draw would leave in it: a page about to
+ 1333:     // be drawn over is snapshotted first, exactly as PrepareTexturePageCache does for the first writer.
+ 1334:     uint32_t livePage = 0u;
+ 1335:     if (m_texturePageCache.LivePage(livePage) &&
+ 1336:         m_pendingWritePages.test((livePage / GSMem::TexturePageCache::kPageSize) % 512u))
+ 1337:         m_texturePageCache.Snapshot(m_vram);
+ 1338:     f.cachedBefore = UINT32_MAX;
+ 1339:     m_texturePageCache.CachedPage(f.cachedBefore);
+ 1340: 
+ 1341:     if (!inlineBand && (!m_workers || m_workers->participants() != RasterParticipants()))
+ 1342:         m_workers = std::make_unique<RasterWorkers>(RasterParticipants());
+ 1343:     const uint32_t bands = inlineBand ? 1u : m_workers->participants() * kBandsPerWorker;
+ 1344:     BalanceRows(m_pendingRowWeights, bands, f.bands);
+ 1345:     OrderBands(m_pendingRowWeights, f.bands, f.order);
+--- Lines 1330-1347 ---
+ 1330: {
+ 1331:     InFlight &f = m_inflight;
+ 1332:     // The page cached before the batch keeps whatever a sequential draw would leave in it: a page about to
+ 1333:     // be drawn over is snapshotted first, exactly as PrepareTexturePageCache does for the first writer.
+ 1334:     uint32_t livePage = 0u;
+ 1335:     if (m_texturePageCache.LivePage(livePage) &&
+ 1336:         m_pendingWritePages.test((livePage / GSMem::TexturePageCache::kPageSize) % 512u))
+ 1337:         m_texturePageCache.Snapshot(m_vram);
+ 1338:     f.cachedBefore = UINT32_MAX;
+ 1339:     m_texturePageCache.CachedPage(f.cachedBefore);
+ 1340: 
+ 1341:     if (!inlineBand && (!m_workers || m_workers->participants() != RasterParticipants()))
+ 1342:         m_workers = std::make_unique<RasterWorkers>(RasterParticipants());
+ 1343:     const uint32_t bands = inlineBand ? 1u : m_workers->participants() * kBandsPerWorker;
+ 1344:     BalanceRows(m_pendingRowWeights, bands, f.bands);
+ 1345:     OrderBands(m_pendingRowWeights, f.bands, f.order);
+ 1346:     f.tracked = tracked;
+ 1347:     f.kept = m_pendingTexturePages & m_pendingWritePages;
+--- Lines 1331-1348 ---
+ 1331:     InFlight &f = m_inflight;
+ 1332:     // The page cached before the batch keeps whatever a sequential draw would leave in it: a page about to
+ 1333:     // be drawn over is snapshotted first, exactly as PrepareTexturePageCache does for the first writer.
+ 1334:     uint32_t livePage = 0u;
+ 1335:     if (m_texturePageCache.LivePage(livePage) &&
+ 1336:         m_pendingWritePages.test((livePage / GSMem::TexturePageCache::kPageSize) % 512u))
+ 1337:         m_texturePageCache.Snapshot(m_vram);
+ 1338:     f.cachedBefore = UINT32_MAX;
+ 1339:     m_texturePageCache.CachedPage(f.cachedBefore);
+ 1340: 
+ 1341:     if (!inlineBand && (!m_workers || m_workers->participants() != RasterParticipants()))
+ 1342:         m_workers = std::make_unique<RasterWorkers>(RasterParticipants());
+ 1343:     const uint32_t bands = inlineBand ? 1u : m_workers->participants() * kBandsPerWorker;
+ 1344:     BalanceRows(m_pendingRowWeights, bands, f.bands);
+ 1345:     OrderBands(m_pendingRowWeights, f.bands, f.order);
+ 1346:     f.tracked = tracked;
+ 1347:     f.kept = m_pendingTexturePages & m_pendingWritePages;
+ 1348:     // Grown only: one-band batches alternate with full ones, and each cache holds an 8 KB page.
+--- Lines 1332-1349 ---
+ 1332:     // The page cached before the batch keeps whatever a sequential draw would leave in it: a page about to
+ 1333:     // be drawn over is snapshotted first, exactly as PrepareTexturePageCache does for the first writer.
+ 1334:     uint32_t livePage = 0u;
+ 1335:     if (m_texturePageCache.LivePage(livePage) &&
+ 1336:         m_pendingWritePages.test((livePage / GSMem::TexturePageCache::kPageSize) % 512u))
+ 1337:         m_texturePageCache.Snapshot(m_vram);
+ 1338:     f.cachedBefore = UINT32_MAX;
+ 1339:     m_texturePageCache.CachedPage(f.cachedBefore);
+ 1340: 
+ 1341:     if (!inlineBand && (!m_workers || m_workers->participants() != RasterParticipants()))
+ 1342:         m_workers = std::make_unique<RasterWorkers>(RasterParticipants());
+ 1343:     const uint32_t bands = inlineBand ? 1u : m_workers->participants() * kBandsPerWorker;
+ 1344:     BalanceRows(m_pendingRowWeights, bands, f.bands);
+ 1345:     OrderBands(m_pendingRowWeights, f.bands, f.order);
+ 1346:     f.tracked = tracked;
+ 1347:     f.kept = m_pendingTexturePages & m_pendingWritePages;
+ 1348:     // Grown only: one-band batches alternate with full ones, and each cache holds an 8 KB page.
+ 1349:     if (m_bandCaches.size() < bands)
+--- Lines 1334-1351 ---
+ 1334:     uint32_t livePage = 0u;
+ 1335:     if (m_texturePageCache.LivePage(livePage) &&
+ 1336:         m_pendingWritePages.test((livePage / GSMem::TexturePageCache::kPageSize) % 512u))
+ 1337:         m_texturePageCache.Snapshot(m_vram);
+ 1338:     f.cachedBefore = UINT32_MAX;
+ 1339:     m_texturePageCache.CachedPage(f.cachedBefore);
+ 1340: 
+ 1341:     if (!inlineBand && (!m_workers || m_workers->participants() != RasterParticipants()))
+ 1342:         m_workers = std::make_unique<RasterWorkers>(RasterParticipants());
+ 1343:     const uint32_t bands = inlineBand ? 1u : m_workers->participants() * kBandsPerWorker;
+ 1344:     BalanceRows(m_pendingRowWeights, bands, f.bands);
+ 1345:     OrderBands(m_pendingRowWeights, f.bands, f.order);
+ 1346:     f.tracked = tracked;
+ 1347:     f.kept = m_pendingTexturePages & m_pendingWritePages;
+ 1348:     // Grown only: one-band batches alternate with full ones, and each cache holds an 8 KB page.
+ 1349:     if (m_bandCaches.size() < bands)
+ 1350:         m_bandCaches.resize(bands);
+ 1351:     for (uint32_t i = 0; i < bands; ++i)
+--- Lines 1419-1436 ---
+ 1419:     // Every primitive samples only top bytes of the pages the batch draws into with RGB24/Z24, so every
+ 1420:     // pixel comes out the same drawn in any order. What a serial draw also leaves behind is the texture
+ 1421:     // cache: it copies a drawn-over page when loading it, so the page it ends on can hold words as they
+ 1422:     // were mid-batch.
+ 1423:     const InFlight &f = m_inflight;
+ 1424:     const std::vector<GSMem::TexturePageCache> &caches = m_bandCaches;
+ 1425:     const uint32_t bands = static_cast<uint32_t>(f.bands.size());
+ 1426:     const std::bitset<512> &kept = f.kept;
+ 1427:     const uint32_t cachedBefore = f.cachedBefore;
+ 1428: 
+ 1429:     // The page of the last texel read in serial order is where the cache ends.
+ 1430:     GSMem::TexturePageCache::ReadPosition lastRead{};
+ 1431:     uint32_t lastPage = UINT32_MAX;
+ 1432:     for (uint32_t i = 0; i < bands; ++i)
+ 1433:     {
+ 1434:         if (caches[i].Track().last.after(lastRead))
+ 1435:         {
+ 1436:             lastRead = caches[i].Track().last;
+--- Lines 1425-1442 ---
+ 1425:     const uint32_t bands = static_cast<uint32_t>(f.bands.size());
+ 1426:     const std::bitset<512> &kept = f.kept;
+ 1427:     const uint32_t cachedBefore = f.cachedBefore;
+ 1428: 
+ 1429:     // The page of the last texel read in serial order is where the cache ends.
+ 1430:     GSMem::TexturePageCache::ReadPosition lastRead{};
+ 1431:     uint32_t lastPage = UINT32_MAX;
+ 1432:     for (uint32_t i = 0; i < bands; ++i)
+ 1433:     {
+ 1434:         if (caches[i].Track().last.after(lastRead))
+ 1435:         {
+ 1436:             lastRead = caches[i].Track().last;
+ 1437:             lastPage = caches[i].Track().lastPage;
+ 1438:         }
+ 1439:     }
+ 1440:     // A palette load from VRAM between queued primitives also read through the cache (a page the batch
+ 1441:     // does not write); it ran before the batch was drawn and left the cache where it ends if nothing
+ 1442:     // after it samples.
+--- Lines 1438-1455 ---
+ 1438:         }
+ 1439:     }
+ 1440:     // A palette load from VRAM between queued primitives also read through the cache (a page the batch
+ 1441:     // does not write); it ran before the batch was drawn and left the cache where it ends if nothing
+ 1442:     // after it samples.
+ 1443:     GSMem::TexturePageCache::ReadPosition clutRead{};
+ 1444:     if (f.clutReadIndex > 0u)
+ 1445:         clutRead = {static_cast<uint32_t>(f.clutReadIndex), std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), 0u, true};
+ 1446:     if (!lastRead.after(clutRead))
+ 1447:         return;
+ 1448:     if (!kept.test(lastPage / GSMem::TexturePageCache::kPageSize))
+ 1449:     {
+ 1450:         // Not drawn over: the serial cache reads it in place.
+ 1451:         m_texturePageCache.SetLivePage(lastPage);
+ 1452:         return;
+ 1453:     }
+ 1454: 
+ 1455:     // The serial cache copied lastPage when it read it right after its latest read of any other page.
+--- Lines 1443-1460 ---
+ 1443:     GSMem::TexturePageCache::ReadPosition clutRead{};
+ 1444:     if (f.clutReadIndex > 0u)
+ 1445:         clutRead = {static_cast<uint32_t>(f.clutReadIndex), std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), 0u, true};
+ 1446:     if (!lastRead.after(clutRead))
+ 1447:         return;
+ 1448:     if (!kept.test(lastPage / GSMem::TexturePageCache::kPageSize))
+ 1449:     {
+ 1450:         // Not drawn over: the serial cache reads it in place.
+ 1451:         m_texturePageCache.SetLivePage(lastPage);
+ 1452:         return;
+ 1453:     }
+ 1454: 
+ 1455:     // The serial cache copied lastPage when it read it right after its latest read of any other page.
+ 1456:     GSMem::TexturePageCache::ReadPosition switchRead{};
+ 1457:     bool switchInsidePixel = false;
+ 1458:     for (uint32_t i = 0; i < bands; ++i)
+ 1459:     {
+ 1460:         const auto &track = caches[i].Track();
+--- Lines 1446-1463 ---
+ 1446:     if (!lastRead.after(clutRead))
+ 1447:         return;
+ 1448:     if (!kept.test(lastPage / GSMem::TexturePageCache::kPageSize))
+ 1449:     {
+ 1450:         // Not drawn over: the serial cache reads it in place.
+ 1451:         m_texturePageCache.SetLivePage(lastPage);
+ 1452:         return;
+ 1453:     }
+ 1454: 
+ 1455:     // The serial cache copied lastPage when it read it right after its latest read of any other page.
+ 1456:     GSMem::TexturePageCache::ReadPosition switchRead{};
+ 1457:     bool switchInsidePixel = false;
+ 1458:     for (uint32_t i = 0; i < bands; ++i)
+ 1459:     {
+ 1460:         const auto &track = caches[i].Track();
+ 1461:         if (!track.last.valid)
+ 1462:             continue;
+ 1463:         // A band ending on another page read that page last; one ending on lastPage read others before.
+--- Lines 1451-1468 ---
+ 1451:         m_texturePageCache.SetLivePage(lastPage);
+ 1452:         return;
+ 1453:     }
+ 1454: 
+ 1455:     // The serial cache copied lastPage when it read it right after its latest read of any other page.
+ 1456:     GSMem::TexturePageCache::ReadPosition switchRead{};
+ 1457:     bool switchInsidePixel = false;
+ 1458:     for (uint32_t i = 0; i < bands; ++i)
+ 1459:     {
+ 1460:         const auto &track = caches[i].Track();
+ 1461:         if (!track.last.valid)
+ 1462:             continue;
+ 1463:         // A band ending on another page read that page last; one ending on lastPage read others before.
+ 1464:         const GSMem::TexturePageCache::ReadPosition candidate = track.lastPage != lastPage ? track.last : track.other;
+ 1465:         if (candidate.after(switchRead))
+ 1466:         {
+ 1467:             switchRead = candidate;
+ 1468:             switchInsidePixel = track.lastPage == lastPage && track.switchedInsidePixel;
+--- Lines 1459-1476 ---
+ 1459:     {
+ 1460:         const auto &track = caches[i].Track();
+ 1461:         if (!track.last.valid)
+ 1462:             continue;
+ 1463:         // A band ending on another page read that page last; one ending on lastPage read others before.
+ 1464:         const GSMem::TexturePageCache::ReadPosition candidate = track.lastPage != lastPage ? track.last : track.other;
+ 1465:         if (candidate.after(switchRead))
+ 1466:         {
+ 1467:             switchRead = candidate;
+ 1468:             switchInsidePixel = track.lastPage == lastPage && track.switchedInsidePixel;
+ 1469:         }
+ 1470:     }
+ 1471:     if (clutRead.after(switchRead))
+ 1472:     {
+ 1473:         switchRead = clutRead;
+ 1474:         switchInsidePixel = false;
+ 1475:     }
+ 1476:     // With no switch in the batch, a cache already holding the page keeps its copy (snapshotted above if
+--- Lines 1471-1488 ---
+ 1471:     if (clutRead.after(switchRead))
+ 1472:     {
+ 1473:         switchRead = clutRead;
+ 1474:         switchInsidePixel = false;
+ 1475:     }
+ 1476:     // With no switch in the batch, a cache already holding the page keeps its copy (snapshotted above if
+ 1477:     // it was read in place); otherwise the page was copied on the batch's first read, before any write.
+ 1478:     if (!switchRead.valid && cachedBefore == lastPage)
+ 1479:         return;
+ 1480: 
+ 1481:     // Take what VRAM holds now and undo, newest first, every write to the page made after the copy. Each
+ 1482:     // word belongs to one pixel, which one band drew in serial order.
+ 1483:     auto drawnBeforeCopy = [&](const UndoEntry &entry)
+ 1484:     {
+ 1485:         if (!switchRead.valid)
+ 1486:             return false;
+ 1487:         if (entry.primitive != switchRead.primitive)
+ 1488:             return entry.primitive < switchRead.primitive;
+--- Lines 1488-1505 ---
+ 1488:             return entry.primitive < switchRead.primitive;
+ 1489:         if (entry.y != switchRead.y)
+ 1490:             return entry.y < switchRead.y;
+ 1491:         return switchInsidePixel ? entry.x < switchRead.x : entry.x <= switchRead.x;
+ 1492:     };
+ 1493:     m_pageRebuildScratch.resize(GSMem::TexturePageCache::kPageSize);
+ 1494:     std::memcpy(m_pageRebuildScratch.data(), m_vram + lastPage, GSMem::TexturePageCache::kPageSize);
+ 1495:     for (const std::vector<UndoEntry> &log : m_undoLogs)
+ 1496:         for (auto entry = log.rbegin(); entry != log.rend(); ++entry)
+ 1497:             if (entry->offset - lastPage < GSMem::TexturePageCache::kPageSize && !drawnBeforeCopy(*entry))
+ 1498:                 std::memcpy(m_pageRebuildScratch.data() + (entry->offset - lastPage), &entry->old, sizeof(entry->old));
+ 1499:     m_texturePageCache.SetCopy(m_pageRebuildScratch.data(), lastPage);
+ 1500: }
+ 1501: 
+ 1502: void GSCpuBackend::FinishUntracked()
+ 1503: {
+ 1504:     // Sequentially, the cache would end on the page of the last texel read: the last sampled pixel in
+ 1505:     // primitive then raster order, which lies on exactly one band.
+--- Lines 1489-1506 ---
+ 1489:         if (entry.y != switchRead.y)
+ 1490:             return entry.y < switchRead.y;
+ 1491:         return switchInsidePixel ? entry.x < switchRead.x : entry.x <= switchRead.x;
+ 1492:     };
+ 1493:     m_pageRebuildScratch.resize(GSMem::TexturePageCache::kPageSize);
+ 1494:     std::memcpy(m_pageRebuildScratch.data(), m_vram + lastPage, GSMem::TexturePageCache::kPageSize);
+ 1495:     for (const std::vector<UndoEntry> &log : m_undoLogs)
+ 1496:         for (auto entry = log.rbegin(); entry != log.rend(); ++entry)
+ 1497:             if (entry->offset - lastPage < GSMem::TexturePageCache::kPageSize && !drawnBeforeCopy(*entry))
+ 1498:                 std::memcpy(m_pageRebuildScratch.data() + (entry->offset - lastPage), &entry->old, sizeof(entry->old));
+ 1499:     m_texturePageCache.SetCopy(m_pageRebuildScratch.data(), lastPage);
+ 1500: }
+ 1501: 
+ 1502: void GSCpuBackend::FinishUntracked()
+ 1503: {
+ 1504:     // Sequentially, the cache would end on the page of the last texel read: the last sampled pixel in
+ 1505:     // primitive then raster order, which lies on exactly one band.
+ 1506:     const InFlight &f = m_inflight;
+--- Lines 1492-1509 ---
+ 1492:     };
+ 1493:     m_pageRebuildScratch.resize(GSMem::TexturePageCache::kPageSize);
+ 1494:     std::memcpy(m_pageRebuildScratch.data(), m_vram + lastPage, GSMem::TexturePageCache::kPageSize);
+ 1495:     for (const std::vector<UndoEntry> &log : m_undoLogs)
+ 1496:         for (auto entry = log.rbegin(); entry != log.rend(); ++entry)
+ 1497:             if (entry->offset - lastPage < GSMem::TexturePageCache::kPageSize && !drawnBeforeCopy(*entry))
+ 1498:                 std::memcpy(m_pageRebuildScratch.data() + (entry->offset - lastPage), &entry->old, sizeof(entry->old));
+ 1499:     m_texturePageCache.SetCopy(m_pageRebuildScratch.data(), lastPage);
+ 1500: }
+ 1501: 
+ 1502: void GSCpuBackend::FinishUntracked()
+ 1503: {
+ 1504:     // Sequentially, the cache would end on the page of the last texel read: the last sampled pixel in
+ 1505:     // primitive then raster order, which lies on exactly one band.
+ 1506:     const InFlight &f = m_inflight;
+ 1507:     const std::vector<RasterTrace> &traces = f.traces;
+ 1508:     int best = -1;
+ 1509:     for (uint32_t i = 0; i < traces.size(); ++i)
+--- Lines 1494-1511 ---
+ 1494:     std::memcpy(m_pageRebuildScratch.data(), m_vram + lastPage, GSMem::TexturePageCache::kPageSize);
+ 1495:     for (const std::vector<UndoEntry> &log : m_undoLogs)
+ 1496:         for (auto entry = log.rbegin(); entry != log.rend(); ++entry)
+ 1497:             if (entry->offset - lastPage < GSMem::TexturePageCache::kPageSize && !drawnBeforeCopy(*entry))
+ 1498:                 std::memcpy(m_pageRebuildScratch.data() + (entry->offset - lastPage), &entry->old, sizeof(entry->old));
+ 1499:     m_texturePageCache.SetCopy(m_pageRebuildScratch.data(), lastPage);
+ 1500: }
+ 1501: 
+ 1502: void GSCpuBackend::FinishUntracked()
+ 1503: {
+ 1504:     // Sequentially, the cache would end on the page of the last texel read: the last sampled pixel in
+ 1505:     // primitive then raster order, which lies on exactly one band.
+ 1506:     const InFlight &f = m_inflight;
+ 1507:     const std::vector<RasterTrace> &traces = f.traces;
+ 1508:     int best = -1;
+ 1509:     for (uint32_t i = 0; i < traces.size(); ++i)
+ 1510:     {
+ 1511:         const RasterTrace &trace = traces[i];
+--- Lines 1522-1539 ---
+ 1522:             best = static_cast<int>(i);
+ 1523:     }
+ 1524:     uint32_t lastPage = 0u;
+ 1525:     if (best >= 0 && traces[static_cast<size_t>(best)].primitive >= f.clutReadIndex &&
+ 1526:         m_bandCaches[static_cast<size_t>(best)].CachedPage(lastPage))
+ 1527:         m_texturePageCache.SetLivePage(lastPage);
+ 1528: }
+ 1529: 
+ 1530: // ---- GS thread -------------------------------------------------------------------------------------
+ 1531: 
+ 1532: namespace
+ 1533: {
+ 1534:     // Bounds the backlog: the producer waits rather than queueing several frames of geometry.
+ 1535:     constexpr size_t kMaxQueuedCommands = 2048u;
+ 1536: }
+ 1537: 
+ 1538: void GSCpuBackend::SetAsync(bool enabled)
+ 1539: {
+--- Lines 1696-1713 ---
+ 1696:         TextureFlushNow();
+ 1697:         break;
+ 1698:     case Command::Kind::ClearFramebuffer:
+ 1699:         (void)ClearFramebufferNow(command.context, command.args[0]);
+ 1700:         break;
+ 1701:     case Command::Kind::WriteVram:
+ 1702:         WriteVramNow(command.args[0], command.args[1], command.args[2], command.args[3], command.args[4], command.args[5]);
+ 1703:         break;
+ 1704:     case Command::Kind::CaptureFrame:
+ 1705:         CaptureFrameNow(command.display);
+ 1706:         break;
+ 1707:     }
+ 1708: }
+ 1709: 
+ 1710: void GSCpuBackend::Initialize(uint8_t *vram, uint32_t vramSize)
+ 1711: {
+ 1712:     WaitForQueue();
+ 1713:     InitializeNow(vram, vramSize);
+--- Lines 1697-1714 ---
+ 1697:         break;
+ 1698:     case Command::Kind::ClearFramebuffer:
+ 1699:         (void)ClearFramebufferNow(command.context, command.args[0]);
+ 1700:         break;
+ 1701:     case Command::Kind::WriteVram:
+ 1702:         WriteVramNow(command.args[0], command.args[1], command.args[2], command.args[3], command.args[4], command.args[5]);
+ 1703:         break;
+ 1704:     case Command::Kind::CaptureFrame:
+ 1705:         CaptureFrameNow(command.display);
+ 1706:         break;
+ 1707:     }
+ 1708: }
+ 1709: 
+ 1710: void GSCpuBackend::Initialize(uint8_t *vram, uint32_t vramSize)
+ 1711: {
+ 1712:     WaitForQueue();
+ 1713:     InitializeNow(vram, vramSize);
+ 1714: }
+--- Lines 1832-1849 ---
+ 1832: {
+ 1833:     WaitForQueue();
+ 1834:     return ReadVramNow(psm, base, bw, x, y);
+ 1835: }
+ 1836: 
+ 1837: void GSCpuBackend::WriteVram(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 1838: {
+ 1839:     if (!m_async)
+ 1840:     {
+ 1841:         WriteVramNow(psm, base, bw, x, y, value);
+ 1842:         return;
+ 1843:     }
+ 1844:     Command command;
+ 1845:     command.kind = Command::Kind::WriteVram;
+ 1846:     command.args[0] = psm;
+ 1847:     command.args[1] = base;
+ 1848:     command.args[2] = bw;
+ 1849:     command.args[3] = x;
+--- Lines 1836-1853 ---
+ 1836: 
+ 1837: void GSCpuBackend::WriteVram(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 1838: {
+ 1839:     if (!m_async)
+ 1840:     {
+ 1841:         WriteVramNow(psm, base, bw, x, y, value);
+ 1842:         return;
+ 1843:     }
+ 1844:     Command command;
+ 1845:     command.kind = Command::Kind::WriteVram;
+ 1846:     command.args[0] = psm;
+ 1847:     command.args[1] = base;
+ 1848:     command.args[2] = bw;
+ 1849:     command.args[3] = x;
+ 1850:     command.args[4] = y;
+ 1851:     command.args[5] = value;
+ 1852:     Enqueue(std::move(command));
+ 1853: }
+--- Lines 1840-1857 ---
+ 1840:     {
+ 1841:         WriteVramNow(psm, base, bw, x, y, value);
+ 1842:         return;
+ 1843:     }
+ 1844:     Command command;
+ 1845:     command.kind = Command::Kind::WriteVram;
+ 1846:     command.args[0] = psm;
+ 1847:     command.args[1] = base;
+ 1848:     command.args[2] = bw;
+ 1849:     command.args[3] = x;
+ 1850:     command.args[4] = y;
+ 1851:     command.args[5] = value;
+ 1852:     Enqueue(std::move(command));
+ 1853: }
+ 1854: 
+ 1855: void GSCpuBackend::SnapshotVram(std::vector<uint8_t> &out) const
+ 1856: {
+ 1857:     WaitForQueue();
+--- Lines 1850-1867 ---
+ 1850:     command.args[4] = y;
+ 1851:     command.args[5] = value;
+ 1852:     Enqueue(std::move(command));
+ 1853: }
+ 1854: 
+ 1855: void GSCpuBackend::SnapshotVram(std::vector<uint8_t> &out) const
+ 1856: {
+ 1857:     WaitForQueue();
+ 1858:     SnapshotVramNow(out);
+ 1859: }
+ 1860: 
+ 1861: GSTransferSnapshot GSCpuBackend::GetTransferSnapshot() const
+ 1862: {
+ 1863:     WaitForQueue();
+ 1864:     return GetTransferSnapshotNow();
+ 1865: }
+ 1866: 
+ 1867: void GSCpuBackend::InitializeNow(uint8_t *vram, uint32_t vramSize)
+--- Lines 1853-1870 ---
+ 1853: }
+ 1854: 
+ 1855: void GSCpuBackend::SnapshotVram(std::vector<uint8_t> &out) const
+ 1856: {
+ 1857:     WaitForQueue();
+ 1858:     SnapshotVramNow(out);
+ 1859: }
+ 1860: 
+ 1861: GSTransferSnapshot GSCpuBackend::GetTransferSnapshot() const
+ 1862: {
+ 1863:     WaitForQueue();
+ 1864:     return GetTransferSnapshotNow();
+ 1865: }
+ 1866: 
+ 1867: void GSCpuBackend::InitializeNow(uint8_t *vram, uint32_t vramSize)
+ 1868: {
+ 1869:     if (vram && vramSize < GSMem::MEMORY_SIZE)
+ 1870:         throw std::invalid_argument("GS CPU backend requires at least 4 MiB of VRAM");
+--- Lines 1856-1873 ---
+ 1856: {
+ 1857:     WaitForQueue();
+ 1858:     SnapshotVramNow(out);
+ 1859: }
+ 1860: 
+ 1861: GSTransferSnapshot GSCpuBackend::GetTransferSnapshot() const
+ 1862: {
+ 1863:     WaitForQueue();
+ 1864:     return GetTransferSnapshotNow();
+ 1865: }
+ 1866: 
+ 1867: void GSCpuBackend::InitializeNow(uint8_t *vram, uint32_t vramSize)
+ 1868: {
+ 1869:     if (vram && vramSize < GSMem::MEMORY_SIZE)
+ 1870:         throw std::invalid_argument("GS CPU backend requires at least 4 MiB of VRAM");
+ 1871: 
+ 1872:     std::lock_guard<std::mutex> lock(m_mutex);
+ 1873:     // A new VRAM binding makes queued primitives meaningless; nothing may still refer to the old memory.
+--- Lines 1859-1876 ---
+ 1859: }
+ 1860: 
+ 1861: GSTransferSnapshot GSCpuBackend::GetTransferSnapshot() const
+ 1862: {
+ 1863:     WaitForQueue();
+ 1864:     return GetTransferSnapshotNow();
+ 1865: }
+ 1866: 
+ 1867: void GSCpuBackend::InitializeNow(uint8_t *vram, uint32_t vramSize)
+ 1868: {
+ 1869:     if (vram && vramSize < GSMem::MEMORY_SIZE)
+ 1870:         throw std::invalid_argument("GS CPU backend requires at least 4 MiB of VRAM");
+ 1871: 
+ 1872:     std::lock_guard<std::mutex> lock(m_mutex);
+ 1873:     // A new VRAM binding makes queued primitives meaningless; nothing may still refer to the old memory.
+ 1874:     WaitInFlightUnlocked();
+ 1875:     ClearPendingUnlocked();
+ 1876:     m_vram = vram;
+--- Lines 1888-1905 ---
+ 1888: void GSCpuBackend::ResetUnlocked()
+ 1889: {
+ 1890:     m_clut.fill(0u);
+ 1891:     m_clutCbp.fill(0u);
+ 1892:     m_clutGeneration = nextClutGeneration();
+ 1893:     m_texturePageCache.Invalidate();
+ 1894:     m_transfer = {};
+ 1895:     m_transfer.direction = 3u;
+ 1896:     m_transferState = {};
+ 1897:     m_transferState.direction = 3u;
+ 1898:     m_localToHostBuffer.clear();
+ 1899:     m_localToHostReadPos = 0u;
+ 1900:     m_uploadCarryBytes = 0u;
+ 1901: }
+ 1902: 
+ 1903: void GSCpuBackend::SubmitNow(const GSPrimitiveBatch &batch)
+ 1904: {
+ 1905:     std::lock_guard<std::mutex> lock(m_mutex);
+--- Lines 1928-1945 ---
+ 1928:         // will draw, or a stale cached page would make it read differently than after drawing them.
+ 1929:         const uint32_t sourceWidth = tex0.csm == 0u ? 1u : std::max<uint32_t>(texclut.cbw, 1u);
+ 1930:         const uint32_t maxX = tex0.csm == 0u ? 15u : (static_cast<uint32_t>(texclut.cou) << 4u) + 255u;
+ 1931:         const uint32_t maxY = tex0.csm == 0u ? 15u : texclut.cov;
+ 1932:         if (anyPage(m_pendingWritePages, pageSpan(tex0.cbp, sourceWidth, tex0.cpsm, 0u, 0u, maxX, maxY)) ||
+ 1933:             !m_texturePageCache.MatchesVram(m_vram))
+ 1934:             FlushPendingUnlocked(FlushReason::Clut);
+ 1935:     }
+ 1936:     if (!m_vram || (!isFourBitIndexedPsm(tex0.psm) && !isEightBitIndexedPsm(tex0.psm)))
+ 1937:         return;
+ 1938: 
+ 1939:     switch (tex0.cld)
+ 1940:     {
+ 1941:     case 0u:
+ 1942:     case 6u:
+ 1943:     case 7u:
+ 1944:         return;
+ 1945:     case 1u:
+--- Lines 1967-1984 ---
+ 1967:     // LoadClutUnlocked reads VRAM (moving the texture page cache) only for 16- and 32-bit palettes. A tracked
+ 1968:     // batch accounts for that read when it is drawn by bands (in parallel, or as one band on this thread when
+ 1969:     // small), which it will be while the cache stays a faithful copy; otherwise it is drawn before the load.
+ 1970:     // Drawing small tracked batches before every load ended them after about 4 primitives in 3D scenes.
+ 1971:     const bool readsVram = tex0.cpsm == GS_PSM_CT16 || tex0.cpsm == GS_PSM_CT16S || tex0.cpsm == GS_PSM_CT32 || tex0.cpsm == GS_PSM_CT24;
+ 1972:     if (readsVram && m_pendingTracked && !m_texturePageCache.MatchesVram(m_vram))
+ 1973:         FlushPendingUnlocked(FlushReason::Clut);
+ 1974:     LoadClutUnlocked(tex0, texclut);
+ 1975:     if (readsVram)
+ 1976:         m_pendingClutReadIndex = m_pending.size();
+ 1977: }
+ 1978: 
+ 1979: void GSCpuBackend::LoadClutUnlocked(const GSTex0Reg &tex0, const GSTexClutReg &texclut)
+ 1980: {
+ 1981:     const bool fourBit = isFourBitIndexedPsm(tex0.psm);
+ 1982:     const bool sixteenBit = tex0.cpsm == GS_PSM_CT16 || tex0.cpsm == GS_PSM_CT16S;
+ 1983:     const bool thirtyTwoBit = tex0.cpsm == GS_PSM_CT32 || tex0.cpsm == GS_PSM_CT24;
+ 1984:     if (!sixteenBit && !thirtyTwoBit)
+--- Lines 2009-2026 ---
+ 2009:             sourceWidth = texclut.cbw != 0u ? static_cast<uint32_t>(texclut.cbw) : 1u;
+ 2010:             sourceX = (static_cast<uint32_t>(texclut.cou) << 4u) + entry;
+ 2011:             sourceY = static_cast<uint32_t>(texclut.cov);
+ 2012:         }
+ 2013: 
+ 2014:         const uint32_t raw = ReadTextureVramUnlocked(tex0.cpsm, tex0.cbp, sourceWidth, sourceX, sourceY); 
+ 2015:         const uint32_t destination = (loadCsm1Suffix ? entry : destinationBase + entry) & (sixteenBit ? 0x1FFu : 0x0FFu);
+ 2016:         if (sixteenBit)
+ 2017:         {
+ 2018:             m_clut[destination] = static_cast<uint16_t>(raw);
+ 2019:         }
+ 2020:         else
+ 2021:         {
+ 2022:             m_clut[destination] = static_cast<uint16_t>(raw & 0xFFFFu);
+ 2023:             m_clut[destination + 256u] = static_cast<uint16_t>(raw >> 16u);
+ 2024:         }
+ 2025:     }
+ 2026: }
+--- Lines 2033-2050 ---
+ 2033: 
+ 2034: void GSCpuBackend::TextureFlushNow()
+ 2035: {
+ 2036:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2037:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::TextureFlush);
+ 2038:     m_texturePageCache.Invalidate();
+ 2039: }
+ 2040: 
+ 2041: void GSCpuBackend::SyncNow(GSSyncReason)
+ 2042: {
+ 2043:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2044:     FlushPendingUnlocked(FlushReason::Readback);
+ 2045: }
+ 2046: 
+ 2047: uint32_t GSCpuBackend::ReadVramNow(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y) const
+ 2048: {
+ 2049:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2050:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+--- Lines 2056-2073 ---
+ 2056:     if (!m_vram)
+ 2057:         return 0u;
+ 2058:     return m_readVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y);
+ 2059: }
+ 2060: 
+ 2061: uint32_t GSCpuBackend::ReadTextureVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y)
+ 2062: {
+ 2063:     if (!m_vram)
+ 2064:         return 0u;
+ 2065: 
+ 2066:     return GSMem::ReadTexture(m_texturePageCache, m_vram, psm, base, bw, x, y);
+ 2067: }
+ 2068: 
+ 2069: void GSCpuBackend::WriteVramNow(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2070: {
+ 2071:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2072:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2073:     WriteVramUnlocked(psm, base, bw, x, y, value);
+--- Lines 2061-2078 ---
+ 2061: uint32_t GSCpuBackend::ReadTextureVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y)
+ 2062: {
+ 2063:     if (!m_vram)
+ 2064:         return 0u;
+ 2065: 
+ 2066:     return GSMem::ReadTexture(m_texturePageCache, m_vram, psm, base, bw, x, y);
+ 2067: }
+ 2068: 
+ 2069: void GSCpuBackend::WriteVramNow(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2070: {
+ 2071:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2072:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2073:     WriteVramUnlocked(psm, base, bw, x, y, value);
+ 2074: }
+ 2075: 
+ 2076: void GSCpuBackend::WriteVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2077: {
+ 2078:     if (!m_vram)
+--- Lines 2064-2081 ---
+ 2064:         return 0u;
+ 2065: 
+ 2066:     return GSMem::ReadTexture(m_texturePageCache, m_vram, psm, base, bw, x, y);
+ 2067: }
+ 2068: 
+ 2069: void GSCpuBackend::WriteVramNow(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2070: {
+ 2071:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2072:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2073:     WriteVramUnlocked(psm, base, bw, x, y, value);
+ 2074: }
+ 2075: 
+ 2076: void GSCpuBackend::WriteVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2077: {
+ 2078:     if (!m_vram)
+ 2079:         return;
+ 2080:     uint32_t livePage = 0u;
+ 2081:     if (m_texturePageCache.LivePage(livePage) &&
+--- Lines 2068-2085 ---
+ 2068: 
+ 2069: void GSCpuBackend::WriteVramNow(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2070: {
+ 2071:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2072:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2073:     WriteVramUnlocked(psm, base, bw, x, y, value);
+ 2074: }
+ 2075: 
+ 2076: void GSCpuBackend::WriteVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2077: {
+ 2078:     if (!m_vram)
+ 2079:         return;
+ 2080:     uint32_t livePage = 0u;
+ 2081:     if (m_texturePageCache.LivePage(livePage) &&
+ 2082:         spanHasPage(pageSpan(base, bw, psm, x, y, x, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 2083:         m_texturePageCache.Snapshot(m_vram);
+ 2084:     m_writeVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y, value);
+ 2085: }
+--- Lines 2071-2088 ---
+ 2071:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2072:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2073:     WriteVramUnlocked(psm, base, bw, x, y, value);
+ 2074: }
+ 2075: 
+ 2076: void GSCpuBackend::WriteVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2077: {
+ 2078:     if (!m_vram)
+ 2079:         return;
+ 2080:     uint32_t livePage = 0u;
+ 2081:     if (m_texturePageCache.LivePage(livePage) &&
+ 2082:         spanHasPage(pageSpan(base, bw, psm, x, y, x, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 2083:         m_texturePageCache.Snapshot(m_vram);
+ 2084:     m_writeVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y, value);
+ 2085: }
+ 2086: 
+ 2087: void GSCpuBackend::SnapshotVramNow(std::vector<uint8_t> &out) const
+ 2088: {
+--- Lines 2076-2093 ---
+ 2076: void GSCpuBackend::WriteVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2077: {
+ 2078:     if (!m_vram)
+ 2079:         return;
+ 2080:     uint32_t livePage = 0u;
+ 2081:     if (m_texturePageCache.LivePage(livePage) &&
+ 2082:         spanHasPage(pageSpan(base, bw, psm, x, y, x, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 2083:         m_texturePageCache.Snapshot(m_vram);
+ 2084:     m_writeVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y, value);
+ 2085: }
+ 2086: 
+ 2087: void GSCpuBackend::SnapshotVramNow(std::vector<uint8_t> &out) const
+ 2088: {
+ 2089:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2090:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2091:     if (!m_vram || m_vramSize == 0u)
+ 2092:     {
+ 2093:         out.clear();
+--- Lines 2077-2094 ---
+ 2077: {
+ 2078:     if (!m_vram)
+ 2079:         return;
+ 2080:     uint32_t livePage = 0u;
+ 2081:     if (m_texturePageCache.LivePage(livePage) &&
+ 2082:         spanHasPage(pageSpan(base, bw, psm, x, y, x, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 2083:         m_texturePageCache.Snapshot(m_vram);
+ 2084:     m_writeVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y, value);
+ 2085: }
+ 2086: 
+ 2087: void GSCpuBackend::SnapshotVramNow(std::vector<uint8_t> &out) const
+ 2088: {
+ 2089:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2090:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2091:     if (!m_vram || m_vramSize == 0u)
+ 2092:     {
+ 2093:         out.clear();
+ 2094:         return;
+--- Lines 2078-2095 ---
+ 2078:     if (!m_vram)
+ 2079:         return;
+ 2080:     uint32_t livePage = 0u;
+ 2081:     if (m_texturePageCache.LivePage(livePage) &&
+ 2082:         spanHasPage(pageSpan(base, bw, psm, x, y, x, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 2083:         m_texturePageCache.Snapshot(m_vram);
+ 2084:     m_writeVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y, value);
+ 2085: }
+ 2086: 
+ 2087: void GSCpuBackend::SnapshotVramNow(std::vector<uint8_t> &out) const
+ 2088: {
+ 2089:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2090:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2091:     if (!m_vram || m_vramSize == 0u)
+ 2092:     {
+ 2093:         out.clear();
+ 2094:         return;
+ 2095:     }
+--- Lines 2079-2096 ---
+ 2079:         return;
+ 2080:     uint32_t livePage = 0u;
+ 2081:     if (m_texturePageCache.LivePage(livePage) &&
+ 2082:         spanHasPage(pageSpan(base, bw, psm, x, y, x, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 2083:         m_texturePageCache.Snapshot(m_vram);
+ 2084:     m_writeVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y, value);
+ 2085: }
+ 2086: 
+ 2087: void GSCpuBackend::SnapshotVramNow(std::vector<uint8_t> &out) const
+ 2088: {
+ 2089:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2090:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2091:     if (!m_vram || m_vramSize == 0u)
+ 2092:     {
+ 2093:         out.clear();
+ 2094:         return;
+ 2095:     }
+ 2096:     out.resize(m_vramSize);
+--- Lines 2082-2099 ---
+ 2082:         spanHasPage(pageSpan(base, bw, psm, x, y, x, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 2083:         m_texturePageCache.Snapshot(m_vram);
+ 2084:     m_writeVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y, value);
+ 2085: }
+ 2086: 
+ 2087: void GSCpuBackend::SnapshotVramNow(std::vector<uint8_t> &out) const
+ 2088: {
+ 2089:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2090:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2091:     if (!m_vram || m_vramSize == 0u)
+ 2092:     {
+ 2093:         out.clear();
+ 2094:         return;
+ 2095:     }
+ 2096:     out.resize(m_vramSize);
+ 2097:     std::memcpy(out.data(), m_vram, m_vramSize);
+ 2098: }
+ 2099: 
+--- Lines 2110-2127 ---
+ 2110:     std::lock_guard<std::mutex> lock(m_captureMutex);
+ 2111:     m_capturedVram.swap(m_captureScratch);
+ 2112:     m_capturedDisplay = display;
+ 2113: }
+ 2114: 
+ 2115: GSTransferSnapshot GSCpuBackend::GetTransferSnapshotNow() const
+ 2116: {
+ 2117:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2118:     GSTransferSnapshot result = m_transferState;
+ 2119:     result.localToHostPendingBytes = m_localToHostReadPos < m_localToHostBuffer.size()
+ 2120:                                          ? m_localToHostBuffer.size() - m_localToHostReadPos
+ 2121:                                          : 0u;
+ 2122:     return result;
+ 2123: }
+ 2124: 
+ 2125: void GSCpuBackend::PrepareTexturePageCache(const GSDrawState &state)
+ 2126: {
+ 2127:     const auto &ctx = state.context;
+--- Lines 2113-2130 ---
+ 2113: }
+ 2114: 
+ 2115: GSTransferSnapshot GSCpuBackend::GetTransferSnapshotNow() const
+ 2116: {
+ 2117:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2118:     GSTransferSnapshot result = m_transferState;
+ 2119:     result.localToHostPendingBytes = m_localToHostReadPos < m_localToHostBuffer.size()
+ 2120:                                          ? m_localToHostBuffer.size() - m_localToHostReadPos
+ 2121:                                          : 0u;
+ 2122:     return result;
+ 2123: }
+ 2124: 
+ 2125: void GSCpuBackend::PrepareTexturePageCache(const GSDrawState &state)
+ 2126: {
+ 2127:     const auto &ctx = state.context;
+ 2128:     const uint32_t maxX = ctx.scissor.x1;
+ 2129:     const uint32_t maxY = ctx.scissor.y1;
+ 2130:     const uint32_t fbw = std::max<u32>(ctx.frame.fbw, 1u);
+--- Lines 2120-2137 ---
+ 2120:                                          ? m_localToHostBuffer.size() - m_localToHostReadPos
+ 2121:                                          : 0u;
+ 2122:     return result;
+ 2123: }
+ 2124: 
+ 2125: void GSCpuBackend::PrepareTexturePageCache(const GSDrawState &state)
+ 2126: {
+ 2127:     const auto &ctx = state.context;
+ 2128:     const uint32_t maxX = ctx.scissor.x1;
+ 2129:     const uint32_t maxY = ctx.scissor.y1;
+ 2130:     const uint32_t fbw = std::max<u32>(ctx.frame.fbw, 1u);
+ 2131:     const PageSpan frame = pageSpan(GSInternal::framePageBaseToBlock(ctx.frame.fbp), fbw, ctx.frame.psm, 0u, 0u, maxX, maxY);
+ 2132:     const PageSpan depth = pageSpan(GSInternal::framePageBaseToBlock(ctx.zbuf.zbp), fbw, ctx.zbuf.psm, 0u, 0u, maxX, maxY);
+ 2133: 
+ 2134:     uint32_t livePage = 0u;
+ 2135:     if (m_texturePageCache.LivePage(livePage))
+ 2136:     {
+ 2137:         const uint32_t page = livePage / GSMem::TexturePageCache::kPageSize;
+--- Lines 2130-2147 ---
+ 2130:     const uint32_t fbw = std::max<u32>(ctx.frame.fbw, 1u);
+ 2131:     const PageSpan frame = pageSpan(GSInternal::framePageBaseToBlock(ctx.frame.fbp), fbw, ctx.frame.psm, 0u, 0u, maxX, maxY);
+ 2132:     const PageSpan depth = pageSpan(GSInternal::framePageBaseToBlock(ctx.zbuf.zbp), fbw, ctx.zbuf.psm, 0u, 0u, maxX, maxY);
+ 2133: 
+ 2134:     uint32_t livePage = 0u;
+ 2135:     if (m_texturePageCache.LivePage(livePage))
+ 2136:     {
+ 2137:         const uint32_t page = livePage / GSMem::TexturePageCache::kPageSize;
+ 2138:         if (spanHasPage(frame, page) || spanHasPage(depth, page))
+ 2139:             m_texturePageCache.Snapshot(m_vram);
+ 2140:     }
+ 2141: 
+ 2142:     // A primitive sampling pages it also writes must see each page as of its load, so copy on miss.
+ 2143:     bool copyOnMiss = false;
+ 2144:     if (state.prim.tme)
+ 2145:     {
+ 2146:         const auto &tex = ctx.tex0;
+ 2147:         const uint32_t extentU = (ctx.clamp & 0x2u) != 0u ? 1024u : std::max<uint32_t>(state.textureWidth, 1u);
+--- Lines 2132-2149 ---
+ 2132:     const PageSpan depth = pageSpan(GSInternal::framePageBaseToBlock(ctx.zbuf.zbp), fbw, ctx.zbuf.psm, 0u, 0u, maxX, maxY);
+ 2133: 
+ 2134:     uint32_t livePage = 0u;
+ 2135:     if (m_texturePageCache.LivePage(livePage))
+ 2136:     {
+ 2137:         const uint32_t page = livePage / GSMem::TexturePageCache::kPageSize;
+ 2138:         if (spanHasPage(frame, page) || spanHasPage(depth, page))
+ 2139:             m_texturePageCache.Snapshot(m_vram);
+ 2140:     }
+ 2141: 
+ 2142:     // A primitive sampling pages it also writes must see each page as of its load, so copy on miss.
+ 2143:     bool copyOnMiss = false;
+ 2144:     if (state.prim.tme)
+ 2145:     {
+ 2146:         const auto &tex = ctx.tex0;
+ 2147:         const uint32_t extentU = (ctx.clamp & 0x2u) != 0u ? 1024u : std::max<uint32_t>(state.textureWidth, 1u);
+ 2148:         const uint32_t extentV = ((ctx.clamp >> 2) & 0x2u) != 0u ? 1024u : std::max<uint32_t>(state.textureHeight, 1u);
+ 2149:         const PageSpan texture = pageSpan(tex.tbp0, tex.tbw, tex.psm, 0u, 0u, extentU - 1u, extentV - 1u);
+--- Lines 2134-2151 ---
+ 2134:     uint32_t livePage = 0u;
+ 2135:     if (m_texturePageCache.LivePage(livePage))
+ 2136:     {
+ 2137:         const uint32_t page = livePage / GSMem::TexturePageCache::kPageSize;
+ 2138:         if (spanHasPage(frame, page) || spanHasPage(depth, page))
+ 2139:             m_texturePageCache.Snapshot(m_vram);
+ 2140:     }
+ 2141: 
+ 2142:     // A primitive sampling pages it also writes must see each page as of its load, so copy on miss.
+ 2143:     bool copyOnMiss = false;
+ 2144:     if (state.prim.tme)
+ 2145:     {
+ 2146:         const auto &tex = ctx.tex0;
+ 2147:         const uint32_t extentU = (ctx.clamp & 0x2u) != 0u ? 1024u : std::max<uint32_t>(state.textureWidth, 1u);
+ 2148:         const uint32_t extentV = ((ctx.clamp >> 2) & 0x2u) != 0u ? 1024u : std::max<uint32_t>(state.textureHeight, 1u);
+ 2149:         const PageSpan texture = pageSpan(tex.tbp0, tex.tbw, tex.psm, 0u, 0u, extentU - 1u, extentV - 1u);
+ 2150:         copyOnMiss = spansOverlap(texture, frame) || spansOverlap(texture, depth);
+ 2151:     }
+--- Lines 2147-2164 ---
+ 2147:         const uint32_t extentU = (ctx.clamp & 0x2u) != 0u ? 1024u : std::max<uint32_t>(state.textureWidth, 1u);
+ 2148:         const uint32_t extentV = ((ctx.clamp >> 2) & 0x2u) != 0u ? 1024u : std::max<uint32_t>(state.textureHeight, 1u);
+ 2149:         const PageSpan texture = pageSpan(tex.tbp0, tex.tbw, tex.psm, 0u, 0u, extentU - 1u, extentV - 1u);
+ 2150:         copyOnMiss = spansOverlap(texture, frame) || spansOverlap(texture, depth);
+ 2151:     }
+ 2152:     m_texturePageCache.SetCopyOnMiss(copyOnMiss, frame.first, frame.count, depth.first, depth.count);
+ 2153: }
+ 2154: 
+ 2155: void GSCpuBackend::DrawPrimitive(const GSPrimitiveBatch &batch, const uint32_t *clut)
+ 2156: {
+ 2157:     const GSDrawState &state = batch.state;
+ 2158:     const auto &ctx = state.context;
+ 2159:     PS2_IF_AGRESSIVE_LOGS({
+ 2160:         const uint32_t primitiveIndex = s_debugPrimitiveCount.fetch_add(1u, std::memory_order_relaxed);
+ 2161:         if (primitiveIndex < 64u)
+ 2162:         {
+ 2163:             std::cout << "[gs:prim] idx=" << primitiveIndex
+ 2164:                       << " type=" << static_cast<uint32_t>(state.prim.type)
+--- Lines 2260-2277 ---
+ 2260:                       << " alpha=0x" << ctx.alpha
+ 2261:                       << std::dec << std::endl;
+ 2262:         }
+ 2263:     });
+ 2264: 
+ 2265:     PrepareTexturePageCache(state);
+ 2266:     struct CopyOnMissReset
+ 2267:     {
+ 2268:         GSMem::TexturePageCache &cache;
+ 2269:         ~CopyOnMissReset() { cache.SetCopyOnMiss(false); }
+ 2270:     } copyOnMissReset{m_texturePageCache};
+ 2271: 
+ 2272:     RasterContext raster{};
+ 2273:     raster.cache = &m_texturePageCache;
+ 2274:     raster.clut = clut;
+ 2275:     RasterStats stats;
+ 2276:     if (gsStatsEnabled())
+ 2277:         raster.stats = &stats;
+--- Lines 2263-2280 ---
+ 2263:     });
+ 2264: 
+ 2265:     PrepareTexturePageCache(state);
+ 2266:     struct CopyOnMissReset
+ 2267:     {
+ 2268:         GSMem::TexturePageCache &cache;
+ 2269:         ~CopyOnMissReset() { cache.SetCopyOnMiss(false); }
+ 2270:     } copyOnMissReset{m_texturePageCache};
+ 2271: 
+ 2272:     RasterContext raster{};
+ 2273:     raster.cache = &m_texturePageCache;
+ 2274:     raster.clut = clut;
+ 2275:     RasterStats stats;
+ 2276:     if (gsStatsEnabled())
+ 2277:         raster.stats = &stats;
+ 2278:     DrawPrimitiveRows(batch, raster);
+ 2279:     if (raster.stats)
+ 2280:         AddRasterStats(stats);
+--- Lines 2265-2282 ---
+ 2265:     PrepareTexturePageCache(state);
+ 2266:     struct CopyOnMissReset
+ 2267:     {
+ 2268:         GSMem::TexturePageCache &cache;
+ 2269:         ~CopyOnMissReset() { cache.SetCopyOnMiss(false); }
+ 2270:     } copyOnMissReset{m_texturePageCache};
+ 2271: 
+ 2272:     RasterContext raster{};
+ 2273:     raster.cache = &m_texturePageCache;
+ 2274:     raster.clut = clut;
+ 2275:     RasterStats stats;
+ 2276:     if (gsStatsEnabled())
+ 2277:         raster.stats = &stats;
+ 2278:     DrawPrimitiveRows(batch, raster);
+ 2279:     if (raster.stats)
+ 2280:         AddRasterStats(stats);
+ 2281: }
+ 2282: 
+--- Lines 2268-2285 ---
+ 2268:         GSMem::TexturePageCache &cache;
+ 2269:         ~CopyOnMissReset() { cache.SetCopyOnMiss(false); }
+ 2270:     } copyOnMissReset{m_texturePageCache};
+ 2271: 
+ 2272:     RasterContext raster{};
+ 2273:     raster.cache = &m_texturePageCache;
+ 2274:     raster.clut = clut;
+ 2275:     RasterStats stats;
+ 2276:     if (gsStatsEnabled())
+ 2277:         raster.stats = &stats;
+ 2278:     DrawPrimitiveRows(batch, raster);
+ 2279:     if (raster.stats)
+ 2280:         AddRasterStats(stats);
+ 2281: }
+ 2282: 
+ 2283: void GSCpuBackend::DrawPrimitiveRows(const GSPrimitiveBatch &batch, const RasterContext &raster)
+ 2284: {
+ 2285:     const GSDrawState &state = batch.state;
+--- Lines 2451-2468 ---
+ 2451: // Runs for most pixels of a tracked batch; as a call it cost about 5% of their raster time.
+ 2452: PS2_GS_ALWAYS_INLINE void GSCpuBackend::RecordUndo(const PixelPipeline &pipe, const uint8_t *pixel, int x, int y)
+ 2453: {
+ 2454:     // Only RGB24/Z24 targets write tracked pages, so the whole word is the pixel's.
+ 2455:     const uint32_t offset = static_cast<uint32_t>(pixel - m_vram);
+ 2456:     if (!pipe.undoPages->test(offset / GSMem::TexturePageCache::kPageSize))
+ 2457:         return;
+ 2458:     UndoEntry entry;
+ 2459:     entry.primitive = pipe.primitive;
+ 2460:     entry.y = y;
+ 2461:     entry.x = x;
+ 2462:     entry.offset = offset;
+ 2463:     std::memcpy(&entry.old, pixel, sizeof(entry.old));
+ 2464:     pipe.undo->push_back(entry);
+ 2465: }
+ 2466: 
+ 2467: PS2_GS_ALWAYS_INLINE bool GSCpuBackend::WritePixel(const PixelPipeline &pipe, int x, int y, int z, uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t fog)
+ 2468: {
+--- Lines 2662-2679 ---
+ 2662:         if (framebuffer16)
+ 2663:         {
+ 2664:             pixel = Rgba8888ToRgba5551(pixel);
+ 2665:         }
+ 2666: 
+ 2667:         // PrepareTexturePageCache already made the texture page cache safe for this primitive's writes.
+ 2668:         if (hasFrameOffset)
+ 2669:         {
+ 2670:             if (!framePixel)
+ 2671:                 framePixel = m_vram + frameOffset();
+ 2672:             if (pipe.undo)
+ 2673:                 RecordUndo(pipe, framePixel, x, y);
+ 2674:             writeTarget(fpsm, framePixel, pixel);
+ 2675:         }
+ 2676:         else
+ 2677:         {
+ 2678:             m_writeVramFuncs[fpsm & 0x3Fu](m_vram, fbp, fbw, x, y, pixel);
+ 2679:         }
+--- Lines 2673-2690 ---
+ 2673:                 RecordUndo(pipe, framePixel, x, y);
+ 2674:             writeTarget(fpsm, framePixel, pixel);
+ 2675:         }
+ 2676:         else
+ 2677:         {
+ 2678:             m_writeVramFuncs[fpsm & 0x3Fu](m_vram, fbp, fbw, x, y, pixel);
+ 2679:         }
+ 2680:     }
+ 2681: 
+ 2682:     if (writeMask.writeDepth && !ctx.zbuf.zmask)
+ 2683:     {
+ 2684:         if (hasDepthOffset)
+ 2685:         {
+ 2686:             if (!depthPixel)
+ 2687:                 depthPixel = m_vram + depthOffset();
+ 2688:             if (pipe.undo)
+ 2689:                 RecordUndo(pipe, depthPixel, x, y);
+ 2690:             writeTarget(zpsm, depthPixel, static_cast<uint32_t>(z));
+--- Lines 2689-2706 ---
+ 2689:                 RecordUndo(pipe, depthPixel, x, y);
+ 2690:             writeTarget(zpsm, depthPixel, static_cast<uint32_t>(z));
+ 2691:         }
+ 2692:         else
+ 2693:         {
+ 2694:             m_writeVramFuncs[zpsm & 0x3Fu](m_vram, zbp, fbw, x, y, z);
+ 2695:         }
+ 2696:     }
+ 2697:     return true;
+ 2698: }
+ 2699: 
+ 2700: template <uint32_t FramePsm, uint32_t DepthPsm>
+ 2701: uint32_t GSCpuBackend::WriteSpanFor(const PixelPipeline &pipe, int y, SpanPixels &span)
+ 2702: {
+ 2703:     // WritePixelFor pixel by pixel waits on each pixel's address lookups and loads before the next pixel
+ 2704:     // starts. A batched primitive's pixels in one row are distinct colour and depth words that nothing else
+ 2705:     // in the chunk touches (colour and depth never share pages in a batch), so the addresses and loads of
+ 2706:     // the whole span go first and only the stores keep their order.
+--- Lines 3002-3019 ---
+ 3002:     const auto &tex = state.context.tex0;
+ 3003:     for (uint32_t index = 0; index < 256u; ++index)
+ 3004:         rgba[index] = LookupCLUT(state, static_cast<u8>(index), tex.cpsm, tex.csm, tex.csa, tex.psm);
+ 3005: }
+ 3006: 
+ 3007: GSCpuBackend::TextureSampler GSCpuBackend::MakeTextureSampler(const GSDrawState &state, GSMem::TexturePageCache &cache, const uint32_t *clut)
+ 3008: {
+ 3009:     const auto &ctx = state.context;
+ 3010:     const auto &tex = ctx.tex0;
+ 3011:     TextureSampler sampler{};
+ 3012:     sampler.state = &state;
+ 3013:     sampler.psm = tex.psm;
+ 3014:     sampler.tbp0 = tex.tbp0;
+ 3015:     sampler.tbw = tex.tbw;
+ 3016:     sampler.texW = state.textureWidth;
+ 3017:     sampler.texH = state.textureHeight;
+ 3018:     const uint64_t clamp = ctx.clamp;
+ 3019:     sampler.wrapU = static_cast<uint8_t>(clamp & 0x3u);
+--- Lines 3856-3873 ---
+ 3856:     {
+ 3857:         auto writeDirectPixel = [&](const uint8_t *bytes)
+ 3858:         {
+ 3859:             uint32_t value = 0u;
+ 3860:             std::memcpy(&value, bytes, bytesPerPixel);
+ 3861:             WriteVramUnlocked(dpsm, dbp, dbw, m_transferState.x, m_transferState.y, value);
+ 3862:             advancePixel(1u);
+ 3863:         };
+ 3864: 
+ 3865:         if (m_uploadCarryBytes != 0u)
+ 3866:         {
+ 3867:             const uint32_t take = std::min<uint32_t>(bytesPerPixel - m_uploadCarryBytes, sizeBytes);
+ 3868:             std::memcpy(m_uploadCarry.data() + m_uploadCarryBytes, data, take);
+ 3869:             m_uploadCarryBytes += take;
+ 3870:             offset = take;
+ 3871:             if (m_uploadCarryBytes < bytesPerPixel)
+ 3872:                 return;
+ 3873:             m_uploadCarryBytes = 0u;
+--- Lines 3892-3909 ---
+ 3892:     {
+ 3893:         switch (dpsm)
+ 3894:         {
+ 3895:         case GS_PSM_T8:
+ 3896:         case GS_PSM_T8H:
+ 3897:             WriteVramUnlocked(dpsm, dbp, dbw, m_transferState.x, m_transferState.y, data[offset++]);
+ 3898:             advancePixel(1u);
+ 3899:             break;
+ 3900:         case GS_PSM_T4:
+ 3901:         case GS_PSM_T4HL:
+ 3902:         case GS_PSM_T4HH:
+ 3903:         {
+ 3904:             const uint8_t packed = data[offset++];
+ 3905:             const uint32_t firstPixel = m_transferState.copiedPixels;
+ 3906:             WriteVramUnlocked(dpsm, dbp, dbw,
+ 3907:                               dsax + column,
+ 3908:                               m_transfer.trxpos.dsay + row,
+ 3909:                               packed & 0x0Fu);
+--- Lines 3901-3918 ---
+ 3901:         case GS_PSM_T4HL:
+ 3902:         case GS_PSM_T4HH:
+ 3903:         {
+ 3904:             const uint8_t packed = data[offset++];
+ 3905:             const uint32_t firstPixel = m_transferState.copiedPixels;
+ 3906:             WriteVramUnlocked(dpsm, dbp, dbw,
+ 3907:                               dsax + column,
+ 3908:                               m_transfer.trxpos.dsay + row,
+ 3909:                               packed & 0x0Fu);
+ 3910:             if (firstPixel + 1u < m_transferState.totalPixels)
+ 3911:             {
+ 3912:                 const bool wraps = column + 1u >= rrw;
+ 3913:                 WriteVramUnlocked(dpsm, dbp, dbw,
+ 3914:                                   dsax + (wraps ? column + 1u - rrw : column + 1u),
+ 3915:                                   m_transfer.trxpos.dsay + (wraps ? row + 1u : row),
+ 3916:                                   (packed >> 4u) & 0x0Fu);
+ 3917:             }
+ 3918:             advancePixel(std::min<uint32_t>(2u, m_transferState.totalPixels - firstPixel));
+--- Lines 3908-3925 ---
+ 3908:                               m_transfer.trxpos.dsay + row,
+ 3909:                               packed & 0x0Fu);
+ 3910:             if (firstPixel + 1u < m_transferState.totalPixels)
+ 3911:             {
+ 3912:                 const bool wraps = column + 1u >= rrw;
+ 3913:                 WriteVramUnlocked(dpsm, dbp, dbw,
+ 3914:                                   dsax + (wraps ? column + 1u - rrw : column + 1u),
+ 3915:                                   m_transfer.trxpos.dsay + (wraps ? row + 1u : row),
+ 3916:                                   (packed >> 4u) & 0x0Fu);
+ 3917:             }
+ 3918:             advancePixel(std::min<uint32_t>(2u, m_transferState.totalPixels - firstPixel));
+ 3919:             break;
+ 3920:         }
+ 3921:         default:
+ 3922:             return;
+ 3923:         }
+ 3924:     }
+ 3925: }
+--- Lines 3950-3967 ---
+ 3950:         const uint32_t value = ReadVramUnlocked(m_transfer.bitbltbuf.spsm,
+ 3951:                                                 m_transfer.bitbltbuf.sbp,
+ 3952:                                                 std::max<uint32_t>(m_transfer.bitbltbuf.sbw, 1u),
+ 3953:                                                 x + m_transfer.trxpos.ssax,
+ 3954:                                                 y + m_transfer.trxpos.ssay);
+ 3955:         WriteVramUnlocked(m_transfer.bitbltbuf.dpsm,
+ 3956:                           m_transfer.bitbltbuf.dbp,
+ 3957:                           std::max<uint32_t>(m_transfer.bitbltbuf.dbw, 1u),
+ 3958:                           x + m_transfer.trxpos.dsax,
+ 3959:                           y + m_transfer.trxpos.dsay,
+ 3960:                           value);
+ 3961:     }
+ 3962: 
+ 3963:     m_transferState.copiedPixels = total;
+ 3964:     m_transferState.direction = 3u;
+ 3965: }
+ 3966: 
+ 3967: void GSCpuBackend::PerformLocalToHostTransfer()
+--- Lines 4068-4085 ---
+ 4068:     const uint32_t fbp = GSInternal::framePageBaseToBlock(context.frame.fbp);
+ 4069:     const uint32_t fbw = std::max<uint32_t>(context.frame.fbw, 1u);
+ 4070:     if (context.frame.psm != GS_PSM_CT32 && context.frame.psm != GS_PSM_CT24 && context.frame.psm != GS_PSM_CT16 &&
+ 4071:         context.frame.psm != GS_PSM_CT16S)
+ 4072:         return false;
+ 4073:     // WriteVramUnlocked snapshots the texture cache's live page before the first write to it. A row writes
+ 4074:     // exactly the pages of its span and the live page keeps its bytes until then, so checking every row up
+ 4075:     // front is the same, and leaves the rows free to be written directly and in parallel.
+ 4076:     for (uint32_t y = y0; y <= y1; ++y)
+ 4077:     {
+ 4078:         uint32_t livePage = 0u;
+ 4079:         if (!m_texturePageCache.LivePage(livePage))
+ 4080:             break;
+ 4081:         if (spanHasPage(pageSpan(fbp, fbw, context.frame.psm, x0, y, x1, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 4082:             m_texturePageCache.Snapshot(m_vram);
+ 4083:     }
+ 4084:     const WriteVramFunc write = m_writeVramFuncs[context.frame.psm & 0x3Fu];
+ 4085:     const ReadVramFunc read = m_readVramFuncs[context.frame.psm & 0x3Fu];
+--- Lines 4074-4091 ---
+ 4074:     // exactly the pages of its span and the live page keeps its bytes until then, so checking every row up
+ 4075:     // front is the same, and leaves the rows free to be written directly and in parallel.
+ 4076:     for (uint32_t y = y0; y <= y1; ++y)
+ 4077:     {
+ 4078:         uint32_t livePage = 0u;
+ 4079:         if (!m_texturePageCache.LivePage(livePage))
+ 4080:             break;
+ 4081:         if (spanHasPage(pageSpan(fbp, fbw, context.frame.psm, x0, y, x1, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 4082:             m_texturePageCache.Snapshot(m_vram);
+ 4083:     }
+ 4084:     const WriteVramFunc write = m_writeVramFuncs[context.frame.psm & 0x3Fu];
+ 4085:     const ReadVramFunc read = m_readVramFuncs[context.frame.psm & 0x3Fu];
+ 4086:     const bool sixteen = context.frame.psm == GS_PSM_CT16 || context.frame.psm == GS_PSM_CT16S;
+ 4087:     const uint32_t mask = sixteen ? static_cast<uint16_t>(context.frame.fbmsk) : context.frame.fbmsk;
+ 4088:     const uint32_t source = sixteen ? encodeFramePixelPSMCT16(r, g, b, a)
+ 4089:                                     : static_cast<uint32_t>(r) | (static_cast<uint32_t>(g) << 8u) |
+ 4090:                                           (static_cast<uint32_t>(b) << 16u) | (static_cast<uint32_t>(a) << 24u);
+ 4091:     auto clearRows = [&](uint32_t first, uint32_t last)
+--- Lines 4076-4093 ---
+ 4076:     for (uint32_t y = y0; y <= y1; ++y)
+ 4077:     {
+ 4078:         uint32_t livePage = 0u;
+ 4079:         if (!m_texturePageCache.LivePage(livePage))
+ 4080:             break;
+ 4081:         if (spanHasPage(pageSpan(fbp, fbw, context.frame.psm, x0, y, x1, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 4082:             m_texturePageCache.Snapshot(m_vram);
+ 4083:     }
+ 4084:     const WriteVramFunc write = m_writeVramFuncs[context.frame.psm & 0x3Fu];
+ 4085:     const ReadVramFunc read = m_readVramFuncs[context.frame.psm & 0x3Fu];
+ 4086:     const bool sixteen = context.frame.psm == GS_PSM_CT16 || context.frame.psm == GS_PSM_CT16S;
+ 4087:     const uint32_t mask = sixteen ? static_cast<uint16_t>(context.frame.fbmsk) : context.frame.fbmsk;
+ 4088:     const uint32_t source = sixteen ? encodeFramePixelPSMCT16(r, g, b, a)
+ 4089:                                     : static_cast<uint32_t>(r) | (static_cast<uint32_t>(g) << 8u) |
+ 4090:                                           (static_cast<uint32_t>(b) << 16u) | (static_cast<uint32_t>(a) << 24u);
+ 4091:     auto clearRows = [&](uint32_t first, uint32_t last)
+ 4092:     {
+ 4093:         for (uint32_t y = first; y <= last; ++y)
+--- Lines 4077-4094 ---
+ 4077:     {
+ 4078:         uint32_t livePage = 0u;
+ 4079:         if (!m_texturePageCache.LivePage(livePage))
+ 4080:             break;
+ 4081:         if (spanHasPage(pageSpan(fbp, fbw, context.frame.psm, x0, y, x1, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 4082:             m_texturePageCache.Snapshot(m_vram);
+ 4083:     }
+ 4084:     const WriteVramFunc write = m_writeVramFuncs[context.frame.psm & 0x3Fu];
+ 4085:     const ReadVramFunc read = m_readVramFuncs[context.frame.psm & 0x3Fu];
+ 4086:     const bool sixteen = context.frame.psm == GS_PSM_CT16 || context.frame.psm == GS_PSM_CT16S;
+ 4087:     const uint32_t mask = sixteen ? static_cast<uint16_t>(context.frame.fbmsk) : context.frame.fbmsk;
+ 4088:     const uint32_t source = sixteen ? encodeFramePixelPSMCT16(r, g, b, a)
+ 4089:                                     : static_cast<uint32_t>(r) | (static_cast<uint32_t>(g) << 8u) |
+ 4090:                                           (static_cast<uint32_t>(b) << 16u) | (static_cast<uint32_t>(a) << 24u);
+ 4091:     auto clearRows = [&](uint32_t first, uint32_t last)
+ 4092:     {
+ 4093:         for (uint32_t y = first; y <= last; ++y)
+ 4094:             for (uint32_t x = x0; x <= x1; ++x)
+--- Lines 4079-4096 ---
+ 4079:         if (!m_texturePageCache.LivePage(livePage))
+ 4080:             break;
+ 4081:         if (spanHasPage(pageSpan(fbp, fbw, context.frame.psm, x0, y, x1, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 4082:             m_texturePageCache.Snapshot(m_vram);
+ 4083:     }
+ 4084:     const WriteVramFunc write = m_writeVramFuncs[context.frame.psm & 0x3Fu];
+ 4085:     const ReadVramFunc read = m_readVramFuncs[context.frame.psm & 0x3Fu];
+ 4086:     const bool sixteen = context.frame.psm == GS_PSM_CT16 || context.frame.psm == GS_PSM_CT16S;
+ 4087:     const uint32_t mask = sixteen ? static_cast<uint16_t>(context.frame.fbmsk) : context.frame.fbmsk;
+ 4088:     const uint32_t source = sixteen ? encodeFramePixelPSMCT16(r, g, b, a)
+ 4089:                                     : static_cast<uint32_t>(r) | (static_cast<uint32_t>(g) << 8u) |
+ 4090:                                           (static_cast<uint32_t>(b) << 16u) | (static_cast<uint32_t>(a) << 24u);
+ 4091:     auto clearRows = [&](uint32_t first, uint32_t last)
+ 4092:     {
+ 4093:         for (uint32_t y = first; y <= last; ++y)
+ 4094:             for (uint32_t x = x0; x <= x1; ++x)
+ 4095:             {
+ 4096:                 uint32_t pixel = source;
+--- Lines 4192-4209 ---
+ 4192:     return true;
+ 4193: }
+ 4194: 
+ 4195: PresentationFrame GSCpuBackend::Present(const GSPresentationRequest &request)
+ 4196: {
+ 4197:     // Snapshot local memory under the backend lock, then perform the expensive
+ 4198:     // display conversion without holding the producer-side raster lock.
+ 4199:     thread_local std::vector<uint8_t> snapshot;
+ 4200:     GSPresentationRequest shown = request;
+ 4201:     bool behind = false;
+ 4202:     if (m_async)
+ 4203:     {
+ 4204:         std::lock_guard<std::mutex> lock(m_queueMutex);
+ 4205:         behind = m_queueCompleted < m_queueSubmitted;
+ 4206:     }
+ 4207:     bool captured = false;
+ 4208:     {
+ 4209:         // The capture taken at this vblank pairs the display registers with the memory the game had
+--- Lines 4194-4211 ---
+ 4194: 
+ 4195: PresentationFrame GSCpuBackend::Present(const GSPresentationRequest &request)
+ 4196: {
+ 4197:     // Snapshot local memory under the backend lock, then perform the expensive
+ 4198:     // display conversion without holding the producer-side raster lock.
+ 4199:     thread_local std::vector<uint8_t> snapshot;
+ 4200:     GSPresentationRequest shown = request;
+ 4201:     bool behind = false;
+ 4202:     if (m_async)
+ 4203:     {
+ 4204:         std::lock_guard<std::mutex> lock(m_queueMutex);
+ 4205:         behind = m_queueCompleted < m_queueSubmitted;
+ 4206:     }
+ 4207:     bool captured = false;
+ 4208:     {
+ 4209:         // The capture taken at this vblank pairs the display registers with the memory the game had
+ 4210:         // finished drawing by then. Live memory races the EE: between building the request and copying
+ 4211:         // VRAM, the game can clear the buffer DISPFB still names (it clears the next draw buffer before
+--- Lines 4214-4231 ---
+ 4214:         // the GS thread is behind, in which case the previous capture is the newest consistent frame.
+ 4215:         std::lock_guard<std::mutex> lock(m_captureMutex);
+ 4216:         const bool captureIsCurrent = !m_capturedVram.empty() && m_capturedDisplay.vsyncTick == request.vsyncTick;
+ 4217:         if (!m_capturedVram.empty() && (captureIsCurrent || behind))
+ 4218:         {
+ 4219:             snapshot = m_capturedVram;
+ 4220:             shown.pmode = m_capturedDisplay.pmode;
+ 4221:             shown.smode2 = m_capturedDisplay.smode2;
+ 4222:             shown.dispfb1 = m_capturedDisplay.dispfb1;
+ 4223:             shown.display1 = m_capturedDisplay.display1;
+ 4224:             shown.dispfb2 = m_capturedDisplay.dispfb2;
+ 4225:             shown.display2 = m_capturedDisplay.display2;
+ 4226:             shown.bgcolor = m_capturedDisplay.bgcolor;
+ 4227:             shown.vsyncTick = m_capturedDisplay.vsyncTick;
+ 4228:             captured = true;
+ 4229:         }
+ 4230:     }
+ 4231:     if (!captured)
+--- Lines 4227-4244 ---
+ 4227:             shown.vsyncTick = m_capturedDisplay.vsyncTick;
+ 4228:             captured = true;
+ 4229:         }
+ 4230:     }
+ 4231:     if (!captured)
+ 4232:         SnapshotVramNow(snapshot);
+ 4233:     if (snapshot.empty())
+ 4234:         return {};
+ 4235: 
+ 4236:     thread_local GSCpuBackend snapshotBackend;
+ 4237:     snapshotBackend.Initialize(snapshot.data(), static_cast<uint32_t>(snapshot.size()));
+ 4238:     return snapshotBackend.PresentFromLocalMemory(shown);
+ 4239: }
+ 4240: 
+ 4241: PresentationFrame GSCpuBackend::PresentFromLocalMemory(const GSPresentationRequest &request)
+ 4242: {
+ 4243:     PresentationFrame result{};
+ 4244:     const GSPmodeState pmode = decodePmode(request.pmode);
+--- Lines 4228-4245 ---
+ 4228:             captured = true;
+ 4229:         }
+ 4230:     }
+ 4231:     if (!captured)
+ 4232:         SnapshotVramNow(snapshot);
+ 4233:     if (snapshot.empty())
+ 4234:         return {};
+ 4235: 
+ 4236:     thread_local GSCpuBackend snapshotBackend;
+ 4237:     snapshotBackend.Initialize(snapshot.data(), static_cast<uint32_t>(snapshot.size()));
+ 4238:     return snapshotBackend.PresentFromLocalMemory(shown);
+ 4239: }
+ 4240: 
+ 4241: PresentationFrame GSCpuBackend::PresentFromLocalMemory(const GSPresentationRequest &request)
+ 4242: {
+ 4243:     PresentationFrame result{};
+ 4244:     const GSPmodeState pmode = decodePmode(request.pmode);
+ 4245:     const GSSmode2State smode2 = decodeSMode2(request.smode2);
+--- Lines 4231-4248 ---
+ 4231:     if (!captured)
+ 4232:         SnapshotVramNow(snapshot);
+ 4233:     if (snapshot.empty())
+ 4234:         return {};
+ 4235: 
+ 4236:     thread_local GSCpuBackend snapshotBackend;
+ 4237:     snapshotBackend.Initialize(snapshot.data(), static_cast<uint32_t>(snapshot.size()));
+ 4238:     return snapshotBackend.PresentFromLocalMemory(shown);
+ 4239: }
+ 4240: 
+ 4241: PresentationFrame GSCpuBackend::PresentFromLocalMemory(const GSPresentationRequest &request)
+ 4242: {
+ 4243:     PresentationFrame result{};
+ 4244:     const GSPmodeState pmode = decodePmode(request.pmode);
+ 4245:     const GSSmode2State smode2 = decodeSMode2(request.smode2);
+ 4246:     // In interlaced field mode (SMODE2 INT=1, FFMD=0) each field reads alternate lines of the same
+ 4247:     // full-height buffer and a TV shows both, so the host presents the whole buffer instead of
+ 4248:     // line-doubling one field, which halved the vertical resolution.
+--- Lines 4232-4249 ---
+ 4232:         SnapshotVramNow(snapshot);
+ 4233:     if (snapshot.empty())
+ 4234:         return {};
+ 4235: 
+ 4236:     thread_local GSCpuBackend snapshotBackend;
+ 4237:     snapshotBackend.Initialize(snapshot.data(), static_cast<uint32_t>(snapshot.size()));
+ 4238:     return snapshotBackend.PresentFromLocalMemory(shown);
+ 4239: }
+ 4240: 
+ 4241: PresentationFrame GSCpuBackend::PresentFromLocalMemory(const GSPresentationRequest &request)
+ 4242: {
+ 4243:     PresentationFrame result{};
+ 4244:     const GSPmodeState pmode = decodePmode(request.pmode);
+ 4245:     const GSSmode2State smode2 = decodeSMode2(request.smode2);
+ 4246:     // In interlaced field mode (SMODE2 INT=1, FFMD=0) each field reads alternate lines of the same
+ 4247:     // full-height buffer and a TV shows both, so the host presents the whole buffer instead of
+ 4248:     // line-doubling one field, which halved the vertical resolution.
+ 4249:     (void)smode2;
+--- Lines 4233-4250 ---
+ 4233:     if (snapshot.empty())
+ 4234:         return {};
+ 4235: 
+ 4236:     thread_local GSCpuBackend snapshotBackend;
+ 4237:     snapshotBackend.Initialize(snapshot.data(), static_cast<uint32_t>(snapshot.size()));
+ 4238:     return snapshotBackend.PresentFromLocalMemory(shown);
+ 4239: }
+ 4240: 
+ 4241: PresentationFrame GSCpuBackend::PresentFromLocalMemory(const GSPresentationRequest &request)
+ 4242: {
+ 4243:     PresentationFrame result{};
+ 4244:     const GSPmodeState pmode = decodePmode(request.pmode);
+ 4245:     const GSSmode2State smode2 = decodeSMode2(request.smode2);
+ 4246:     // In interlaced field mode (SMODE2 INT=1, FFMD=0) each field reads alternate lines of the same
+ 4247:     // full-height buffer and a TV shows both, so the host presents the whole buffer instead of
+ 4248:     // line-doubling one field, which halved the vertical resolution.
+ 4249:     (void)smode2;
+ 4250:     const GSFrameReg displayFrame1 = decodeDisplayFrame(request.dispfb1);
+
+========== ps2xTest\gs_cache\gs_test_support.h ==========
+--- Lines 113-130 ---
+  113:         }
+  114:         batch.vertices[1].x = batch.vertices[1].y = 1;
+  115:         return batch;
+  116:     }
+  117: 
+  118:     struct BackendFixture
+  119:     {
+  120:         std::vector<uint8_t> vram = std::vector<uint8_t>(kVramSize);
+  121:         GSCpuBackend backend;
+  122: 
+  123:         BackendFixture()
+  124:         {
+  125:             backend.Initialize(vram.data(), static_cast<uint32_t>(vram.size()));
+  126:         }
+  127: 
+  128:         uint32_t sample(const GSTex0Reg& tex, uint32_t x = 0, uint32_t y = 0, bool linear = false)
+  129:         {
+  130:             backend.Submit(sprite(tex, x, y, linear));
+--- Lines 118-135 ---
+  118:     struct BackendFixture
+  119:     {
+  120:         std::vector<uint8_t> vram = std::vector<uint8_t>(kVramSize);
+  121:         GSCpuBackend backend;
+  122: 
+  123:         BackendFixture()
+  124:         {
+  125:             backend.Initialize(vram.data(), static_cast<uint32_t>(vram.size()));
+  126:         }
+  127: 
+  128:         uint32_t sample(const GSTex0Reg& tex, uint32_t x = 0, uint32_t y = 0, bool linear = false)
+  129:         {
+  130:             backend.Submit(sprite(tex, x, y, linear));
+  131:             return backend.ReadVram(GS_PSM_CT32, kOutputPage * 32u, 1u, 0u, 0u);
+  132:         }
+  133:     };
+  134: 
+  135:     struct FrontendFixture
+--- Lines 163-180 ---
+  163:             gs.writeRegister(GS_REG_TEXFLUSH, 0);
+  164:         }
+  165: 
+  166:         void index(const GSTex0Reg& tex, uint32_t value, uint32_t x = 0, uint32_t y = 0)
+  167:         {
+  168:             gs.WriteVram(tex.psm, tex.tbp0, tex.tbw, x, y, value);
+  169:         }
+  170: 
+  171:         void palette(const GSTex0Reg& tex, uint32_t entry, uint32_t value)
+  172:         {
+  173:             // CSM1 source layout; CSA selects the destination, not this source.
+  174:             const uint32_t position = (entry & ~0x18u) | ((entry & 8u) << 1u) | ((entry & 16u) >> 1u);
+  175:             gs.WriteVram(tex.cpsm, tex.cbp, 1, position & 15u, position >> 4u, value);
+  176:         }
+  177: 
+  178:         uint32_t sample(uint32_t x = 0, uint32_t y = 0, uint8_t context = 0)
+  179:         {
+  180:             gs.writeRegister(GS_REG_PRIM, GS_PRIM_SPRITE | (1ull << 4) | (1ull << 8) | (uint64_t(context) << 9));
+--- Lines 170-187 ---
+  170: 
+  171:         void palette(const GSTex0Reg& tex, uint32_t entry, uint32_t value)
+  172:         {
+  173:             // CSM1 source layout; CSA selects the destination, not this source.
+  174:             const uint32_t position = (entry & ~0x18u) | ((entry & 8u) << 1u) | ((entry & 16u) >> 1u);
+  175:             gs.WriteVram(tex.cpsm, tex.cbp, 1, position & 15u, position >> 4u, value);
+  176:         }
+  177: 
+  178:         uint32_t sample(uint32_t x = 0, uint32_t y = 0, uint8_t context = 0)
+  179:         {
+  180:             gs.writeRegister(GS_REG_PRIM, GS_PRIM_SPRITE | (1ull << 4) | (1ull << 8) | (uint64_t(context) << 9));
+  181:             gs.writeRegister(GS_REG_RGBAQ, 0x80808080);
+  182:             const uint64_t uv = (uint64_t(y * 16u) << 16) | uint64_t(x * 16u);
+  183:             gs.writeRegister(GS_REG_UV, uv);
+  184:             gs.writeRegister(GS_REG_XYZ2, 0);
+  185:             gs.writeRegister(GS_REG_UV, uv);
+  186:             gs.writeRegister(GS_REG_XYZ2, 16ull | (16ull << 16));
+  187:             return gs.ReadVram(GS_PSM_CT32, kOutputPage * 32u, 1, 0, 0);
+
+========== ps2xTest\gs_cache\gs_memory_cache_tests.cpp ==========
+--- Lines 6-23 ---
+    6: namespace
+    7: {
+    8:     template<uint8_t Psm>
+    9:     void addressCoverage()
+   10:     {
+   11:         BackendFixture f;
+   12:         GSMem::TexturePageCache cache;
+   13:         uint32_t random = 0x51375A9Du;
+   14:         for (auto& byte : f.vram)
+   15:         {
+   16:             random ^= random << 13;
+   17:             random ^= random >> 17;
+   18:             random ^= random << 5;
+   19:             byte = static_cast<uint8_t>(random);
+   20:         }
+   21:         constexpr auto mode = static_cast<GSMem::PixelStorageMode>(Psm);
+   22:         constexpr auto extent = GSMem::PixelStorageTraits<mode>::PageExtent();
+   23:         uint32_t checked = 0;
+--- Lines 7-24 ---
+    7: {
+    8:     template<uint8_t Psm>
+    9:     void addressCoverage()
+   10:     {
+   11:         BackendFixture f;
+   12:         GSMem::TexturePageCache cache;
+   13:         uint32_t random = 0x51375A9Du;
+   14:         for (auto& byte : f.vram)
+   15:         {
+   16:             random ^= random << 13;
+   17:             random ^= random >> 17;
+   18:             random ^= random << 5;
+   19:             byte = static_cast<uint8_t>(random);
+   20:         }
+   21:         constexpr auto mode = static_cast<GSMem::PixelStorageMode>(Psm);
+   22:         constexpr auto extent = GSMem::PixelStorageTraits<mode>::PageExtent();
+   23:         uint32_t checked = 0;
+   24:         const auto check = [&](uint32_t base, uint32_t bw, uint32_t x, uint32_t y)
+--- Lines 45-62 ---
+   45:                     for (uint32_t x : {0u, 1u, 7u, 8u, 15u, 16u, 31u, 32u, 63u, 64u, 127u, 128u, 255u, 256u, 511u, 512u, 1023u, 2047u})
+   46:                         check(base, bw, x, y);
+   47:         std::cout << checked << " cached/direct comparisons\n";
+   48:     }
+   49: 
+   50:     void aliasLanes()
+   51:     {
+   52:         BackendFixture f;
+   53:         GSMem::TexturePageCache cache;
+   54:         constexpr uint32_t base = 31;
+   55:         const auto read = [&](uint32_t psm)
+   56:         {
+   57:             return GSMem::ReadTexture(cache, f.vram.data(), psm, base, 2, 8, 0);
+   58:         };
+   59:         f.backend.WriteVram(GS_PSM_CT32, base, 2, 8, 0, 0xAB123456);
+   60:         expectEqual(read(GS_PSM_T8H), 0xAB, "8H lane on a crossing page");
+   61:         f.backend.WriteVram(GS_PSM_CT24, base, 2, 8, 0, 0x654321);
+   62:         expectEqual(read(GS_PSM_CT32), 0xAB123456, "changing PSM does not refresh the physical page");
+--- Lines 47-64 ---
+   47:         std::cout << checked << " cached/direct comparisons\n";
+   48:     }
+   49: 
+   50:     void aliasLanes()
+   51:     {
+   52:         BackendFixture f;
+   53:         GSMem::TexturePageCache cache;
+   54:         constexpr uint32_t base = 31;
+   55:         const auto read = [&](uint32_t psm)
+   56:         {
+   57:             return GSMem::ReadTexture(cache, f.vram.data(), psm, base, 2, 8, 0);
+   58:         };
+   59:         f.backend.WriteVram(GS_PSM_CT32, base, 2, 8, 0, 0xAB123456);
+   60:         expectEqual(read(GS_PSM_T8H), 0xAB, "8H lane on a crossing page");
+   61:         f.backend.WriteVram(GS_PSM_CT24, base, 2, 8, 0, 0x654321);
+   62:         expectEqual(read(GS_PSM_CT32), 0xAB123456, "changing PSM does not refresh the physical page");
+   63:         cache.Invalidate();
+   64:         expectEqual(read(GS_PSM_CT32), 0xAB654321, "CT24 upload preserves alpha");
+--- Lines 48-65 ---
+   48:     }
+   49: 
+   50:     void aliasLanes()
+   51:     {
+   52:         BackendFixture f;
+   53:         GSMem::TexturePageCache cache;
+   54:         constexpr uint32_t base = 31;
+   55:         const auto read = [&](uint32_t psm)
+   56:         {
+   57:             return GSMem::ReadTexture(cache, f.vram.data(), psm, base, 2, 8, 0);
+   58:         };
+   59:         f.backend.WriteVram(GS_PSM_CT32, base, 2, 8, 0, 0xAB123456);
+   60:         expectEqual(read(GS_PSM_T8H), 0xAB, "8H lane on a crossing page");
+   61:         f.backend.WriteVram(GS_PSM_CT24, base, 2, 8, 0, 0x654321);
+   62:         expectEqual(read(GS_PSM_CT32), 0xAB123456, "changing PSM does not refresh the physical page");
+   63:         cache.Invalidate();
+   64:         expectEqual(read(GS_PSM_CT32), 0xAB654321, "CT24 upload preserves alpha");
+   65:         f.backend.WriteVram(GS_PSM_T4HL, base, 2, 8, 0, 5);
+--- Lines 54-71 ---
+   54:         constexpr uint32_t base = 31;
+   55:         const auto read = [&](uint32_t psm)
+   56:         {
+   57:             return GSMem::ReadTexture(cache, f.vram.data(), psm, base, 2, 8, 0);
+   58:         };
+   59:         f.backend.WriteVram(GS_PSM_CT32, base, 2, 8, 0, 0xAB123456);
+   60:         expectEqual(read(GS_PSM_T8H), 0xAB, "8H lane on a crossing page");
+   61:         f.backend.WriteVram(GS_PSM_CT24, base, 2, 8, 0, 0x654321);
+   62:         expectEqual(read(GS_PSM_CT32), 0xAB123456, "changing PSM does not refresh the physical page");
+   63:         cache.Invalidate();
+   64:         expectEqual(read(GS_PSM_CT32), 0xAB654321, "CT24 upload preserves alpha");
+   65:         f.backend.WriteVram(GS_PSM_T4HL, base, 2, 8, 0, 5);
+   66:         expectEqual(read(GS_PSM_T4HL), 11, "low nibble remains cached before flush");
+   67:         cache.Invalidate();
+   68:         expectEqual(read(GS_PSM_T4HL), 5, "low nibble after flush");
+   69:         expectEqual(read(GS_PSM_T4HH), 10, "high nibble preserved");
+   70:         expectEqual(read(GS_PSM_CT24), 0x654321, "RGB plane preserved");
+   71:     }
+--- Lines 56-73 ---
+   56:         {
+   57:             return GSMem::ReadTexture(cache, f.vram.data(), psm, base, 2, 8, 0);
+   58:         };
+   59:         f.backend.WriteVram(GS_PSM_CT32, base, 2, 8, 0, 0xAB123456);
+   60:         expectEqual(read(GS_PSM_T8H), 0xAB, "8H lane on a crossing page");
+   61:         f.backend.WriteVram(GS_PSM_CT24, base, 2, 8, 0, 0x654321);
+   62:         expectEqual(read(GS_PSM_CT32), 0xAB123456, "changing PSM does not refresh the physical page");
+   63:         cache.Invalidate();
+   64:         expectEqual(read(GS_PSM_CT32), 0xAB654321, "CT24 upload preserves alpha");
+   65:         f.backend.WriteVram(GS_PSM_T4HL, base, 2, 8, 0, 5);
+   66:         expectEqual(read(GS_PSM_T4HL), 11, "low nibble remains cached before flush");
+   67:         cache.Invalidate();
+   68:         expectEqual(read(GS_PSM_T4HL), 5, "low nibble after flush");
+   69:         expectEqual(read(GS_PSM_T4HH), 10, "high nibble preserved");
+   70:         expectEqual(read(GS_PSM_CT24), 0x654321, "RGB plane preserved");
+   71:     }
+   72: 
+   73:     void physicalTagAliases()
+--- Lines 60-77 ---
+   60:         expectEqual(read(GS_PSM_T8H), 0xAB, "8H lane on a crossing page");
+   61:         f.backend.WriteVram(GS_PSM_CT24, base, 2, 8, 0, 0x654321);
+   62:         expectEqual(read(GS_PSM_CT32), 0xAB123456, "changing PSM does not refresh the physical page");
+   63:         cache.Invalidate();
+   64:         expectEqual(read(GS_PSM_CT32), 0xAB654321, "CT24 upload preserves alpha");
+   65:         f.backend.WriteVram(GS_PSM_T4HL, base, 2, 8, 0, 5);
+   66:         expectEqual(read(GS_PSM_T4HL), 11, "low nibble remains cached before flush");
+   67:         cache.Invalidate();
+   68:         expectEqual(read(GS_PSM_T4HL), 5, "low nibble after flush");
+   69:         expectEqual(read(GS_PSM_T4HH), 10, "high nibble preserved");
+   70:         expectEqual(read(GS_PSM_CT24), 0x654321, "RGB plane preserved");
+   71:     }
+   72: 
+   73:     void physicalTagAliases()
+   74:     {
+   75:         BackendFixture f;
+   76:         GSMem::TexturePageCache cache;
+   77:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kRed);
+--- Lines 68-85 ---
+   68:         expectEqual(read(GS_PSM_T4HL), 5, "low nibble after flush");
+   69:         expectEqual(read(GS_PSM_T4HH), 10, "high nibble preserved");
+   70:         expectEqual(read(GS_PSM_CT24), 0x654321, "RGB plane preserved");
+   71:     }
+   72: 
+   73:     void physicalTagAliases()
+   74:     {
+   75:         BackendFixture f;
+   76:         GSMem::TexturePageCache cache;
+   77:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kRed);
+   78:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 32, 2, 0, 0), kRed, "prime aligned view");
+   79:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kGreen);
+   80:         // Both descriptors resolve to the very same physical byte, so this is a hit.
+   81:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 31, 2, 8, 0), kRed, "alias descriptor keeps the same cached bytes");
+   82:         cache.Invalidate();
+   83:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 31, 2, 8, 0), kGreen, "alias after flush");
+   84:     }
+   85: }
+--- Lines 70-87 ---
+   70:         expectEqual(read(GS_PSM_CT24), 0x654321, "RGB plane preserved");
+   71:     }
+   72: 
+   73:     void physicalTagAliases()
+   74:     {
+   75:         BackendFixture f;
+   76:         GSMem::TexturePageCache cache;
+   77:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kRed);
+   78:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 32, 2, 0, 0), kRed, "prime aligned view");
+   79:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kGreen);
+   80:         // Both descriptors resolve to the very same physical byte, so this is a hit.
+   81:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 31, 2, 8, 0), kRed, "alias descriptor keeps the same cached bytes");
+   82:         cache.Invalidate();
+   83:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 31, 2, 8, 0), kGreen, "alias after flush");
+   84:     }
+   85: }
+   86: 
+   87: int main(int argc, char** argv)
+--- Lines 71-88 ---
+   71:     }
+   72: 
+   73:     void physicalTagAliases()
+   74:     {
+   75:         BackendFixture f;
+   76:         GSMem::TexturePageCache cache;
+   77:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kRed);
+   78:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 32, 2, 0, 0), kRed, "prime aligned view");
+   79:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kGreen);
+   80:         // Both descriptors resolve to the very same physical byte, so this is a hit.
+   81:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 31, 2, 8, 0), kRed, "alias descriptor keeps the same cached bytes");
+   82:         cache.Invalidate();
+   83:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 31, 2, 8, 0), kGreen, "alias after flush");
+   84:     }
+   85: }
+   86: 
+   87: int main(int argc, char** argv)
+   88: {
+--- Lines 72-89 ---
+   72: 
+   73:     void physicalTagAliases()
+   74:     {
+   75:         BackendFixture f;
+   76:         GSMem::TexturePageCache cache;
+   77:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kRed);
+   78:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 32, 2, 0, 0), kRed, "prime aligned view");
+   79:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kGreen);
+   80:         // Both descriptors resolve to the very same physical byte, so this is a hit.
+   81:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 31, 2, 8, 0), kRed, "alias descriptor keeps the same cached bytes");
+   82:         cache.Invalidate();
+   83:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 31, 2, 8, 0), kGreen, "alias after flush");
+   84:     }
+   85: }
+   86: 
+   87: int main(int argc, char** argv)
+   88: {
+   89:     return run(argc, argv, {
+--- Lines 74-91 ---
+   74:     {
+   75:         BackendFixture f;
+   76:         GSMem::TexturePageCache cache;
+   77:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kRed);
+   78:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 32, 2, 0, 0), kRed, "prime aligned view");
+   79:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kGreen);
+   80:         // Both descriptors resolve to the very same physical byte, so this is a hit.
+   81:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 31, 2, 8, 0), kRed, "alias descriptor keeps the same cached bytes");
+   82:         cache.Invalidate();
+   83:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 31, 2, 8, 0), kGreen, "alias after flush");
+   84:     }
+   85: }
+   86: 
+   87: int main(int argc, char** argv)
+   88: {
+   89:     return run(argc, argv, {
+   90:         {"ct32", addressCoverage<GS_PSM_CT32>}, {"ct24", addressCoverage<GS_PSM_CT24>},
+   91:         {"ct16", addressCoverage<GS_PSM_CT16>}, {"ct16s", addressCoverage<GS_PSM_CT16S>},
+--- Lines 91-99 ---
+   91:         {"ct16", addressCoverage<GS_PSM_CT16>}, {"ct16s", addressCoverage<GS_PSM_CT16S>},
+   92:         {"t8", addressCoverage<GS_PSM_T8>}, {"t4", addressCoverage<GS_PSM_T4>},
+   93:         {"t8h", addressCoverage<GS_PSM_T8H>}, {"t4hl", addressCoverage<GS_PSM_T4HL>},
+   94:         {"t4hh", addressCoverage<GS_PSM_T4HH>}, {"z32", addressCoverage<GS_PSM_Z32>},
+   95:         {"z24", addressCoverage<GS_PSM_Z24>}, {"z16", addressCoverage<GS_PSM_Z16>},
+   96:         {"z16s", addressCoverage<GS_PSM_Z16S>}, {"alias_lanes", aliasLanes},
+   97:         {"physical_tag_aliases", physicalTagAliases}
+   98:     });
+   99: }
+--- Lines 92-99 ---
+   92:         {"t8", addressCoverage<GS_PSM_T8>}, {"t4", addressCoverage<GS_PSM_T4>},
+   93:         {"t8h", addressCoverage<GS_PSM_T8H>}, {"t4hl", addressCoverage<GS_PSM_T4HL>},
+   94:         {"t4hh", addressCoverage<GS_PSM_T4HH>}, {"z32", addressCoverage<GS_PSM_Z32>},
+   95:         {"z24", addressCoverage<GS_PSM_Z24>}, {"z16", addressCoverage<GS_PSM_Z16>},
+   96:         {"z16s", addressCoverage<GS_PSM_Z16S>}, {"alias_lanes", aliasLanes},
+   97:         {"physical_tag_aliases", physicalTagAliases}
+   98:     });
+   99: }
+
+========== REQUIRED CORRECTION CHECKS ==========
+1. Determine whether the backend exposes a public texture-read method.
+2. Determine whether that method and WriteVram share the same internal cache.
+3. Determine whether the test fixture can access that same cache safely.
+4. Do not change expected values until cache ownership is established.
+5. No source modifications performed.
