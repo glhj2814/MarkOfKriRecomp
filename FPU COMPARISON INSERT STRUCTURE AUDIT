@@ -1,0 +1,832 @@
+MARK OF KRI — FPU COMPARISON INSERT STRUCTURE AUDIT
+Generated: 11/26/2026 00:21:13
+
+CURRENT FILE:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp
+
+BACKUP:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp.20261126_001930.bak
+
+CURRENT LINE COUNT: 491
+BACKUP LINE COUNT: 428
+
+========== SOURCE CONTEXT ==========
+
+========== MiniTest::Case ==========
+  56:     return ctx;
+  57: }
+  58: 
+  59: void register_generated_fpu_execution_tests()
+  60: {
+  61:     MiniTest::Case("GeneratedFPUExecution", [](TestCase& tc)
+  62: 
+  63:     // COP1.S comparison execution coverage.
+  64:     {
+  65:         R5900Context ctx{};
+  66:         PS2Runtime runtime{};
+  67: 
+  68:         auto run = [&](GeneratedFpuFunction fn, float fs, float ft, bool initialCondition) {
+  69:             std::memset(&ctx, 0, sizeof(ctx));
+  70:             ctx.f[1] = fs;
+  71:             ctx.f[2] = ft;
+  72:             ctx.fcr31 = initialCondition ? 0x800000u : 0u;
+  73:             fn(nullptr, &ctx, &runtime);
+
+========== COP1.S comparison execution coverage ==========
+  58: 
+  59: void register_generated_fpu_execution_tests()
+  60: {
+  61:     MiniTest::Case("GeneratedFPUExecution", [](TestCase& tc)
+  62: 
+  63:     // COP1.S comparison execution coverage.
+  64:     {
+  65:         R5900Context ctx{};
+  66:         PS2Runtime runtime{};
+  67: 
+  68:         auto run = [&](GeneratedFpuFunction fn, float fs, float ft, bool initialCondition) {
+  69:             std::memset(&ctx, 0, sizeof(ctx));
+  70:             ctx.f[1] = fs;
+  71:             ctx.f[2] = ft;
+  72:             ctx.fcr31 = initialCondition ? 0x800000u : 0u;
+  73:             fn(nullptr, &ctx, &runtime);
+  74:             return (ctx.fcr31 & 0x800000u) != 0;
+  75:         };
+
+========== auto run = ==========
+  63:     // COP1.S comparison execution coverage.
+  64:     {
+  65:         R5900Context ctx{};
+  66:         PS2Runtime runtime{};
+  67: 
+  68:         auto run = [&](GeneratedFpuFunction fn, float fs, float ft, bool initialCondition) {
+  69:             std::memset(&ctx, 0, sizeof(ctx));
+  70:             ctx.f[1] = fs;
+  71:             ctx.f[2] = ft;
+  72:             ctx.fcr31 = initialCondition ? 0x800000u : 0u;
+  73:             fn(nullptr, &ctx, &runtime);
+  74:             return (ctx.fcr31 & 0x800000u) != 0;
+  75:         };
+  76: 
+  77:         tc.expect(!run(generated_fpu_c_f, 1.0f, 2.0f, false));
+  78:         tc.expect(!run(generated_fpu_c_f, 1.0f, 2.0f, true));
+  79: 
+  80:         tc.expect(run(generated_fpu_c_un, 1.0f, 2.0f, false) == false);
+
+========== tc.expect ==========
+  72:             ctx.fcr31 = initialCondition ? 0x800000u : 0u;
+  73:             fn(nullptr, &ctx, &runtime);
+  74:             return (ctx.fcr31 & 0x800000u) != 0;
+  75:         };
+  76: 
+  77:         tc.expect(!run(generated_fpu_c_f, 1.0f, 2.0f, false));
+  78:         tc.expect(!run(generated_fpu_c_f, 1.0f, 2.0f, true));
+  79: 
+  80:         tc.expect(run(generated_fpu_c_un, 1.0f, 2.0f, false) == false);
+  81:         tc.expect(run(generated_fpu_c_un, NAN, 2.0f, false) == true);
+  82: 
+  83:         tc.expect(run(generated_fpu_c_eq, 2.0f, 2.0f, false) == true);
+  84:         tc.expect(run(generated_fpu_c_eq, 1.0f, 2.0f, true) == false);
+  85: 
+  86:         tc.expect(run(generated_fpu_c_ueq, NAN, 2.0f, false) == true);
+  87:         tc.expect(run(generated_fpu_c_ueq, 1.0f, 2.0f, true) == false);
+  88: 
+  89:         tc.expect(run(generated_fpu_c_olt, 1.0f, 2.0f, false) == true);
+  73:             fn(nullptr, &ctx, &runtime);
+  74:             return (ctx.fcr31 & 0x800000u) != 0;
+  75:         };
+  76: 
+  77:         tc.expect(!run(generated_fpu_c_f, 1.0f, 2.0f, false));
+  78:         tc.expect(!run(generated_fpu_c_f, 1.0f, 2.0f, true));
+  79: 
+  80:         tc.expect(run(generated_fpu_c_un, 1.0f, 2.0f, false) == false);
+  81:         tc.expect(run(generated_fpu_c_un, NAN, 2.0f, false) == true);
+  82: 
+  83:         tc.expect(run(generated_fpu_c_eq, 2.0f, 2.0f, false) == true);
+  84:         tc.expect(run(generated_fpu_c_eq, 1.0f, 2.0f, true) == false);
+  85: 
+  86:         tc.expect(run(generated_fpu_c_ueq, NAN, 2.0f, false) == true);
+  87:         tc.expect(run(generated_fpu_c_ueq, 1.0f, 2.0f, true) == false);
+  88: 
+  89:         tc.expect(run(generated_fpu_c_olt, 1.0f, 2.0f, false) == true);
+  90:         tc.expect(run(generated_fpu_c_olt, 2.0f, 1.0f, true) == false);
+  75:         };
+  76: 
+  77:         tc.expect(!run(generated_fpu_c_f, 1.0f, 2.0f, false));
+  78:         tc.expect(!run(generated_fpu_c_f, 1.0f, 2.0f, true));
+  79: 
+  80:         tc.expect(run(generated_fpu_c_un, 1.0f, 2.0f, false) == false);
+  81:         tc.expect(run(generated_fpu_c_un, NAN, 2.0f, false) == true);
+  82: 
+  83:         tc.expect(run(generated_fpu_c_eq, 2.0f, 2.0f, false) == true);
+  84:         tc.expect(run(generated_fpu_c_eq, 1.0f, 2.0f, true) == false);
+  85: 
+  86:         tc.expect(run(generated_fpu_c_ueq, NAN, 2.0f, false) == true);
+  87:         tc.expect(run(generated_fpu_c_ueq, 1.0f, 2.0f, true) == false);
+  88: 
+  89:         tc.expect(run(generated_fpu_c_olt, 1.0f, 2.0f, false) == true);
+  90:         tc.expect(run(generated_fpu_c_olt, 2.0f, 1.0f, true) == false);
+  91: 
+  92:         tc.expect(run(generated_fpu_c_ult, NAN, 2.0f, false) == true);
+  76: 
+  77:         tc.expect(!run(generated_fpu_c_f, 1.0f, 2.0f, false));
+  78:         tc.expect(!run(generated_fpu_c_f, 1.0f, 2.0f, true));
+  79: 
+  80:         tc.expect(run(generated_fpu_c_un, 1.0f, 2.0f, false) == false);
+  81:         tc.expect(run(generated_fpu_c_un, NAN, 2.0f, false) == true);
+  82: 
+  83:         tc.expect(run(generated_fpu_c_eq, 2.0f, 2.0f, false) == true);
+  84:         tc.expect(run(generated_fpu_c_eq, 1.0f, 2.0f, true) == false);
+  85: 
+  86:         tc.expect(run(generated_fpu_c_ueq, NAN, 2.0f, false) == true);
+  87:         tc.expect(run(generated_fpu_c_ueq, 1.0f, 2.0f, true) == false);
+  88: 
+  89:         tc.expect(run(generated_fpu_c_olt, 1.0f, 2.0f, false) == true);
+  90:         tc.expect(run(generated_fpu_c_olt, 2.0f, 1.0f, true) == false);
+  91: 
+  92:         tc.expect(run(generated_fpu_c_ult, NAN, 2.0f, false) == true);
+  93:         tc.expect(run(generated_fpu_c_ult, 2.0f, 1.0f, true) == false);
+  78:         tc.expect(!run(generated_fpu_c_f, 1.0f, 2.0f, true));
+  79: 
+  80:         tc.expect(run(generated_fpu_c_un, 1.0f, 2.0f, false) == false);
+  81:         tc.expect(run(generated_fpu_c_un, NAN, 2.0f, false) == true);
+  82: 
+  83:         tc.expect(run(generated_fpu_c_eq, 2.0f, 2.0f, false) == true);
+  84:         tc.expect(run(generated_fpu_c_eq, 1.0f, 2.0f, true) == false);
+  85: 
+  86:         tc.expect(run(generated_fpu_c_ueq, NAN, 2.0f, false) == true);
+  87:         tc.expect(run(generated_fpu_c_ueq, 1.0f, 2.0f, true) == false);
+  88: 
+  89:         tc.expect(run(generated_fpu_c_olt, 1.0f, 2.0f, false) == true);
+  90:         tc.expect(run(generated_fpu_c_olt, 2.0f, 1.0f, true) == false);
+  91: 
+  92:         tc.expect(run(generated_fpu_c_ult, NAN, 2.0f, false) == true);
+  93:         tc.expect(run(generated_fpu_c_ult, 2.0f, 1.0f, true) == false);
+  94: 
+  95:         tc.expect(run(generated_fpu_c_ole, 1.0f, 2.0f, false) == true);
+  79: 
+  80:         tc.expect(run(generated_fpu_c_un, 1.0f, 2.0f, false) == false);
+  81:         tc.expect(run(generated_fpu_c_un, NAN, 2.0f, false) == true);
+  82: 
+  83:         tc.expect(run(generated_fpu_c_eq, 2.0f, 2.0f, false) == true);
+  84:         tc.expect(run(generated_fpu_c_eq, 1.0f, 2.0f, true) == false);
+  85: 
+  86:         tc.expect(run(generated_fpu_c_ueq, NAN, 2.0f, false) == true);
+  87:         tc.expect(run(generated_fpu_c_ueq, 1.0f, 2.0f, true) == false);
+  88: 
+  89:         tc.expect(run(generated_fpu_c_olt, 1.0f, 2.0f, false) == true);
+  90:         tc.expect(run(generated_fpu_c_olt, 2.0f, 1.0f, true) == false);
+  91: 
+  92:         tc.expect(run(generated_fpu_c_ult, NAN, 2.0f, false) == true);
+  93:         tc.expect(run(generated_fpu_c_ult, 2.0f, 1.0f, true) == false);
+  94: 
+  95:         tc.expect(run(generated_fpu_c_ole, 1.0f, 2.0f, false) == true);
+  96:         tc.expect(run(generated_fpu_c_ole, 2.0f, 1.0f, true) == false);
+  81:         tc.expect(run(generated_fpu_c_un, NAN, 2.0f, false) == true);
+  82: 
+  83:         tc.expect(run(generated_fpu_c_eq, 2.0f, 2.0f, false) == true);
+  84:         tc.expect(run(generated_fpu_c_eq, 1.0f, 2.0f, true) == false);
+  85: 
+  86:         tc.expect(run(generated_fpu_c_ueq, NAN, 2.0f, false) == true);
+  87:         tc.expect(run(generated_fpu_c_ueq, 1.0f, 2.0f, true) == false);
+  88: 
+  89:         tc.expect(run(generated_fpu_c_olt, 1.0f, 2.0f, false) == true);
+  90:         tc.expect(run(generated_fpu_c_olt, 2.0f, 1.0f, true) == false);
+  91: 
+  92:         tc.expect(run(generated_fpu_c_ult, NAN, 2.0f, false) == true);
+  93:         tc.expect(run(generated_fpu_c_ult, 2.0f, 1.0f, true) == false);
+  94: 
+  95:         tc.expect(run(generated_fpu_c_ole, 1.0f, 2.0f, false) == true);
+  96:         tc.expect(run(generated_fpu_c_ole, 2.0f, 1.0f, true) == false);
+  97: 
+  98:         tc.expect(run(generated_fpu_c_ule, NAN, 2.0f, false) == true);
+  82: 
+  83:         tc.expect(run(generated_fpu_c_eq, 2.0f, 2.0f, false) == true);
+  84:         tc.expect(run(generated_fpu_c_eq, 1.0f, 2.0f, true) == false);
+  85: 
+  86:         tc.expect(run(generated_fpu_c_ueq, NAN, 2.0f, false) == true);
+  87:         tc.expect(run(generated_fpu_c_ueq, 1.0f, 2.0f, true) == false);
+  88: 
+  89:         tc.expect(run(generated_fpu_c_olt, 1.0f, 2.0f, false) == true);
+  90:         tc.expect(run(generated_fpu_c_olt, 2.0f, 1.0f, true) == false);
+  91: 
+  92:         tc.expect(run(generated_fpu_c_ult, NAN, 2.0f, false) == true);
+  93:         tc.expect(run(generated_fpu_c_ult, 2.0f, 1.0f, true) == false);
+  94: 
+  95:         tc.expect(run(generated_fpu_c_ole, 1.0f, 2.0f, false) == true);
+  96:         tc.expect(run(generated_fpu_c_ole, 2.0f, 1.0f, true) == false);
+  97: 
+  98:         tc.expect(run(generated_fpu_c_ule, NAN, 2.0f, false) == true);
+  99:         tc.expect(run(generated_fpu_c_ule, 2.0f, 1.0f, true) == false);
+  84:         tc.expect(run(generated_fpu_c_eq, 1.0f, 2.0f, true) == false);
+  85: 
+  86:         tc.expect(run(generated_fpu_c_ueq, NAN, 2.0f, false) == true);
+  87:         tc.expect(run(generated_fpu_c_ueq, 1.0f, 2.0f, true) == false);
+  88: 
+  89:         tc.expect(run(generated_fpu_c_olt, 1.0f, 2.0f, false) == true);
+  90:         tc.expect(run(generated_fpu_c_olt, 2.0f, 1.0f, true) == false);
+  91: 
+  92:         tc.expect(run(generated_fpu_c_ult, NAN, 2.0f, false) == true);
+  93:         tc.expect(run(generated_fpu_c_ult, 2.0f, 1.0f, true) == false);
+  94: 
+  95:         tc.expect(run(generated_fpu_c_ole, 1.0f, 2.0f, false) == true);
+  96:         tc.expect(run(generated_fpu_c_ole, 2.0f, 1.0f, true) == false);
+  97: 
+  98:         tc.expect(run(generated_fpu_c_ule, NAN, 2.0f, false) == true);
+  99:         tc.expect(run(generated_fpu_c_ule, 2.0f, 1.0f, true) == false);
+ 100: 
+ 101:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, false));
+  85: 
+  86:         tc.expect(run(generated_fpu_c_ueq, NAN, 2.0f, false) == true);
+  87:         tc.expect(run(generated_fpu_c_ueq, 1.0f, 2.0f, true) == false);
+  88: 
+  89:         tc.expect(run(generated_fpu_c_olt, 1.0f, 2.0f, false) == true);
+  90:         tc.expect(run(generated_fpu_c_olt, 2.0f, 1.0f, true) == false);
+  91: 
+  92:         tc.expect(run(generated_fpu_c_ult, NAN, 2.0f, false) == true);
+  93:         tc.expect(run(generated_fpu_c_ult, 2.0f, 1.0f, true) == false);
+  94: 
+  95:         tc.expect(run(generated_fpu_c_ole, 1.0f, 2.0f, false) == true);
+  96:         tc.expect(run(generated_fpu_c_ole, 2.0f, 1.0f, true) == false);
+  97: 
+  98:         tc.expect(run(generated_fpu_c_ule, NAN, 2.0f, false) == true);
+  99:         tc.expect(run(generated_fpu_c_ule, 2.0f, 1.0f, true) == false);
+ 100: 
+ 101:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, false));
+ 102:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, true));
+  87:         tc.expect(run(generated_fpu_c_ueq, 1.0f, 2.0f, true) == false);
+  88: 
+  89:         tc.expect(run(generated_fpu_c_olt, 1.0f, 2.0f, false) == true);
+  90:         tc.expect(run(generated_fpu_c_olt, 2.0f, 1.0f, true) == false);
+  91: 
+  92:         tc.expect(run(generated_fpu_c_ult, NAN, 2.0f, false) == true);
+  93:         tc.expect(run(generated_fpu_c_ult, 2.0f, 1.0f, true) == false);
+  94: 
+  95:         tc.expect(run(generated_fpu_c_ole, 1.0f, 2.0f, false) == true);
+  96:         tc.expect(run(generated_fpu_c_ole, 2.0f, 1.0f, true) == false);
+  97: 
+  98:         tc.expect(run(generated_fpu_c_ule, NAN, 2.0f, false) == true);
+  99:         tc.expect(run(generated_fpu_c_ule, 2.0f, 1.0f, true) == false);
+ 100: 
+ 101:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, false));
+ 102:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, true));
+ 103: 
+ 104:         tc.expect(run(generated_fpu_c_ngle, NAN, 2.0f, false) == true);
+  88: 
+  89:         tc.expect(run(generated_fpu_c_olt, 1.0f, 2.0f, false) == true);
+  90:         tc.expect(run(generated_fpu_c_olt, 2.0f, 1.0f, true) == false);
+  91: 
+  92:         tc.expect(run(generated_fpu_c_ult, NAN, 2.0f, false) == true);
+  93:         tc.expect(run(generated_fpu_c_ult, 2.0f, 1.0f, true) == false);
+  94: 
+  95:         tc.expect(run(generated_fpu_c_ole, 1.0f, 2.0f, false) == true);
+  96:         tc.expect(run(generated_fpu_c_ole, 2.0f, 1.0f, true) == false);
+  97: 
+  98:         tc.expect(run(generated_fpu_c_ule, NAN, 2.0f, false) == true);
+  99:         tc.expect(run(generated_fpu_c_ule, 2.0f, 1.0f, true) == false);
+ 100: 
+ 101:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, false));
+ 102:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, true));
+ 103: 
+ 104:         tc.expect(run(generated_fpu_c_ngle, NAN, 2.0f, false) == true);
+ 105:         tc.expect(run(generated_fpu_c_ngle, 1.0f, 2.0f, true) == false);
+  90:         tc.expect(run(generated_fpu_c_olt, 2.0f, 1.0f, true) == false);
+  91: 
+  92:         tc.expect(run(generated_fpu_c_ult, NAN, 2.0f, false) == true);
+  93:         tc.expect(run(generated_fpu_c_ult, 2.0f, 1.0f, true) == false);
+  94: 
+  95:         tc.expect(run(generated_fpu_c_ole, 1.0f, 2.0f, false) == true);
+  96:         tc.expect(run(generated_fpu_c_ole, 2.0f, 1.0f, true) == false);
+  97: 
+  98:         tc.expect(run(generated_fpu_c_ule, NAN, 2.0f, false) == true);
+  99:         tc.expect(run(generated_fpu_c_ule, 2.0f, 1.0f, true) == false);
+ 100: 
+ 101:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, false));
+ 102:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, true));
+ 103: 
+ 104:         tc.expect(run(generated_fpu_c_ngle, NAN, 2.0f, false) == true);
+ 105:         tc.expect(run(generated_fpu_c_ngle, 1.0f, 2.0f, true) == false);
+ 106: 
+ 107:         tc.expect(run(generated_fpu_c_seq, 2.0f, 2.0f, false) == true);
+  91: 
+  92:         tc.expect(run(generated_fpu_c_ult, NAN, 2.0f, false) == true);
+  93:         tc.expect(run(generated_fpu_c_ult, 2.0f, 1.0f, true) == false);
+  94: 
+  95:         tc.expect(run(generated_fpu_c_ole, 1.0f, 2.0f, false) == true);
+  96:         tc.expect(run(generated_fpu_c_ole, 2.0f, 1.0f, true) == false);
+  97: 
+  98:         tc.expect(run(generated_fpu_c_ule, NAN, 2.0f, false) == true);
+  99:         tc.expect(run(generated_fpu_c_ule, 2.0f, 1.0f, true) == false);
+ 100: 
+ 101:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, false));
+ 102:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, true));
+ 103: 
+ 104:         tc.expect(run(generated_fpu_c_ngle, NAN, 2.0f, false) == true);
+ 105:         tc.expect(run(generated_fpu_c_ngle, 1.0f, 2.0f, true) == false);
+ 106: 
+ 107:         tc.expect(run(generated_fpu_c_seq, 2.0f, 2.0f, false) == true);
+ 108:         tc.expect(run(generated_fpu_c_seq, 1.0f, 2.0f, true) == false);
+  93:         tc.expect(run(generated_fpu_c_ult, 2.0f, 1.0f, true) == false);
+  94: 
+  95:         tc.expect(run(generated_fpu_c_ole, 1.0f, 2.0f, false) == true);
+  96:         tc.expect(run(generated_fpu_c_ole, 2.0f, 1.0f, true) == false);
+  97: 
+  98:         tc.expect(run(generated_fpu_c_ule, NAN, 2.0f, false) == true);
+  99:         tc.expect(run(generated_fpu_c_ule, 2.0f, 1.0f, true) == false);
+ 100: 
+ 101:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, false));
+ 102:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, true));
+ 103: 
+ 104:         tc.expect(run(generated_fpu_c_ngle, NAN, 2.0f, false) == true);
+ 105:         tc.expect(run(generated_fpu_c_ngle, 1.0f, 2.0f, true) == false);
+ 106: 
+ 107:         tc.expect(run(generated_fpu_c_seq, 2.0f, 2.0f, false) == true);
+ 108:         tc.expect(run(generated_fpu_c_seq, 1.0f, 2.0f, true) == false);
+ 109: 
+ 110:         tc.expect(run(generated_fpu_c_ngl, NAN, 2.0f, false) == true);
+  94: 
+  95:         tc.expect(run(generated_fpu_c_ole, 1.0f, 2.0f, false) == true);
+  96:         tc.expect(run(generated_fpu_c_ole, 2.0f, 1.0f, true) == false);
+  97: 
+  98:         tc.expect(run(generated_fpu_c_ule, NAN, 2.0f, false) == true);
+  99:         tc.expect(run(generated_fpu_c_ule, 2.0f, 1.0f, true) == false);
+ 100: 
+ 101:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, false));
+ 102:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, true));
+ 103: 
+ 104:         tc.expect(run(generated_fpu_c_ngle, NAN, 2.0f, false) == true);
+ 105:         tc.expect(run(generated_fpu_c_ngle, 1.0f, 2.0f, true) == false);
+ 106: 
+ 107:         tc.expect(run(generated_fpu_c_seq, 2.0f, 2.0f, false) == true);
+ 108:         tc.expect(run(generated_fpu_c_seq, 1.0f, 2.0f, true) == false);
+ 109: 
+ 110:         tc.expect(run(generated_fpu_c_ngl, NAN, 2.0f, false) == true);
+ 111:         tc.expect(run(generated_fpu_c_ngl, 1.0f, 2.0f, true) == false);
+  96:         tc.expect(run(generated_fpu_c_ole, 2.0f, 1.0f, true) == false);
+  97: 
+  98:         tc.expect(run(generated_fpu_c_ule, NAN, 2.0f, false) == true);
+  99:         tc.expect(run(generated_fpu_c_ule, 2.0f, 1.0f, true) == false);
+ 100: 
+ 101:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, false));
+ 102:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, true));
+ 103: 
+ 104:         tc.expect(run(generated_fpu_c_ngle, NAN, 2.0f, false) == true);
+ 105:         tc.expect(run(generated_fpu_c_ngle, 1.0f, 2.0f, true) == false);
+ 106: 
+ 107:         tc.expect(run(generated_fpu_c_seq, 2.0f, 2.0f, false) == true);
+ 108:         tc.expect(run(generated_fpu_c_seq, 1.0f, 2.0f, true) == false);
+ 109: 
+ 110:         tc.expect(run(generated_fpu_c_ngl, NAN, 2.0f, false) == true);
+ 111:         tc.expect(run(generated_fpu_c_ngl, 1.0f, 2.0f, true) == false);
+ 112: 
+ 113:         tc.expect(run(generated_fpu_c_lt, 1.0f, 2.0f, false) == true);
+  97: 
+  98:         tc.expect(run(generated_fpu_c_ule, NAN, 2.0f, false) == true);
+  99:         tc.expect(run(generated_fpu_c_ule, 2.0f, 1.0f, true) == false);
+ 100: 
+ 101:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, false));
+ 102:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, true));
+ 103: 
+ 104:         tc.expect(run(generated_fpu_c_ngle, NAN, 2.0f, false) == true);
+ 105:         tc.expect(run(generated_fpu_c_ngle, 1.0f, 2.0f, true) == false);
+ 106: 
+ 107:         tc.expect(run(generated_fpu_c_seq, 2.0f, 2.0f, false) == true);
+ 108:         tc.expect(run(generated_fpu_c_seq, 1.0f, 2.0f, true) == false);
+ 109: 
+ 110:         tc.expect(run(generated_fpu_c_ngl, NAN, 2.0f, false) == true);
+ 111:         tc.expect(run(generated_fpu_c_ngl, 1.0f, 2.0f, true) == false);
+ 112: 
+ 113:         tc.expect(run(generated_fpu_c_lt, 1.0f, 2.0f, false) == true);
+ 114:         tc.expect(run(generated_fpu_c_lt, 2.0f, 1.0f, true) == false);
+  99:         tc.expect(run(generated_fpu_c_ule, 2.0f, 1.0f, true) == false);
+ 100: 
+ 101:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, false));
+ 102:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, true));
+ 103: 
+ 104:         tc.expect(run(generated_fpu_c_ngle, NAN, 2.0f, false) == true);
+ 105:         tc.expect(run(generated_fpu_c_ngle, 1.0f, 2.0f, true) == false);
+ 106: 
+ 107:         tc.expect(run(generated_fpu_c_seq, 2.0f, 2.0f, false) == true);
+ 108:         tc.expect(run(generated_fpu_c_seq, 1.0f, 2.0f, true) == false);
+ 109: 
+ 110:         tc.expect(run(generated_fpu_c_ngl, NAN, 2.0f, false) == true);
+ 111:         tc.expect(run(generated_fpu_c_ngl, 1.0f, 2.0f, true) == false);
+ 112: 
+ 113:         tc.expect(run(generated_fpu_c_lt, 1.0f, 2.0f, false) == true);
+ 114:         tc.expect(run(generated_fpu_c_lt, 2.0f, 1.0f, true) == false);
+ 115: 
+ 116:         tc.expect(run(generated_fpu_c_nge, NAN, 2.0f, false) == true);
+ 100: 
+ 101:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, false));
+ 102:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, true));
+ 103: 
+ 104:         tc.expect(run(generated_fpu_c_ngle, NAN, 2.0f, false) == true);
+ 105:         tc.expect(run(generated_fpu_c_ngle, 1.0f, 2.0f, true) == false);
+ 106: 
+ 107:         tc.expect(run(generated_fpu_c_seq, 2.0f, 2.0f, false) == true);
+ 108:         tc.expect(run(generated_fpu_c_seq, 1.0f, 2.0f, true) == false);
+ 109: 
+ 110:         tc.expect(run(generated_fpu_c_ngl, NAN, 2.0f, false) == true);
+ 111:         tc.expect(run(generated_fpu_c_ngl, 1.0f, 2.0f, true) == false);
+ 112: 
+ 113:         tc.expect(run(generated_fpu_c_lt, 1.0f, 2.0f, false) == true);
+ 114:         tc.expect(run(generated_fpu_c_lt, 2.0f, 1.0f, true) == false);
+ 115: 
+ 116:         tc.expect(run(generated_fpu_c_nge, NAN, 2.0f, false) == true);
+ 117:         tc.expect(run(generated_fpu_c_nge, 2.0f, 1.0f, true) == false);
+ 102:         tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, true));
+ 103: 
+ 104:         tc.expect(run(generated_fpu_c_ngle, NAN, 2.0f, false) == true);
+ 105:         tc.expect(run(generated_fpu_c_ngle, 1.0f, 2.0f, true) == false);
+ 106: 
+ 107:         tc.expect(run(generated_fpu_c_seq, 2.0f, 2.0f, false) == true);
+ 108:         tc.expect(run(generated_fpu_c_seq, 1.0f, 2.0f, true) == false);
+ 109: 
+ 110:         tc.expect(run(generated_fpu_c_ngl, NAN, 2.0f, false) == true);
+ 111:         tc.expect(run(generated_fpu_c_ngl, 1.0f, 2.0f, true) == false);
+ 112: 
+ 113:         tc.expect(run(generated_fpu_c_lt, 1.0f, 2.0f, false) == true);
+ 114:         tc.expect(run(generated_fpu_c_lt, 2.0f, 1.0f, true) == false);
+ 115: 
+ 116:         tc.expect(run(generated_fpu_c_nge, NAN, 2.0f, false) == true);
+ 117:         tc.expect(run(generated_fpu_c_nge, 2.0f, 1.0f, true) == false);
+ 118: 
+ 119:         tc.expect(run(generated_fpu_c_le, 1.0f, 2.0f, false) == true);
+ 103: 
+ 104:         tc.expect(run(generated_fpu_c_ngle, NAN, 2.0f, false) == true);
+ 105:         tc.expect(run(generated_fpu_c_ngle, 1.0f, 2.0f, true) == false);
+ 106: 
+ 107:         tc.expect(run(generated_fpu_c_seq, 2.0f, 2.0f, false) == true);
+ 108:         tc.expect(run(generated_fpu_c_seq, 1.0f, 2.0f, true) == false);
+ 109: 
+ 110:         tc.expect(run(generated_fpu_c_ngl, NAN, 2.0f, false) == true);
+ 111:         tc.expect(run(generated_fpu_c_ngl, 1.0f, 2.0f, true) == false);
+ 112: 
+ 113:         tc.expect(run(generated_fpu_c_lt, 1.0f, 2.0f, false) == true);
+ 114:         tc.expect(run(generated_fpu_c_lt, 2.0f, 1.0f, true) == false);
+ 115: 
+ 116:         tc.expect(run(generated_fpu_c_nge, NAN, 2.0f, false) == true);
+ 117:         tc.expect(run(generated_fpu_c_nge, 2.0f, 1.0f, true) == false);
+ 118: 
+ 119:         tc.expect(run(generated_fpu_c_le, 1.0f, 2.0f, false) == true);
+ 120:         tc.expect(run(generated_fpu_c_le, 2.0f, 1.0f, true) == false);
+ 105:         tc.expect(run(generated_fpu_c_ngle, 1.0f, 2.0f, true) == false);
+ 106: 
+ 107:         tc.expect(run(generated_fpu_c_seq, 2.0f, 2.0f, false) == true);
+ 108:         tc.expect(run(generated_fpu_c_seq, 1.0f, 2.0f, true) == false);
+ 109: 
+ 110:         tc.expect(run(generated_fpu_c_ngl, NAN, 2.0f, false) == true);
+ 111:         tc.expect(run(generated_fpu_c_ngl, 1.0f, 2.0f, true) == false);
+ 112: 
+ 113:         tc.expect(run(generated_fpu_c_lt, 1.0f, 2.0f, false) == true);
+ 114:         tc.expect(run(generated_fpu_c_lt, 2.0f, 1.0f, true) == false);
+ 115: 
+ 116:         tc.expect(run(generated_fpu_c_nge, NAN, 2.0f, false) == true);
+ 117:         tc.expect(run(generated_fpu_c_nge, 2.0f, 1.0f, true) == false);
+ 118: 
+ 119:         tc.expect(run(generated_fpu_c_le, 1.0f, 2.0f, false) == true);
+ 120:         tc.expect(run(generated_fpu_c_le, 2.0f, 1.0f, true) == false);
+ 121: 
+ 122:         tc.expect(run(generated_fpu_c_ngt, NAN, 2.0f, false) == true);
+ 106: 
+ 107:         tc.expect(run(generated_fpu_c_seq, 2.0f, 2.0f, false) == true);
+ 108:         tc.expect(run(generated_fpu_c_seq, 1.0f, 2.0f, true) == false);
+ 109: 
+ 110:         tc.expect(run(generated_fpu_c_ngl, NAN, 2.0f, false) == true);
+ 111:         tc.expect(run(generated_fpu_c_ngl, 1.0f, 2.0f, true) == false);
+ 112: 
+ 113:         tc.expect(run(generated_fpu_c_lt, 1.0f, 2.0f, false) == true);
+ 114:         tc.expect(run(generated_fpu_c_lt, 2.0f, 1.0f, true) == false);
+ 115: 
+ 116:         tc.expect(run(generated_fpu_c_nge, NAN, 2.0f, false) == true);
+ 117:         tc.expect(run(generated_fpu_c_nge, 2.0f, 1.0f, true) == false);
+ 118: 
+ 119:         tc.expect(run(generated_fpu_c_le, 1.0f, 2.0f, false) == true);
+ 120:         tc.expect(run(generated_fpu_c_le, 2.0f, 1.0f, true) == false);
+ 121: 
+ 122:         tc.expect(run(generated_fpu_c_ngt, NAN, 2.0f, false) == true);
+ 123:         tc.expect(run(generated_fpu_c_ngt, 2.0f, 1.0f, true) == false);
+ 108:         tc.expect(run(generated_fpu_c_seq, 1.0f, 2.0f, true) == false);
+ 109: 
+ 110:         tc.expect(run(generated_fpu_c_ngl, NAN, 2.0f, false) == true);
+ 111:         tc.expect(run(generated_fpu_c_ngl, 1.0f, 2.0f, true) == false);
+ 112: 
+ 113:         tc.expect(run(generated_fpu_c_lt, 1.0f, 2.0f, false) == true);
+ 114:         tc.expect(run(generated_fpu_c_lt, 2.0f, 1.0f, true) == false);
+ 115: 
+ 116:         tc.expect(run(generated_fpu_c_nge, NAN, 2.0f, false) == true);
+ 117:         tc.expect(run(generated_fpu_c_nge, 2.0f, 1.0f, true) == false);
+ 118: 
+ 119:         tc.expect(run(generated_fpu_c_le, 1.0f, 2.0f, false) == true);
+ 120:         tc.expect(run(generated_fpu_c_le, 2.0f, 1.0f, true) == false);
+ 121: 
+ 122:         tc.expect(run(generated_fpu_c_ngt, NAN, 2.0f, false) == true);
+ 123:         tc.expect(run(generated_fpu_c_ngt, 2.0f, 1.0f, true) == false);
+ 124:     }    {
+ 125:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+ 109: 
+ 110:         tc.expect(run(generated_fpu_c_ngl, NAN, 2.0f, false) == true);
+ 111:         tc.expect(run(generated_fpu_c_ngl, 1.0f, 2.0f, true) == false);
+ 112: 
+ 113:         tc.expect(run(generated_fpu_c_lt, 1.0f, 2.0f, false) == true);
+ 114:         tc.expect(run(generated_fpu_c_lt, 2.0f, 1.0f, true) == false);
+ 115: 
+ 116:         tc.expect(run(generated_fpu_c_nge, NAN, 2.0f, false) == true);
+ 117:         tc.expect(run(generated_fpu_c_nge, 2.0f, 1.0f, true) == false);
+ 118: 
+ 119:         tc.expect(run(generated_fpu_c_le, 1.0f, 2.0f, false) == true);
+ 120:         tc.expect(run(generated_fpu_c_le, 2.0f, 1.0f, true) == false);
+ 121: 
+ 122:         tc.expect(run(generated_fpu_c_ngt, NAN, 2.0f, false) == true);
+ 123:         tc.expect(run(generated_fpu_c_ngt, 2.0f, 1.0f, true) == false);
+ 124:     }    {
+ 125:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+ 126:             auto ctx = makeGeneratedFpuContext();
+ 111:         tc.expect(run(generated_fpu_c_ngl, 1.0f, 2.0f, true) == false);
+ 112: 
+ 113:         tc.expect(run(generated_fpu_c_lt, 1.0f, 2.0f, false) == true);
+ 114:         tc.expect(run(generated_fpu_c_lt, 2.0f, 1.0f, true) == false);
+ 115: 
+ 116:         tc.expect(run(generated_fpu_c_nge, NAN, 2.0f, false) == true);
+ 117:         tc.expect(run(generated_fpu_c_nge, 2.0f, 1.0f, true) == false);
+ 118: 
+ 119:         tc.expect(run(generated_fpu_c_le, 1.0f, 2.0f, false) == true);
+ 120:         tc.expect(run(generated_fpu_c_le, 2.0f, 1.0f, true) == false);
+ 121: 
+ 122:         tc.expect(run(generated_fpu_c_ngt, NAN, 2.0f, false) == true);
+ 123:         tc.expect(run(generated_fpu_c_ngt, 2.0f, 1.0f, true) == false);
+ 124:     }    {
+ 125:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+ 126:             auto ctx = makeGeneratedFpuContext();
+ 127:             ctx.f_acc = 9.0f;
+ 128:             generated_fpu_adda(nullptr, &ctx, nullptr);
+ 112: 
+ 113:         tc.expect(run(generated_fpu_c_lt, 1.0f, 2.0f, false) == true);
+ 114:         tc.expect(run(generated_fpu_c_lt, 2.0f, 1.0f, true) == false);
+ 115: 
+ 116:         tc.expect(run(generated_fpu_c_nge, NAN, 2.0f, false) == true);
+ 117:         tc.expect(run(generated_fpu_c_nge, 2.0f, 1.0f, true) == false);
+ 118: 
+ 119:         tc.expect(run(generated_fpu_c_le, 1.0f, 2.0f, false) == true);
+ 120:         tc.expect(run(generated_fpu_c_le, 2.0f, 1.0f, true) == false);
+ 121: 
+ 122:         tc.expect(run(generated_fpu_c_ngt, NAN, 2.0f, false) == true);
+ 123:         tc.expect(run(generated_fpu_c_ngt, 2.0f, 1.0f, true) == false);
+ 124:     }    {
+ 125:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+ 126:             auto ctx = makeGeneratedFpuContext();
+ 127:             ctx.f_acc = 9.0f;
+ 128:             generated_fpu_adda(nullptr, &ctx, nullptr);
+ 129:             t.Equals(ctx.f_acc, 5.0f, "ADDA.S overwrites prior accumulator");
+ 114:         tc.expect(run(generated_fpu_c_lt, 2.0f, 1.0f, true) == false);
+ 115: 
+ 116:         tc.expect(run(generated_fpu_c_nge, NAN, 2.0f, false) == true);
+ 117:         tc.expect(run(generated_fpu_c_nge, 2.0f, 1.0f, true) == false);
+ 118: 
+ 119:         tc.expect(run(generated_fpu_c_le, 1.0f, 2.0f, false) == true);
+ 120:         tc.expect(run(generated_fpu_c_le, 2.0f, 1.0f, true) == false);
+ 121: 
+ 122:         tc.expect(run(generated_fpu_c_ngt, NAN, 2.0f, false) == true);
+ 123:         tc.expect(run(generated_fpu_c_ngt, 2.0f, 1.0f, true) == false);
+ 124:     }    {
+ 125:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+ 126:             auto ctx = makeGeneratedFpuContext();
+ 127:             ctx.f_acc = 9.0f;
+ 128:             generated_fpu_adda(nullptr, &ctx, nullptr);
+ 129:             t.Equals(ctx.f_acc, 5.0f, "ADDA.S overwrites prior accumulator");
+ 130:             t.Equals(ctx.pc, 0x100004u, "ADDA.S final PC");
+ 131:         });
+ 115: 
+ 116:         tc.expect(run(generated_fpu_c_nge, NAN, 2.0f, false) == true);
+ 117:         tc.expect(run(generated_fpu_c_nge, 2.0f, 1.0f, true) == false);
+ 118: 
+ 119:         tc.expect(run(generated_fpu_c_le, 1.0f, 2.0f, false) == true);
+ 120:         tc.expect(run(generated_fpu_c_le, 2.0f, 1.0f, true) == false);
+ 121: 
+ 122:         tc.expect(run(generated_fpu_c_ngt, NAN, 2.0f, false) == true);
+ 123:         tc.expect(run(generated_fpu_c_ngt, 2.0f, 1.0f, true) == false);
+ 124:     }    {
+ 125:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+ 126:             auto ctx = makeGeneratedFpuContext();
+ 127:             ctx.f_acc = 9.0f;
+ 128:             generated_fpu_adda(nullptr, &ctx, nullptr);
+ 129:             t.Equals(ctx.f_acc, 5.0f, "ADDA.S overwrites prior accumulator");
+ 130:             t.Equals(ctx.pc, 0x100004u, "ADDA.S final PC");
+ 131:         });
+ 132: 
+ 117:         tc.expect(run(generated_fpu_c_nge, 2.0f, 1.0f, true) == false);
+ 118: 
+ 119:         tc.expect(run(generated_fpu_c_le, 1.0f, 2.0f, false) == true);
+ 120:         tc.expect(run(generated_fpu_c_le, 2.0f, 1.0f, true) == false);
+ 121: 
+ 122:         tc.expect(run(generated_fpu_c_ngt, NAN, 2.0f, false) == true);
+ 123:         tc.expect(run(generated_fpu_c_ngt, 2.0f, 1.0f, true) == false);
+ 124:     }    {
+ 125:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+ 126:             auto ctx = makeGeneratedFpuContext();
+ 127:             ctx.f_acc = 9.0f;
+ 128:             generated_fpu_adda(nullptr, &ctx, nullptr);
+ 129:             t.Equals(ctx.f_acc, 5.0f, "ADDA.S overwrites prior accumulator");
+ 130:             t.Equals(ctx.pc, 0x100004u, "ADDA.S final PC");
+ 131:         });
+ 132: 
+ 133:         tc.Run("generated SUBA.S updates live accumulator", [](TestCase& t) {
+ 134:             auto ctx = makeGeneratedFpuContext();
+ 118: 
+ 119:         tc.expect(run(generated_fpu_c_le, 1.0f, 2.0f, false) == true);
+ 120:         tc.expect(run(generated_fpu_c_le, 2.0f, 1.0f, true) == false);
+ 121: 
+ 122:         tc.expect(run(generated_fpu_c_ngt, NAN, 2.0f, false) == true);
+ 123:         tc.expect(run(generated_fpu_c_ngt, 2.0f, 1.0f, true) == false);
+ 124:     }    {
+ 125:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+ 126:             auto ctx = makeGeneratedFpuContext();
+ 127:             ctx.f_acc = 9.0f;
+ 128:             generated_fpu_adda(nullptr, &ctx, nullptr);
+ 129:             t.Equals(ctx.f_acc, 5.0f, "ADDA.S overwrites prior accumulator");
+ 130:             t.Equals(ctx.pc, 0x100004u, "ADDA.S final PC");
+ 131:         });
+ 132: 
+ 133:         tc.Run("generated SUBA.S updates live accumulator", [](TestCase& t) {
+ 134:             auto ctx = makeGeneratedFpuContext();
+ 135:             generated_fpu_suba(nullptr, &ctx, nullptr);
+
+========== generated_fpu_add ==========
+   7: #include <string>
+   8: 
+   9: using GeneratedFpuFunction =
+  10:     void (*)(uint8_t*, R5900Context*, PS2Runtime*);
+  11: 
+  12: void generated_fpu_adda(uint8_t*, R5900Context*, PS2Runtime*);
+  13: void generated_fpu_suba(uint8_t*, R5900Context*, PS2Runtime*);
+  14: void generated_fpu_mula(uint8_t*, R5900Context*, PS2Runtime*);
+  15: void generated_fpu_madd(uint8_t*, R5900Context*, PS2Runtime*);
+  16: void generated_fpu_msub(uint8_t*, R5900Context*, PS2Runtime*);
+  17: void generated_fpu_madda(uint8_t*, R5900Context*, PS2Runtime*);
+  18: void generated_fpu_msuba(uint8_t*, R5900Context*, PS2Runtime*);
+  19: void generated_fpu_add(uint8_t*, R5900Context*, PS2Runtime*);
+  20: void generated_fpu_sub(uint8_t*, R5900Context*, PS2Runtime*);
+  21: void generated_fpu_mul(uint8_t*, R5900Context*, PS2Runtime*);
+  22: void generated_fpu_div(uint8_t*, R5900Context*, PS2Runtime*);
+  23: void generated_fpu_sqrt(uint8_t*, R5900Context*, PS2Runtime*);
+  24: void generated_fpu_abs(uint8_t*, R5900Context*, PS2Runtime*);
+  14: void generated_fpu_mula(uint8_t*, R5900Context*, PS2Runtime*);
+  15: void generated_fpu_madd(uint8_t*, R5900Context*, PS2Runtime*);
+  16: void generated_fpu_msub(uint8_t*, R5900Context*, PS2Runtime*);
+  17: void generated_fpu_madda(uint8_t*, R5900Context*, PS2Runtime*);
+  18: void generated_fpu_msuba(uint8_t*, R5900Context*, PS2Runtime*);
+  19: void generated_fpu_add(uint8_t*, R5900Context*, PS2Runtime*);
+  20: void generated_fpu_sub(uint8_t*, R5900Context*, PS2Runtime*);
+  21: void generated_fpu_mul(uint8_t*, R5900Context*, PS2Runtime*);
+  22: void generated_fpu_div(uint8_t*, R5900Context*, PS2Runtime*);
+  23: void generated_fpu_sqrt(uint8_t*, R5900Context*, PS2Runtime*);
+  24: void generated_fpu_abs(uint8_t*, R5900Context*, PS2Runtime*);
+  25: void generated_fpu_mov(uint8_t*, R5900Context*, PS2Runtime*);
+  26: void generated_fpu_neg(uint8_t*, R5900Context*, PS2Runtime*);
+  27: void generated_fpu_rsqrt(uint8_t*, R5900Context*, PS2Runtime*);
+  28: void generated_fpu_max(uint8_t*, R5900Context*, PS2Runtime*);
+  29: void generated_fpu_min(uint8_t*, R5900Context*, PS2Runtime*);
+  30: void generated_fpu_cvt_w(uint8_t*, R5900Context*, PS2Runtime*);
+  31: void generated_fpu_sequence_mula_madda(uint8_t*, R5900Context*, PS2Runtime*);
+ 123:         tc.expect(run(generated_fpu_c_ngt, 2.0f, 1.0f, true) == false);
+ 124:     }    {
+ 125:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+ 126:             auto ctx = makeGeneratedFpuContext();
+ 127:             ctx.f_acc = 9.0f;
+ 128:             generated_fpu_adda(nullptr, &ctx, nullptr);
+ 129:             t.Equals(ctx.f_acc, 5.0f, "ADDA.S overwrites prior accumulator");
+ 130:             t.Equals(ctx.pc, 0x100004u, "ADDA.S final PC");
+ 131:         });
+ 132: 
+ 133:         tc.Run("generated SUBA.S updates live accumulator", [](TestCase& t) {
+ 134:             auto ctx = makeGeneratedFpuContext();
+ 135:             generated_fpu_suba(nullptr, &ctx, nullptr);
+ 136:             t.Equals(ctx.f_acc, -1.0f, "SUBA.S accumulator");
+ 137:             t.Equals(ctx.pc, 0x100014u, "SUBA.S final PC");
+ 138:         });
+ 139: 
+ 140:         tc.Run("generated MULA.S updates live accumulator", [](TestCase& t) {
+ 172:             t.Equals(ctx.pc, 0x100064u, "MSUBA.S final PC");
+ 173:         });
+ 174: 
+ 175:         tc.Run("generated ADD.S writes destination FPR", [](TestCase& t) {
+ 176:             auto ctx = makeGeneratedFpuContext();
+ 177:             generated_fpu_add(nullptr, &ctx, nullptr);
+ 178:             t.Equals(ctx.f[3], 5.0f, "ADD.S destination");
+ 179:             t.Equals(ctx.pc, 0x100084u, "ADD.S final PC");
+ 180:         });
+ 181:         tc.Run("generated SUB.S writes destination FPR", [](TestCase& t) {
+ 182:             auto ctx = makeGeneratedFpuContext();
+ 183:             generated_fpu_sub(nullptr, &ctx, nullptr);
+ 184:             t.Equals(ctx.f[3], -1.0f, "SUB.S destination");
+ 185:             t.Equals(ctx.pc, 0x100094u, "SUB.S final PC");
+ 186:         });
+ 187:         tc.Run("generated MUL.S writes destination FPR", [](TestCase& t) {
+ 188:             auto ctx = makeGeneratedFpuContext();
+ 189:             generated_fpu_mul(nullptr, &ctx, nullptr);
+
+========== INSERTED BLOCK ==========
+    // COP1.S comparison execution coverage.
+    {
+        R5900Context ctx{};
+        PS2Runtime runtime{};
+
+        auto run = [&](GeneratedFpuFunction fn, float fs, float ft, bool initialCondition) {
+            std::memset(&ctx, 0, sizeof(ctx));
+            ctx.f[1] = fs;
+            ctx.f[2] = ft;
+            ctx.fcr31 = initialCondition ? 0x800000u : 0u;
+            fn(nullptr, &ctx, &runtime);
+            return (ctx.fcr31 & 0x800000u) != 0;
+        };
+
+        tc.expect(!run(generated_fpu_c_f, 1.0f, 2.0f, false));
+        tc.expect(!run(generated_fpu_c_f, 1.0f, 2.0f, true));
+
+        tc.expect(run(generated_fpu_c_un, 1.0f, 2.0f, false) == false);
+        tc.expect(run(generated_fpu_c_un, NAN, 2.0f, false) == true);
+
+        tc.expect(run(generated_fpu_c_eq, 2.0f, 2.0f, false) == true);
+        tc.expect(run(generated_fpu_c_eq, 1.0f, 2.0f, true) == false);
+
+        tc.expect(run(generated_fpu_c_ueq, NAN, 2.0f, false) == true);
+        tc.expect(run(generated_fpu_c_ueq, 1.0f, 2.0f, true) == false);
+
+        tc.expect(run(generated_fpu_c_olt, 1.0f, 2.0f, false) == true);
+        tc.expect(run(generated_fpu_c_olt, 2.0f, 1.0f, true) == false);
+
+        tc.expect(run(generated_fpu_c_ult, NAN, 2.0f, false) == true);
+        tc.expect(run(generated_fpu_c_ult, 2.0f, 1.0f, true) == false);
+
+        tc.expect(run(generated_fpu_c_ole, 1.0f, 2.0f, false) == true);
+        tc.expect(run(generated_fpu_c_ole, 2.0f, 1.0f, true) == false);
+
+        tc.expect(run(generated_fpu_c_ule, NAN, 2.0f, false) == true);
+        tc.expect(run(generated_fpu_c_ule, 2.0f, 1.0f, true) == false);
+
+        tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, false));
+        tc.expect(!run(generated_fpu_c_sf, 1.0f, 2.0f, true));
+
+        tc.expect(run(generated_fpu_c_ngle, NAN, 2.0f, false) == true);
+        tc.expect(run(generated_fpu_c_ngle, 1.0f, 2.0f, true) == false);
+
+        tc.expect(run(generated_fpu_c_seq, 2.0f, 2.0f, false) == true);
+        tc.expect(run(generated_fpu_c_seq, 1.0f, 2.0f, true) == false);
+
+        tc.expect(run(generated_fpu_c_ngl, NAN, 2.0f, false) == true);
+        tc.expect(run(generated_fpu_c_ngl, 1.0f, 2.0f, true) == false);
+
+        tc.expect(run(generated_fpu_c_lt, 1.0f, 2.0f, false) == true);
+        tc.expect(run(generated_fpu_c_lt, 2.0f, 1.0f, true) == false);
+
+        tc.expect(run(generated_fpu_c_nge, NAN, 2.0f, false) == true);
+        tc.expect(run(generated_fpu_c_nge, 2.0f, 1.0f, true) == false);
+
+        tc.expect(run(generated_fpu_c_le, 1.0f, 2.0f, false) == true);
+        tc.expect(run(generated_fpu_c_le, 2.0f, 1.0f, true) == false);
+
+        tc.expect(run(generated_fpu_c_ngt, NAN, 2.0f, false) == true);
+        tc.expect(run(generated_fpu_c_ngt, 2.0f, 1.0f, true) == false);
+    }    {
+        tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+            auto ctx = makeGeneratedFpuContext();
+            ctx.f_acc = 9.0f;
+            generated_fpu_adda(nullptr, &ctx, nullptr);
+            t.Equals(ctx.f_acc, 5.0f, "ADDA.S overwrites prior accumulator");
+            t.Equals(ctx.pc, 0x100004u, "ADDA.S final PC");
+        });
+
+        tc.Run("generated SUBA.S updates live accumulator", [](TestCase& t) {
+            auto ctx = makeGeneratedFpuContext();
+            generated_fpu_suba(nullptr, &ctx, nullptr);
+            t.Equals(ctx.f_acc, -1.0f, "SUBA.S accumulator");
+            t.Equals(ctx.pc, 0x100014u, "SUBA.S final PC");
+        });
+
+        tc.Run("generated MULA.S updates live accumulator", [](TestCase& t) {
+            auto ctx = makeGeneratedFpuContext();
+            generated_fpu_mula(nullptr, &ctx, nullptr);
+            t.Equals(ctx.f_acc, 6.0f, "MULA.S accumulator");
+            t.Equals(ctx.pc, 0x100024u, "MULA.S final PC");
+        });
+
+        tc.Run("generated MADD.S writes destination FPR", [](TestCase& t) {
+            auto ctx = makeGeneratedFpuContext();
+            generated_fpu_madd(nullptr, &ctx, nullptr);
+            t.Equals(ctx.f[3], 11.0f, "MADD.S destination");
+            t.Equals(ctx.pc, 0x100034u, "MADD.S final PC");
+        });
+
+        tc.Run("generated MSUB.S writes destination FPR", [](TestCase& t) {
+            auto ctx = makeGeneratedFpuContext();
+            generated_fpu_msub(nullptr, &ctx, nullptr);
+            t.Equals(ctx.f[3], -1.0f, "MSUB.S destination");
+            t.Equals(ctx.pc, 0x100044u, "MSUB.S final PC");
+        });
+
+        tc.Run("generated MADDA.S updates live accumulator", [](TestCase& t) {
+            auto ctx = makeGeneratedFpuContext();
+            generated_fpu_madda(nullptr, &ctx, nullptr);
+
+========== STATUS ==========
+READ-ONLY AUDIT COMPLETE.
+No source modified. Do not build until lambda placement and MiniTest API are verified.
