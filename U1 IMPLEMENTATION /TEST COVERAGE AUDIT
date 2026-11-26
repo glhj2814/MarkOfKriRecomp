@@ -1,0 +1,1324 @@
+MARK OF KRI — VU1 IMPLEMENTATION / TEST COVERAGE AUDIT
+Generated: 2026-11-26 11:17:04
+Root: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+
+========== VU/VIF FILE INVENTORY ==========
+ps2xRecomp\include\ps2recomp\Translators\vu_translator.h	440 bytes
+ps2xRecomp\src\lib\vu_translation_helpers.cpp	47726 bytes
+ps2xRecomp\src\lib\vu_translator.cpp	19290 bytes
+ps2xRuntime\include\runtime\ps2_vu1.h	9951 bytes
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp	41695 bytes
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h	3732 bytes
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp	29573 bytes
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp	59272 bytes
+ps2xRuntime\src\lib\vu\ps2_vu1_detail.h	1329 bytes
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp	28969 bytes
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp	16360 bytes
+ps2xTest\src\ps2_vu_tests.cpp	50273 bytes
+ps2xTest\src\ps2_vu1_tests.cpp	76616 bytes
+
+========== VU1 SYMBOL / IMPLEMENTATION SEARCH ==========
+
+----- VU1 : 614 matches -----
+ps2xRuntime\include\runtime\ps2_vu1.h:1: #ifndef PS2_VU1_H
+ps2xRuntime\include\runtime\ps2_vu1.h:2: #define PS2_VU1_H
+ps2xRuntime\include\runtime\ps2_vu1.h:10: struct VU1State
+ps2xRuntime\include\runtime\ps2_vu1.h:38: class VU1Interpreter
+ps2xRuntime\include\runtime\ps2_vu1.h:44: VU1
+ps2xRuntime\include\runtime\ps2_vu1.h:47: explicit VU1Interpreter(Unit unit = Unit::VU1);
+ps2xRuntime\include\runtime\ps2_vu1.h:62: VU1State &state() { return m_state; }
+ps2xRuntime\include\runtime\ps2_vu1.h:63: const VU1State &state() const { return m_state; }
+ps2xRuntime\include\runtime\ps2_vu1.h:204: VU1State m_state;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:419: if (m_vu1MscalCallback)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:420: m_vu1MscalCallback(startPC, runTop, runItop);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:437: if (m_vu1MscntCallback)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:438: m_vu1MscntCallback(runTop, runItop);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:472: if (m_vu1Code && destAddr < PS2_VU1_CODE_SIZE && mpgBytes > 0)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:475: if (destAddr + copyBytes > PS2_VU1_CODE_SIZE)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:476: copyBytes = PS2_VU1_CODE_SIZE - destAddr;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:479: std::memcpy(m_vu1Code + destAddr, data + pos, copyBytes);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:480: markVU1CodeModified();
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:575: if (m_vu1Data && totalBytes > 0 && pos + totalBytes <= sizeBytes)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:595: if (destOff + 16u > PS2_VU1_DATA_SIZE)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:603: std::memcpy(lanes, m_vu1Data + destOff, sizeof(lanes));
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:717: std::memcpy(m_vu1Data + destOff, srcVec, copyBytes);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:769: std::memcpy(m_vu1Data + destOff, lanes, sizeof(lanes));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1: #include "runtime/ps2_vu1.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:5: #include "ps2_vu1_detail.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:25: void VU1Interpreter::addVfRead(InstructionUsage &usage, uint8_t reg, uint8_t lanes)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:41: void VU1Interpreter::addVfWrite(InstructionUsage &usage, uint8_t reg, uint8_t lanes)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:51: uint8_t VU1Interpreter::vfReadLanes(const InstructionUsage &usage, uint8_t reg)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:61: VU1Interpreter::VU1Interpreter(Unit unit)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:67: void VU1Interpreter::resetScheduler()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:94: void VU1Interpreter::reset()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:104: float VU1Interpreter::broadcast(const float *vf, uint8_t bc)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:109: float VU1Interpreter::normalizeOperand(float value) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:126: float VU1Interpreter::normalizeResult(float value, uint32_t &laneFlags) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:154: uint32_t VU1Interpreter::microAddressMask() const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:156: return m_unit == Unit::VU1 ? 0x3FFFu : 0x0FFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:159: int32_t VU1Interpreter::readBranchVi(uint8_t reg) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:171: void VU1Interpreter::recordViWriteForBranch(uint8_t reg, int32_t oldValue)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:180: void VU1Interpreter::applyDest(float *dst, const float *result, uint8_t dest)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:192: void VU1Interpreter::applyDestAcc(const float *result, uint8_t dest)
+
+----- vu1 : 614 matches -----
+ps2xRuntime\include\runtime\ps2_vu1.h:1: #ifndef PS2_VU1_H
+ps2xRuntime\include\runtime\ps2_vu1.h:2: #define PS2_VU1_H
+ps2xRuntime\include\runtime\ps2_vu1.h:10: struct VU1State
+ps2xRuntime\include\runtime\ps2_vu1.h:38: class VU1Interpreter
+ps2xRuntime\include\runtime\ps2_vu1.h:44: VU1
+ps2xRuntime\include\runtime\ps2_vu1.h:47: explicit VU1Interpreter(Unit unit = Unit::VU1);
+ps2xRuntime\include\runtime\ps2_vu1.h:62: VU1State &state() { return m_state; }
+ps2xRuntime\include\runtime\ps2_vu1.h:63: const VU1State &state() const { return m_state; }
+ps2xRuntime\include\runtime\ps2_vu1.h:204: VU1State m_state;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:419: if (m_vu1MscalCallback)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:420: m_vu1MscalCallback(startPC, runTop, runItop);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:437: if (m_vu1MscntCallback)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:438: m_vu1MscntCallback(runTop, runItop);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:472: if (m_vu1Code && destAddr < PS2_VU1_CODE_SIZE && mpgBytes > 0)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:475: if (destAddr + copyBytes > PS2_VU1_CODE_SIZE)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:476: copyBytes = PS2_VU1_CODE_SIZE - destAddr;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:479: std::memcpy(m_vu1Code + destAddr, data + pos, copyBytes);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:480: markVU1CodeModified();
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:575: if (m_vu1Data && totalBytes > 0 && pos + totalBytes <= sizeBytes)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:595: if (destOff + 16u > PS2_VU1_DATA_SIZE)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:603: std::memcpy(lanes, m_vu1Data + destOff, sizeof(lanes));
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:717: std::memcpy(m_vu1Data + destOff, srcVec, copyBytes);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:769: std::memcpy(m_vu1Data + destOff, lanes, sizeof(lanes));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1: #include "runtime/ps2_vu1.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:5: #include "ps2_vu1_detail.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:25: void VU1Interpreter::addVfRead(InstructionUsage &usage, uint8_t reg, uint8_t lanes)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:41: void VU1Interpreter::addVfWrite(InstructionUsage &usage, uint8_t reg, uint8_t lanes)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:51: uint8_t VU1Interpreter::vfReadLanes(const InstructionUsage &usage, uint8_t reg)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:61: VU1Interpreter::VU1Interpreter(Unit unit)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:67: void VU1Interpreter::resetScheduler()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:94: void VU1Interpreter::reset()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:104: float VU1Interpreter::broadcast(const float *vf, uint8_t bc)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:109: float VU1Interpreter::normalizeOperand(float value) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:126: float VU1Interpreter::normalizeResult(float value, uint32_t &laneFlags) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:154: uint32_t VU1Interpreter::microAddressMask() const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:156: return m_unit == Unit::VU1 ? 0x3FFFu : 0x0FFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:159: int32_t VU1Interpreter::readBranchVi(uint8_t reg) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:171: void VU1Interpreter::recordViWriteForBranch(uint8_t reg, int32_t oldValue)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:180: void VU1Interpreter::applyDest(float *dst, const float *result, uint8_t dest)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:192: void VU1Interpreter::applyDestAcc(const float *result, uint8_t dest)
+
+----- VUADD : 8 matches -----
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:240: uint32_t vuAddr = static_cast<uint32_t>(imm & 0x3FFu);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:242: vuAddr = (vuAddr + (vif0_regs.tops & 0x3FFu)) & 0x3FFu;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:249: uint32_t destVec = (cl >= wl) ? ((vuAddr + (writeIndex / wl) * cl + cyclePos) & 0x3FFu)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:250: : ((vuAddr + writeIndex) & 0x3FFu);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:569: uint32_t vuAddr = (uint32_t)imm & 0x3FFu;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:571: vuAddr = (vuAddr + (vif1_regs.tops & 0x3FFu)) & 0x3FFu;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:587: destVec = (vuAddr + (writeIndex / wl) * cl + cyclePos) & 0x3FFu;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:591: destVec = (vuAddr + writeIndex) & 0x3FFu;
+
+----- VUMUL : 0 matches -----
+
+----- VUMAX : 0 matches -----
+
+----- VUMAXI : 0 matches -----
+
+----- VUF : 17 matches -----
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:10: int32_t vuFloatToInt(float value, float scale)
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:330: int32_t iv = vuFloatToInt(vs[c], 1.0f);
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:338: int32_t iv = vuFloatToInt(vs[c], 16.0f);
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:346: int32_t iv = vuFloatToInt(vs[c], 4096.0f);
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:354: int32_t iv = vuFloatToInt(vs[c], 32768.0f);
+ps2xTest\src\ps2_vu1_tests.cpp:96: uint32_t makeVuFlagImmediate(uint8_t opcode, uint8_t targetVi, uint16_t immediate)
+ps2xTest\src\ps2_vu1_tests.cpp:104: uint32_t makeVuFlagRegister(uint8_t opcode, uint8_t targetVi, uint8_t sourceVi)
+ps2xTest\src\ps2_vu1_tests.cpp:1025: makeVuFlagImmediate(0x16u, 1u, 0x001u),
+ps2xTest\src\ps2_vu1_tests.cpp:1477: makeVuFlagImmediate(0x14u, 5u, 0x812u),
+ps2xTest\src\ps2_vu1_tests.cpp:1480: makeVuFlagImmediate(0x16u, 6u, 0x810u),
+ps2xTest\src\ps2_vu1_tests.cpp:1483: makeVuFlagImmediate(0x17u, 7u, 0x040u),
+ps2xTest\src\ps2_vu1_tests.cpp:1508: makeVuFlagImmediate(0x15u, 0u, 0xA80u),
+ps2xTest\src\ps2_vu1_tests.cpp:1532: makeVuFlagImmediate(0x15u, 0u, 0xA80u),
+ps2xTest\src\ps2_vu1_tests.cpp:1561: makeVuFlagRegister(0x18u, 6u, 7u),
+ps2xTest\src\ps2_vu1_tests.cpp:1570: makeVuFlagRegister(0x1Au, 4u, 5u),
+ps2xTest\src\ps2_vu1_tests.cpp:1612: makeVuFlagRegister(0x1Cu, 3u, 0u),
+ps2xTest\src\ps2_vu1_tests.cpp:1618: makeVuFlagRegister(0x1Cu, 4u, 0u),
+
+----- VUFD : 0 matches -----
+
+----- VUFS : 0 matches -----
+
+----- VIF : 136 matches -----
+ps2xRuntime\include\runtime\ps2_vu1.h:30: uint32_t top;  // VIF TOP visible to XTOP
+ps2xRuntime\include\runtime\ps2_vu1.h:31: uint32_t itop; // VIF ITOP visible to XITOP
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:5: enum VIFCmd : uint8_t
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:7: VIF_NOP = 0x00,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:8: VIF_STCYCL = 0x01,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:9: VIF_OFFSET = 0x02,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:10: VIF_BASE = 0x03,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:11: VIF_ITOP = 0x04,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:12: VIF_STMOD = 0x05,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:13: VIF_MSKPATH3 = 0x06,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:14: VIF_MARK = 0x07,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:15: VIF_FLUSHE = 0x10,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:16: VIF_FLUSH = 0x11,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:17: VIF_FLUSHA = 0x13,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:18: VIF_MSCAL = 0x14,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:19: VIF_MSCALF = 0x15,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:20: VIF_MSCNT = 0x17,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:21: VIF_STMASK = 0x20,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:22: VIF_STROW = 0x30,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:23: VIF_STCOL = 0x31,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:24: VIF_MPG = 0x4A,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:25: VIF_DIRECT = 0x50,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:26: VIF_DIRECTHL = 0x51,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:84: void PS2Memory::processVIF0Data(uint32_t srcPhys, uint32_t sizeBytes)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:93: processVIF0Data(m_rdram + srcPhys, sizeBytes);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:96: void PS2Memory::processVIF0Data(const uint8_t *data, uint32_t sizeBytes)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:113: vif0_regs.code = cmd;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:114: vif0_regs.num = num;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:116: vif0_regs.stat |= (1u << 11);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:118: if (opcode == VIF_NOP)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:122: else if (opcode == VIF_STCYCL)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:124: vif0_regs.cycle = imm;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:127: else if (opcode == VIF_ITOP)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:129: vif0_regs.itops = imm & 0x3FFu;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:132: else if (opcode == VIF_STMOD)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:134: vif0_regs.mode = imm & 3u;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:137: else if (opcode == VIF_MARK)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:139: vif0_regs.mark = imm;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:140: vif0_regs.stat |= (1u << 6);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:143: else if (opcode == VIF_FLUSHE || opcode == VIF_FLUSH || opcode == VIF_FLUSHA)
+
+----- MSCAL : 20 matches -----
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:18: VIF_MSCAL = 0x14,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:19: VIF_MSCALF = 0x15,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:369: // BASE only updates the base register. TOPS changes on OFFSET/MSCAL.
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:375: // ITOP VIFcode writes pending ITOPS; VU XITOP observes it after MSCAL/MSCNT.
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:403: else if (opcode == VIF_MSCAL || opcode == VIF_MSCALF)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:419: if (m_vu1MscalCallback)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:420: m_vu1MscalCallback(startPC, runTop, runItop);
+ps2xTest\src\ps2_vu1_tests.cpp:1093: tc.Run("MPG upload invalidates cached VU1 decode before MSCAL", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1099: fx.mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+ps2xTest\src\ps2_vu1_tests.cpp:1114: const uint32_t firstMscal = makeVifCmd(0x14u, 0u, 0u);
+ps2xTest\src\ps2_vu1_tests.cpp:1115: fx.mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&firstMscal), sizeof(firstMscal));
+ps2xTest\src\ps2_vu1_tests.cpp:1116: t.Equals(vu1.state().vi[1], 1, "first MSCAL should execute the first uploaded program");
+ps2xTest\src\ps2_vu1_tests.cpp:1119: const uint32_t secondMscal = makeVifCmd(0x14u, 0u, 0u);
+ps2xTest\src\ps2_vu1_tests.cpp:1120: fx.mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&secondMscal), sizeof(secondMscal));
+ps2xTest\src\ps2_vu1_tests.cpp:1121: t.Equals(vu1.state().vi[1], 2, "second MSCAL should see the MPG-updated instruction");
+ps2xTest\src\ps2_vu1_tests.cpp:1375: tc.Run("MSCAL can start a VU1 XGKICK program and update GS VRAM", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1420: mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+ps2xTest\src\ps2_vu1_tests.cpp:1434: const uint32_t mscalCmd = makeVifCmd(0x14u, 0u, 0u);
+ps2xTest\src\ps2_vu1_tests.cpp:1435: mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&mscalCmd), sizeof(mscalCmd));
+ps2xTest\src\ps2_vu1_tests.cpp:1451: t.IsTrue(imageOk, "MSCAL-triggered XGKICK should route PATH1 packet into GS VRAM");
+
+----- MSCNT : 6 matches -----
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:20: VIF_MSCNT = 0x17,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:375: // ITOP VIFcode writes pending ITOPS; VU XITOP observes it after MSCAL/MSCNT.
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:423: else if (opcode == VIF_MSCNT)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:437: if (m_vu1MscntCallback)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:438: m_vu1MscntCallback(runTop, runItop);
+ps2xTest\src\ps2_vu1_tests.cpp:916: "MSCNT-style resume should continue at the stopped TPC");
+
+----- MSKIP : 0 matches -----
+
+----- DIRECT : 24 matches -----
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:764: // Rows = normalize(-light); the 4x4 is transposed so directions occupy
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:774: // so a light's w (often 1.0) neither shortens the direction nor leaks into the matrix.
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:25: VIF_DIRECT = 0x50,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:26: VIF_DIRECTHL = 0x51,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:323: submitGifPacket(GifPathId::Path2, imagePacket.data(), static_cast<uint32_t>(imagePacket.size()), true, m_vif1PendingPath2DirectHl);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:329: m_vif1PendingPath2DirectHl = false;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:488: else if (opcode == VIF_DIRECT || opcode == VIF_DIRECTHL)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:500: const bool directHl = (opcode == VIF_DIRECTHL);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:501: submitGifPacket(GifPathId::Path2, data + pos, qwCount * 16, true, directHl);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:507: m_vif1PendingPath2DirectHl = directHl;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1293: const uint8_t direct = static_cast<uint8_t>(lower & 0x3Fu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1294: if (direct == 0x30u || direct == 0x31u || direct == 0x34u || direct == 0x35u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1304: if (direct == 0x32u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1313: if (direct < 0x3Cu)
+ps2xTest\src\ps2_vu_tests.cpp:769: // convention: l1's direction has a 0.8-magnitude z component,
+ps2xTest\src\ps2_vu_tests.cpp:784: "NormalLightMatrix should transpose the light-direction rows into columns");
+ps2xTest\src\ps2_vu_tests.cpp:802: "each light column should be the unit -xyz direction");
+ps2xTest\src\ps2_vu_tests.cpp:1127: tc.Run("DropShadow_directional_mode", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:1140: t.IsTrue(nearlyEqual(out[0], 1.0f), "DropShadowMatrix directional mode should include the diagonal (1-d) term");
+ps2xTest\src\ps2_vu1_tests.cpp:67: uint32_t makeVuLowerDirect(uint8_t funct, uint8_t is, uint8_t it = 0u, uint8_t id = 0u, uint8_t dest = 0u)
+ps2xTest\src\ps2_vu1_tests.cpp:393: writeVuInstructionPair(fx.code, 16u, makeVuLowerDirect(0x30u, 2u, 1u, 3u), kVuUpperNop); // IADD vi3, vi2, vi1
+ps2xTest\src\ps2_vu1_tests.cpp:1124: tc.Run("direct VU1 code writes invalidate cached decode", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1132: t.Equals(vu1.state().vi[1], 1, "first execution should use the original direct write");
+ps2xTest\src\ps2_vu1_tests.cpp:1136: t.Equals(vu1.state().vi[1], 2, "second execution should rebuild decode after the direct write");
+
+----- UNPACK : 2 matches -----
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:545: // UNPACK semantics: NUM is 8-bit and NUM==0 means 256 vectors (writes).
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:548: // STCYCL controls write cycles for UNPACK.
+
+========== TEST REGISTRATION / COVERAGE ==========
+
+----- ps2xTest\src\ps2_vu_tests.cpp -----
+1: #include "MiniTest.h"
+5: #include "Kernel/Stubs/VU.h"
+32:     struct VuEnv
+38:         VuEnv() : rdram(PS2_RAM_SIZE, 0)
+44:     void writeVec4(VuEnv &env, uint32_t addr, float x, float y, float z, float w)
+50:     void readVec4f(VuEnv &env, uint32_t addr, float (&out)[4])
+55:     void readVec4i(VuEnv &env, uint32_t addr, int32_t (&out)[4])
+60:     void writeMat4(VuEnv &env, uint32_t addr, const float (&m)[16])
+65:     void readMat4(VuEnv &env, uint32_t addr, float (&out)[16])
+80: void register_ps2_vu_tests()
+82:     MiniTest::Case("PS2VU0Math", [](TestCase &tc)
+84:         tc.Run("MulVector_componentwise", [](TestCase &t)
+86:             VuEnv env;
+92:             ps2_stubs::sceVu0MulVector(env.rdram.data(), &env.ctx, &env.runtime);
+100:         tc.Run("ScaleVector_zero_scale_ignores_a2", [](TestCase &t)
+102:             // libvu0 reads the scale from f12 only; a stale a2 must not stand in for a 0.0f scale.
+103:             VuEnv env;
+109:             ps2_stubs::sceVu0ScaleVector(env.rdram.data(), &env.ctx, &env.runtime);
+116:         tc.Run("ScaleVectorXYZ_scales_xyz", [](TestCase &t)
+118:             VuEnv env;
+123:             ps2_stubs::sceVu0ScaleVectorXYZ(env.rdram.data(), &env.ctx, &env.runtime);
+130:         tc.Run("ScaleVectorXYZ_w_passthrough", [](TestCase &t)
+132:             VuEnv env;
+137:             ps2_stubs::sceVu0ScaleVectorXYZ(env.rdram.data(), &env.ctx, &env.runtime);
+140:             t.IsTrue(nearlyEqual(out[3], 9.0f), "ScaleVectorXYZ should pass w through unscaled");
+143:         tc.Run("ClampVector_low", [](TestCase &t)
+145:             VuEnv env;
+151:             ps2_stubs::sceVu0ClampVector(env.rdram.data(), &env.ctx, &env.runtime);
+157:         tc.Run("ClampVector_high", [](TestCase &t)
+159:             VuEnv env;
+165:             ps2_stubs::sceVu0ClampVector(env.rdram.data(), &env.ctx, &env.runtime);
+171:         tc.Run("DivVector_reciprocal", [](TestCase &t)
+173:             VuEnv env;
+178:             ps2_stubs::sceVu0DivVector(env.rdram.data(), &env.ctx, &env.runtime);
+186:         tc.Run("DivVector_divzero_zero", [](TestCase &t)
+188:             VuEnv env;
+193:             ps2_stubs::sceVu0DivVector(env.rdram.data(), &env.ctx, &env.runtime);
+201:         tc.Run("DivVectorXYZ_w_passthrough", [](TestCase &t)
+203:             VuEnv env;
+208:             ps2_stubs::sceVu0DivVectorXYZ(env.rdram.data(), &env.ctx, &env.runtime);
+211:             t.IsTrue(nearlyEqual(out[3], 9.0f), "DivVectorXYZ should pass w through unchanged");
+214:         tc.Run("InterVector_lerp", [](TestCase &t)
+216:             VuEnv env;
+223:             ps2_stubs::sceVu0InterVector(env.rdram.data(), &env.ctx, &env.runtime);
+230:         tc.Run("InterVectorXYZ_w_from_a", [](TestCase &t)
+232:             VuEnv env;
+239:             ps2_stubs::sceVu0InterVectorXYZ(env.rdram.data(), &env.ctx, &env.runtime);
+245:         tc.Run("TransMatrix_adds_translation", [](TestCase &t)
+247:             VuEnv env;
+258:             ps2_stubs::sceVu0TransMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+265:         tc.Run("TransMatrix_rows_unchanged", [](TestCase &t)
+267:             VuEnv env;
+278:             ps2_stubs::sceVu0TransMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+286:         tc.Run("MulMatrix_identity_left", [](TestCase &t)
+288:             VuEnv env;
+301:             ps2_stubs::sceVu0MulMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+315:         tc.Run("MulMatrix_pushes_arg2_rows_through_arg1_like_libvu0", [](TestCase &t)
+317:             // libvu0 loads arg1 into vf4-vf7 and transforms each row of arg2 with it:
+319:             VuEnv env;
+330:             float expected[16]{};
+340:                     expected[4 * i + j] = sum;
+348:             ps2_stubs::sceVu0MulMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+354:                 if (!nearlyEqual(out[i], expected[i]))
+359:             t.IsTrue(allMatch, "MulMatrix(dst, m0, m1) should transform each row of m1 by m0, as libvu0 does");
+362:         tc.Run("MulMatrix_product_applies_second_operand_first", [](TestCase &t)
+364:             // Games compose screen * view * world with MulMatrix and expect
+366:             VuEnv env;
+378:             ps2_stubs::sceVu0MulMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+384:             ps2_stubs::sceVu0ApplyMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+391:         tc.Run("Normalize_and_InnerProduct_ignore_w", [](TestCase &t)
+393:             VuEnv env;
+397:             ps2_stubs::sceVu0Normalize(env.rdram.data(), &env.ctx, &env.runtime);
+406:             ps2_stubs::sceVu0InnerProduct(env.rdram.data(), &env.ctx, &env.runtime);
+410:         tc.Run("RotMatrix_Z_matches_RotMatrixZ", [](TestCase &t)
+412:             VuEnv env;
+421:             ps2_stubs::sceVu0RotMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+425:             VuEnv env2;
+430:             ps2_stubs::sceVu0RotMatrixZ(env2.rdram.data(), &env2.ctx, &env2.runtime);
+445:         tc.Run("RotMatrix_X_matches_RotMatrixX", [](TestCase &t)
+447:             VuEnv env;
+456:             ps2_stubs::sceVu0RotMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+460:             VuEnv env2;
+465:             ps2_stubs::sceVu0RotMatrixX(env2.rdram.data(), &env2.ctx, &env2.runtime);
+480:         tc.Run("RotMatrix_Y_matches_RotMatrixY", [](TestCase &t)
+482:             VuEnv env;
+491:             ps2_stubs::sceVu0RotMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+495:             VuEnv env2;
+500:             ps2_stubs::sceVu0RotMatrixY(env2.rdram.data(), &env2.ctx, &env2.runtime);
+515:         tc.Run("RotMatrix_multi_axis_order", [](TestCase &t)
+521:             VuEnv env;
+531:             ps2_stubs::sceVu0RotMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+536:             VuEnv env2;
+541:             ps2_stubs::sceVu0RotMatrixZ(env2.rdram.data(), &env2.ctx, &env2.runtime);
+545:             ps2_stubs::sceVu0RotMatrixY(env2.rdram.data(), &env2.ctx, &env2.runtime);
+549:             ps2_stubs::sceVu0RotMatrixX(env2.rdram.data(), &env2.ctx, &env2.runtime);
+565:         tc.Run("InversMatrix_transposes_rotation", [](TestCase &t)
+567:             VuEnv env;
+576:             ps2_stubs::sceVu0InversMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+582:         tc.Run("InversMatrix_negRt_translation", [](TestCase &t)
+584:             VuEnv env;
+593:             ps2_stubs::sceVu0InversMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+605:         tc.Run("InversMatrix_roundtrip_identity", [](TestCase &t)
+607:             VuEnv env;
+614:             ps2_stubs::sceVu0RotMatrixZ(env.rdram.data(), &env.ctx, &env.runtime);
+621:             ps2_stubs::sceVu0InversMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+630:             ps2_stubs::sceVu0MulMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+647:         tc.Run("InversMatrix_roundtrip_rigid", [](TestCase &t)
+652:             VuEnv env;
+659:             ps2_stubs::sceVu0RotMatrixZ(env.rdram.data(), &env.ctx, &env.runtime);
+669:             ps2_stubs::sceVu0InversMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+678:             ps2_stubs::sceVu0MulMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+695:         tc.Run("CameraMatrix_orthonormal_basis", [](TestCase &t)
+697:             VuEnv env;
+705:             ps2_stubs::sceVu0CameraMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+721:         tc.Run("CameraMatrix_nonorigin_eye_maps_to_origin", [](TestCase &t)
+727:             VuEnv env;
+735:             ps2_stubs::sceVu0CameraMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+741:             ps2_stubs::sceVu0ApplyMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+749:         tc.Run("NormalLightMatrix_neg_normalized", [](TestCase &t)
+751:             VuEnv env;
+759:             ps2_stubs::sceVu0NormalLightMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+765:         tc.Run("NormalLightMatrix_transposed", [](TestCase &t)
+767:             // Magnitudes (not signs) distinguish rows 6/9 here so this test
+769:             // convention: l1's direction has a 0.8-magnitude z component,
+772:             VuEnv env;
+780:             ps2_stubs::sceVu0NormalLightMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+784:                      "NormalLightMatrix should transpose the light-direction rows into columns");
+787:         tc.Run("NormalLightMatrix_ignores_light_w", [](TestCase &t)
+789:             // Lights stored as positions carry w=1; libvu0's Normalize uses xyz only and clears w.
+790:             VuEnv env;
+798:             ps2_stubs::sceVu0NormalLightMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+802:                      "each light column should be the unit -xyz direction");
+807:         tc.Run("LightColorMatrix_verbatim_rows", [](TestCase &t)
+809:             VuEnv env;
+819:             ps2_stubs::sceVu0LightColorMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+826:         tc.Run("RotTransPers_apply_persp_ftoi4", [](TestCase &t)
+828:             VuEnv env;
+837:             ps2_stubs::sceVu0RotTransPers(env.rdram.data(), &env.ctx, &env.runtime);
+844:         tc.Run("RotTransPers_ftoi0_zw_when_mode_nonzero", [](TestCase &t)
+846:             VuEnv env;
+854:             SET_GPR_U32(&env.ctx, 7, 1u); // libvu0: mode != 0 runs VFTOI0 on z/w (integer Z for 32-bit Z buffers)
+855:             ps2_stubs::sceVu0RotTransPers(env.rdram.data(), &env.ctx, &env.runtime);
+862:         tc.Run("RotTransPers_persp_wzero_zero", [](TestCase &t)
+864:             VuEnv env;
+873:             ps2_stubs::sceVu0RotTransPers(env.rdram.data(), &env.ctx, &env.runtime);
+880:         tc.Run("RotTransPers_nonidentity_matrix_apply", [](TestCase &t)
+893:             VuEnv env;
+906:             ps2_stubs::sceVu0RotTransPers(env.rdram.data(), &env.ctx, &env.runtime);
+913:         tc.Run("RotTransPersN_iterates", [](TestCase &t)
+915:             VuEnv env;
+926:             ps2_stubs::sceVu0RotTransPersN(env.rdram.data(), &env.ctx, &env.runtime);
+934:         tc.Run("ecossin_cos_sin", [](TestCase &t)
+936:             VuEnv env;
+940:             ps2_stubs::sceVu0ecossin(env.rdram.data(), &env.ctx, &env.runtime);
+948:         tc.Run("ClipScreen_inside_zero", [](TestCase &t)
+950:             VuEnv env;
+953:             ps2_stubs::sceVu0ClipScreen(env.rdram.data(), &env.ctx, &env.runtime);
+957:         tc.Run("ClipScreen_offscreen_nonzero", [](TestCase &t)
+959:             VuEnv env;
+962:             ps2_stubs::sceVu0ClipScreen(env.rdram.data(), &env.ctx, &env.runtime);
+966:         tc.Run("ClipScreen_negx_nonzero", [](TestCase &t)
+968:             // libvu0 tests x against 0, not a negative guard band: any negative x is offscreen.
+969:             VuEnv env;
+972:             ps2_stubs::sceVu0ClipScreen(env.rdram.data(), &env.ctx, &env.runtime);
+976:         tc.Run("ClipScreen_w_and_edges", [](TestCase &t)
+978:             VuEnv env;
+981:             ps2_stubs::sceVu0ClipScreen(env.rdram.data(), &env.ctx, &env.runtime);
+985:             ps2_stubs::sceVu0ClipScreen(env.rdram.data(), &env.ctx, &env.runtime);
+989:         tc.Run("ClipScreen3_ors_three", [](TestCase &t)
+992:             // test does not overlap ClipScreen_offscreen_nonzero's x-guard mutation.
+993:             VuEnv env;
+1000:             ps2_stubs::sceVu0ClipScreen3(env.rdram.data(), &env.ctx, &env.runtime);
+1004:         tc.Run("ClipAll_all_out_returns_1", [](TestCase &t)
+1006:             VuEnv env;
+1019:             ps2_stubs::sceVu0ClipAll(env.rdram.data(), &env.ctx, &env.runtime);
+1023:         tc.Run("ClipAll_one_in_returns_0", [](TestCase &t)
+1025:             VuEnv env;
+1038:             ps2_stubs::sceVu0ClipAll(env.rdram.data(), &env.ctx, &env.runtime);
+1042:         tc.Run("ClipAll_w_scaling_homogeneous", [](TestCase &t)
+1044:             VuEnv env;
+1060:             ps2_stubs::sceVu0ClipAll(env.rdram.data(), &env.ctx, &env.runtime);
+1065:         tc.Run("ClipAll_w_outside_far_bound_returns_1", [](TestCase &t)
+1067:             // libvu0 also VSUBs w against lo.w/hi.w, so a vertex centred on screen but past hi.w is culled.
+1068:             VuEnv env;
+1080:             ps2_stubs::sceVu0ClipAll(env.rdram.data(), &env.ctx, &env.runtime);
+1084:         tc.Run("ViewScreenMatrix_zscale", [](TestCase &t)
+1086:             VuEnv env;
+1099:             ps2_stubs::sceVu0ViewScreenMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+1105:         tc.Run("ViewScreenMatrix_denom_zero", [](TestCase &t)
+1107:             VuEnv env;
+1120:             ps2_stubs::sceVu0ViewScreenMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+1127:         tc.Run("DropShadow_directional_mode", [](TestCase &t)
+1129:             VuEnv env;
+1137:             ps2_stubs::sceVu0DropShadowMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+1140:             t.IsTrue(nearlyEqual(out[0], 1.0f), "DropShadowMatrix directional mode should include the diagonal (1-d) term");
+1143:         tc.Run("DropShadow_point_mode", [](TestCase &t)
+1145:             VuEnv env;
+1153:             ps2_stubs::sceVu0DropShadowMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+
+----- ps2xTest\src\ps2_vu1_tests.cpp -----
+1: #include "MiniTest.h"
+6: #include "runtime/ps2_vu1.h"
+16:     constexpr uint32_t kVuUpperNop = 0x000002FFu;
+18:     struct Vu1Fixture
+30:             code = mem.getVU1Code();
+31:             data = mem.getVU1Data();
+32:             std::memset(code, 0, PS2_VU1_CODE_SIZE);
+33:             std::memset(data, 0, PS2_VU1_DATA_SIZE);
+38:     uint32_t makeVifCmd(uint8_t opcode, uint8_t num, uint16_t imm)
+55:     uint32_t makeVuLowerSpecial(uint8_t specialOp, uint8_t is, uint8_t it = 0u, uint8_t id = 0u, uint8_t dest = 0u)
+67:     uint32_t makeVuLowerDirect(uint8_t funct, uint8_t is, uint8_t it = 0u, uint8_t id = 0u, uint8_t dest = 0u)
+77:     uint32_t makeVuUpper(uint8_t op, uint8_t dest, uint8_t ft, uint8_t fs, uint8_t fd)
+86:     uint32_t makeVuUpperSpecial(uint8_t specialOp, uint8_t dest, uint8_t ft, uint8_t fs)
+96:     uint32_t makeVuFlagImmediate(uint8_t opcode, uint8_t targetVi, uint16_t immediate)
+104:     uint32_t makeVuFlagRegister(uint8_t opcode, uint8_t targetVi, uint8_t sourceVi)
+111:     uint32_t makeVuLq(uint8_t dest, uint8_t targetVf, uint8_t baseVi, int16_t imm)
+119:     uint32_t makeVuSq(uint8_t dest, uint8_t sourceVf, uint8_t baseVi, int16_t imm)
+128:     uint32_t makeVuIaddiu(uint8_t it, uint8_t is, int16_t imm)
+136:     uint32_t makeVuBranch(int16_t imm)
+141:     uint32_t makeVuJr(uint8_t is)
+147:     uint32_t makeVuIbne(uint8_t is, uint8_t it, int16_t imm)
+155:     uint32_t makeVuIlw(uint8_t dest, uint8_t targetVi, uint8_t baseVi, int16_t imm)
+164:     uint32_t makeVuDiv(uint8_t fs, uint8_t ft, uint8_t fsf, uint8_t ftf)
+166:         return makeVuLowerSpecial(0x38u, fs, ft, 0u, static_cast<uint8_t>(((ftf & 0x3u) << 2) | (fsf & 0x3u)));
+169:     uint32_t makeVuSqrt(uint8_t ft, uint8_t ftf)
+171:         return makeVuLowerSpecial(0x39u, 0u, ft, 0u, static_cast<uint8_t>((ftf & 0x3u) << 2));
+174:     void writeVuInstructionPair(uint8_t *code, uint32_t pc, uint32_t lower, uint32_t upper)
+180:     uint64_t packVuInstructionPair(uint32_t lower, uint32_t upper)
+185:     void writeTrackedVuInstructionPair(Vu1Fixture &fx, uint32_t pc, uint32_t lower, uint32_t upper)
+187:         fx.mem.write64(PS2_VU1_CODE_BASE + pc, packVuInstructionPair(lower, upper));
+196:     void uploadVu1Mpg(PS2Memory &mem, uint16_t instructionAddress, uint32_t lower, uint32_t upper)
+199:         appendU32(packet, makeVifCmd(0x4Au, 1u, instructionAddress));
+202:         mem.processVIF1Data(packet.data(), static_cast<uint32_t>(packet.size()));
+205:     void writeVuQword(uint8_t *data, uint32_t qwordIndex, const float values[4])
+210:     void readVuQword(const uint8_t *data, uint32_t qwordIndex, float values[4])
+216: void register_ps2_vu1_tests()
+218:     MiniTest::Case("PS2VU1", [](TestCase &tc)
+220:         tc.Run("upper ADD applies the destination mask", [](TestCase &t)
+222:             Vu1Fixture fx;
+223:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+225:             writeVuInstructionPair(fx.code, 0u, 0u, makeVuUpper(0x28u, 0xAu, 2u, 1u, 3u)); // ADD.xz vf3, vf1, vf2
+227:             VU1Interpreter vu1;
+228:             vu1.state().vf[1][0] = 1.0f;
+229:             vu1.state().vf[1][1] = 2.0f;
+230:             vu1.state().vf[1][2] = 3.0f;
+231:             vu1.state().vf[1][3] = 4.0f;
+232:             vu1.state().vf[2][0] = 10.0f;
+233:             vu1.state().vf[2][1] = 20.0f;
+234:             vu1.state().vf[2][2] = 30.0f;
+235:             vu1.state().vf[2][3] = 40.0f;
+236:             vu1.state().vf[3][0] = -1.0f;
+237:             vu1.state().vf[3][1] = -2.0f;
+238:             vu1.state().vf[3][2] = -3.0f;
+239:             vu1.state().vf[3][3] = -4.0f;
+241:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 1u);
+243:             t.Equals(vu1.state().vf[3][0], -1.0f,
+245:             vu1.resume(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE,
+247:             t.Equals(vu1.state().vf[3][0], 11.0f, "ADD.x should write x");
+248:             t.Equals(vu1.state().vf[3][1], -2.0f, "ADD.xz should preserve y");
+249:             t.Equals(vu1.state().vf[3][2], 33.0f, "ADD.xz should write z");
+250:             t.Equals(vu1.state().vf[3][3], -4.0f, "ADD.xz should preserve w");
+253:         tc.Run("LOI commits the lower immediate after the upper instruction", [](TestCase &t)
+255:             Vu1Fixture fx;
+256:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+261:             const uint32_t upperAddiWithIBit = makeVuUpper(0x22u, 0xFu, 0u, 1u, 2u) | 0x80000000u; // ADDi.xyzw vf2, vf1
+262:             writeVuInstructionPair(fx.code, 0u, lowerImmediate, upperAddiWithIBit);
+264:             VU1Interpreter vu1;
+265:             vu1.state().i = 2.0f;
+266:             vu1.state().vf[1][0] = 1.0f;
+267:             vu1.state().vf[1][1] = 2.0f;
+268:             vu1.state().vf[1][2] = 3.0f;
+269:             vu1.state().vf[1][3] = 4.0f;
+271:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 1u);
+273:             t.Equals(vu1.state().vf[2][0], 0.0f,
+275:             t.Equals(vu1.state().i, 7.0f,
+277:             vu1.resume(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE,
+279:             t.Equals(vu1.state().vf[2][0], 3.0f, "ADDi should use old I for x");
+280:             t.Equals(vu1.state().vf[2][1], 4.0f, "ADDi should use old I for y");
+281:             t.Equals(vu1.state().vf[2][2], 5.0f, "ADDi should use old I for z");
+282:             t.Equals(vu1.state().vf[2][3], 6.0f, "ADDi should use old I for w");
+283:             t.Equals(vu1.state().i, 7.0f, "LOI should commit lower immediate into I after upper execution");
+286:         tc.Run("ITOF converts the raw signed integer bits without float normalization", [](TestCase &t)
+288:             Vu1Fixture fx;
+289:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+291:             writeVuInstructionPair(
+293:                 makeVuUpperSpecial(0x10u, 0xFu, 2u, 1u));
+295:             VU1Interpreter vu1;
+297:             std::memcpy(vu1.state().vf[1], raw, sizeof(raw));
+298:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+299:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+302:             t.Equals(vu1.state().vf[2][0], 1.0f,
+304:             t.Equals(vu1.state().vf[2][1], -16.0f,
+306:             t.Equals(vu1.state().vf[2][2], 4096.0f,
+308:             t.Equals(vu1.state().vf[2][3], -32768.0f,
+312:         tc.Run("MTIR decodes fsf as a component selector", [](TestCase &t)
+314:             Vu1Fixture fx;
+315:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+319:                 writeVuInstructionPair(
+321:                     makeVuLowerSpecial(0x3Cu, 1u,
+325:                     kVuUpperNop);
+328:             VU1Interpreter vu1;
+330:             std::memcpy(vu1.state().vf[1], raw, sizeof(raw));
+331:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+332:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+335:             t.Equals(vu1.state().vi[2], 0x1111,
+337:             t.Equals(vu1.state().vi[3], 0x2222,
+339:             t.Equals(vu1.state().vi[4], 0x3333,
+341:             t.Equals(vu1.state().vi[5], 0x4444,
+345:         tc.Run("LQ and SQ use VI qword addressing and destination masks", [](TestCase &t)
+347:             Vu1Fixture fx;
+348:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+352:             writeVuQword(fx.data, 3u, sourceQw);
+353:             writeVuQword(fx.data, 5u, destQw);
+354:             writeVuInstructionPair(fx.code, 0u, makeVuLq(0x5u, 4u, 1u, 1), kVuUpperNop); // LQ.yw vf4, 1(vi1)
+355:             writeVuInstructionPair(fx.code, 8u, makeVuSq(0xAu, 4u, 2u, 1), kVuUpperNop); // SQ.xz vf4, 1(vi2)
+357:             VU1Interpreter vu1;
+358:             vu1.state().vi[1] = 2;
+359:             vu1.state().vi[2] = 4;
+360:             vu1.state().vf[4][0] = 100.0f;
+361:             vu1.state().vf[4][1] = 200.0f;
+362:             vu1.state().vf[4][2] = 300.0f;
+363:             vu1.state().vf[4][3] = 400.0f;
+365:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 3u);
+367:             t.Equals(vu1.state().vf[4][1], 200.0f,
+369:             vu1.resume(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE,
+371:             t.Equals(vu1.state().vf[4][0], 100.0f, "LQ.yw should preserve x");
+372:             t.Equals(vu1.state().vf[4][1], 20.0f, "LQ.yw should load y");
+373:             t.Equals(vu1.state().vf[4][2], 300.0f, "LQ.yw should preserve z");
+374:             t.Equals(vu1.state().vf[4][3], 40.0f, "LQ.yw should load w");
+377:             readVuQword(fx.data, 5u, stored);
+382:             t.Equals(vu1.state().cycles, static_cast<uint64_t>(4u),
+386:         tc.Run("integer lower ops keep VI0 hardwired to zero", [](TestCase &t)
+388:             Vu1Fixture fx;
+389:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+391:             writeVuInstructionPair(fx.code, 0u, makeVuIaddiu(2u, 1u, 5), kVuUpperNop);      // IADDIU vi2, vi1, 5
+392:             writeVuInstructionPair(fx.code, 8u, makeVuIaddiu(0u, 2u, 7), kVuUpperNop);      // IADDIU vi0, vi2, 7
+393:             writeVuInstructionPair(fx.code, 16u, makeVuLowerDirect(0x30u, 2u, 1u, 3u), kVuUpperNop); // IADD vi3, vi2, vi1
+395:             VU1Interpreter vu1;
+396:             vu1.state().vi[0] = 99;
+397:             vu1.state().vi[1] = 10;
+399:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 3u);
+401:             t.Equals(vu1.state().vi[2], 15, "IADDIU should add signed immediate to VI source");
+402:             t.Equals(vu1.state().vi[3], 25, "IADD should add VI source registers");
+403:             t.Equals(vu1.state().vi[0], 0, "VI0 should remain hardwired to zero");
+406:         tc.Run("XTOP and XITOP expose VIF TOP values to VI registers", [](TestCase &t)
+408:             Vu1Fixture fx;
+409:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+411:             writeVuInstructionPair(fx.code, 0u, makeVuLowerSpecial(0x68u, 0u, 2u), kVuUpperNop); // XTOP vi2
+412:             writeVuInstructionPair(fx.code, 8u, makeVuLowerSpecial(0x69u, 0u, 3u), kVuUpperNop); // XITOP vi3
+414:             VU1Interpreter vu1;
+415:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0x123u, 0x2ABu, 2u);
+417:             t.Equals(vu1.state().vi[2], 0x123, "XTOP should move TOP into the target VI register");
+418:             t.Equals(vu1.state().vi[3], 0x2AB, "XITOP should move ITOP into the target VI register");
+421:         tc.Run("lower branch commits after one delay-slot instruction", [](TestCase &t)
+423:             Vu1Fixture fx;
+424:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+426:             writeVuInstructionPair(fx.code, 0u, makeVuBranch(2), kVuUpperNop);              // target pc = 24
+427:             writeVuInstructionPair(fx.code, 8u, makeVuIaddiu(1u, 0u, 1), kVuUpperNop);      // delay slot
+428:             writeVuInstructionPair(fx.code, 16u, makeVuIaddiu(2u, 0u, 99), kVuUpperNop);    // skipped
+429:             writeVuInstructionPair(fx.code, 24u, makeVuIaddiu(3u, 0u, 7), kVuUpperNop);     // branch target
+431:             VU1Interpreter vu1;
+432:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 3u);
+434:             t.Equals(vu1.state().vi[1], 1, "branch delay slot should execute");
+435:             t.Equals(vu1.state().vi[2], 0, "instruction between delay slot and target should be skipped");
+436:             t.Equals(vu1.state().vi[3], 7, "branch target should execute after the delay slot");
+439:         tc.Run("lower side sees old VF value when upper writes the same register", [](TestCase &t)
+441:             Vu1Fixture fx;
+442:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+444:             writeVuInstructionPair(fx.code,
+446:                                    makeVuSq(0xFu, 1u, 1u, 0),                 // SQ.xyzw vf1, 0(vi1)
+447:                                    makeVuUpper(0x28u, 0xFu, 3u, 2u, 1u));     // ADD.xyzw vf1, vf2, vf3
+449:             VU1Interpreter vu1;
+450:             vu1.state().vi[1] = 6;
+451:             vu1.state().vf[1][0] = 1.0f;
+452:             vu1.state().vf[1][1] = 2.0f;
+453:             vu1.state().vf[1][2] = 3.0f;
+454:             vu1.state().vf[1][3] = 4.0f;
+455:             vu1.state().vf[2][0] = 10.0f;
+456:             vu1.state().vf[2][1] = 20.0f;
+457:             vu1.state().vf[2][2] = 30.0f;
+458:             vu1.state().vf[2][3] = 40.0f;
+459:             vu1.state().vf[3][0] = 100.0f;
+460:             vu1.state().vf[3][1] = 200.0f;
+461:             vu1.state().vf[3][2] = 300.0f;
+462:             vu1.state().vf[3][3] = 400.0f;
+464:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 2u);
+467:             readVuQword(fx.data, 6u, stored);
+472:             vu1.resume(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE,
+474:             t.Equals(vu1.state().vf[1][0], 110.0f, "upper ADD should write x after lower read");
+475:             t.Equals(vu1.state().vf[1][1], 220.0f, "upper ADD should write y after lower read");
+476:             t.Equals(vu1.state().vf[1][2], 330.0f, "upper ADD should write z after lower read");
+477:             t.Equals(vu1.state().vf[1][3], 440.0f, "upper ADD should write w after lower read");
+480:         tc.Run("upper suppresses only the colliding lower VF write", [](TestCase &t)
+482:             Vu1Fixture fx;
+483:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+486:             writeVuQword(fx.data, 5u, loaded);
+487:             writeVuInstructionPair(
+490:                 makeVuLowerSpecial(0x34u, 1u, 1u, 0u, 0xFu),
+491:                 makeVuUpper(0x28u, 0x8u, 3u, 2u, 1u));
+493:             VU1Interpreter vu1;
+494:             vu1.state().vi[1] = 5;
+495:             vu1.state().vf[1][0] = 1.0f;
+496:             vu1.state().vf[1][1] = 2.0f;
+497:             vu1.state().vf[1][2] = 3.0f;
+498:             vu1.state().vf[1][3] = 4.0f;
+499:             vu1.state().vf[2][0] = 10.0f;
+500:             vu1.state().vf[3][0] = 100.0f;
+502:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+503:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+506:             t.Equals(vu1.state().vf[1][0], 1.0f,
+508:             t.Equals(vu1.state().vi[1], 6,
+510:             vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+511:                        fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+513:             t.Equals(vu1.state().vf[1][0], 110.0f,
+515:             t.Equals(vu1.state().vf[1][1], 2.0f,
+517:             t.Equals(vu1.state().vf[1][2], 3.0f,
+519:             t.Equals(vu1.state().vf[1][3], 4.0f,
+521:             t.Equals(vu1.state().vi[1], 6,
+525:         tc.Run("upper and lower both read the pre-pair VF state", [](TestCase &t)
+527:             Vu1Fixture fx;
+528:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+530:             writeVuInstructionPair(
+532:                 makeVuLowerSpecial(0x30u, 1u, 2u, 0u, 0x8u),
+533:                 makeVuUpper(0x28u, 0x8u, 3u, 2u, 1u));
+535:             VU1Interpreter vu1;
+536:             vu1.state().vf[1][0] = 10.0f;
+537:             vu1.state().vf[2][0] = 20.0f;
+538:             vu1.state().vf[3][0] = 1.0f;
+539:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+540:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+543:             vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+544:                        fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+546:             t.Equals(vu1.state().vf[1][0], 21.0f,
+548:             t.Equals(vu1.state().vf[2][0], 10.0f,
+552:         tc.Run("FMAC dependency stalls only the lanes that are read", [](TestCase &t)
+554:             Vu1Fixture fx;
+555:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+557:             writeVuInstructionPair(
+559:                 makeVuUpper(0x28u, 0x8u, 2u, 1u, 3u));
+560:             writeVuInstructionPair(
+562:                 makeVuUpper(0x28u, 0x8u, 2u, 3u, 4u));
+564:             VU1Interpreter vu1;
+565:             vu1.state().vf[1][0] = 1.0f;
+566:             vu1.state().vf[2][0] = 2.0f;
+567:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+568:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+571:             t.Equals(vu1.state().vf[4][0], 0.0f,
+573:             vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+574:                        fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+576:             t.Equals(vu1.state().vf[4][0], 5.0f,
+578:             t.Equals(vu1.state().cycles, static_cast<uint64_t>(8u),
+582:         tc.Run("ACC forwarding feeds the next upper instruction without a dependency stall", [](TestCase &t)
+584:             Vu1Fixture fx;
+585:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+587:             writeVuInstructionPair(
+589:                 makeVuUpperSpecial(0x28u, 0x8u, 2u, 1u)); // ADDA.x acc, vf1, vf2
+590:             writeVuInstructionPair(
+592:                 makeVuUpper(0x29u, 0x8u, 4u, 3u, 5u)); // MADD.x vf5, vf3, vf4
+594:             VU1Interpreter vu1;
+595:             vu1.state().vf[1][0] = 1.0f;
+596:             vu1.state().vf[2][0] = 10.0f;
+597:             vu1.state().vf[3][0] = 2.0f;
+598:             vu1.state().vf[4][0] = 3.0f;
+599:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+600:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+603:             t.Equals(vu1.state().acc[0], 11.0f,
+605:             t.Equals(vu1.state().vf[5][0], 17.0f,
+607:             t.Equals(vu1.state().cycles, static_cast<uint64_t>(5u),
+611:         tc.Run("ILW result becomes visible after four cycles before IALU consumes it", [](TestCase &t)
+613:             Vu1Fixture fx;
+614:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+618:             writeVuInstructionPair(
+619:                 fx.code, 0u, makeVuIlw(0x8u, 2u, 1u, 0), kVuUpperNop);
+620:             writeVuInstructionPair(
+621:                 fx.code, 8u, makeVuIaddiu(3u, 2u, 1), kVuUpperNop);
+623:             VU1Interpreter vu1;
+624:             vu1.state().vi[1] = 2;
+625:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+626:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+629:             t.Equals(vu1.state().vi[2], 0x1234,
+631:             t.Equals(vu1.state().vi[3], 0x1235,
+633:             t.Equals(vu1.state().cycles, static_cast<uint64_t>(5u),
+637:         tc.Run("DIV and SQRT update the Q register from selected vector components", [](TestCase &t)
+639:             Vu1Fixture fx;
+640:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+642:             writeVuInstructionPair(fx.code, 0u, makeVuDiv(1u, 2u, 1u, 2u), kVuUpperNop);              // Q = vf1.y / vf2.z
+643:             writeVuInstructionPair(fx.code, 8u, makeVuLowerSpecial(0x3Bu, 0u), kVuUpperNop);          // WAITQ
+644:             writeVuInstructionPair(fx.code, 16u, makeVuSqrt(3u, 3u), kVuUpperNop);                    // Q = sqrt(abs(vf3.w))
+645:             writeVuInstructionPair(fx.code, 24u, makeVuLowerSpecial(0x3Bu, 0u), kVuUpperNop);         // WAITQ
+647:             VU1Interpreter vu1;
+648:             vu1.state().vf[1][1] = 18.0f;
+649:             vu1.state().vf[2][2] = 3.0f;
+650:             vu1.state().vf[3][3] = 25.0f;
+652:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 8u);
+653:             t.Equals(vu1.state().q, 6.0f, "WAITQ should expose DIV after its seven-cycle latency");
+654:             t.Equals(vu1.state().cycles, static_cast<uint64_t>(8u),
+655:                      "maxCycles should count FDIV stalls as elapsed VU cycles");
+657:             vu1.resume(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 8u);
+658:             t.Equals(vu1.state().q, 5.0f, "WAITQ should expose SQRT after its seven-cycle latency");
+661:         tc.Run("FDIV resource serializes back-to-back scalar operations", [](TestCase &t)
+663:             Vu1Fixture fx;
+664:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+666:             writeVuInstructionPair(
+668:                 makeVuDiv(1u, 2u, 0u, 0u),
+669:                 kVuUpperNop); // Q = vf1.x / vf2.x
+670:             writeVuInstructionPair(
+672:                 makeVuSqrt(3u, 0u),
+673:                 kVuUpperNop); // Must wait for the shared FDIV unit.
+674:             writeVuInstructionPair(
+676:                 makeVuLowerSpecial(0x3Bu, 0u),
+677:                 kVuUpperNop); // WAITQ
+679:             VU1Interpreter vu1;
+680:             vu1.state().vf[1][0] = 18.0f;
+681:             vu1.state().vf[2][0] = 3.0f;
+682:             vu1.state().vf[3][0] = 25.0f;
+683:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+684:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+687:             t.Equals(vu1.state().q, 5.0f,
+689:             t.Equals(vu1.state().cycles, static_cast<uint64_t>(15u),
+693:         tc.Run("FDIV commits current and sticky divide-invalid status", [](TestCase &t)
+695:             Vu1Fixture fx;
+696:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+698:             writeVuInstructionPair(
+699:                 fx.code, 0u, makeVuDiv(1u, 2u, 0u, 0u),
+700:                 kVuUpperNop);
+701:             writeVuInstructionPair(
+702:                 fx.code, 8u, makeVuLowerSpecial(0x3Bu, 0u),
+703:                 kVuUpperNop);
+705:             VU1Interpreter vu1;
+706:             vu1.state().vf[1][0] = 0.0f;
+707:             vu1.state().vf[2][0] = 0.0f;
+708:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+709:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+711:             t.Equals(vu1.state().status, 0x410u,
+714:             vu1.reset();
+715:             vu1.state().vf[1][0] = 1.0f;
+716:             vu1.state().vf[2][0] = 0.0f;
+717:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+718:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+720:             t.Equals(vu1.state().status, 0x820u,
+724:         tc.Run("EFU WAITP and RNG execute with architectural latency and state", [](TestCase &t)
+726:             Vu1Fixture fx;
+727:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+729:             writeVuInstructionPair(
+731:                 makeVuLowerSpecial(0x70u, 1u),
+732:                 kVuUpperNop); // ESADD P, vf1
+733:             writeVuInstructionPair(
+735:                 makeVuLowerSpecial(0x7Bu, 0u),
+736:                 kVuUpperNop); // WAITP
+737:             writeVuInstructionPair(
+739:                 makeVuLowerSpecial(0x42u, 2u, 0u, 0u, 0x8u),
+740:                 kVuUpperNop); // RINIT R, vf2.x
+741:             writeVuInstructionPair(
+743:                 makeVuLowerSpecial(0x40u, 0u, 3u, 0u, 0x8u),
+744:                 kVuUpperNop); // RNEXT.x vf3
+746:             VU1Interpreter vu1;
+747:             vu1.state().vf[1][0] = 1.0f;
+748:             vu1.state().vf[1][1] = 2.0f;
+749:             vu1.state().vf[1][2] = 3.0f;
+750:             vu1.state().vf[2][0] = 1.5f;
+751:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+752:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+755:             t.Equals(vu1.state().p, 14.0f,
+757:             t.Equals(vu1.state().vf[3][0], 0.0f,
+759:             vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+760:                        fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+762:             t.IsTrue(vu1.state().vf[3][0] >= 1.0f &&
+763:                          vu1.state().vf[3][0] < 2.0f &&
+764:                          vu1.state().vf[3][0] != 1.5f,
+768:         tc.Run("EFU resource observes throughput separately from P visibility", [](TestCase &t)
+770:             Vu1Fixture fx;
+771:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+773:             writeVuInstructionPair(
+775:                 makeVuLowerSpecial(0x70u, 1u),
+776:                 kVuUpperNop); // ESADD: result at cycle 11, resource free at 10.
+777:             writeVuInstructionPair(
+779:                 makeVuLowerSpecial(0x72u, 1u),
+780:                 kVuUpperNop); // ELENG: must issue at cycle 10.
+781:             writeVuInstructionPair(
+783:                 makeVuLowerSpecial(0x7Bu, 0u),
+784:                 kVuUpperNop); // WAITP waits for ELENG at cycle 28.
+786:             VU1Interpreter vu1;
+787:             vu1.state().vf[1][0] = 1.0f;
+788:             vu1.state().vf[1][1] = 2.0f;
+789:             vu1.state().vf[1][2] = 3.0f;
+790:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+791:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+794:             t.IsTrue(vu1.state().p > 3.7f && vu1.state().p < 3.8f,
+796:             t.Equals(vu1.state().cycles, static_cast<uint64_t>(29u),
+800:         tc.Run("all EFU opcodes produce P at their architectural latency", [](TestCase &t)
+802:             Vu1Fixture fx;
+803:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+818:                 std::memset(fx.code, 0, PS2_VU1_CODE_SIZE);
+819:                 writeVuInstructionPair(
+821:                     makeVuLowerSpecial(efu.opcode, 1u, 0u, 0u, 0u),
+822:                     kVuUpperNop);
+823:                 writeVuInstructionPair(
+825:                     makeVuLowerSpecial(0x7Bu, 0u),
+826:                     kVuUpperNop);
+828:                 VU1Interpreter vu1;
+829:                 vu1.state().vf[1][0] = 0.25f;
+830:                 vu1.state().vf[1][1] = 0.5f;
+831:                 vu1.state().vf[1][2] = 0.75f;
+832:                 vu1.state().vf[1][3] = 1.0f;
+833:                 vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+834:                             fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+837:                 t.Equals(vu1.state().cycles,
+839:                          "WAITP should count every EFU stall as an elapsed VU cycle");
+840:                 t.IsTrue(std::isfinite(vu1.state().p),
+845:         tc.Run("E and enabled D/T stop with their architectural delay rules", [](TestCase &t)
+847:             Vu1Fixture fx;
+848:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+850:             writeVuInstructionPair(
+852:                 kVuUpperNop | 0x40000000u);
+853:             writeVuInstructionPair(
+854:                 fx.code, 8u, makeVuIaddiu(1u, 0u, 7),
+855:                 kVuUpperNop);
+856:             writeVuInstructionPair(
+857:                 fx.code, 16u, makeVuIaddiu(2u, 0u, 9),
+858:                 kVuUpperNop);
+860:             VU1Interpreter vu1;
+861:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+862:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+864:             t.Equals(vu1.state().vi[1], 7,
+866:             t.Equals(vu1.state().vi[2], 0,
+869:             vu1.reset();
+870:             writeTrackedVuInstructionPair(
+871:                 fx, 0u, makeVuIaddiu(1u, 0u, 3),
+872:                 kVuUpperNop | 0x08000000u);
+873:             writeTrackedVuInstructionPair(
+874:                 fx, 8u, makeVuIaddiu(2u, 0u, 5),
+875:                 kVuUpperNop);
+876:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+877:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+879:             t.Equals(vu1.state().vi[2], 5,
+882:             vu1.reset();
+883:             vu1.state().tBitEnabled = true;
+884:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+885:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+887:             t.Equals(vu1.state().vi[1], 3,
+889:             t.Equals(vu1.state().vi[2], 0,
+891:             t.IsTrue(vu1.state().stoppedByT,
+894:             vu1.reset();
+895:             vu1.state().dBitEnabled = true;
+896:             writeTrackedVuInstructionPair(
+897:                 fx, 0u, makeVuIaddiu(1u, 0u, 4),
+898:                 kVuUpperNop | 0x10000000u);
+899:             writeTrackedVuInstructionPair(
+900:                 fx, 8u, makeVuIaddiu(2u, 0u, 6),
+901:                 kVuUpperNop);
+902:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+903:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+905:             t.Equals(vu1.state().vi[1], 4,
+907:             t.Equals(vu1.state().vi[2], 0,
+909:             t.IsTrue(vu1.state().stoppedByD,
+912:             vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+913:                        fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+915:             t.Equals(vu1.state().vi[2], 6,
+916:                      "MSCNT-style resume should continue at the stopped TPC");
+917:             t.IsTrue(!vu1.state().stoppedByD && !vu1.state().stoppedByT,
+920:             vu1.reset();
+921:             vu1.state().tBitEnabled = true;
+922:             writeTrackedVuInstructionPair(
+923:                 fx, 0u, makeVuBranch(1),
+924:                 kVuUpperNop | 0x08000000u);
+925:             writeTrackedVuInstructionPair(
+926:                 fx, 8u, makeVuIaddiu(2u, 0u, 11),
+927:                 kVuUpperNop);
+928:             writeTrackedVuInstructionPair(
+929:                 fx, 16u, makeVuIaddiu(3u, 0u, 13),
+930:                 kVuUpperNop);
+931:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+932:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+934:             t.Equals(vu1.state().vi[2], 11,
+936:             t.Equals(vu1.state().vi[3], 0,
+938:             t.Equals(vu1.state().pc, 16u,
+942:         tc.Run("conditional branch sees the previous VI value for one instruction", [](TestCase &t)
+944:             Vu1Fixture fx;
+945:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+947:             writeVuInstructionPair(
+948:                 fx.code, 0u, makeVuIaddiu(1u, 0u, 1),
+949:                 kVuUpperNop);
+950:             writeVuInstructionPair(
+951:                 fx.code, 8u, makeVuIbne(1u, 0u, 2),
+952:                 kVuUpperNop);
+953:             writeVuInstructionPair(
+954:                 fx.code, 16u, makeVuIaddiu(2u, 0u, 2),
+955:                 kVuUpperNop);
+956:             writeVuInstructionPair(
+957:                 fx.code, 24u, makeVuIaddiu(3u, 0u, 3),
+958:                 kVuUpperNop);
+959:             writeVuInstructionPair(
+960:                 fx.code, 32u, makeVuIaddiu(4u, 0u, 4),
+961:                 kVuUpperNop);
+963:             VU1Interpreter vu1;
+964:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+965:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+968:             t.Equals(vu1.state().vi[2], 2,
+970:             t.Equals(vu1.state().vi[3], 3,
+973:             vu1.reset();
+974:             writeTrackedVuInstructionPair(fx, 8u, 0u, kVuUpperNop);
+975:             writeTrackedVuInstructionPair(
+976:                 fx, 16u, makeVuIbne(1u, 0u, 2),
+977:                 kVuUpperNop);
+978:             writeTrackedVuInstructionPair(
+979:                 fx, 40u, makeVuIaddiu(5u, 0u, 5),
+980:                 kVuUpperNop);
+981:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+982:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+984:             t.Equals(vu1.state().vi[3], 3,
+986:             t.Equals(vu1.state().vi[4], 0,
+988:             t.Equals(vu1.state().vi[5], 5,
+991:             vu1.reset();
+992:             writeTrackedVuInstructionPair(
+993:                 fx, 0u, makeVuIaddiu(1u, 0u, 1),
+994:                 makeVuUpper(0x28u, 0x8u, 2u, 1u, 3u));
+995:             writeTrackedVuInstructionPair(
+996:                 fx, 8u, makeVuIbne(1u, 0u, 2),
+997:                 makeVuUpper(0x28u, 0x8u, 0u, 3u, 4u));
+998:             writeTrackedVuInstructionPair(
+999:                 fx, 16u, makeVuIaddiu(2u, 0u, 2),
+1000:                 kVuUpperNop);
+1001:             writeTrackedVuInstructionPair(
+1002:                 fx, 24u, makeVuIaddiu(3u, 0u, 3),
+1003:                 kVuUpperNop);
+1004:             writeTrackedVuInstructionPair(
+1005:                 fx, 32u, makeVuIaddiu(4u, 0u, 4),
+1006:                 kVuUpperNop);
+1007:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+1008:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+1010:             t.Equals(vu1.state().vi[2], 2,
+1012:             t.Equals(vu1.state().vi[3], 3,
+1013:                      "the VI bypass must survive VF hazard stalls before the next pair issues");
+1014:             t.Equals(vu1.state().vi[4], 0,
+1015:                      "elapsed stall cycles must not expire the one-instruction VI bypass");
+1018:         tc.Run("flag checks are visible to an immediately following branch", [](TestCase &t)
+1020:             Vu1Fixture fx;
+1021:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+1023:             writeVuInstructionPair(
+1025:                 makeVuFlagImmediate(0x16u, 1u, 0x001u),
+1026:                 kVuUpperNop);
+1027:             writeVuInstructionPair(
+1028:                 fx.code, 8u, makeVuIbne(1u, 0u, 2),
+1029:                 kVuUpperNop);
+1030:             writeVuInstructionPair(
+1031:                 fx.code, 16u, makeVuIaddiu(2u, 0u, 2),
+1032:                 kVuUpperNop);
+1033:             writeVuInstructionPair(
+1034:                 fx.code, 24u, makeVuIaddiu(3u, 0u, 3),
+1035:                 kVuUpperNop);
+1036:             writeVuInstructionPair(
+1037:                 fx.code, 32u, makeVuIaddiu(4u, 0u, 4),
+1038:                 kVuUpperNop);
+1040:             VU1Interpreter vu1;
+1041:             vu1.state().status = 0x001u;
+1042:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+1043:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+1046:             t.Equals(vu1.state().vi[1], 1,
+1048:             t.Equals(vu1.state().vi[2], 2,
+1050:             t.Equals(vu1.state().vi[3], 0,
+1052:             t.Equals(vu1.state().vi[4], 4,
+1056:         tc.Run("JR shares the one-instruction VI branch visibility rule", [](TestCase &t)
+1058:             Vu1Fixture fx;
+1059:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+1061:             writeVuInstructionPair(
+1062:                 fx.code, 0u, makeVuIaddiu(1u, 0u, 2),
+1063:                 kVuUpperNop);
+1064:             writeVuInstructionPair(
+1065:                 fx.code, 8u, makeVuJr(1u),
+1066:                 kVuUpperNop);
+1067:             writeVuInstructionPair(
+1068:                 fx.code, 16u, makeVuIaddiu(2u, 0u, 2),
+1069:                 kVuUpperNop);
+1070:             writeVuInstructionPair(
+1071:                 fx.code, 24u, makeVuIaddiu(3u, 0u, 3),
+1072:                 kVuUpperNop);
+1073:             writeVuInstructionPair(
+1074:                 fx.code, 32u, makeVuIaddiu(4u, 0u, 4),
+1075:                 kVuUpperNop);
+1077:             VU1Interpreter vu1;
+1078:             vu1.state().vi[1] = 4;
+1079:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+1080:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+1083:             t.Equals(vu1.state().vi[1], 2,
+1085:             t.Equals(vu1.state().vi[2], 2,
+1087:             t.Equals(vu1.state().vi[3], 0,
+1089:             t.Equals(vu1.state().vi[4], 4,
+1093:         tc.Run("MPG upload invalidates cached VU1 decode before MSCAL", [](TestCase &t)
+1095:             Vu1Fixture fx;
+1096:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+1098:             VU1Interpreter vu1;
+1099:             fx.mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+1101:                 vu1.execute(fx.code,
+1102:                             PS2_VU1_CODE_SIZE,
+1104:                             PS2_VU1_DATA_SIZE,
+1113:             uploadVu1Mpg(fx.mem, 0u, makeVuIaddiu(1u, 0u, 1), kVuUpperNop);
+1114:             const uint32_t firstMscal = makeVifCmd(0x14u, 0u, 0u);
+1115:             fx.mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&firstMscal), sizeof(firstMscal));
+1116:             t.Equals(vu1.state().vi[1], 1, "first MSCAL should execute the first uploaded program");
+1118:             uploadVu1Mpg(fx.mem, 0u, makeVuIaddiu(1u, 0u, 2), kVuUpperNop);
+1119:             const uint32_t secondMscal = makeVifCmd(0x14u, 0u, 0u);
+1120:             fx.mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&secondMscal), sizeof(secondMscal));
+1121:             t.Equals(vu1.state().vi[1], 2, "second MSCAL should see the MPG-updated instruction");
+1124:         tc.Run("direct VU1 code writes invalidate cached decode", [](TestCase &t)
+1126:             Vu1Fixture fx;
+1127:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+1129:             VU1Interpreter vu1;
+1130:             fx.mem.write64(PS2_VU1_CODE_BASE, packVuInstructionPair(makeVuIaddiu(1u, 0u, 1), kVuUpperNop));
+1131:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 1u);
+1132:             t.Equals(vu1.state().vi[1], 1, "first execution should use the original direct write");
+1134:             fx.mem.write64(PS2_VU1_CODE_BASE, packVuInstructionPair(makeVuIaddiu(1u, 0u, 2), kVuUpperNop));
+1135:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 1u);
+1136:             t.Equals(vu1.state().vi[1], 2, "second execution should rebuild decode after the direct write");
+1139:         tc.Run("XGKICK sends a VU memory GIF packet through PATH1", [](TestCase &t)
+1154:             uint8_t *vuCode = mem.getVU1Code();
+1155:             uint8_t *vuData = mem.getVU1Data();
+1156:             std::memset(vuCode, 0, PS2_VU1_CODE_SIZE);
+1157:             std::memset(vuData, 0, PS2_VU1_DATA_SIZE);
+1159:             constexpr uint32_t kLastQw = (PS2_VU1_DATA_SIZE / 16u) - 1u;
+1163:             std::memcpy(vuData + tagOffset, &imageTag, sizeof(imageTag));
+1167:                 vuData[i] = static_cast<uint8_t>(0xC0u + i);
+1170:             const uint32_t lower = makeVuLowerSpecial(0x6Cu, 1u);
+1171:             std::memcpy(vuCode + 0u, &lower, sizeof(lower));
+1173:             std::memcpy(vuCode + 4u, &upper, sizeof(upper));
+1175:             VU1Interpreter vu1;
+1176:             vu1.state().vi[1] = static_cast<int32_t>(kLastQw);
+1177:             vu1.execute(vuCode,
+1178:                         PS2_VU1_CODE_SIZE,
+1179:                         vuData,
+1180:                         PS2_VU1_DATA_SIZE,
+1201:                 t.IsTrue(payloadOk, "wrapped payload should be copied from start of VU1 memory");
+1205:         tc.Run("XGKICK observes stores committed before a future PATH1 qword", [](TestCase &t)
+1220:             uint8_t *code = mem.getVU1Code();
+1221:             uint8_t *data = mem.getVU1Data();
+1222:             std::memset(code, 0, PS2_VU1_CODE_SIZE);
+1223:             std::memset(data, 0xFF, PS2_VU1_DATA_SIZE);
+1228:             writeVuInstructionPair(
+1230:                 makeVuLowerSpecial(0x6Cu, 1u),
+1231:                 kVuUpperNop);
+1232:             writeVuInstructionPair(
+1234:                 makeVuSq(0xFu, 4u, 2u, 0),
+1235:                 kVuUpperNop);
+1236:             writeVuInstructionPair(code, 16u, 0u, kVuUpperNop);
+1238:             VU1Interpreter vu1;
+1239:             vu1.state().vi[1] = 0;
+1240:             vu1.state().vi[2] = 1;
+1242:             std::memcpy(vu1.state().vf[4], replacement, sizeof(replacement));
+1243:             vu1.execute(code, PS2_VU1_CODE_SIZE,
+1244:                         data, PS2_VU1_DATA_SIZE, gs, &mem,
+1259:         tc.Run("a second XGKICK stalls until the active PATH1 transfer completes", [](TestCase &t)
+1273:             uint8_t *code = mem.getVU1Code();
+1274:             uint8_t *data = mem.getVU1Data();
+1275:             std::memset(code, 0, PS2_VU1_CODE_SIZE);
+1276:             std::memset(data, 0, PS2_VU1_DATA_SIZE);
+1283:             writeVuInstructionPair(
+1285:                 makeVuLowerSpecial(0x6Cu, 1u),
+1286:                 kVuUpperNop);
+1287:             writeVuInstructionPair(
+1289:                 makeVuLowerSpecial(0x6Cu, 2u),
+1290:                 kVuUpperNop);
+1291:             writeVuInstructionPair(code, 16u, 0u, kVuUpperNop);
+1292:             writeVuInstructionPair(code, 24u, 0u, kVuUpperNop);
+1294:             VU1Interpreter vu1;
+1295:             vu1.state().vi[1] = 0;
+1296:             vu1.state().vi[2] = 2;
+1297:             vu1.execute(code, PS2_VU1_CODE_SIZE,
+1298:                         data, PS2_VU1_DATA_SIZE, gs, &mem,
+1310:             t.Equals(vu1.state().cycles, static_cast<uint64_t>(6u),
+1311:                      "XGKICK resource stalls should consume VU cycles");
+1314:         tc.Run("synthetic Code Veronica text packet preserves black-frame PATH1 data", [](TestCase &t)
+1329:             uint8_t *code = mem.getVU1Code();
+1330:             uint8_t *data = mem.getVU1Data();
+1331:             std::memset(code, 0, PS2_VU1_CODE_SIZE);
+1332:             std::memset(data, 0, PS2_VU1_DATA_SIZE);
+1336:             writeVuInstructionPair(
+1338:                 makeVuUpper(0x28u, 0xFu, 3u, 2u, 4u));
+1339:             writeVuInstructionPair(
+1341:                 makeVuSq(0xFu, 4u, 2u, 0),
+1342:                 kVuUpperNop);
+1343:             writeVuInstructionPair(
+1345:                 makeVuLowerSpecial(0x6Cu, 1u),
+1346:                 kVuUpperNop);
+1348:             VU1Interpreter vu1;
+1349:             vu1.state().vi[1] = 0;
+1350:             vu1.state().vi[2] = 1;
+1353:             std::memcpy(vu1.state().vf[2], a, sizeof(a));
+1354:             std::memcpy(vu1.state().vf[3], b, sizeof(b));
+1356:             vu1.execute(code, PS2_VU1_CODE_SIZE,
+1357:                         data, PS2_VU1_DATA_SIZE, gs, &mem,
+1364:                 const float expected[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+1369:                                          expected,
+1370:                                          sizeof(expected)) == 0,
+1375:         tc.Run("MSCAL can start a VU1 XGKICK program and update GS VRAM", [](TestCase &t)
+1400:             uint8_t *vuCode = mem.getVU1Code();
+1401:             uint8_t *vuData = mem.getVU1Data();
+1402:             std::memset(vuCode, 0, PS2_VU1_CODE_SIZE);
+1403:             std::memset(vuData, 0, PS2_VU1_DATA_SIZE);
+1405:             const uint32_t lower = makeVuLowerSpecial(0x6Cu, 0u);
+1406:             std::memcpy(vuCode + 0u, &lower, sizeof(lower));
+1408:             std::memcpy(vuCode + 4u, &upper, sizeof(upper));
+1411:             std::memcpy(vuData + 0u, &gifTag, sizeof(gifTag));
+1413:             std::memcpy(vuData + 8u, &tagHi, sizeof(tagHi));
+1416:                 vuData[16u + i] = static_cast<uint8_t>(0x90u + i);
+1419:             VU1Interpreter vu1;
+1420:             mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+1422:                 vu1.execute(vuCode,
+1423:                             PS2_VU1_CODE_SIZE,
+1424:                             vuData,
+1425:                             PS2_VU1_DATA_SIZE,
+1434:             const uint32_t mscalCmd = makeVifCmd(0x14u, 0u, 0u);
+1435:             mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&mscalCmd), sizeof(mscalCmd));
+1451:             t.IsTrue(imageOk, "MSCAL-triggered XGKICK should route PATH1 packet into GS VRAM");
+1454:         tc.Run("standalone VU1 code honors the nullable PS2Memory API", [](TestCase &t)
+1462:             VU1Interpreter vu1;
+1463:             vu1.execute(code.data(), static_cast<uint32_t>(code.size()),
+1467:             t.Equals(vu1.state().pc, 0u,
+1471:         tc.Run("VU1 status-immediate ops decode IMM12 and their target VI", [](TestCase &t)
+1473:             Vu1Fixture fx;
+1474:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+1476:             writeVuInstructionPair(fx.code, 0u,
+1477:                                    makeVuFlagImmediate(0x14u, 5u, 0x812u),
+1478:                                    kVuUpperNop);
+1479:             writeVuInstructionPair(fx.code, 8u,
+1480:                                    makeVuFlagImmediate(0x16u, 6u, 0x810u),
+1481:                                    kVuUpperNop);
+1482:             writeVuInstructionPair(fx.code, 16u,
+1483:                                    makeVuFlagImmediate(0x17u, 7u, 0x040u),
+1484:                                    kVuUpperNop);
+1486:             VU1Interpreter vu1;
+1487:             vu1.state().status = 0x812u;
+1488:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+1489:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+1492:             t.Equals(vu1.state().vi[5], 1,
+1494:             t.Equals(vu1.state().vi[6], 0x810,
+1496:             t.Equals(vu1.state().vi[7], 0x852,
+1498:             t.Equals(vu1.state().vi[1], 0,
+1502:         tc.Run("VU1 FSSET enters the four-cycle flag pipeline", [](TestCase &t)
+1504:             Vu1Fixture fx;
+1505:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+1507:             writeVuInstructionPair(fx.code, 0u,
+1508:                                    makeVuFlagImmediate(0x15u, 0u, 0xA80u),
+1509:                                    kVuUpperNop);
+1511:             VU1Interpreter vu1;
+1512:             vu1.state().status = 0x015u;
+1513:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+1514:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+1516:             t.Equals(vu1.state().status, 0x015u,
+1519:             vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+1520:                        fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+1522:             t.Equals(vu1.state().status, 0xA95u,
+1526:         tc.Run("VU1 has one flag pipeline and FSSET wins a same-pair conflict", [](TestCase &t)
+1528:             Vu1Fixture fx;
+1529:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+1531:             writeVuInstructionPair(fx.code, 0u,
+1532:                                    makeVuFlagImmediate(0x15u, 0u, 0xA80u),
+1533:                                    makeVuUpper(0x28u, 0xAu, 2u, 1u, 3u));
+1535:                 writeVuInstructionPair(fx.code, pc, 0u, kVuUpperNop);
+1537:             VU1Interpreter vu1;
+1538:             vu1.state().vf[1][0] = 1.0f;
+1539:             vu1.state().vf[1][2] = -3.0f;
+1540:             vu1.state().vf[2][0] = -1.0f;
+1541:             vu1.state().vf[2][2] = 1.0f;
+1543:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+1544:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+1547:             t.Equals(vu1.state().mac, 0x28u,
+1549:             t.Equals(vu1.state().status, 0xA80u,
+1553:         tc.Run("VU1 FMAC flags respect destination lanes and become visible after four cycles", [](TestCase &t)
+1555:             Vu1Fixture fx;
+1556:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+1558:             writeVuInstructionPair(fx.code, 0u, 0u,
+1559:                                    makeVuUpper(0x28u, 0xAu, 2u, 1u, 3u));
+1560:             writeVuInstructionPair(fx.code, 8u,
+1561:                                    makeVuFlagRegister(0x18u, 6u, 7u),
+1562:                                    kVuUpperNop);
+1563:             writeVuInstructionPair(fx.code, 16u,
+1565:                                    kVuUpperNop);
+1566:             writeVuInstructionPair(fx.code, 24u,
+1568:                                    kVuUpperNop);
+1569:             writeVuInstructionPair(fx.code, 32u,
+1570:                                    makeVuFlagRegister(0x1Au, 4u, 5u),
+1571:                                    kVuUpperNop);
+1573:             VU1Interpreter vu1;
+1574:             vu1.state().vf[1][0] = 1.0f;
+1575:             vu1.state().vf[1][2] = -3.0f;
+1576:             vu1.state().vf[2][0] = -1.0f;
+1577:             vu1.state().vf[2][2] = 1.0f;
+1578:             vu1.state().vi[5] = 0xFFFF;
+1579:             vu1.state().vi[7] = 0;
+1581:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+1582:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+1585:             t.Equals(vu1.state().mac, 0u,
+1587:             t.Equals(vu1.state().vi[6], 1,
+1590:             vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+1591:                        fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+1594:             t.Equals(vu1.state().mac, 0x28u,
+1596:             t.Equals(vu1.state().status, 0xC3u,
+1598:             t.Equals(vu1.state().vi[4], 0x28,
+1602:         tc.Run("VU1 CLIP and FCGET share the four-cycle flag timeline", [](TestCase &t)
+1604:             Vu1Fixture fx;
+1605:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+1607:             writeVuInstructionPair(
+1609:                 makeVuUpperSpecial(0x1Fu, 0u, 2u, 1u));
+1610:             writeVuInstructionPair(
+1612:                 makeVuFlagRegister(0x1Cu, 3u, 0u),
+1613:                 kVuUpperNop);
+1614:             writeVuInstructionPair(fx.code, 16u, 0u, kVuUpperNop);
+1615:             writeVuInstructionPair(fx.code, 24u, 0u, kVuUpperNop);
+1616:             writeVuInstructionPair(
+1618:                 makeVuFlagRegister(0x1Cu, 4u, 0u),
+1619:                 kVuUpperNop);
+1621:             VU1Interpreter vu1;
+1622:             vu1.state().vf[1][0] = 2.0f;
+1623:             vu1.state().vf[2][3] = 1.0f;
+1624:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+1625:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+1628:             t.Equals(vu1.state().vi[3], 0,
+1630:             t.Equals(vu1.state().vi[4], 1,
+1632:             t.Equals(vu1.state().clip, 1u,
+1636:         tc.Run("VU1 FMAC normalizes overflow and underflow before writing results", [](TestCase &t)
+1638:             Vu1Fixture fx;
+1639:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+1641:             writeVuInstructionPair(fx.code, 0u, 0u,
+1642:                                    makeVuUpper(0x2Au, 0xFu, 2u, 1u, 3u));
+1644:             VU1Interpreter vu1;
+1645:             vu1.state().vf[1][0] = std::numeric_limits<float>::max();
+1646:             vu1.state().vf[1][1] = std::numeric_limits<float>::min();
+1647:             vu1.state().vf[1][2] = -2.0f;
+1648:             vu1.state().vf[1][3] = 0.0f;
+1649:             vu1.state().vf[2][0] = 2.0f;
+1650:             vu1.state().vf[2][1] = 0.5f;
+1651:             vu1.state().vf[2][2] = 1.0f;
+1652:             vu1.state().vf[2][3] = 1.0f;
+1654:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+1655:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+1658:             t.Equals(vu1.state().mac, 0x8425u,
+1660:             t.Equals(vu1.state().status, 0x3CFu,
+1662:             t.Equals(vu1.state().vf[3][0], std::numeric_limits<float>::max(),
+1663:                      "overflow should clamp to the largest finite VU value");
+1664:             t.Equals(vu1.state().vf[3][1], 0.0f,
+1668:         tc.Run("FMAC product contributes Z/S/U/O sticky flags", [](TestCase &t)
+1670:             Vu1Fixture fx;
+1671:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+1673:             writeVuInstructionPair(
+1675:                 makeVuUpper(0x29u, 0x8u, 2u, 1u, 3u)); // MADD.x
+1677:             VU1Interpreter vu1;
+1678:             vu1.state().acc[0] = 1.0f;
+1679:             vu1.state().vf[1][0] = std::numeric_limits<float>::min();
+1680:             vu1.state().vf[2][0] = 0.5f;
+1681:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+1682:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+1685:             t.Equals(vu1.state().vf[3][0], 1.0f,
+1687:             t.Equals(vu1.state().mac, 0u,
+1689:             t.Equals(vu1.state().status, 0x140u,
+1693:         tc.Run("reserved opcodes stop before executing or corrupting state", [](TestCase &t)
+1695:             Vu1Fixture fx;
+1696:             t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+1698:             writeVuInstructionPair(fx.code, 0u, 0u, 0x30u);
+1699:             writeVuInstructionPair(
+1700:                 fx.code, 8u, makeVuIaddiu(1u, 0u, 7),
+1701:                 kVuUpperNop);
+1703:             VU1Interpreter vu1;
+1704:             vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+1705:                         fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+1708:             t.Equals(vu1.state().cycles, static_cast<uint64_t>(0u),
+1710:             t.Equals(vu1.state().pc, 0u,
+1712:             t.Equals(vu1.state().vi[1], 0,
+
+========== AUDIT STATUS ==========
+READ-ONLY AUDIT
+Production source modified: NO
+Backups created: NO
+Build/tests executed: NO
+Next step: review VU1 implementation gaps before any source edit
