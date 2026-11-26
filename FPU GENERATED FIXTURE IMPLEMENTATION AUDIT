@@ -1,0 +1,736 @@
+MARK OF KRI — FPU GENERATED FIXTURE IMPLEMENTATION AUDIT
+Generated: 2026-11-25 18:03:18
+Source: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+
+===== ps2xRecomp\src\lib\code_generator.cpp [260-295] =====
+  260: 
+  261:     std::string CodeGenerator::translateVUInstruction(const Instruction &inst)
+  262:     {
+  263:         return VuTranslator(*this).translate(inst);
+  264:     }
+  265: 
+  266:     CodeGenerator::AnalysisResult CodeGenerator::collectInternalBranchTargets(
+  267:         const Function &function, const std::vector<Instruction> &instructions, const std::vector<Function> *allFunctions)
+  268:     {
+  269:         ControlFlowAnalyzer analyzer(m_sections, m_configJumpTableTargetsByAddress, m_reporter);
+  270:         return analyzer.analyze(function, instructions, allFunctions);
+  271:     }
+  272: 
+  273:     std::string ps2recomp::CodeGenerator::generateFunction(
+  274:         const Function &function,
+  275:         const std::vector<Instruction> &instructions,
+  276:         const bool &useHeaders)
+  277:     {
+  278:         FunctionEmitter emitter(*this);
+  279:         return emitter.emit(function, instructions, useHeaders);
+  280:     }
+  281: 
+  282:     std::string CodeGenerator::emitUnhandledInstruction(const Instruction &inst, const std::string &message)
+  283:     {
+  284:         if (m_reporter)
+  285:         {
+  286:             m_reporter->recordUnhandledInstruction(m_currentFunctionName, inst.address, inst.raw, message);
+  287:         }
+  288: 
+  289:         return fmt::format("throw std::runtime_error(\"{} at 0x{:X} raw=0x{:08X}\");", message, inst.address, inst.raw);
+  290:     }
+  291: 
+  292:     std::string CodeGenerator::generateFunctionRegistration(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs)
+  293:     {
+  294:         FunctionTableEmitter emitter(*this);
+  295:         return emitter.emit(functions, stubs);
+
+===== ps2xRecomp\include\ps2recomp\Emitters\function_emitter.h [1-140] =====
+    1: #ifndef PS2RECOMP_FUNCTION_EMITTER_H
+    2: #define PS2RECOMP_FUNCTION_EMITTER_H
+    3: 
+    4: #include <string>
+    5: #include <vector>
+    6: 
+    7: namespace ps2recomp
+    8: {
+    9:     struct Function;
+   10:     struct Instruction;
+   11:     class CodeGenerator;
+   12: 
+   13:     class FunctionEmitter
+   14:     {
+   15:     public:
+   16:         explicit FunctionEmitter(CodeGenerator &codeGenerator);
+   17: 
+   18:         std::string emit(const Function &function, const std::vector<Instruction> &instructions, bool useHeaders);
+   19: 
+   20:     private:
+   21:         CodeGenerator &m_codeGenerator;
+   22:     };
+   23: }
+   24: 
+   25: #endif // PS2RECOMP_FUNCTION_EMITTER_H
+
+===== ps2xRecomp\include\ps2recomp\types.h [85-180] =====
+   85:         bool hasAddress = false;
+   86:         uint32_t address = 0;
+   87:     };
+   88: 
+   89:     // Function information
+   90:     struct Function
+   91:     {
+   92:         std::string name;
+   93:         uint32_t start;
+   94:         uint32_t end;
+   95:         std::vector<Instruction> instructions;
+   96:         std::vector<uint32_t> callers;
+   97:         std::vector<uint32_t> callees;
+   98:         bool isRecompiled = false;
+   99:         bool isStub = false;
+  100:         bool isSkipped = false;
+  101:     };
+  102: 
+  103:     // Symbol information
+  104:     struct Symbol
+  105:     {
+  106:         std::string name;
+  107:         uint32_t address;
+  108:         uint32_t size;
+  109:         bool isFunction;
+  110:         bool isImported;
+  111:         bool isExported;
+  112:     };
+  113: 
+  114:     // Section information
+  115:     struct Section
+  116:     {
+  117:         std::string name;
+  118:         uint32_t address;
+  119:         uint32_t size;
+  120:         uint32_t offset;
+  121:         bool isCode;
+  122:         bool isData;
+  123:         bool isBSS;
+  124:         bool isReadOnly;
+  125:         uint8_t *data;
+  126:     };
+  127: 
+  128:     // Relocation information
+  129:     struct Relocation
+  130:     {
+  131:         uint32_t offset;
+  132:         uint32_t info;
+  133:         uint32_t symbol;
+  134:         std::string symbolName;
+  135:         uint32_t type;
+  136:         int32_t addend;
+  137:     };
+  138: 
+  139:     // Jump table entry
+  140:     struct JumpTableEntry
+  141:     {
+  142:         uint32_t index;
+  143:         uint32_t target;
+  144:     };
+  145: 
+  146:     // Jump table
+  147:     struct JumpTable
+  148:     {
+  149:         uint32_t address;
+  150:         uint32_t baseRegister;
+  151:         std::vector<JumpTableEntry> entries;
+  152:     };
+  153: 
+  154:     // Control flow graph
+  155:     struct CFGNode
+  156:     {
+  157:         uint32_t startAddress;
+  158:         uint32_t endAddress;
+  159:         std::vector<Instruction> instructions;
+  160:         std::vector<uint32_t> predecessors;
+  161:         std::vector<uint32_t> successors;
+  162:         bool isJumpTarget;
+  163:         bool hasJumpTable;
+  164:         JumpTable jumpTable;
+  165:     };
+  166: 
+  167:     // Function call
+  168:     struct FunctionCall
+  169:     {
+  170:         uint32_t callerAddress;
+  171:         uint32_t calleeAddress;
+  172:         std::string calleeName;
+  173:     };
+  174: 
+  175:     // Recompiler configuration
+  176:     struct RecompilerConfig
+  177:     {
+  178:         std::string inputPath;
+  179:         std::string outputPath;
+  180:         std::string ghidraMapPath;
+
+===== ps2xRecomp\include\ps2recomp\types.h [180-270] =====
+  180:         std::string ghidraMapPath;
+  181:         bool singleFileOutput = false;
+  182:         bool lowMemoryMode = false;
+  183:         uint32_t outputWorkerThreads = 0;
+  184:         bool patchSyscalls = false;
+  185:         bool patchCop0 = true;
+  186:         bool patchCache = true;
+  187:         std::vector<std::string> skipFunctions;
+  188:         std::unordered_map<uint32_t, std::string> patches;
+  189:         std::vector<std::string> stubImplementations;
+  190:         std::vector<std::string> entryPointHints;
+  191:         std::unordered_map<uint32_t, uint32_t> mmioByInstructionAddress;
+  192:         std::vector<JumpTable> jumpTables;
+  193:     };
+  194: 
+  195: } // namespace ps2recomp
+  196: 
+  197: #endif // PS2RECOMP_TYPES_H
+
+===== ps2xRecomp\src\lib\function_emitter.cpp [1-105] =====
+    1: #include "ps2recomp/Emitters/function_emitter.h"
+    2: #include "ps2recomp/code_generator.h"
+    3: #include "ps2recomp/gif_dma_kick_analyzer.h"
+    4: #include "ps2recomp/instructions.h"
+    5: #include "ps2recomp/r5900_decoder.h"
+    6: #include "ps2recomp/recompiler_reporter.h"
+    7: #include "ps2recomp/types.h"
+    8: 
+    9: #include <algorithm>
+   10: #include <sstream>
+   11: #include <stdexcept>
+   12: #include <unordered_set>
+   13: 
+   14: namespace ps2recomp
+   15: {
+   16:     namespace
+   17:     {
+   18:         Instruction makeSyntheticDelaySlot(uint32_t address)
+   19:         {
+   20:             Instruction inst{};
+   21:             inst.address = address;
+   22:             inst.raw = 0;
+   23:             inst.opcode = OPCODE_SPECIAL;
+   24:             inst.function = SPECIAL_SLL;
+   25:             return inst;
+   26:         }
+   27:     }
+   28: 
+   29:     FunctionEmitter::FunctionEmitter(CodeGenerator &codeGenerator)
+   30:         : m_codeGenerator(codeGenerator)
+   31:     {
+   32:     }
+   33: 
+   34:     std::string FunctionEmitter::emit(
+   35:         const Function &function,
+   36:         const std::vector<Instruction> &instructions,
+   37:         bool useHeaders)
+   38:     {
+   39:         CodeGenerator &cg = m_codeGenerator;
+   40:         std::stringstream ss;
+   41:         cg.m_currentFunctionName = function.name;
+   42: 
+   43:         if (useHeaders)
+   44:         {
+   45:             ss << "#include <stdexcept>\n";
+   46:             ss << "#include \"ps2_runtime_macros.h\"\n";
+   47:             ss << "#include \"ps2_runtime.h\"\n";
+   48:             ss << "#include <ps2_recompiled_functions.h>\n";
+   49:             ss << "#include <ps2_recompiled_stubs.h>\n\n";
+   50:             ss << "#include \"ps2_syscalls.h\"\n";
+   51:             ss << "#include \"ps2_stubs.h\"\n\n";
+   52:             ss << "#ifdef PS2_FUNCTION_LOG_TRACKER\n";
+   53:             ss << "#include \"ps2_log.h\"\n";
+   54:             ss << "#endif\n\n";
+   55:         }
+   56: 
+   57:         CodeGenerator::AnalysisResult analysisResult = cg.collectInternalBranchTargets(function, instructions);
+   58:         std::vector<uint32_t> resumeTargets(analysisResult.resumeEntryPoints.begin(),
+   59:                                             analysisResult.resumeEntryPoints.end());
+   60:         auto resumeIt = cg.m_resumeEntryTargetsByOwner.find(function.start);
+   61:         if (resumeIt != cg.m_resumeEntryTargetsByOwner.end())
+   62:         {
+   63:             resumeTargets.insert(resumeTargets.end(), resumeIt->second.begin(), resumeIt->second.end());
+   64:         }
+   65:         std::sort(resumeTargets.begin(), resumeTargets.end());
+   66:         resumeTargets.erase(std::unique(resumeTargets.begin(), resumeTargets.end()), resumeTargets.end());
+   67:         for (uint32_t target : resumeTargets)
+   68:         {
+   69:             analysisResult.entryPoints.insert(target);
+   70:         }
+   71: 
+   72:         const std::unordered_set<uint32_t> &internalTargets = analysisResult.entryPoints;
+   73:         ConstantRegisterState constantRegisters;
+   74:         GifDmaKickPlan gifDmaKickPlan{};
+   75:         ss << "// Function: " << function.name << "\n";
+   76:         ss << "// Address: 0x" << std::hex << function.start << " - 0x" << function.end << std::dec << "\n";
+   77: 
+   78:         std::string sanitizedName = cg.getFunctionName(function.start);
+   79:         if (sanitizedName.empty())
+   80:         {
+   81:             std::stringstream nameBuilder;
+   82:             nameBuilder << "Errorfunc_" << std::hex << function.start;
+   83:             sanitizedName = nameBuilder.str();
+   84:         }
+   85: 
+   86:         ss << "void " << sanitizedName << "(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {\n";
+   87:         ss << "#ifdef PS2_FUNCTION_LOG_TRACKER\n";
+   88:         ss << "    PS_LOG_ENTRY(\"" << sanitizedName << "\");\n";
+   89:         ss << "#endif\n";
+   90:         ss << "\n";
+   91:         if (!resumeTargets.empty())
+   92:         {
+   93:             ss << "    switch (ctx->pc) {\n";
+   94:             for (uint32_t target : resumeTargets)
+   95:             {
+   96:                 ss << "        case 0x" << std::hex << target << "u: goto label_" << target << ";\n"
+   97:                    << std::dec;
+   98:             }
+   99:             ss << "        default: break;\n";
+  100:             ss << "    }\n\n";
+  101:         }
+  102:         ss << "    ctx->pc = 0x" << std::hex << function.start << "u;\n"
+  103:            << std::dec;
+  104:         ss << "\n";
+  105: 
+
+===== ps2xTest\src\main.cpp [1-180] =====
+    1: #include "MiniTest.h"
+    2: #include <cstdlib>
+    3: #include <iostream>
+    4: 
+    5: void register_code_generator_tests();
+    6: void register_r5900_decoder_tests();
+    7: void register_elf_analyzer_tests();
+    8: void register_pad_input_tests();
+    9: void register_ps2_runtime_io_tests();
+   10: void register_ps2_runtime_kernel_tests();
+   11: void register_ps2_runtime_interrupt_tests();
+   12: void register_ps2_memory_tests();
+   13: void register_ps2_vu1_tests();
+   14: void register_ps2_vu_tests();
+   15: void register_ps2_gs_tests();
+   16: void register_ps2_iop_tests();
+   17: void register_ps2_sif_rpc_tests();
+   18: void register_ps2_sif_dma_tests();
+   19: void register_ps2_recompiler_tests();
+   20: void register_ps2_runtime_expansion_tests();
+   21: void register_ps2_float_semantics_tests();
+   22: void register_ps2_audio_stream_tests();
+   23: void reset_ps2_test_function_table();
+   24: 
+   25: int main()
+   26: {
+   27:     MiniTest::BeforeEach(reset_ps2_test_function_table);
+   28: 
+   29:     register_code_generator_tests();
+   30:     register_r5900_decoder_tests();
+   31:     register_elf_analyzer_tests();
+   32:     register_pad_input_tests();
+   33:     register_ps2_runtime_io_tests();
+   34:     register_ps2_runtime_kernel_tests();
+   35:     register_ps2_runtime_interrupt_tests();
+   36:     register_ps2_memory_tests();
+   37:     register_ps2_vu1_tests();
+   38:     register_ps2_vu_tests();
+   39:     register_ps2_gs_tests();
+   40:     register_ps2_iop_tests();
+   41:     register_ps2_sif_rpc_tests();
+   42:     register_ps2_sif_dma_tests();
+   43:     register_ps2_recompiler_tests();
+   44:     register_ps2_runtime_expansion_tests();
+   45:     register_ps2_float_semantics_tests();
+   46:     register_ps2_audio_stream_tests();
+   47:     int res = MiniTest::Run();
+   48:     std::cout.flush();
+   49:     std::cerr.flush();
+   50:     std::_Exit(res);
+   51: }
+
+===== ps2xTest\src\ps2_float_semantics_tests.cpp [1-90] =====
+    1: #include "MiniTest.h"
+    2: #include "ps2recomp/code_generator.h"
+    3: #include "ps2recomp/instructions.h"
+    4: #include "ps2recomp/types.h"
+    5: #include "ps2_runtime_macros.h"
+    6: #include "ps2_runtime.h"
+    7: 
+    8: #include <cmath>
+    9: #include <cstdint>
+   10: #include <cstdio>
+   11: #include <cstring>
+   12: #include <limits>
+   13: #include <string>
+   14: 
+   15: using namespace ps2recomp;
+   16: 
+   17: namespace
+   18: {
+   19:     constexpr uint32_t kPlusMax = 0x7FFFFFFFu;
+   20:     constexpr uint32_t kMinusMax = 0xFFFFFFFFu;
+   21:     // 2^128: the host's +Inf pattern, an ordinary number on the PS2.
+   22:     constexpr uint32_t kTwoPow128 = 0x7F800000u;
+   23: 
+   24:     uint32_t bitsOf(float f)
+   25:     {
+   26:         uint32_t b;
+   27:         std::memcpy(&b, &f, sizeof(b));
+   28:         return b;
+   29:     }
+   30: 
+   31:     float floatOf(uint32_t b)
+   32:     {
+   33:         float f;
+   34:         std::memcpy(&f, &b, sizeof(f));
+   35:         return f;
+   36:     }
+   37: 
+   38:     Instruction makeCop1S(uint32_t function, uint8_t fd, uint8_t fs, uint8_t ft)
+   39:     {
+   40:         Instruction inst{};
+   41:         inst.opcode = OPCODE_COP1;
+   42:         inst.rs = COP1_S;
+   43:         inst.rt = ft;
+   44:         inst.rd = fs;
+   45:         inst.sa = fd;
+   46:         inst.function = function;
+   47:         return inst;
+   48:     }
+   49: 
+   50:     uint32_t laneBits(__m128 v, int lane)
+   51:     {
+   52:         float lanes[4];
+   53:         _mm_storeu_ps(lanes, v);
+   54:         return bitsOf(lanes[lane]);
+   55:     }
+   56: 
+   57:     struct HardwareVector
+   58:     {
+   59:         const char *op;
+   60:         uint32_t fs;
+   61:         uint32_t ft;
+   62:         uint32_t result;
+   63:         // 0: must match exactly.
+   64:         // 1: the hardware does not round to nearest (ADD.S and MUL.S drop the low bits, the divide unit has its
+   65:         //    own rule); rounding is not emulated, so the row differs in the last mantissa bit.
+   66:         // 2: an ADD.S/SUB.S/MUL.S operand has exponent 0 and a non-zero mantissa. The hardware reads it as
+   67:         //    zero; the fast path does not look for it. Not checked.
+   68:         int known;
+   69:     };
+   70: 
+   71:     const HardwareVector kHardwareVectors[] = {
+   72: #include "ps2_float_hw_vectors.inc"
+   73:     };
+   74: 
+   75:     uint32_t runHardwareOp(const HardwareVector &v)
+   76:     {
+   77:         const float fs = floatOf(v.fs);
+   78:         const float ft = floatOf(v.ft);
+   79:         const std::string op = v.op;
+   80:         if (op == "add")
+   81:             return bitsOf(FPU_ADD_S(fs, ft));
+   82:         if (op == "sub")
+   83:             return bitsOf(FPU_SUB_S(fs, ft));
+   84:         if (op == "mul")
+   85:             return bitsOf(FPU_MUL_S(fs, ft));
+   86:         if (op == "div")
+   87:             return bitsOf(FPU_DIV_S(fs, ft));
+   88:         if (op == "sqrt")
+   89:             return bitsOf(FPU_SQRT_S(fs));
+   90:         return bitsOf(FPU_RSQRT_S(fs, ft));
+
+===== ps2xTest\src\ps2_float_semantics_tests.cpp [190-290] =====
+  190:             t.Equals(laneBits(sum, 1), kMinusMax, "lane 1: -max + -max should saturate to -max");
+  191:             t.Equals(laneBits(sum, 2), kTwoPow128, "lane 2: 2^128 + 1 should stay 2^128");
+  192:             t.Equals(laneBits(sum, 3), bitsOf(3.0f), "lane 3: 1 + 2 should be 3");
+  193: 
+  194:             const __m128 diff = PS2_VSUB(a, b);
+  195:             t.Equals(laneBits(diff, 0), bitsOf(0.0f), "lane 0: max - max should be 0");
+  196:             t.Equals(laneBits(diff, 2), kTwoPow128, "lane 2: 2^128 - 1 should stay 2^128");
+  197:             t.Equals(laneBits(diff, 3), bitsOf(-1.0f), "lane 3: 1 - 2 should be -1");
+  198: 
+  199:             const __m128 prod = PS2_VMUL(a, b);
+  200:             t.Equals(laneBits(prod, 0), kPlusMax, "lane 0: max * max should saturate to +max");
+  201:             t.Equals(laneBits(prod, 1), kPlusMax, "lane 1: -max * -max should saturate to +max");
+  202:             t.Equals(laneBits(prod, 2), kTwoPow128, "lane 2: 2^128 * 1 should stay 2^128");
+  203:             t.Equals(laneBits(prod, 3), bitsOf(2.0f), "lane 3: 1 * 2 should be 2");
+  204: 
+  205:             const __m128 tiny = _mm_set_ps(1.0f, floatOf(0x80800000u), floatOf(0x00800000u), 3.0f);
+  206:             const __m128 half = _mm_set1_ps(0.5f);
+  207:             const __m128 flushed = PS2_VMUL(tiny, half);
+  208:             t.Equals(laneBits(flushed, 0), bitsOf(1.5f), "lane 0: 3 * 0.5 should be 1.5");
+  209:             t.Equals(laneBits(flushed, 1), 0x00000000u, "lane 1: 2^-126 * 0.5 should flush to +0");
+  210:             t.Equals(laneBits(flushed, 2), 0x80000000u, "lane 2: -2^-126 * 0.5 should flush to -0");
+  211:             t.Equals(laneBits(flushed, 3), bitsOf(0.5f), "lane 3: 1 * 0.5 should be 0.5");
+  212:         });
+  213: 
+  214:         tc.Run("DIV.S and RSQRT.S translate to the PS2 semantics helpers", [](TestCase &t)
+  215:         {
+  216:             CodeGenerator gen({}, {});
+  217: 
+  218:             // fd = f2, fs = f3, ft = f4 (all distinct so a wrong operand shows up)
+  219:             const std::string div = gen.translateInstruction(makeCop1S(COP1_S_DIV, 2, 3, 4));
+  220:             t.IsTrue(div.find("ctx->f[2] = FPU_DIV_S(ctx->f[3], ctx->f[4])") != std::string::npos,
+  221:                      "DIV.S should write fs / ft to fd but got: " + div);
+  222:             t.IsTrue(div.find("INFINITY") == std::string::npos, "DIV.S must not produce IEEE infinity but got: " + div);
+  223: 
+  224:             const std::string rsqrt = gen.translateInstruction(makeCop1S(COP1_S_RSQRT, 2, 3, 4));
+  225:             t.IsTrue(rsqrt.find("ctx->f[2] = FPU_RSQRT_S(ctx->f[3], ctx->f[4])") != std::string::npos,
+  226:                      "RSQRT.S should compute fs / sqrt(ft) but got: " + rsqrt);
+  227:         });
+  228:         tc.Run("FPU accumulator instructions translate to correct accumulator and destination operations", [](TestCase &t)
+  229:         {
+  230:             CodeGenerator gen({}, {});
+  231: 
+  232:             const std::string adda = gen.translateInstruction(makeCop1S(COP1_S_ADDA, 0, 3, 4));
+  233:             const std::string suba = gen.translateInstruction(makeCop1S(COP1_S_SUBA, 0, 3, 4));
+  234:             const std::string mula = gen.translateInstruction(makeCop1S(COP1_S_MULA, 0, 3, 4));
+  235:             const std::string madd = gen.translateInstruction(makeCop1S(COP1_S_MADD, 2, 3, 4));
+  236:             const std::string msub = gen.translateInstruction(makeCop1S(COP1_S_MSUB, 2, 3, 4));
+  237:             const std::string madda = gen.translateInstruction(makeCop1S(COP1_S_MADDA, 0, 3, 4));
+  238:             const std::string msuba = gen.translateInstruction(makeCop1S(COP1_S_MSUBA, 0, 3, 4));
+  239: 
+  240:             t.IsTrue(adda.find("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[3], ctx->f[4]))") != std::string::npos,
+  241:                      "ADDA.S must write the sum to the accumulator: " + adda);
+  242: 
+  243:             t.IsTrue(suba.find("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[3], ctx->f[4]))") != std::string::npos,
+  244:                      "SUBA.S must write the difference to the accumulator: " + suba);
+  245: 
+  246:             t.IsTrue(mula.find("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[3], ctx->f[4]))") != std::string::npos,
+  247:                      "MULA.S must write the product to the accumulator: " + mula);
+  248: 
+  249:             t.IsTrue(madd.find("ctx->f[2] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[3], ctx->f[4]))") != std::string::npos,
+  250:                      "MADD.S must add the product to the accumulator and write fd: " + madd);
+  251: 
+  252:             t.IsTrue(msub.find("ctx->f[2] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[3], ctx->f[4]))") != std::string::npos,
+  253:                      "MSUB.S must subtract the product from the accumulator and write fd: " + msub);
+  254: 
+  255:             t.IsTrue(madda.find("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[3], ctx->f[4])))") != std::string::npos,
+  256:                      "MADDA.S must update the accumulator with accumulator plus product: " + madda);
+  257: 
+  258:             t.IsTrue(msuba.find("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[3], ctx->f[4])))") != std::string::npos,
+  259:                      "MSUBA.S must update the accumulator with accumulator minus product: " + msuba);
+  260:         });
+  261:         tc.Run("FPU accumulator operations update runtime context correctly", [](TestCase &t)
+  262:         {
+  263:             R5900Context ctx{};
+  264:     R5900Context *pCtx = &ctx;
+  265:             ctx.f[3] = 2.0f;
+  266:             ctx.f[4] = 3.0f;
+  267: 
+  268:             ctx.f_acc = 99.0f;
+  269:             FPU_SET_ACC(pCtx, FPU_ADD_S(ctx.f[3], ctx.f[4]));
+  270:             t.Equals(bitsOf(ctx.f_acc), bitsOf(5.0f), "ADDA.S writes fs + ft to f_acc");
+  271: 
+  272:             ctx.f_acc = 99.0f;
+  273:             FPU_SET_ACC(pCtx, FPU_SUB_S(ctx.f[3], ctx.f[4]));
+  274:             t.Equals(bitsOf(ctx.f_acc), bitsOf(-1.0f), "SUBA.S writes fs - ft to f_acc");
+  275: 
+  276:             ctx.f_acc = 99.0f;
+  277:             FPU_SET_ACC(pCtx, FPU_MUL_S(ctx.f[3], ctx.f[4]));
+  278:             t.Equals(bitsOf(ctx.f_acc), bitsOf(6.0f), "MULA.S writes fs * ft to f_acc");
+  279: 
+  280:             ctx.f_acc = 5.0f;
+  281:             ctx.f[2] = FPU_ADD_S(ctx.f_acc, FPU_MUL_S(ctx.f[3], ctx.f[4]));
+  282:             t.Equals(bitsOf(ctx.f[2]), bitsOf(11.0f), "MADD.S writes accumulator + product to fd");
+  283:             t.Equals(bitsOf(ctx.f_acc), bitsOf(5.0f), "MADD.S leaves f_acc unchanged");
+  284: 
+  285:             ctx.f_acc = 5.0f;
+  286:             ctx.f[2] = FPU_SUB_S(ctx.f_acc, FPU_MUL_S(ctx.f[3], ctx.f[4]));
+  287:             t.Equals(bitsOf(ctx.f[2]), bitsOf(-1.0f), "MSUB.S writes accumulator - product to fd");
+  288:             t.Equals(bitsOf(ctx.f_acc), bitsOf(5.0f), "MSUB.S leaves f_acc unchanged");
+  289: 
+  290:             ctx.f_acc = 5.0f;
+
+===== TEST REGISTRATION / DECLARATION SEARCH =====
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:167: void register_code_generator_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:537: tc.Run("control-flow analysis reports cross-function mid-function jumps as external entry candidates", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:716: tc.Run("resume entry targets register to the owner wrapper", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:737: tc.Run("configured internal guest handlers register to their owner wrapper", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:777: tc.Run("external mid-function entry can register to the owner wrapper", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:965: tc.Run("COP0 MFC0/MTC0 translate to COP0 register access", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1041: tc.Run("VU CFC2/CTC2 access VI registers directly", [](TestCase& t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1077: tc.Run("VU special control registers use hardware indices", [](TestCase& t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1148: tc.Run("scalar logical register ops emit low64 operations", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1465: tc.Run("VU0 S2 VI memory ops use rd as VI base register", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1741: tc.Run("sign branches compare the full 64-bit register", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\elf_analyzer_tests.cpp:23: void register_elf_analyzer_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:5: void register_code_generator_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:6: void register_r5900_decoder_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:7: void register_elf_analyzer_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:8: void register_pad_input_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:9: void register_ps2_runtime_io_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:10: void register_ps2_runtime_kernel_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:11: void register_ps2_runtime_interrupt_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:12: void register_ps2_memory_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:13: void register_ps2_vu1_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:14: void register_ps2_vu_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:15: void register_ps2_gs_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:16: void register_ps2_iop_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:17: void register_ps2_sif_rpc_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:18: void register_ps2_sif_dma_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:19: void register_ps2_recompiler_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:20: void register_ps2_runtime_expansion_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:21: void register_ps2_float_semantics_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:22: void register_ps2_audio_stream_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:29: register_code_generator_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:30: register_r5900_decoder_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:31: register_elf_analyzer_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:32: register_pad_input_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:33: register_ps2_runtime_io_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:34: register_ps2_runtime_kernel_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:35: register_ps2_runtime_interrupt_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:36: register_ps2_memory_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:37: register_ps2_vu1_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:38: register_ps2_vu_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:39: register_ps2_gs_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:40: register_ps2_iop_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:41: register_ps2_sif_rpc_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:42: register_ps2_sif_dma_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:43: register_ps2_recompiler_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:44: register_ps2_runtime_expansion_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:45: register_ps2_float_semantics_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\main.cpp:46: register_ps2_audio_stream_tests();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\pad_input_tests.cpp:68: void register_pad_input_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_audio_stream_tests.cpp:22: void register_ps2_audio_stream_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:101: void register_ps2_float_semantics_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:424: gs.writeRegister(GS_REG_TEST_1, testReg);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:436: void register_ps2_gs_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:482: tc.Run("GS writeIORegister increments GS write counter", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:785: tc.Run("sceGsSetDefDBuffDc accepts trailing args from the recompiler register ABI", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1061: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1095: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1135: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1166: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1215: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1288: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1297: gs.writeRegister(GS_REG_TEST_2, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1366: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1441: gs.writeRegister(GS_REG_TEST_2, kTest2);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1541: gs.writeRegister(GS_REG_TEST_2, kTest2);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1730: gs.writeRegister(GS_REG_TEST_2, kTest2);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2038: tc.Run("GIF PACKED A+D writes DISPFB1 and DISPLAY1 privileged registers", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2062: tc.Run("GIF PACKED A+D writes DISPFB2 and DISPLAY2 privileged registers", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2230: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2284: tc.Run("GIF REGLIST with odd register count consumes 128-bit padding before next tag", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:3064: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4115: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4175: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4273: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4335: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4400: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4461: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4540: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4605: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4674: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4746: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4808: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4870: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4946: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:5010: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:5105: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:5194: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:5403: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:5840: runtime.registerFunction(kGsSyncWait0Pc, testGsSyncWait0);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:5841: runtime.registerFunction(kGsSyncResume0Pc, testGsSyncResume0);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:5842: runtime.registerFunction(kGsSyncWait1Pc, testGsSyncWait1);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:5843: runtime.registerFunction(kGsSyncResume1Pc, testGsSyncResume1);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:5870: runtime.registerFunction(kGsCallbackMainPc, testGsCallbackMain);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:5871: runtime.registerFunction(kGsCallbackResumePc, testGsCallbackResume);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:5872: runtime.registerFunction(kGsCallbackPc, testGsSyncVCallback);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:6207: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_iop_tests.cpp:5: void register_ps2_iop_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:187: void register_ps2_memory_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:248: tc.Run("EE timers 0 through 3 expose independent COUNT MODE and COMP registers", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:472: tc.Run("VIF control commands update MARK MASK ROW and COL registers", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:2483: t.IsTrue(mem.writeIORegister(kDStat, kGifMaskBit), "re-enable GIF mask for summary test");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:987: void register_ps2_recompiler_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1699: tc.Run("configured stub at an undiscovered address still gets a registered wrapper", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1741: tc.Run("standalone entry_ blocks register resume points for their JAL return addresses", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:242: void testStopAfterMpegCallback(uint8_t *, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:314: void register_ps2_runtime_expansion_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:352: runtime.registerFunction(0x1000u, &testResumeOwnerFallbackHandler);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:353: runtime.registerFunction(0x1100u, &testResumeNextFunctionHandler);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:371: runtime.registerFunction(0x2000u, &testResumeOwnerFallbackHandler);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:387: runtime.registerFunction(0x3000u, &testGuestBranchImplicitReturnHandler);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:412: runtime.registerFunction(0x3400u, &testGuestJumpTargetHandler);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:438: runtime.registerFunction(0x3100u, &testGuestBranchTransferHandler);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:462: runtime.registerFunction(0x3200u, &testGuestBranchImplicitReturnHandler);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:551: tc.Run("sceMpegDemuxPssRing dispatches registered video and audio stream callbacks", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:564: runtime.registerFunction(kCallbackEntry, &testRecordMpegStreamCallback);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:565: runtime.registerFunction(kMpegCallbackStopPc, &testStopAfterMpegCallback);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:755: runtime.registerFunction(kMpegWaitMainPc, testMpegWaitMain);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:756: runtime.registerFunction(kMpegWaitResumePc, testMpegWaitResume);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:757: runtime.registerFunction(kMpegWaitProducerPc, testMpegWaitProducer);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:789: runtime.registerFunction(kMpegNoDuplicateMainPc, testMpegNoDuplicateMain);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:790: runtime.registerFunction(kMpegNoDuplicateResumePc, testMpegNoDuplicateResume);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:791: runtime.registerFunction(kMpegNoDuplicateProducerPc, testMpegNoDuplicateProducer);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:950: runtime.registerFunction(kIpuInitMainPc, testIpuInitMain);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:951: runtime.registerFunction(kIpuInitResumePc, testIpuInitResume);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:952: runtime.registerFunction(kIpuSetD4Pc, testIpuSetD4);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1387: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1431: tc.Run("GS alpha blend uses ALPHA register FIX factor", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1447: gs.writeRegister(GS_REG_TEST_1, 0x30000ull);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_interrupt_tests.cpp:378: void register_ps2_runtime_interrupt_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_io_tests.cpp:168: void register_ps2_runtime_io_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_kernel_tests.cpp:548: void register_ps2_runtime_kernel_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp:135: void register_ps2_sif_dma_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp:299: env.runtime.registerFunction(kSchedulerSifDmaHandlerPc, testDmacHandler);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp:328: tc.Run("resetSifState seeds boot-ready SIF registers", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp:345: tc.Run("sceSifExitCmd restores default boot-ready SIF registers", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:188: void register_ps2_sif_rpc_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:265: tc.Run("emulated RPC bind waits for a registered IOP server", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:284: tc.Run("register bind call updates descriptors and payload", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:494: tc.Run("hybrid bind before register waits then remaps", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:577: tc.Run("SifCallRpc falls back to stack ABI when register pack is implausible", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu1_tests.cpp:216: void register_ps2_vu1_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu1_tests.cpp:406: tc.Run("XTOP and XITOP expose VIF TOP values to VI registers", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu1_tests.cpp:439: tc.Run("lower side sees old VF value when upper writes the same register", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu1_tests.cpp:637: tc.Run("DIV and SQRT update the Q register from selected vector components", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu_tests.cpp:80: void register_ps2_vu_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:6: void register_r5900_decoder_tests()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:220: tc.Run("COP1 transfers set correct register modification flags", [](TestCase &t) {
+
+===== EXISTING GENERATED SOURCE / BUILD FIXTURE REFERENCES =====
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:181: const std::string generated = gen.generateFunction(func, {makeNop(func.start)}, true);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:224: const std::string generated = gen.generateFunction(func, {syscall, after}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:257: const std::string generated = gen.generateFunction(func, {syscall, after}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:267: "g_ps2RecompiledFunctionTable[1] = syscall_resume_entry_0x9100; // 0x9104") !=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:325: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:363: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:399: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:436: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:473: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:496: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:705: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:731: t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[2] = resume_owner_0x7000; // 0x7008") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:733: t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[3] = resume_owner_0x7000; // 0x700c") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:764: const std::string generated = gen.generateFunction(owner, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:818: t.IsTrue(registration.find("g_ps2RecompiledFunctionTable[1] = owner_0x5000; // 0x5004") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:839: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:871: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:897: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:956: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1505: std::string generated = gen.generateFunction(func, {jal, delay}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1537: const std::string generated = gen.generateFunction(
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1568: std::string generated = gen.generateFunction(func, {jal}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1598: std::string generated = gen.generateFunction(func, {jal, delay, targetInst}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1618: std::string generated = gen.generateFunction(func, {loopHead, backwardJal, delay}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1643: std::string generated = gen.generateFunction(func, {jalr, delay}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1685: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1734: std::string generated = gen.generateFunction(func, { br, delay, target }, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1761: return gen.generateFunction(func, {br, makeNop(0x1304), makeNop(0x1308)}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1788: std::string generated = gen.generateFunction(func, { jal, jalDelay, atReturn, atTarget, jr, jrDelay }, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1820: std::string generated = gen.generateFunction(func, {jal, jalDelay, atReturn, atTarget, jr}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1857: std::string generated = gen.generateFunction(func, {i0, jr, delay, i3}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2073: std::string generated = gen.generateFunction(
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2108: std::string generated = gen.generateFunction(func, {jal, jalDelay, atReturn, atTarget, jalr, jalrDelay}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2174: std::string generated = gen.generateFunction(
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1684: const std::filesystem::path registrationPath = outputPath / "register_functions.cpp";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1726: const std::filesystem::path registrationPath = outputPath / "register_functions.cpp";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1767: const std::filesystem::path registrationPath = outputPath / "register_functions.cpp";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2202: writeRecompilerTestConfig(configPath, elfPath, outputPath, {"__sinit_test.cpp"});
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\test_function_table.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x00000000u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\test_function_table.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = PS2_RAM_SIZE;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\test_function_table.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = (g_ps2RecompiledFunctionTableEnd - g_ps2RecompiledFunctionTableBase) >> 2;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\test_function_table.cpp:11: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[g_ps2RecompiledFunctionTableSlotCount] = {};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\test_function_table.cpp:15: std::fill(g_ps2RecompiledFunctionTable,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\test_function_table.cpp:16: g_ps2RecompiledFunctionTable + g_ps2RecompiledFunctionTableSlotCount,
