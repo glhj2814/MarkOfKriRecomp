@@ -1,0 +1,3546 @@
+MARK OF KRI — COP1 REGRESSION TEST DESIGN AUDIT
+Generated: 2026-11-25 17:26:26
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp =====
+--- Lines 1-15 ---
+    1: #include "MiniTest.h"
+    2: #include "ps2recomp/r5900_decoder.h"
+    3: 
+    4: using namespace ps2recomp;
+    5: 
+    6: void register_r5900_decoder_tests()
+    7: {
+    8:     MiniTest::Case("R5900Decoder", [](TestCase &tc)
+    9:                    {
+   10:     tc.Run("decodes JAL with jump target and call flag", [](TestCase &t) {
+   11:         // jal 0x00400000 at address 0x1000 => opcode 0x0C100000 (target = 0x00400000 >> 2)
+   12:         uint32_t address = 0x1000;
+   13:         uint32_t target = 0x00400000;
+   14:         uint32_t raw = (OPCODE_JAL << 26) | ((target >> 2) & 0x03FFFFFF);
+   15: 
+--- Lines 3-17 ---
+    3: 
+    4: using namespace ps2recomp;
+    5: 
+    6: void register_r5900_decoder_tests()
+    7: {
+    8:     MiniTest::Case("R5900Decoder", [](TestCase &tc)
+    9:                    {
+   10:     tc.Run("decodes JAL with jump target and call flag", [](TestCase &t) {
+   11:         // jal 0x00400000 at address 0x1000 => opcode 0x0C100000 (target = 0x00400000 >> 2)
+   12:         uint32_t address = 0x1000;
+   13:         uint32_t target = 0x00400000;
+   14:         uint32_t raw = (OPCODE_JAL << 26) | ((target >> 2) & 0x03FFFFFF);
+   15: 
+   16:         R5900Decoder decoder;
+   17:         Instruction inst = decoder.decodeInstruction(address, raw);
+--- Lines 5-19 ---
+    5: 
+    6: void register_r5900_decoder_tests()
+    7: {
+    8:     MiniTest::Case("R5900Decoder", [](TestCase &tc)
+    9:                    {
+   10:     tc.Run("decodes JAL with jump target and call flag", [](TestCase &t) {
+   11:         // jal 0x00400000 at address 0x1000 => opcode 0x0C100000 (target = 0x00400000 >> 2)
+   12:         uint32_t address = 0x1000;
+   13:         uint32_t target = 0x00400000;
+   14:         uint32_t raw = (OPCODE_JAL << 26) | ((target >> 2) & 0x03FFFFFF);
+   15: 
+   16:         R5900Decoder decoder;
+   17:         Instruction inst = decoder.decodeInstruction(address, raw);
+   18: 
+   19:         t.IsTrue(inst.isJump, "jal should be marked as jump");
+--- Lines 12-26 ---
+   12:         uint32_t address = 0x1000;
+   13:         uint32_t target = 0x00400000;
+   14:         uint32_t raw = (OPCODE_JAL << 26) | ((target >> 2) & 0x03FFFFFF);
+   15: 
+   16:         R5900Decoder decoder;
+   17:         Instruction inst = decoder.decodeInstruction(address, raw);
+   18: 
+   19:         t.IsTrue(inst.isJump, "jal should be marked as jump");
+   20:         t.IsTrue(inst.isCall, "jal should be marked as call");
+   21:         t.IsTrue(inst.hasDelaySlot, "jal has a delay slot");
+   22:         t.Equals(decoder.getJumpTarget(inst), target, "jal jump target should match encoded target");
+   23:     });
+   24: 
+   25:     tc.Run("J computes target with upper PC bits", [](TestCase &t) {
+   26:         // Place J at address 0x8FFF_FFFC targeting 0x8123_4560 (upper bits from PC+4)
+--- Lines 16-30 ---
+   16:         R5900Decoder decoder;
+   17:         Instruction inst = decoder.decodeInstruction(address, raw);
+   18: 
+   19:         t.IsTrue(inst.isJump, "jal should be marked as jump");
+   20:         t.IsTrue(inst.isCall, "jal should be marked as call");
+   21:         t.IsTrue(inst.hasDelaySlot, "jal has a delay slot");
+   22:         t.Equals(decoder.getJumpTarget(inst), target, "jal jump target should match encoded target");
+   23:     });
+   24: 
+   25:     tc.Run("J computes target with upper PC bits", [](TestCase &t) {
+   26:         // Place J at address 0x8FFF_FFFC targeting 0x8123_4560 (upper bits from PC+4)
+   27:         uint32_t address = 0x8FFFFFFC;
+   28:         uint32_t encodedTarget = 0x0123456; // 0x048D1598 >> 2, but we want lower bits of 0x1234560
+   29:         uint32_t raw = (OPCODE_J << 26) | (encodedTarget & 0x03FFFFFF);
+   30: 
+--- Lines 20-34 ---
+   20:         t.IsTrue(inst.isCall, "jal should be marked as call");
+   21:         t.IsTrue(inst.hasDelaySlot, "jal has a delay slot");
+   22:         t.Equals(decoder.getJumpTarget(inst), target, "jal jump target should match encoded target");
+   23:     });
+   24: 
+   25:     tc.Run("J computes target with upper PC bits", [](TestCase &t) {
+   26:         // Place J at address 0x8FFF_FFFC targeting 0x8123_4560 (upper bits from PC+4)
+   27:         uint32_t address = 0x8FFFFFFC;
+   28:         uint32_t encodedTarget = 0x0123456; // 0x048D1598 >> 2, but we want lower bits of 0x1234560
+   29:         uint32_t raw = (OPCODE_J << 26) | (encodedTarget & 0x03FFFFFF);
+   30: 
+   31:         R5900Decoder decoder;
+   32:         Instruction inst = decoder.decodeInstruction(address, raw);
+   33: 
+   34:         uint32_t expectedPcUpper = (address + 4) & 0xF0000000;
+--- Lines 27-41 ---
+   27:         uint32_t address = 0x8FFFFFFC;
+   28:         uint32_t encodedTarget = 0x0123456; // 0x048D1598 >> 2, but we want lower bits of 0x1234560
+   29:         uint32_t raw = (OPCODE_J << 26) | (encodedTarget & 0x03FFFFFF);
+   30: 
+   31:         R5900Decoder decoder;
+   32:         Instruction inst = decoder.decodeInstruction(address, raw);
+   33: 
+   34:         uint32_t expectedPcUpper = (address + 4) & 0xF0000000;
+   35:         uint32_t expected = expectedPcUpper | (encodedTarget << 2);
+   36:         t.Equals(decoder.getJumpTarget(inst), expected, "J target should combine PC upper bits with encoded target");
+   37:     });
+   38: 
+   39:     tc.Run("JR/JALR jump target is zero (dynamic)", [](TestCase &t) {
+   40:         uint32_t address = 0x1200;
+   41:         uint32_t jrRaw = (OPCODE_SPECIAL << 26) | (2 << 21) | SPECIAL_JR;
+--- Lines 34-48 ---
+   34:         uint32_t expectedPcUpper = (address + 4) & 0xF0000000;
+   35:         uint32_t expected = expectedPcUpper | (encodedTarget << 2);
+   36:         t.Equals(decoder.getJumpTarget(inst), expected, "J target should combine PC upper bits with encoded target");
+   37:     });
+   38: 
+   39:     tc.Run("JR/JALR jump target is zero (dynamic)", [](TestCase &t) {
+   40:         uint32_t address = 0x1200;
+   41:         uint32_t jrRaw = (OPCODE_SPECIAL << 26) | (2 << 21) | SPECIAL_JR;
+   42:         uint32_t jalrRaw = (OPCODE_SPECIAL << 26) | (3 << 21) | (31 << 11) | SPECIAL_JALR;
+   43: 
+   44:         R5900Decoder decoder;
+   45:         Instruction jr = decoder.decodeInstruction(address, jrRaw);
+   46:         Instruction jalr = decoder.decodeInstruction(address + 4, jalrRaw);
+   47: 
+   48:         t.Equals(decoder.getJumpTarget(jr), 0u, "JR jump target should be unknown (0)");
+--- Lines 40-54 ---
+   40:         uint32_t address = 0x1200;
+   41:         uint32_t jrRaw = (OPCODE_SPECIAL << 26) | (2 << 21) | SPECIAL_JR;
+   42:         uint32_t jalrRaw = (OPCODE_SPECIAL << 26) | (3 << 21) | (31 << 11) | SPECIAL_JALR;
+   43: 
+   44:         R5900Decoder decoder;
+   45:         Instruction jr = decoder.decodeInstruction(address, jrRaw);
+   46:         Instruction jalr = decoder.decodeInstruction(address + 4, jalrRaw);
+   47: 
+   48:         t.Equals(decoder.getJumpTarget(jr), 0u, "JR jump target should be unknown (0)");
+   49:         t.Equals(decoder.getJumpTarget(jalr), 0u, "JALR jump target should be unknown (0)");
+   50:     });
+   51: 
+   52:     tc.Run("decodes BEQ sets branch flags and target", [](TestCase &t) {
+   53:         // beq r1, r2, offset 0x4 (word offset) at address 0x2000
+   54:         uint32_t address = 0x2000;
+--- Lines 41-55 ---
+   41:         uint32_t jrRaw = (OPCODE_SPECIAL << 26) | (2 << 21) | SPECIAL_JR;
+   42:         uint32_t jalrRaw = (OPCODE_SPECIAL << 26) | (3 << 21) | (31 << 11) | SPECIAL_JALR;
+   43: 
+   44:         R5900Decoder decoder;
+   45:         Instruction jr = decoder.decodeInstruction(address, jrRaw);
+   46:         Instruction jalr = decoder.decodeInstruction(address + 4, jalrRaw);
+   47: 
+   48:         t.Equals(decoder.getJumpTarget(jr), 0u, "JR jump target should be unknown (0)");
+   49:         t.Equals(decoder.getJumpTarget(jalr), 0u, "JALR jump target should be unknown (0)");
+   50:     });
+   51: 
+   52:     tc.Run("decodes BEQ sets branch flags and target", [](TestCase &t) {
+   53:         // beq r1, r2, offset 0x4 (word offset) at address 0x2000
+   54:         uint32_t address = 0x2000;
+   55:         uint16_t offset = 0x0004;
+--- Lines 47-61 ---
+   47: 
+   48:         t.Equals(decoder.getJumpTarget(jr), 0u, "JR jump target should be unknown (0)");
+   49:         t.Equals(decoder.getJumpTarget(jalr), 0u, "JALR jump target should be unknown (0)");
+   50:     });
+   51: 
+   52:     tc.Run("decodes BEQ sets branch flags and target", [](TestCase &t) {
+   53:         // beq r1, r2, offset 0x4 (word offset) at address 0x2000
+   54:         uint32_t address = 0x2000;
+   55:         uint16_t offset = 0x0004;
+   56:         uint32_t raw = (OPCODE_BEQ << 26) | (1 << 21) | (2 << 16) | offset;
+   57: 
+   58:         R5900Decoder decoder;
+   59:         Instruction inst = decoder.decodeInstruction(address, raw);
+   60: 
+   61:         t.IsTrue(inst.isBranch, "beq should be marked as branch");
+--- Lines 54-68 ---
+   54:         uint32_t address = 0x2000;
+   55:         uint16_t offset = 0x0004;
+   56:         uint32_t raw = (OPCODE_BEQ << 26) | (1 << 21) | (2 << 16) | offset;
+   57: 
+   58:         R5900Decoder decoder;
+   59:         Instruction inst = decoder.decodeInstruction(address, raw);
+   60: 
+   61:         t.IsTrue(inst.isBranch, "beq should be marked as branch");
+   62:         t.IsTrue(inst.hasDelaySlot, "beq has a delay slot");
+   63:         uint32_t expectedTarget = address + 4 + (static_cast<int16_t>(offset) << 2);
+   64:         t.Equals(decoder.getBranchTarget(inst), expectedTarget, "beq target should be computed from simmediate");
+   65:     });
+   66: 
+   67:     tc.Run("branch target sign-extends negative offset", [](TestCase &t) {
+   68:         uint32_t address = 0x2100;
+--- Lines 56-70 ---
+   56:         uint32_t raw = (OPCODE_BEQ << 26) | (1 << 21) | (2 << 16) | offset;
+   57: 
+   58:         R5900Decoder decoder;
+   59:         Instruction inst = decoder.decodeInstruction(address, raw);
+   60: 
+   61:         t.IsTrue(inst.isBranch, "beq should be marked as branch");
+   62:         t.IsTrue(inst.hasDelaySlot, "beq has a delay slot");
+   63:         uint32_t expectedTarget = address + 4 + (static_cast<int16_t>(offset) << 2);
+   64:         t.Equals(decoder.getBranchTarget(inst), expectedTarget, "beq target should be computed from simmediate");
+   65:     });
+   66: 
+   67:     tc.Run("branch target sign-extends negative offset", [](TestCase &t) {
+   68:         uint32_t address = 0x2100;
+   69:         int16_t negOffset = -4; // jump back 16 bytes
+   70:         uint32_t raw = (OPCODE_BNE << 26) | (1 << 21) | (2 << 16) | (negOffset & 0xFFFF);
+--- Lines 57-71 ---
+   57: 
+   58:         R5900Decoder decoder;
+   59:         Instruction inst = decoder.decodeInstruction(address, raw);
+   60: 
+   61:         t.IsTrue(inst.isBranch, "beq should be marked as branch");
+   62:         t.IsTrue(inst.hasDelaySlot, "beq has a delay slot");
+   63:         uint32_t expectedTarget = address + 4 + (static_cast<int16_t>(offset) << 2);
+   64:         t.Equals(decoder.getBranchTarget(inst), expectedTarget, "beq target should be computed from simmediate");
+   65:     });
+   66: 
+   67:     tc.Run("branch target sign-extends negative offset", [](TestCase &t) {
+   68:         uint32_t address = 0x2100;
+   69:         int16_t negOffset = -4; // jump back 16 bytes
+   70:         uint32_t raw = (OPCODE_BNE << 26) | (1 << 21) | (2 << 16) | (negOffset & 0xFFFF);
+   71: 
+--- Lines 62-76 ---
+   62:         t.IsTrue(inst.hasDelaySlot, "beq has a delay slot");
+   63:         uint32_t expectedTarget = address + 4 + (static_cast<int16_t>(offset) << 2);
+   64:         t.Equals(decoder.getBranchTarget(inst), expectedTarget, "beq target should be computed from simmediate");
+   65:     });
+   66: 
+   67:     tc.Run("branch target sign-extends negative offset", [](TestCase &t) {
+   68:         uint32_t address = 0x2100;
+   69:         int16_t negOffset = -4; // jump back 16 bytes
+   70:         uint32_t raw = (OPCODE_BNE << 26) | (1 << 21) | (2 << 16) | (negOffset & 0xFFFF);
+   71: 
+   72:         R5900Decoder decoder;
+   73:         Instruction inst = decoder.decodeInstruction(address, raw);
+   74: 
+   75:         uint32_t expectedTarget = address + 4 + (static_cast<int16_t>(negOffset) << 2);
+   76:         t.Equals(decoder.getBranchTarget(inst), expectedTarget, "negative branch offsets should sign-extend");
+--- Lines 68-82 ---
+   68:         uint32_t address = 0x2100;
+   69:         int16_t negOffset = -4; // jump back 16 bytes
+   70:         uint32_t raw = (OPCODE_BNE << 26) | (1 << 21) | (2 << 16) | (negOffset & 0xFFFF);
+   71: 
+   72:         R5900Decoder decoder;
+   73:         Instruction inst = decoder.decodeInstruction(address, raw);
+   74: 
+   75:         uint32_t expectedTarget = address + 4 + (static_cast<int16_t>(negOffset) << 2);
+   76:         t.Equals(decoder.getBranchTarget(inst), expectedTarget, "negative branch offsets should sign-extend");
+   77:     });
+   78: 
+   79:     tc.Run("decodes load/store flags", [](TestCase &t) {
+   80:         uint32_t address = 0x3000;
+   81:         uint32_t lwRaw = (OPCODE_LW << 26) | (1 << 21) | (2 << 16) | 0x10;
+   82:         uint32_t swRaw = (OPCODE_SW << 26) | (3 << 21) | (4 << 16) | 0x20;
+--- Lines 74-88 ---
+   74: 
+   75:         uint32_t expectedTarget = address + 4 + (static_cast<int16_t>(negOffset) << 2);
+   76:         t.Equals(decoder.getBranchTarget(inst), expectedTarget, "negative branch offsets should sign-extend");
+   77:     });
+   78: 
+   79:     tc.Run("decodes load/store flags", [](TestCase &t) {
+   80:         uint32_t address = 0x3000;
+   81:         uint32_t lwRaw = (OPCODE_LW << 26) | (1 << 21) | (2 << 16) | 0x10;
+   82:         uint32_t swRaw = (OPCODE_SW << 26) | (3 << 21) | (4 << 16) | 0x20;
+   83: 
+   84:         R5900Decoder decoder;
+   85:         Instruction lw = decoder.decodeInstruction(address, lwRaw);
+   86:         Instruction sw = decoder.decodeInstruction(address + 4, swRaw);
+   87: 
+   88:         t.IsTrue(lw.isLoad, "lw should be marked as load");
+--- Lines 80-94 ---
+   80:         uint32_t address = 0x3000;
+   81:         uint32_t lwRaw = (OPCODE_LW << 26) | (1 << 21) | (2 << 16) | 0x10;
+   82:         uint32_t swRaw = (OPCODE_SW << 26) | (3 << 21) | (4 << 16) | 0x20;
+   83: 
+   84:         R5900Decoder decoder;
+   85:         Instruction lw = decoder.decodeInstruction(address, lwRaw);
+   86:         Instruction sw = decoder.decodeInstruction(address + 4, swRaw);
+   87: 
+   88:         t.IsTrue(lw.isLoad, "lw should be marked as load");
+   89:         t.IsFalse(lw.isStore, "lw should not be marked as store");
+   90:         t.IsTrue(sw.isStore, "sw should be marked as store");
+   91:         t.IsFalse(sw.isLoad, "sw should not be marked as load");
+   92:     });
+   93: 
+   94:     tc.Run("JR is marked as return when rs is $ra", [](TestCase &t) {
+--- Lines 81-95 ---
+   81:         uint32_t lwRaw = (OPCODE_LW << 26) | (1 << 21) | (2 << 16) | 0x10;
+   82:         uint32_t swRaw = (OPCODE_SW << 26) | (3 << 21) | (4 << 16) | 0x20;
+   83: 
+   84:         R5900Decoder decoder;
+   85:         Instruction lw = decoder.decodeInstruction(address, lwRaw);
+   86:         Instruction sw = decoder.decodeInstruction(address + 4, swRaw);
+   87: 
+   88:         t.IsTrue(lw.isLoad, "lw should be marked as load");
+   89:         t.IsFalse(lw.isStore, "lw should not be marked as store");
+   90:         t.IsTrue(sw.isStore, "sw should be marked as store");
+   91:         t.IsFalse(sw.isLoad, "sw should not be marked as load");
+   92:     });
+   93: 
+   94:     tc.Run("JR is marked as return when rs is $ra", [](TestCase &t) {
+   95:         uint32_t address = 0x4000;
+--- Lines 89-103 ---
+   89:         t.IsFalse(lw.isStore, "lw should not be marked as store");
+   90:         t.IsTrue(sw.isStore, "sw should be marked as store");
+   91:         t.IsFalse(sw.isLoad, "sw should not be marked as load");
+   92:     });
+   93: 
+   94:     tc.Run("JR is marked as return when rs is $ra", [](TestCase &t) {
+   95:         uint32_t address = 0x4000;
+   96:         uint32_t raw = (OPCODE_SPECIAL << 26) | (31 << 21) | SPECIAL_JR; // jr $ra
+   97: 
+   98:         R5900Decoder decoder;
+   99:         Instruction inst = decoder.decodeInstruction(address, raw);
+  100: 
+  101:         t.IsTrue(inst.isJump, "jr should be jump");
+  102:         t.IsTrue(inst.isReturn, "jr $ra should be marked as return");
+  103:         t.IsTrue(inst.hasDelaySlot, "jr has delay slot");
+--- Lines 94-108 ---
+   94:     tc.Run("JR is marked as return when rs is $ra", [](TestCase &t) {
+   95:         uint32_t address = 0x4000;
+   96:         uint32_t raw = (OPCODE_SPECIAL << 26) | (31 << 21) | SPECIAL_JR; // jr $ra
+   97: 
+   98:         R5900Decoder decoder;
+   99:         Instruction inst = decoder.decodeInstruction(address, raw);
+  100: 
+  101:         t.IsTrue(inst.isJump, "jr should be jump");
+  102:         t.IsTrue(inst.isReturn, "jr $ra should be marked as return");
+  103:         t.IsTrue(inst.hasDelaySlot, "jr has delay slot");
+  104:     });
+  105: 
+  106:     tc.Run("JALR marks call and writes rd when non-zero", [](TestCase &t) {
+  107:         uint32_t address = 0x5000;
+  108:         uint32_t rd = 5;
+--- Lines 98-112 ---
+   98:         R5900Decoder decoder;
+   99:         Instruction inst = decoder.decodeInstruction(address, raw);
+  100: 
+  101:         t.IsTrue(inst.isJump, "jr should be jump");
+  102:         t.IsTrue(inst.isReturn, "jr $ra should be marked as return");
+  103:         t.IsTrue(inst.hasDelaySlot, "jr has delay slot");
+  104:     });
+  105: 
+  106:     tc.Run("JALR marks call and writes rd when non-zero", [](TestCase &t) {
+  107:         uint32_t address = 0x5000;
+  108:         uint32_t rd = 5;
+  109:         uint32_t raw = (OPCODE_SPECIAL << 26) | (2 << 21) | (rd << 11) | SPECIAL_JALR; // jalr $v0, $a0
+  110: 
+  111:         R5900Decoder decoder;
+  112:         Instruction inst = decoder.decodeInstruction(address, raw);
+--- Lines 101-115 ---
+  101:         t.IsTrue(inst.isJump, "jr should be jump");
+  102:         t.IsTrue(inst.isReturn, "jr $ra should be marked as return");
+  103:         t.IsTrue(inst.hasDelaySlot, "jr has delay slot");
+  104:     });
+  105: 
+  106:     tc.Run("JALR marks call and writes rd when non-zero", [](TestCase &t) {
+  107:         uint32_t address = 0x5000;
+  108:         uint32_t rd = 5;
+  109:         uint32_t raw = (OPCODE_SPECIAL << 26) | (2 << 21) | (rd << 11) | SPECIAL_JALR; // jalr $v0, $a0
+  110: 
+  111:         R5900Decoder decoder;
+  112:         Instruction inst = decoder.decodeInstruction(address, raw);
+  113: 
+  114:         t.IsTrue(inst.isJump, "jalr should be jump");
+  115:         t.IsTrue(inst.isCall, "jalr should be call");
+--- Lines 107-121 ---
+  107:         uint32_t address = 0x5000;
+  108:         uint32_t rd = 5;
+  109:         uint32_t raw = (OPCODE_SPECIAL << 26) | (2 << 21) | (rd << 11) | SPECIAL_JALR; // jalr $v0, $a0
+  110: 
+  111:         R5900Decoder decoder;
+  112:         Instruction inst = decoder.decodeInstruction(address, raw);
+  113: 
+  114:         t.IsTrue(inst.isJump, "jalr should be jump");
+  115:         t.IsTrue(inst.isCall, "jalr should be call");
+  116:         t.IsTrue(inst.hasDelaySlot, "jalr has delay slot");
+  117:         t.IsTrue(inst.modificationInfo.modifiesGPR, "jalr with rd!=0 should mark GPR modification");
+  118:     });
+  119: 
+  120:     tc.Run("R5900 MULT marks rd modification when rd is non-zero", [](TestCase &t) {
+  121:         uint32_t address = 0x5800;
+--- Lines 111-125 ---
+  111:         R5900Decoder decoder;
+  112:         Instruction inst = decoder.decodeInstruction(address, raw);
+  113: 
+  114:         t.IsTrue(inst.isJump, "jalr should be jump");
+  115:         t.IsTrue(inst.isCall, "jalr should be call");
+  116:         t.IsTrue(inst.hasDelaySlot, "jalr has delay slot");
+  117:         t.IsTrue(inst.modificationInfo.modifiesGPR, "jalr with rd!=0 should mark GPR modification");
+  118:     });
+  119: 
+  120:     tc.Run("R5900 MULT marks rd modification when rd is non-zero", [](TestCase &t) {
+  121:         uint32_t address = 0x5800;
+  122:         uint32_t rawWithRd = (OPCODE_SPECIAL << 26) | (4 << 21) | (5 << 16) | (3 << 11) | SPECIAL_MULT;
+  123:         uint32_t rawRdZero = (OPCODE_SPECIAL << 26) | (4 << 21) | (5 << 16) | (0 << 11) | SPECIAL_MULT;
+  124: 
+  125:         R5900Decoder decoder;
+--- Lines 112-126 ---
+  112:         Instruction inst = decoder.decodeInstruction(address, raw);
+  113: 
+  114:         t.IsTrue(inst.isJump, "jalr should be jump");
+  115:         t.IsTrue(inst.isCall, "jalr should be call");
+  116:         t.IsTrue(inst.hasDelaySlot, "jalr has delay slot");
+  117:         t.IsTrue(inst.modificationInfo.modifiesGPR, "jalr with rd!=0 should mark GPR modification");
+  118:     });
+  119: 
+  120:     tc.Run("R5900 MULT marks rd modification when rd is non-zero", [](TestCase &t) {
+  121:         uint32_t address = 0x5800;
+  122:         uint32_t rawWithRd = (OPCODE_SPECIAL << 26) | (4 << 21) | (5 << 16) | (3 << 11) | SPECIAL_MULT;
+  123:         uint32_t rawRdZero = (OPCODE_SPECIAL << 26) | (4 << 21) | (5 << 16) | (0 << 11) | SPECIAL_MULT;
+  124: 
+  125:         R5900Decoder decoder;
+  126:         Instruction withRd = decoder.decodeInstruction(address, rawWithRd);
+--- Lines 115-129 ---
+  115:         t.IsTrue(inst.isCall, "jalr should be call");
+  116:         t.IsTrue(inst.hasDelaySlot, "jalr has delay slot");
+  117:         t.IsTrue(inst.modificationInfo.modifiesGPR, "jalr with rd!=0 should mark GPR modification");
+  118:     });
+  119: 
+  120:     tc.Run("R5900 MULT marks rd modification when rd is non-zero", [](TestCase &t) {
+  121:         uint32_t address = 0x5800;
+  122:         uint32_t rawWithRd = (OPCODE_SPECIAL << 26) | (4 << 21) | (5 << 16) | (3 << 11) | SPECIAL_MULT;
+  123:         uint32_t rawRdZero = (OPCODE_SPECIAL << 26) | (4 << 21) | (5 << 16) | (0 << 11) | SPECIAL_MULT;
+  124: 
+  125:         R5900Decoder decoder;
+  126:         Instruction withRd = decoder.decodeInstruction(address, rawWithRd);
+  127:         Instruction rdZero = decoder.decodeInstruction(address + 4, rawRdZero);
+  128: 
+  129:         t.IsTrue(withRd.modificationInfo.modifiesControl, "MULT should modify HI/LO");
+--- Lines 121-135 ---
+  121:         uint32_t address = 0x5800;
+  122:         uint32_t rawWithRd = (OPCODE_SPECIAL << 26) | (4 << 21) | (5 << 16) | (3 << 11) | SPECIAL_MULT;
+  123:         uint32_t rawRdZero = (OPCODE_SPECIAL << 26) | (4 << 21) | (5 << 16) | (0 << 11) | SPECIAL_MULT;
+  124: 
+  125:         R5900Decoder decoder;
+  126:         Instruction withRd = decoder.decodeInstruction(address, rawWithRd);
+  127:         Instruction rdZero = decoder.decodeInstruction(address + 4, rawRdZero);
+  128: 
+  129:         t.IsTrue(withRd.modificationInfo.modifiesControl, "MULT should modify HI/LO");
+  130:         t.IsTrue(withRd.modificationInfo.modifiesGPR, "MULT should mark rd modification when rd!=0");
+  131:         t.IsFalse(rdZero.modificationInfo.modifiesGPR, "MULT should not mark rd modification when rd==0");
+  132:     });
+  133: 
+  134:     tc.Run("R5900 MMI MULT1 marks rd modification when rd is non-zero", [](TestCase &t) {
+  135:         uint32_t address = 0x5900;
+--- Lines 122-136 ---
+  122:         uint32_t rawWithRd = (OPCODE_SPECIAL << 26) | (4 << 21) | (5 << 16) | (3 << 11) | SPECIAL_MULT;
+  123:         uint32_t rawRdZero = (OPCODE_SPECIAL << 26) | (4 << 21) | (5 << 16) | (0 << 11) | SPECIAL_MULT;
+  124: 
+  125:         R5900Decoder decoder;
+  126:         Instruction withRd = decoder.decodeInstruction(address, rawWithRd);
+  127:         Instruction rdZero = decoder.decodeInstruction(address + 4, rawRdZero);
+  128: 
+  129:         t.IsTrue(withRd.modificationInfo.modifiesControl, "MULT should modify HI/LO");
+  130:         t.IsTrue(withRd.modificationInfo.modifiesGPR, "MULT should mark rd modification when rd!=0");
+  131:         t.IsFalse(rdZero.modificationInfo.modifiesGPR, "MULT should not mark rd modification when rd==0");
+  132:     });
+  133: 
+  134:     tc.Run("R5900 MMI MULT1 marks rd modification when rd is non-zero", [](TestCase &t) {
+  135:         uint32_t address = 0x5900;
+  136:         uint32_t raw = (OPCODE_MMI << 26) | (6 << 21) | (7 << 16) | (8 << 11) | MMI_MULT1;
+--- Lines 124-138 ---
+  124: 
+  125:         R5900Decoder decoder;
+  126:         Instruction withRd = decoder.decodeInstruction(address, rawWithRd);
+  127:         Instruction rdZero = decoder.decodeInstruction(address + 4, rawRdZero);
+  128: 
+  129:         t.IsTrue(withRd.modificationInfo.modifiesControl, "MULT should modify HI/LO");
+  130:         t.IsTrue(withRd.modificationInfo.modifiesGPR, "MULT should mark rd modification when rd!=0");
+  131:         t.IsFalse(rdZero.modificationInfo.modifiesGPR, "MULT should not mark rd modification when rd==0");
+  132:     });
+  133: 
+  134:     tc.Run("R5900 MMI MULT1 marks rd modification when rd is non-zero", [](TestCase &t) {
+  135:         uint32_t address = 0x5900;
+  136:         uint32_t raw = (OPCODE_MMI << 26) | (6 << 21) | (7 << 16) | (8 << 11) | MMI_MULT1;
+  137: 
+  138:         R5900Decoder decoder;
+--- Lines 125-139 ---
+  125:         R5900Decoder decoder;
+  126:         Instruction withRd = decoder.decodeInstruction(address, rawWithRd);
+  127:         Instruction rdZero = decoder.decodeInstruction(address + 4, rawRdZero);
+  128: 
+  129:         t.IsTrue(withRd.modificationInfo.modifiesControl, "MULT should modify HI/LO");
+  130:         t.IsTrue(withRd.modificationInfo.modifiesGPR, "MULT should mark rd modification when rd!=0");
+  131:         t.IsFalse(rdZero.modificationInfo.modifiesGPR, "MULT should not mark rd modification when rd==0");
+  132:     });
+  133: 
+  134:     tc.Run("R5900 MMI MULT1 marks rd modification when rd is non-zero", [](TestCase &t) {
+  135:         uint32_t address = 0x5900;
+  136:         uint32_t raw = (OPCODE_MMI << 26) | (6 << 21) | (7 << 16) | (8 << 11) | MMI_MULT1;
+  137: 
+  138:         R5900Decoder decoder;
+  139:         Instruction inst = decoder.decodeInstruction(address, raw);
+--- Lines 126-140 ---
+  126:         Instruction withRd = decoder.decodeInstruction(address, rawWithRd);
+  127:         Instruction rdZero = decoder.decodeInstruction(address + 4, rawRdZero);
+  128: 
+  129:         t.IsTrue(withRd.modificationInfo.modifiesControl, "MULT should modify HI/LO");
+  130:         t.IsTrue(withRd.modificationInfo.modifiesGPR, "MULT should mark rd modification when rd!=0");
+  131:         t.IsFalse(rdZero.modificationInfo.modifiesGPR, "MULT should not mark rd modification when rd==0");
+  132:     });
+  133: 
+  134:     tc.Run("R5900 MMI MULT1 marks rd modification when rd is non-zero", [](TestCase &t) {
+  135:         uint32_t address = 0x5900;
+  136:         uint32_t raw = (OPCODE_MMI << 26) | (6 << 21) | (7 << 16) | (8 << 11) | MMI_MULT1;
+  137: 
+  138:         R5900Decoder decoder;
+  139:         Instruction inst = decoder.decodeInstruction(address, raw);
+  140: 
+--- Lines 129-143 ---
+  129:         t.IsTrue(withRd.modificationInfo.modifiesControl, "MULT should modify HI/LO");
+  130:         t.IsTrue(withRd.modificationInfo.modifiesGPR, "MULT should mark rd modification when rd!=0");
+  131:         t.IsFalse(rdZero.modificationInfo.modifiesGPR, "MULT should not mark rd modification when rd==0");
+  132:     });
+  133: 
+  134:     tc.Run("R5900 MMI MULT1 marks rd modification when rd is non-zero", [](TestCase &t) {
+  135:         uint32_t address = 0x5900;
+  136:         uint32_t raw = (OPCODE_MMI << 26) | (6 << 21) | (7 << 16) | (8 << 11) | MMI_MULT1;
+  137: 
+  138:         R5900Decoder decoder;
+  139:         Instruction inst = decoder.decodeInstruction(address, raw);
+  140: 
+  141:         t.IsTrue(inst.modificationInfo.modifiesControl, "MULT1 should modify HI1/LO1");
+  142:         t.IsTrue(inst.modificationInfo.modifiesGPR, "MULT1 should mark rd modification when rd!=0");
+  143:     });
+--- Lines 134-148 ---
+  134:     tc.Run("R5900 MMI MULT1 marks rd modification when rd is non-zero", [](TestCase &t) {
+  135:         uint32_t address = 0x5900;
+  136:         uint32_t raw = (OPCODE_MMI << 26) | (6 << 21) | (7 << 16) | (8 << 11) | MMI_MULT1;
+  137: 
+  138:         R5900Decoder decoder;
+  139:         Instruction inst = decoder.decodeInstruction(address, raw);
+  140: 
+  141:         t.IsTrue(inst.modificationInfo.modifiesControl, "MULT1 should modify HI1/LO1");
+  142:         t.IsTrue(inst.modificationInfo.modifiesGPR, "MULT1 should mark rd modification when rd!=0");
+  143:     });
+  144: 
+  145:     tc.Run("MMI instruction sets MMI flags", [](TestCase &t) {
+  146:         uint32_t address = 0x6000;
+  147:         // Use opcode 0x1C (MMI), rs=1, rt=2, rd=3, sa=MMI0_PADDW (0)
+  148:         uint32_t raw = (OPCODE_MMI << 26) | (1 << 21) | (2 << 16) | (3 << 11) | MMI0_PADDW;
+--- Lines 136-150 ---
+  136:         uint32_t raw = (OPCODE_MMI << 26) | (6 << 21) | (7 << 16) | (8 << 11) | MMI_MULT1;
+  137: 
+  138:         R5900Decoder decoder;
+  139:         Instruction inst = decoder.decodeInstruction(address, raw);
+  140: 
+  141:         t.IsTrue(inst.modificationInfo.modifiesControl, "MULT1 should modify HI1/LO1");
+  142:         t.IsTrue(inst.modificationInfo.modifiesGPR, "MULT1 should mark rd modification when rd!=0");
+  143:     });
+  144: 
+  145:     tc.Run("MMI instruction sets MMI flags", [](TestCase &t) {
+  146:         uint32_t address = 0x6000;
+  147:         // Use opcode 0x1C (MMI), rs=1, rt=2, rd=3, sa=MMI0_PADDW (0)
+  148:         uint32_t raw = (OPCODE_MMI << 26) | (1 << 21) | (2 << 16) | (3 << 11) | MMI0_PADDW;
+  149: 
+  150:         R5900Decoder decoder;
+--- Lines 137-151 ---
+  137: 
+  138:         R5900Decoder decoder;
+  139:         Instruction inst = decoder.decodeInstruction(address, raw);
+  140: 
+  141:         t.IsTrue(inst.modificationInfo.modifiesControl, "MULT1 should modify HI1/LO1");
+  142:         t.IsTrue(inst.modificationInfo.modifiesGPR, "MULT1 should mark rd modification when rd!=0");
+  143:     });
+  144: 
+  145:     tc.Run("MMI instruction sets MMI flags", [](TestCase &t) {
+  146:         uint32_t address = 0x6000;
+  147:         // Use opcode 0x1C (MMI), rs=1, rt=2, rd=3, sa=MMI0_PADDW (0)
+  148:         uint32_t raw = (OPCODE_MMI << 26) | (1 << 21) | (2 << 16) | (3 << 11) | MMI0_PADDW;
+  149: 
+  150:         R5900Decoder decoder;
+  151:         Instruction inst = decoder.decodeInstruction(address, raw);
+--- Lines 140-154 ---
+  140: 
+  141:         t.IsTrue(inst.modificationInfo.modifiesControl, "MULT1 should modify HI1/LO1");
+  142:         t.IsTrue(inst.modificationInfo.modifiesGPR, "MULT1 should mark rd modification when rd!=0");
+  143:     });
+  144: 
+  145:     tc.Run("MMI instruction sets MMI flags", [](TestCase &t) {
+  146:         uint32_t address = 0x6000;
+  147:         // Use opcode 0x1C (MMI), rs=1, rt=2, rd=3, sa=MMI0_PADDW (0)
+  148:         uint32_t raw = (OPCODE_MMI << 26) | (1 << 21) | (2 << 16) | (3 << 11) | MMI0_PADDW;
+  149: 
+  150:         R5900Decoder decoder;
+  151:         Instruction inst = decoder.decodeInstruction(address, raw);
+  152: 
+  153:         t.IsTrue(inst.isMMI, "MMI opcode should set isMMI");
+  154:         t.IsTrue(inst.isMultimedia, "MMI opcode should set multimedia flag");
+--- Lines 146-160 ---
+  146:         uint32_t address = 0x6000;
+  147:         // Use opcode 0x1C (MMI), rs=1, rt=2, rd=3, sa=MMI0_PADDW (0)
+  148:         uint32_t raw = (OPCODE_MMI << 26) | (1 << 21) | (2 << 16) | (3 << 11) | MMI0_PADDW;
+  149: 
+  150:         R5900Decoder decoder;
+  151:         Instruction inst = decoder.decodeInstruction(address, raw);
+  152: 
+  153:         t.IsTrue(inst.isMMI, "MMI opcode should set isMMI");
+  154:         t.IsTrue(inst.isMultimedia, "MMI opcode should set multimedia flag");
+  155:         t.Equals(inst.mmiType, static_cast<uint8_t>(0), "MMI0 should set mmiType to 0");
+  156:         t.Equals(inst.mmiFunction, static_cast<uint8_t>(MMI0_PADDW), "MMI function should match sa field");
+  157:     });
+  158: 
+  159:     tc.Run("COP2 VU macro op marks VU flags", [](TestCase &t) {
+  160:         uint32_t address = 0x7000;
+--- Lines 154-168 ---
+  154:         t.IsTrue(inst.isMultimedia, "MMI opcode should set multimedia flag");
+  155:         t.Equals(inst.mmiType, static_cast<uint8_t>(0), "MMI0 should set mmiType to 0");
+  156:         t.Equals(inst.mmiFunction, static_cast<uint8_t>(MMI0_PADDW), "MMI function should match sa field");
+  157:     });
+  158: 
+  159:     tc.Run("COP2 VU macro op marks VU flags", [](TestCase &t) {
+  160:         uint32_t address = 0x7000;
+  161:         uint8_t s2op = VU0_S2_VDIV;          // 0x38
+  162:         uint8_t fhi  = s2op >> 2;             // 0x0E -> bits[10:6]
+  163:         uint8_t flo  = s2op & 0x3;            // 0x00 -> bits[1:0]
+  164:         uint32_t raw = (OPCODE_COP2 << 26) | (COP2_CO << 21) | (fhi << 6) | (0x3C | flo);
+  165: 
+  166:         R5900Decoder decoder;
+  167:         Instruction inst = decoder.decodeInstruction(address, raw);
+  168: 
+--- Lines 162-176 ---
+  162:         uint8_t fhi  = s2op >> 2;             // 0x0E -> bits[10:6]
+  163:         uint8_t flo  = s2op & 0x3;            // 0x00 -> bits[1:0]
+  164:         uint32_t raw = (OPCODE_COP2 << 26) | (COP2_CO << 21) | (fhi << 6) | (0x3C | flo);
+  165: 
+  166:         R5900Decoder decoder;
+  167:         Instruction inst = decoder.decodeInstruction(address, raw);
+  168: 
+  169:         t.IsTrue(inst.isVU, "VU macro should set isVU");
+  170:         t.IsTrue(inst.isMultimedia, "VU macro should set multimedia");
+  171:         t.IsTrue(inst.modificationInfo.modifiesControl, "VDIV should mark control modification");
+  172:         t.IsTrue(inst.vectorInfo.usesQReg, "VDIV should use Q register");
+  173:         uint8_t expectedVecField = static_cast<uint8_t>((raw >> 21) & 0xF);
+  174:         t.Equals(inst.vectorInfo.vectorField, expectedVecField, "vector field should reflect encoding");
+  175:     });
+  176: 
+--- Lines 166-180 ---
+  166:         R5900Decoder decoder;
+  167:         Instruction inst = decoder.decodeInstruction(address, raw);
+  168: 
+  169:         t.IsTrue(inst.isVU, "VU macro should set isVU");
+  170:         t.IsTrue(inst.isMultimedia, "VU macro should set multimedia");
+  171:         t.IsTrue(inst.modificationInfo.modifiesControl, "VDIV should mark control modification");
+  172:         t.IsTrue(inst.vectorInfo.usesQReg, "VDIV should use Q register");
+  173:         uint8_t expectedVecField = static_cast<uint8_t>((raw >> 21) & 0xF);
+  174:         t.Equals(inst.vectorInfo.vectorField, expectedVecField, "vector field should reflect encoding");
+  175:     });
+  176: 
+  177:     tc.Run("REGIMM branch and link marks call and GPR modification", [](TestCase &t) {
+  178:         uint32_t address = 0x8000;
+  179:         uint16_t offset = 0x2;
+  180:         uint32_t raw = (OPCODE_REGIMM << 26) | (1 << 21) | (REGIMM_BGEZAL << 16) | offset;
+--- Lines 172-186 ---
+  172:         t.IsTrue(inst.vectorInfo.usesQReg, "VDIV should use Q register");
+  173:         uint8_t expectedVecField = static_cast<uint8_t>((raw >> 21) & 0xF);
+  174:         t.Equals(inst.vectorInfo.vectorField, expectedVecField, "vector field should reflect encoding");
+  175:     });
+  176: 
+  177:     tc.Run("REGIMM branch and link marks call and GPR modification", [](TestCase &t) {
+  178:         uint32_t address = 0x8000;
+  179:         uint16_t offset = 0x2;
+  180:         uint32_t raw = (OPCODE_REGIMM << 26) | (1 << 21) | (REGIMM_BGEZAL << 16) | offset;
+  181: 
+  182:         R5900Decoder decoder;
+  183:         Instruction inst = decoder.decodeInstruction(address, raw);
+  184: 
+  185:         t.IsTrue(inst.isBranch, "bgezal should be branch");
+  186:         t.IsTrue(inst.isCall, "bgezal should be call (link)");
+--- Lines 178-192 ---
+  178:         uint32_t address = 0x8000;
+  179:         uint16_t offset = 0x2;
+  180:         uint32_t raw = (OPCODE_REGIMM << 26) | (1 << 21) | (REGIMM_BGEZAL << 16) | offset;
+  181: 
+  182:         R5900Decoder decoder;
+  183:         Instruction inst = decoder.decodeInstruction(address, raw);
+  184: 
+  185:         t.IsTrue(inst.isBranch, "bgezal should be branch");
+  186:         t.IsTrue(inst.isCall, "bgezal should be call (link)");
+  187:         t.IsTrue(inst.hasDelaySlot, "bgezal has delay slot");
+  188:         t.IsTrue(inst.modificationInfo.modifiesGPR, "bgezal should mark GPR modification for $ra");
+  189:         uint32_t expectedTarget = address + 4 + (static_cast<int16_t>(offset) << 2);
+  190:         t.Equals(decoder.getBranchTarget(inst), expectedTarget, "bgezal target should be computed");
+  191:     });
+  192: 
+--- Lines 180-194 ---
+  180:         uint32_t raw = (OPCODE_REGIMM << 26) | (1 << 21) | (REGIMM_BGEZAL << 16) | offset;
+  181: 
+  182:         R5900Decoder decoder;
+  183:         Instruction inst = decoder.decodeInstruction(address, raw);
+  184: 
+  185:         t.IsTrue(inst.isBranch, "bgezal should be branch");
+  186:         t.IsTrue(inst.isCall, "bgezal should be call (link)");
+  187:         t.IsTrue(inst.hasDelaySlot, "bgezal has delay slot");
+  188:         t.IsTrue(inst.modificationInfo.modifiesGPR, "bgezal should mark GPR modification for $ra");
+  189:         uint32_t expectedTarget = address + 4 + (static_cast<int16_t>(offset) << 2);
+  190:         t.Equals(decoder.getBranchTarget(inst), expectedTarget, "bgezal target should be computed");
+  191:     });
+  192: 
+  193:     tc.Run("LL/SC modify control and set load/store flags", [](TestCase &t) {
+  194:         uint32_t address = 0x9000;
+--- Lines 182-196 ---
+  182:         R5900Decoder decoder;
+  183:         Instruction inst = decoder.decodeInstruction(address, raw);
+  184: 
+  185:         t.IsTrue(inst.isBranch, "bgezal should be branch");
+  186:         t.IsTrue(inst.isCall, "bgezal should be call (link)");
+  187:         t.IsTrue(inst.hasDelaySlot, "bgezal has delay slot");
+  188:         t.IsTrue(inst.modificationInfo.modifiesGPR, "bgezal should mark GPR modification for $ra");
+  189:         uint32_t expectedTarget = address + 4 + (static_cast<int16_t>(offset) << 2);
+  190:         t.Equals(decoder.getBranchTarget(inst), expectedTarget, "bgezal target should be computed");
+  191:     });
+  192: 
+  193:     tc.Run("LL/SC modify control and set load/store flags", [](TestCase &t) {
+  194:         uint32_t address = 0x9000;
+  195:         uint32_t llRaw = (OPCODE_LL << 26) | (2 << 21) | (3 << 16) | 0x10;
+  196:         uint32_t scRaw = (OPCODE_SC << 26) | (4 << 21) | (5 << 16) | 0x20;
+--- Lines 183-197 ---
+  183:         Instruction inst = decoder.decodeInstruction(address, raw);
+  184: 
+  185:         t.IsTrue(inst.isBranch, "bgezal should be branch");
+  186:         t.IsTrue(inst.isCall, "bgezal should be call (link)");
+  187:         t.IsTrue(inst.hasDelaySlot, "bgezal has delay slot");
+  188:         t.IsTrue(inst.modificationInfo.modifiesGPR, "bgezal should mark GPR modification for $ra");
+  189:         uint32_t expectedTarget = address + 4 + (static_cast<int16_t>(offset) << 2);
+  190:         t.Equals(decoder.getBranchTarget(inst), expectedTarget, "bgezal target should be computed");
+  191:     });
+  192: 
+  193:     tc.Run("LL/SC modify control and set load/store flags", [](TestCase &t) {
+  194:         uint32_t address = 0x9000;
+  195:         uint32_t llRaw = (OPCODE_LL << 26) | (2 << 21) | (3 << 16) | 0x10;
+  196:         uint32_t scRaw = (OPCODE_SC << 26) | (4 << 21) | (5 << 16) | 0x20;
+  197: 
+--- Lines 188-202 ---
+  188:         t.IsTrue(inst.modificationInfo.modifiesGPR, "bgezal should mark GPR modification for $ra");
+  189:         uint32_t expectedTarget = address + 4 + (static_cast<int16_t>(offset) << 2);
+  190:         t.Equals(decoder.getBranchTarget(inst), expectedTarget, "bgezal target should be computed");
+  191:     });
+  192: 
+  193:     tc.Run("LL/SC modify control and set load/store flags", [](TestCase &t) {
+  194:         uint32_t address = 0x9000;
+  195:         uint32_t llRaw = (OPCODE_LL << 26) | (2 << 21) | (3 << 16) | 0x10;
+  196:         uint32_t scRaw = (OPCODE_SC << 26) | (4 << 21) | (5 << 16) | 0x20;
+  197: 
+  198:         R5900Decoder decoder;
+  199:         Instruction ll = decoder.decodeInstruction(address, llRaw);
+  200:         Instruction sc = decoder.decodeInstruction(address + 4, scRaw);
+  201: 
+  202:         t.IsTrue(ll.isLoad, "ll should be load");
+--- Lines 194-208 ---
+  194:         uint32_t address = 0x9000;
+  195:         uint32_t llRaw = (OPCODE_LL << 26) | (2 << 21) | (3 << 16) | 0x10;
+  196:         uint32_t scRaw = (OPCODE_SC << 26) | (4 << 21) | (5 << 16) | 0x20;
+  197: 
+  198:         R5900Decoder decoder;
+  199:         Instruction ll = decoder.decodeInstruction(address, llRaw);
+  200:         Instruction sc = decoder.decodeInstruction(address + 4, scRaw);
+  201: 
+  202:         t.IsTrue(ll.isLoad, "ll should be load");
+  203:         t.IsTrue(ll.modificationInfo.modifiesControl, "ll should modify control (LL bit)");
+  204:         t.IsTrue(sc.isStore, "sc should be store");
+  205:         t.IsTrue(sc.modificationInfo.modifiesControl, "sc should modify control (LL bit)");
+  206:         t.IsTrue(sc.modificationInfo.modifiesGPR, "sc writes success flag to rt");
+  207:     });
+  208: 
+--- Lines 195-209 ---
+  195:         uint32_t llRaw = (OPCODE_LL << 26) | (2 << 21) | (3 << 16) | 0x10;
+  196:         uint32_t scRaw = (OPCODE_SC << 26) | (4 << 21) | (5 << 16) | 0x20;
+  197: 
+  198:         R5900Decoder decoder;
+  199:         Instruction ll = decoder.decodeInstruction(address, llRaw);
+  200:         Instruction sc = decoder.decodeInstruction(address + 4, scRaw);
+  201: 
+  202:         t.IsTrue(ll.isLoad, "ll should be load");
+  203:         t.IsTrue(ll.modificationInfo.modifiesControl, "ll should modify control (LL bit)");
+  204:         t.IsTrue(sc.isStore, "sc should be store");
+  205:         t.IsTrue(sc.modificationInfo.modifiesControl, "sc should modify control (LL bit)");
+  206:         t.IsTrue(sc.modificationInfo.modifiesGPR, "sc writes success flag to rt");
+  207:     });
+  208: 
+  209:     tc.Run("COP0 ERET is marked as return without delay slot", [](TestCase &t) {
+--- Lines 198-212 ---
+  198:         R5900Decoder decoder;
+  199:         Instruction ll = decoder.decodeInstruction(address, llRaw);
+  200:         Instruction sc = decoder.decodeInstruction(address + 4, scRaw);
+  201: 
+  202:         t.IsTrue(ll.isLoad, "ll should be load");
+  203:         t.IsTrue(ll.modificationInfo.modifiesControl, "ll should modify control (LL bit)");
+  204:         t.IsTrue(sc.isStore, "sc should be store");
+  205:         t.IsTrue(sc.modificationInfo.modifiesControl, "sc should modify control (LL bit)");
+  206:         t.IsTrue(sc.modificationInfo.modifiesGPR, "sc writes success flag to rt");
+  207:     });
+  208: 
+  209:     tc.Run("COP0 ERET is marked as return without delay slot", [](TestCase &t) {
+  210:         uint32_t address = 0xA000;
+  211:         uint32_t raw = (OPCODE_COP0 << 26) | (COP0_CO << 21) | COP0_CO_ERET;
+  212: 
+--- Lines 200-214 ---
+  200:         Instruction sc = decoder.decodeInstruction(address + 4, scRaw);
+  201: 
+  202:         t.IsTrue(ll.isLoad, "ll should be load");
+  203:         t.IsTrue(ll.modificationInfo.modifiesControl, "ll should modify control (LL bit)");
+  204:         t.IsTrue(sc.isStore, "sc should be store");
+  205:         t.IsTrue(sc.modificationInfo.modifiesControl, "sc should modify control (LL bit)");
+  206:         t.IsTrue(sc.modificationInfo.modifiesGPR, "sc writes success flag to rt");
+  207:     });
+  208: 
+  209:     tc.Run("COP0 ERET is marked as return without delay slot", [](TestCase &t) {
+  210:         uint32_t address = 0xA000;
+  211:         uint32_t raw = (OPCODE_COP0 << 26) | (COP0_CO << 21) | COP0_CO_ERET;
+  212: 
+  213:         R5900Decoder decoder;
+  214:         Instruction inst = decoder.decodeInstruction(address, raw);
+--- Lines 201-215 ---
+  201: 
+  202:         t.IsTrue(ll.isLoad, "ll should be load");
+  203:         t.IsTrue(ll.modificationInfo.modifiesControl, "ll should modify control (LL bit)");
+  204:         t.IsTrue(sc.isStore, "sc should be store");
+  205:         t.IsTrue(sc.modificationInfo.modifiesControl, "sc should modify control (LL bit)");
+  206:         t.IsTrue(sc.modificationInfo.modifiesGPR, "sc writes success flag to rt");
+  207:     });
+  208: 
+  209:     tc.Run("COP0 ERET is marked as return without delay slot", [](TestCase &t) {
+  210:         uint32_t address = 0xA000;
+  211:         uint32_t raw = (OPCODE_COP0 << 26) | (COP0_CO << 21) | COP0_CO_ERET;
+  212: 
+  213:         R5900Decoder decoder;
+  214:         Instruction inst = decoder.decodeInstruction(address, raw);
+  215: 
+--- Lines 204-218 ---
+  204:         t.IsTrue(sc.isStore, "sc should be store");
+  205:         t.IsTrue(sc.modificationInfo.modifiesControl, "sc should modify control (LL bit)");
+  206:         t.IsTrue(sc.modificationInfo.modifiesGPR, "sc writes success flag to rt");
+  207:     });
+  208: 
+  209:     tc.Run("COP0 ERET is marked as return without delay slot", [](TestCase &t) {
+  210:         uint32_t address = 0xA000;
+  211:         uint32_t raw = (OPCODE_COP0 << 26) | (COP0_CO << 21) | COP0_CO_ERET;
+  212: 
+  213:         R5900Decoder decoder;
+  214:         Instruction inst = decoder.decodeInstruction(address, raw);
+  215: 
+  216:         t.IsTrue(inst.isReturn, "eret should be marked as return");
+  217:         t.IsFalse(inst.hasDelaySlot, "eret should not have a delay slot");
+  218:         t.IsTrue(inst.modificationInfo.modifiesControl, "eret changes control state");
+--- Lines 209-220 ---
+  209:     tc.Run("COP0 ERET is marked as return without delay slot", [](TestCase &t) {
+  210:         uint32_t address = 0xA000;
+  211:         uint32_t raw = (OPCODE_COP0 << 26) | (COP0_CO << 21) | COP0_CO_ERET;
+  212: 
+  213:         R5900Decoder decoder;
+  214:         Instruction inst = decoder.decodeInstruction(address, raw);
+  215: 
+  216:         t.IsTrue(inst.isReturn, "eret should be marked as return");
+  217:         t.IsFalse(inst.hasDelaySlot, "eret should not have a delay slot");
+  218:         t.IsTrue(inst.modificationInfo.modifiesControl, "eret changes control state");
+  219:     }); });
+  220: }
+--- Lines 212-220 ---
+  212: 
+  213:         R5900Decoder decoder;
+  214:         Instruction inst = decoder.decodeInstruction(address, raw);
+  215: 
+  216:         t.IsTrue(inst.isReturn, "eret should be marked as return");
+  217:         t.IsFalse(inst.hasDelaySlot, "eret should not have a delay slot");
+  218:         t.IsTrue(inst.modificationInfo.modifiesControl, "eret changes control state");
+  219:     }); });
+  220: }
+--- Lines 213-220 ---
+  213:         R5900Decoder decoder;
+  214:         Instruction inst = decoder.decodeInstruction(address, raw);
+  215: 
+  216:         t.IsTrue(inst.isReturn, "eret should be marked as return");
+  217:         t.IsFalse(inst.hasDelaySlot, "eret should not have a delay slot");
+  218:         t.IsTrue(inst.modificationInfo.modifiesControl, "eret changes control state");
+  219:     }); });
+  220: }
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h =====
+--- Lines 67-81 ---
+   67:         OPCODE_ORI = 0x0D,   // OR Immediate
+   68:         OPCODE_XORI = 0x0E,  // XOR Immediate
+   69:         OPCODE_LUI = 0x0F,   // Load Upper Immediate
+   70: 
+   71:         OPCODE_COP0 = 0x10, // Coprocessor 0 instructions (see Cop0Format)
+   72:         OPCODE_COP1 = 0x11, // Coprocessor 1 (FPU) instructions (see Cop1Format)
+   73:         OPCODE_COP2 = 0x12, // Coprocessor 2 (VU0 Macro) instructions (see Cop2Format)
+   74:         OPCODE_COP3 = 0x13, // Unused on PS2
+   75: 
+   76:         OPCODE_BEQL = 0x14,  // Branch on Equal Likely
+   77:         OPCODE_BNEL = 0x15,  // Branch on Not Equal Likely
+   78:         OPCODE_BLEZL = 0x16, // Branch on Less Than or Equal to Zero Likely
+   79:         OPCODE_BGTZL = 0x17, // Branch on Greater Than Zero Likely
+   80: 
+   81:         OPCODE_DADDI = 0x18,  // Doubleword Add Immediate
+--- Lines 434-448 ---
+  434:         COP0_REG_TAGLO = 28,   // Cache TagLo (I-Cache & D-Cache)
+  435:         COP0_REG_TAGHI = 29,   // High bits of cache tag ( Cache TagHi )
+  436:         COP0_REG_ERROREPC = 30 // Error exception program counter
+  437:     };
+  438: 
+  439:     // COP1 (FPU) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP1
+  440:     enum Cop1Format
+  441:     {
+  442:         COP1_MF = 0x00, // Move From FPU Register
+  443:         COP1_CF = 0x02, // Move From FPU Control Register
+  444:         COP1_MT = 0x04, // Move To FPU Register
+  445:         COP1_CT = 0x06, // Move To FPU Control Register
+  446:         COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  447: 
+  448:         COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+--- Lines 437-451 ---
+  437:     };
+  438: 
+  439:     // COP1 (FPU) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP1
+  440:     enum Cop1Format
+  441:     {
+  442:         COP1_MF = 0x00, // Move From FPU Register
+  443:         COP1_CF = 0x02, // Move From FPU Control Register
+  444:         COP1_MT = 0x04, // Move To FPU Register
+  445:         COP1_CT = 0x06, // Move To FPU Control Register
+  446:         COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  447: 
+  448:         COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  449:         COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  450: 
+  451:         COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+--- Lines 438-452 ---
+  438: 
+  439:     // COP1 (FPU) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP1
+  440:     enum Cop1Format
+  441:     {
+  442:         COP1_MF = 0x00, // Move From FPU Register
+  443:         COP1_CF = 0x02, // Move From FPU Control Register
+  444:         COP1_MT = 0x04, // Move To FPU Register
+  445:         COP1_CT = 0x06, // Move To FPU Control Register
+  446:         COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  447: 
+  448:         COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  449:         COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  450: 
+  451:         COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+  452:         COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+--- Lines 439-453 ---
+  439:     // COP1 (FPU) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP1
+  440:     enum Cop1Format
+  441:     {
+  442:         COP1_MF = 0x00, // Move From FPU Register
+  443:         COP1_CF = 0x02, // Move From FPU Control Register
+  444:         COP1_MT = 0x04, // Move To FPU Register
+  445:         COP1_CT = 0x06, // Move To FPU Control Register
+  446:         COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  447: 
+  448:         COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  449:         COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  450: 
+  451:         COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+  452:         COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+  453:     };
+--- Lines 440-454 ---
+  440:     enum Cop1Format
+  441:     {
+  442:         COP1_MF = 0x00, // Move From FPU Register
+  443:         COP1_CF = 0x02, // Move From FPU Control Register
+  444:         COP1_MT = 0x04, // Move To FPU Register
+  445:         COP1_CT = 0x06, // Move To FPU Control Register
+  446:         COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  447: 
+  448:         COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  449:         COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  450: 
+  451:         COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+  452:         COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+  453:     };
+  454: 
+--- Lines 441-455 ---
+  441:     {
+  442:         COP1_MF = 0x00, // Move From FPU Register
+  443:         COP1_CF = 0x02, // Move From FPU Control Register
+  444:         COP1_MT = 0x04, // Move To FPU Register
+  445:         COP1_CT = 0x06, // Move To FPU Control Register
+  446:         COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  447: 
+  448:         COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  449:         COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  450: 
+  451:         COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+  452:         COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+  453:     };
+  454: 
+  455:     // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+--- Lines 444-458 ---
+  444:         COP1_MT = 0x04, // Move To FPU Register
+  445:         COP1_CT = 0x06, // Move To FPU Control Register
+  446:         COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  447: 
+  448:         COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  449:         COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  450: 
+  451:         COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+  452:         COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+  453:     };
+  454: 
+  455:     // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+  456:     enum Cop1FunctionsS
+  457:     {
+  458:         COP1_S_ADD = 0x00,  // ADD.S
+--- Lines 446-460 ---
+  446:         COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  447: 
+  448:         COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  449:         COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  450: 
+  451:         COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+  452:         COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+  453:     };
+  454: 
+  455:     // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+  456:     enum Cop1FunctionsS
+  457:     {
+  458:         COP1_S_ADD = 0x00,  // ADD.S
+  459:         COP1_S_SUB = 0x01,  // SUB.S
+  460:         COP1_S_MUL = 0x02,  // MUL.S
+--- Lines 447-461 ---
+  447: 
+  448:         COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  449:         COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  450: 
+  451:         COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+  452:         COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+  453:     };
+  454: 
+  455:     // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+  456:     enum Cop1FunctionsS
+  457:     {
+  458:         COP1_S_ADD = 0x00,  // ADD.S
+  459:         COP1_S_SUB = 0x01,  // SUB.S
+  460:         COP1_S_MUL = 0x02,  // MUL.S
+  461:         COP1_S_DIV = 0x03,  // DIV.S
+--- Lines 450-464 ---
+  450: 
+  451:         COP1_S = 0x10, // Single Precision Operation (see Cop1FunctionsS)
+  452:         COP1_W = 0x14  // Word (integer) Operation (see Cop1FunctionsW)
+  453:     };
+  454: 
+  455:     // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+  456:     enum Cop1FunctionsS
+  457:     {
+  458:         COP1_S_ADD = 0x00,  // ADD.S
+  459:         COP1_S_SUB = 0x01,  // SUB.S
+  460:         COP1_S_MUL = 0x02,  // MUL.S
+  461:         COP1_S_DIV = 0x03,  // DIV.S
+  462:         COP1_S_SQRT = 0x04, // SQRT.S
+  463:         COP1_S_ABS = 0x05,  // ABS.S
+  464:         COP1_S_MOV = 0x06,  // MOV.S
+--- Lines 453-467 ---
+  453:     };
+  454: 
+  455:     // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+  456:     enum Cop1FunctionsS
+  457:     {
+  458:         COP1_S_ADD = 0x00,  // ADD.S
+  459:         COP1_S_SUB = 0x01,  // SUB.S
+  460:         COP1_S_MUL = 0x02,  // MUL.S
+  461:         COP1_S_DIV = 0x03,  // DIV.S
+  462:         COP1_S_SQRT = 0x04, // SQRT.S
+  463:         COP1_S_ABS = 0x05,  // ABS.S
+  464:         COP1_S_MOV = 0x06,  // MOV.S
+  465:         COP1_S_NEG = 0x07,  // NEG.S
+  466: 
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+--- Lines 454-468 ---
+  454: 
+  455:     // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+  456:     enum Cop1FunctionsS
+  457:     {
+  458:         COP1_S_ADD = 0x00,  // ADD.S
+  459:         COP1_S_SUB = 0x01,  // SUB.S
+  460:         COP1_S_MUL = 0x02,  // MUL.S
+  461:         COP1_S_DIV = 0x03,  // DIV.S
+  462:         COP1_S_SQRT = 0x04, // SQRT.S
+  463:         COP1_S_ABS = 0x05,  // ABS.S
+  464:         COP1_S_MOV = 0x06,  // MOV.S
+  465:         COP1_S_NEG = 0x07,  // NEG.S
+  466: 
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+--- Lines 455-469 ---
+  455:     // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+  456:     enum Cop1FunctionsS
+  457:     {
+  458:         COP1_S_ADD = 0x00,  // ADD.S
+  459:         COP1_S_SUB = 0x01,  // SUB.S
+  460:         COP1_S_MUL = 0x02,  // MUL.S
+  461:         COP1_S_DIV = 0x03,  // DIV.S
+  462:         COP1_S_SQRT = 0x04, // SQRT.S
+  463:         COP1_S_ABS = 0x05,  // ABS.S
+  464:         COP1_S_MOV = 0x06,  // MOV.S
+  465:         COP1_S_NEG = 0x07,  // NEG.S
+  466: 
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+--- Lines 456-470 ---
+  456:     enum Cop1FunctionsS
+  457:     {
+  458:         COP1_S_ADD = 0x00,  // ADD.S
+  459:         COP1_S_SUB = 0x01,  // SUB.S
+  460:         COP1_S_MUL = 0x02,  // MUL.S
+  461:         COP1_S_DIV = 0x03,  // DIV.S
+  462:         COP1_S_SQRT = 0x04, // SQRT.S
+  463:         COP1_S_ABS = 0x05,  // ABS.S
+  464:         COP1_S_MOV = 0x06,  // MOV.S
+  465:         COP1_S_NEG = 0x07,  // NEG.S
+  466: 
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  470:         COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+--- Lines 457-471 ---
+  457:     {
+  458:         COP1_S_ADD = 0x00,  // ADD.S
+  459:         COP1_S_SUB = 0x01,  // SUB.S
+  460:         COP1_S_MUL = 0x02,  // MUL.S
+  461:         COP1_S_DIV = 0x03,  // DIV.S
+  462:         COP1_S_SQRT = 0x04, // SQRT.S
+  463:         COP1_S_ABS = 0x05,  // ABS.S
+  464:         COP1_S_MOV = 0x06,  // MOV.S
+  465:         COP1_S_NEG = 0x07,  // NEG.S
+  466: 
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  470:         COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  471:         COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+--- Lines 458-472 ---
+  458:         COP1_S_ADD = 0x00,  // ADD.S
+  459:         COP1_S_SUB = 0x01,  // SUB.S
+  460:         COP1_S_MUL = 0x02,  // MUL.S
+  461:         COP1_S_DIV = 0x03,  // DIV.S
+  462:         COP1_S_SQRT = 0x04, // SQRT.S
+  463:         COP1_S_ABS = 0x05,  // ABS.S
+  464:         COP1_S_MOV = 0x06,  // MOV.S
+  465:         COP1_S_NEG = 0x07,  // NEG.S
+  466: 
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  470:         COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  471:         COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  472:         COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+--- Lines 459-473 ---
+  459:         COP1_S_SUB = 0x01,  // SUB.S
+  460:         COP1_S_MUL = 0x02,  // MUL.S
+  461:         COP1_S_DIV = 0x03,  // DIV.S
+  462:         COP1_S_SQRT = 0x04, // SQRT.S
+  463:         COP1_S_ABS = 0x05,  // ABS.S
+  464:         COP1_S_MOV = 0x06,  // MOV.S
+  465:         COP1_S_NEG = 0x07,  // NEG.S
+  466: 
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  470:         COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  471:         COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  472:         COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  473:         COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+--- Lines 460-474 ---
+  460:         COP1_S_MUL = 0x02,  // MUL.S
+  461:         COP1_S_DIV = 0x03,  // DIV.S
+  462:         COP1_S_SQRT = 0x04, // SQRT.S
+  463:         COP1_S_ABS = 0x05,  // ABS.S
+  464:         COP1_S_MOV = 0x06,  // MOV.S
+  465:         COP1_S_NEG = 0x07,  // NEG.S
+  466: 
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  470:         COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  471:         COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  472:         COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  473:         COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  474:         COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+--- Lines 462-476 ---
+  462:         COP1_S_SQRT = 0x04, // SQRT.S
+  463:         COP1_S_ABS = 0x05,  // ABS.S
+  464:         COP1_S_MOV = 0x06,  // MOV.S
+  465:         COP1_S_NEG = 0x07,  // NEG.S
+  466: 
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  470:         COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  471:         COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  472:         COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  473:         COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  474:         COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  475: 
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+--- Lines 463-477 ---
+  463:         COP1_S_ABS = 0x05,  // ABS.S
+  464:         COP1_S_MOV = 0x06,  // MOV.S
+  465:         COP1_S_NEG = 0x07,  // NEG.S
+  466: 
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  470:         COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  471:         COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  472:         COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  473:         COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  474:         COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  475: 
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+--- Lines 464-478 ---
+  464:         COP1_S_MOV = 0x06,  // MOV.S
+  465:         COP1_S_NEG = 0x07,  // NEG.S
+  466: 
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  470:         COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  471:         COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  472:         COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  473:         COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  474:         COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  475: 
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+--- Lines 465-479 ---
+  465:         COP1_S_NEG = 0x07,  // NEG.S
+  466: 
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  470:         COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  471:         COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  472:         COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  473:         COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  474:         COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  475: 
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+--- Lines 466-480 ---
+  466: 
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  470:         COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  471:         COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  472:         COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  473:         COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  474:         COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  475: 
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  480:         COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+--- Lines 467-481 ---
+  467:         COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  470:         COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  471:         COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  472:         COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  473:         COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  474:         COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  475: 
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  480:         COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  481:         COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+--- Lines 468-482 ---
+  468:         COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  470:         COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  471:         COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  472:         COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  473:         COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  474:         COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  475: 
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  480:         COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  481:         COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  482:         COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+--- Lines 469-483 ---
+  469:         COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+  470:         COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+  471:         COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+  472:         COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  473:         COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  474:         COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  475: 
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  480:         COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  481:         COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  482:         COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  483:         COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+--- Lines 472-486 ---
+  472:         COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+  473:         COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  474:         COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  475: 
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  480:         COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  481:         COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  482:         COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  483:         COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  484:         COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  485: 
+  486:         // --- Conversions (from FPU.S table) ---
+--- Lines 473-487 ---
+  473:         COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+  474:         COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  475: 
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  480:         COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  481:         COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  482:         COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  483:         COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  484:         COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  485: 
+  486:         // --- Conversions (from FPU.S table) ---
+  487:         COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+--- Lines 474-488 ---
+  474:         COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+  475: 
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  480:         COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  481:         COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  482:         COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  483:         COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  484:         COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  485: 
+  486:         // --- Conversions (from FPU.S table) ---
+  487:         COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  488:         COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+--- Lines 475-489 ---
+  475: 
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  480:         COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  481:         COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  482:         COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  483:         COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  484:         COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  485: 
+  486:         // --- Conversions (from FPU.S table) ---
+  487:         COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  488:         COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  489:         COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+--- Lines 476-490 ---
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  480:         COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  481:         COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  482:         COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  483:         COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  484:         COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  485: 
+  486:         // --- Conversions (from FPU.S table) ---
+  487:         COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  488:         COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  489:         COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+  490: 
+--- Lines 477-491 ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  480:         COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  481:         COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  482:         COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  483:         COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  484:         COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  485: 
+  486:         // --- Conversions (from FPU.S table) ---
+  487:         COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  488:         COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  489:         COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+  490: 
+  491:         // --- Min/Max (from FPU.S table) ---
+--- Lines 478-492 ---
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  480:         COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  481:         COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  482:         COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  483:         COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  484:         COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  485: 
+  486:         // --- Conversions (from FPU.S table) ---
+  487:         COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  488:         COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  489:         COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+  490: 
+  491:         // --- Min/Max (from FPU.S table) ---
+  492:         COP1_S_MAX = 0x28, // MAX.S
+--- Lines 479-493 ---
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  480:         COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  481:         COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  482:         COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  483:         COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  484:         COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  485: 
+  486:         // --- Conversions (from FPU.S table) ---
+  487:         COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  488:         COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  489:         COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+  490: 
+  491:         // --- Min/Max (from FPU.S table) ---
+  492:         COP1_S_MAX = 0x28, // MAX.S
+  493:         COP1_S_MIN = 0x29, // MIN.S
+--- Lines 482-496 ---
+  482:         COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+  483:         COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  484:         COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  485: 
+  486:         // --- Conversions (from FPU.S table) ---
+  487:         COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  488:         COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  489:         COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+  490: 
+  491:         // --- Min/Max (from FPU.S table) ---
+  492:         COP1_S_MAX = 0x28, // MAX.S
+  493:         COP1_S_MIN = 0x29, // MIN.S
+  494: 
+  495:         COP1_S_C_F = 0x30,    // C.F.S (False)
+  496:         COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+--- Lines 483-497 ---
+  483:         COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+  484:         COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  485: 
+  486:         // --- Conversions (from FPU.S table) ---
+  487:         COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  488:         COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  489:         COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+  490: 
+  491:         // --- Min/Max (from FPU.S table) ---
+  492:         COP1_S_MAX = 0x28, // MAX.S
+  493:         COP1_S_MIN = 0x29, // MIN.S
+  494: 
+  495:         COP1_S_C_F = 0x30,    // C.F.S (False)
+  496:         COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  497:         COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+--- Lines 484-498 ---
+  484:         COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+  485: 
+  486:         // --- Conversions (from FPU.S table) ---
+  487:         COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  488:         COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  489:         COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+  490: 
+  491:         // --- Min/Max (from FPU.S table) ---
+  492:         COP1_S_MAX = 0x28, // MAX.S
+  493:         COP1_S_MIN = 0x29, // MIN.S
+  494: 
+  495:         COP1_S_C_F = 0x30,    // C.F.S (False)
+  496:         COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  497:         COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  498:         COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+--- Lines 487-501 ---
+  487:         COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+  488:         COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  489:         COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+  490: 
+  491:         // --- Min/Max (from FPU.S table) ---
+  492:         COP1_S_MAX = 0x28, // MAX.S
+  493:         COP1_S_MIN = 0x29, // MIN.S
+  494: 
+  495:         COP1_S_C_F = 0x30,    // C.F.S (False)
+  496:         COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  497:         COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  498:         COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  499:         COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  500:         COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+--- Lines 488-502 ---
+  488:         COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+  489:         COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+  490: 
+  491:         // --- Min/Max (from FPU.S table) ---
+  492:         COP1_S_MAX = 0x28, // MAX.S
+  493:         COP1_S_MIN = 0x29, // MIN.S
+  494: 
+  495:         COP1_S_C_F = 0x30,    // C.F.S (False)
+  496:         COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  497:         COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  498:         COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  499:         COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  500:         COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+--- Lines 490-504 ---
+  490: 
+  491:         // --- Min/Max (from FPU.S table) ---
+  492:         COP1_S_MAX = 0x28, // MAX.S
+  493:         COP1_S_MIN = 0x29, // MIN.S
+  494: 
+  495:         COP1_S_C_F = 0x30,    // C.F.S (False)
+  496:         COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  497:         COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  498:         COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  499:         COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  500:         COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+--- Lines 491-505 ---
+  491:         // --- Min/Max (from FPU.S table) ---
+  492:         COP1_S_MAX = 0x28, // MAX.S
+  493:         COP1_S_MIN = 0x29, // MIN.S
+  494: 
+  495:         COP1_S_C_F = 0x30,    // C.F.S (False)
+  496:         COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  497:         COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  498:         COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  499:         COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  500:         COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+--- Lines 492-506 ---
+  492:         COP1_S_MAX = 0x28, // MAX.S
+  493:         COP1_S_MIN = 0x29, // MIN.S
+  494: 
+  495:         COP1_S_C_F = 0x30,    // C.F.S (False)
+  496:         COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  497:         COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  498:         COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  499:         COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  500:         COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+--- Lines 493-507 ---
+  493:         COP1_S_MIN = 0x29, // MIN.S
+  494: 
+  495:         COP1_S_C_F = 0x30,    // C.F.S (False)
+  496:         COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  497:         COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  498:         COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  499:         COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  500:         COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  507:         COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+--- Lines 494-508 ---
+  494: 
+  495:         COP1_S_C_F = 0x30,    // C.F.S (False)
+  496:         COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  497:         COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  498:         COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  499:         COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  500:         COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  507:         COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  508:         COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+--- Lines 495-509 ---
+  495:         COP1_S_C_F = 0x30,    // C.F.S (False)
+  496:         COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  497:         COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  498:         COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  499:         COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  500:         COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  507:         COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  508:         COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  509:         COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+--- Lines 496-510 ---
+  496:         COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+  497:         COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  498:         COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  499:         COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  500:         COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  507:         COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  508:         COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  509:         COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  510:         COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+--- Lines 497-511 ---
+  497:         COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+  498:         COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  499:         COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  500:         COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  507:         COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  508:         COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  509:         COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  510:         COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  511:     };
+--- Lines 498-512 ---
+  498:         COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+  499:         COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  500:         COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  507:         COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  508:         COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  509:         COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  510:         COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  511:     };
+  512: 
+--- Lines 499-513 ---
+  499:         COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+  500:         COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  507:         COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  508:         COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  509:         COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  510:         COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  511:     };
+  512: 
+  513:     // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+--- Lines 500-514 ---
+  500:         COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  507:         COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  508:         COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  509:         COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  510:         COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  511:     };
+  512: 
+  513:     // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+  514:     enum Cop1FunctionsW
+--- Lines 501-515 ---
+  501:         COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  507:         COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  508:         COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  509:         COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  510:         COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  511:     };
+  512: 
+  513:     // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+  514:     enum Cop1FunctionsW
+  515:     {
+--- Lines 502-516 ---
+  502:         COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  507:         COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  508:         COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  509:         COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  510:         COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  511:     };
+  512: 
+  513:     // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+  514:     enum Cop1FunctionsW
+  515:     {
+  516:         COP1_W_CVT_S = 0x20, // CVT.S.W (Convert Word Integer to Single Float)
+--- Lines 503-517 ---
+  503:         COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  507:         COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  508:         COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  509:         COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  510:         COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  511:     };
+  512: 
+  513:     // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+  514:     enum Cop1FunctionsW
+  515:     {
+  516:         COP1_W_CVT_S = 0x20, // CVT.S.W (Convert Word Integer to Single Float)
+  517:                              // 0x21 --- (Standard MIPS: CVT.D.W - requires double-precision)
+--- Lines 504-518 ---
+  504:         COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  507:         COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  508:         COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  509:         COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  510:         COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  511:     };
+  512: 
+  513:     // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+  514:     enum Cop1FunctionsW
+  515:     {
+  516:         COP1_W_CVT_S = 0x20, // CVT.S.W (Convert Word Integer to Single Float)
+  517:                              // 0x21 --- (Standard MIPS: CVT.D.W - requires double-precision)
+  518:                              // 0x24 --- (Standard MIPS: CVT.W.W - Nop?)
+--- Lines 505-519 ---
+  505:         COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+  506:         COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+  507:         COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+  508:         COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  509:         COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  510:         COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  511:     };
+  512: 
+  513:     // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+  514:     enum Cop1FunctionsW
+  515:     {
+  516:         COP1_W_CVT_S = 0x20, // CVT.S.W (Convert Word Integer to Single Float)
+  517:                              // 0x21 --- (Standard MIPS: CVT.D.W - requires double-precision)
+  518:                              // 0x24 --- (Standard MIPS: CVT.W.W - Nop?)
+  519:                              // 0x25 --- (Standard MIPS: CVT.L.W - requires 64-bit int dest)
+--- Lines 508-522 ---
+  508:         COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+  509:         COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+  510:         COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+  511:     };
+  512: 
+  513:     // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+  514:     enum Cop1FunctionsW
+  515:     {
+  516:         COP1_W_CVT_S = 0x20, // CVT.S.W (Convert Word Integer to Single Float)
+  517:                              // 0x21 --- (Standard MIPS: CVT.D.W - requires double-precision)
+  518:                              // 0x24 --- (Standard MIPS: CVT.W.W - Nop?)
+  519:                              // 0x25 --- (Standard MIPS: CVT.L.W - requires 64-bit int dest)
+  520:     };
+  521: 
+  522:     // COP1 BC Condition Field ('fmt' or 'rt' field, bits 20-16) for COP1_BC Format
+--- Lines 511-525 ---
+  511:     };
+  512: 
+  513:     // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+  514:     enum Cop1FunctionsW
+  515:     {
+  516:         COP1_W_CVT_S = 0x20, // CVT.S.W (Convert Word Integer to Single Float)
+  517:                              // 0x21 --- (Standard MIPS: CVT.D.W - requires double-precision)
+  518:                              // 0x24 --- (Standard MIPS: CVT.W.W - Nop?)
+  519:                              // 0x25 --- (Standard MIPS: CVT.L.W - requires 64-bit int dest)
+  520:     };
+  521: 
+  522:     // COP1 BC Condition Field ('fmt' or 'rt' field, bits 20-16) for COP1_BC Format
+  523:     enum Cop1BranchCondition
+  524:     {
+  525:         COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+--- Lines 517-531 ---
+  517:                              // 0x21 --- (Standard MIPS: CVT.D.W - requires double-precision)
+  518:                              // 0x24 --- (Standard MIPS: CVT.W.W - Nop?)
+  519:                              // 0x25 --- (Standard MIPS: CVT.L.W - requires 64-bit int dest)
+  520:     };
+  521: 
+  522:     // COP1 BC Condition Field ('fmt' or 'rt' field, bits 20-16) for COP1_BC Format
+  523:     enum Cop1BranchCondition
+  524:     {
+  525:         COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  526:         COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  527:         COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  528:         COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  529:     };
+  530: 
+  531:     // COP2 (VU0 Macro) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP2
+--- Lines 520-534 ---
+  520:     };
+  521: 
+  522:     // COP1 BC Condition Field ('fmt' or 'rt' field, bits 20-16) for COP1_BC Format
+  523:     enum Cop1BranchCondition
+  524:     {
+  525:         COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  526:         COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  527:         COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  528:         COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  529:     };
+  530: 
+  531:     // COP2 (VU0 Macro) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP2
+  532:     enum Cop2Format
+  533:     {
+  534:         // Note: Standard MIPS MFC2/MTC2 use fmt 0x00/0x04, EE uses QMFC2/QMTC2
+--- Lines 521-535 ---
+  521: 
+  522:     // COP1 BC Condition Field ('fmt' or 'rt' field, bits 20-16) for COP1_BC Format
+  523:     enum Cop1BranchCondition
+  524:     {
+  525:         COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  526:         COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  527:         COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  528:         COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  529:     };
+  530: 
+  531:     // COP2 (VU0 Macro) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP2
+  532:     enum Cop2Format
+  533:     {
+  534:         // Note: Standard MIPS MFC2/MTC2 use fmt 0x00/0x04, EE uses QMFC2/QMTC2
+  535:         COP2_QMFC2 = 0x01, // QMFC2 (fmt=00001) - Load Quadword From Coprocessor 2
+--- Lines 522-536 ---
+  522:     // COP1 BC Condition Field ('fmt' or 'rt' field, bits 20-16) for COP1_BC Format
+  523:     enum Cop1BranchCondition
+  524:     {
+  525:         COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  526:         COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  527:         COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  528:         COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  529:     };
+  530: 
+  531:     // COP2 (VU0 Macro) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP2
+  532:     enum Cop2Format
+  533:     {
+  534:         // Note: Standard MIPS MFC2/MTC2 use fmt 0x00/0x04, EE uses QMFC2/QMTC2
+  535:         COP2_QMFC2 = 0x01, // QMFC2 (fmt=00001) - Load Quadword From Coprocessor 2
+  536:         COP2_CFC2 = 0x02,  // CFC2 (fmt=00010) - Load Control Word From Coprocessor 2
+--- Lines 523-537 ---
+  523:     enum Cop1BranchCondition
+  524:     {
+  525:         COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  526:         COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  527:         COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  528:         COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  529:     };
+  530: 
+  531:     // COP2 (VU0 Macro) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP2
+  532:     enum Cop2Format
+  533:     {
+  534:         // Note: Standard MIPS MFC2/MTC2 use fmt 0x00/0x04, EE uses QMFC2/QMTC2
+  535:         COP2_QMFC2 = 0x01, // QMFC2 (fmt=00001) - Load Quadword From Coprocessor 2
+  536:         COP2_CFC2 = 0x02,  // CFC2 (fmt=00010) - Load Control Word From Coprocessor 2
+  537:         COP2_QMTC2 = 0x05, // QMTC2 (fmt=00101) - Store Quadword To Coprocessor 2
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h =====
+--- Lines 9-23 ---
+    9: 
+   10: namespace ps2recomp
+   11: {
+   12: 
+   13:     // Instruction representation
+   14:     struct Instruction
+   15:     {
+   16:         uint32_t address;
+   17:         uint32_t opcode;
+   18:         uint32_t rs;         // Source register
+   19:         uint32_t rt;         // Target register
+   20:         uint32_t rd;         // Destination register
+   21:         uint32_t sa;         // Shift amount
+   22:         uint32_t function;   // Function code for R-type instructions
+   23:         uint32_t immediate;  // Immediate value for I-type instructions
+--- Lines 26-40 ---
+   26:         uint32_t raw;        // Raw instruction value
+   27: 
+   28:         // Instruction type flags
+   29:         bool isMMI;        // Is MMI instruction (PS2 specific)
+   30:         bool isVU;         // Is VU instruction (PS2 specific)
+   31:         bool isBranch;     // Is branch instruction
+   32:         bool isJump;       // Is jump instruction
+   33:         bool isCall;       // Is function call
+   34:         bool isReturn;     // Is return instruction
+   35:         bool hasDelaySlot; // Has delay slot
+   36:         bool isMultimedia; // PS2-specific multimedia operations
+   37:         bool isStore;      // Is store instruction
+   38:         bool isLoad;       // Is load instruction
+   39: 
+   40:         // Additional PS2-specific fields
+--- Lines 30-44 ---
+   30:         bool isVU;         // Is VU instruction (PS2 specific)
+   31:         bool isBranch;     // Is branch instruction
+   32:         bool isJump;       // Is jump instruction
+   33:         bool isCall;       // Is function call
+   34:         bool isReturn;     // Is return instruction
+   35:         bool hasDelaySlot; // Has delay slot
+   36:         bool isMultimedia; // PS2-specific multimedia operations
+   37:         bool isStore;      // Is store instruction
+   38:         bool isLoad;       // Is load instruction
+   39: 
+   40:         // Additional PS2-specific fields
+   41:         uint8_t mmiType;        // 0=MMI0, 1=MMI1, 2=MMI2, 3=MMI3
+   42:         uint8_t mmiFunction;    // Function within MMI type
+   43:         uint8_t pmfhlVariation; // For PMFHL instructions
+   44:         uint8_t vuFunction;     // For VU instructions
+--- Lines 58-72 ---
+   58:             uint8_t ftf;         // Source Field select for FT reg (bits 8-9)
+   59:         } vectorInfo;
+   60: 
+   61:         struct
+   62:         {
+   63:             bool modifiesGPR;     // Modifies general purpose register
+   64:             bool modifiesFPR;     // Modifies floating point register
+   65:             bool modifiesVFR;     // Modifies vector float register
+   66:             bool modifiesVIR;     // Modifies vector integer register
+   67:             bool modifiesVIC;     // Modifies vector integer control register
+   68:             bool modifiesMemory;  // Modifies memory
+   69:             bool modifiesControl; // Modifies control register
+   70:         } modificationInfo;
+   71: 
+   72:         Instruction() : address(0), opcode(0), rs(0), rt(0), rd(0), sa(0), function(0),
+--- Lines 59-73 ---
+   59:         } vectorInfo;
+   60: 
+   61:         struct
+   62:         {
+   63:             bool modifiesGPR;     // Modifies general purpose register
+   64:             bool modifiesFPR;     // Modifies floating point register
+   65:             bool modifiesVFR;     // Modifies vector float register
+   66:             bool modifiesVIR;     // Modifies vector integer register
+   67:             bool modifiesVIC;     // Modifies vector integer control register
+   68:             bool modifiesMemory;  // Modifies memory
+   69:             bool modifiesControl; // Modifies control register
+   70:         } modificationInfo;
+   71: 
+   72:         Instruction() : address(0), opcode(0), rs(0), rt(0), rd(0), sa(0), function(0),
+   73:                         immediate(0), simmediate(0), target(0), raw(0),
+--- Lines 64-78 ---
+   64:             bool modifiesFPR;     // Modifies floating point register
+   65:             bool modifiesVFR;     // Modifies vector float register
+   66:             bool modifiesVIR;     // Modifies vector integer register
+   67:             bool modifiesVIC;     // Modifies vector integer control register
+   68:             bool modifiesMemory;  // Modifies memory
+   69:             bool modifiesControl; // Modifies control register
+   70:         } modificationInfo;
+   71: 
+   72:         Instruction() : address(0), opcode(0), rs(0), rt(0), rd(0), sa(0), function(0),
+   73:                         immediate(0), simmediate(0), target(0), raw(0),
+   74:                         isMMI(false), isVU(false), isBranch(false), isJump(false), isCall(false),
+   75:                         isReturn(false), hasDelaySlot(false), isMultimedia(false), isStore(false), isLoad(false),
+   76:                         mmiType(0), mmiFunction(0), pmfhlVariation(0), vuFunction(0), isMmio(false), mmioAddress(0)
+   77:         {
+   78:             vectorInfo = {};
+--- Lines 65-79 ---
+   65:             bool modifiesVFR;     // Modifies vector float register
+   66:             bool modifiesVIR;     // Modifies vector integer register
+   67:             bool modifiesVIC;     // Modifies vector integer control register
+   68:             bool modifiesMemory;  // Modifies memory
+   69:             bool modifiesControl; // Modifies control register
+   70:         } modificationInfo;
+   71: 
+   72:         Instruction() : address(0), opcode(0), rs(0), rt(0), rd(0), sa(0), function(0),
+   73:                         immediate(0), simmediate(0), target(0), raw(0),
+   74:                         isMMI(false), isVU(false), isBranch(false), isJump(false), isCall(false),
+   75:                         isReturn(false), hasDelaySlot(false), isMultimedia(false), isStore(false), isLoad(false),
+   76:                         mmiType(0), mmiFunction(0), pmfhlVariation(0), vuFunction(0), isMmio(false), mmioAddress(0)
+   77:         {
+   78:             vectorInfo = {};
+   79:             modificationInfo = {};
+--- Lines 69-83 ---
+   69:             bool modifiesControl; // Modifies control register
+   70:         } modificationInfo;
+   71: 
+   72:         Instruction() : address(0), opcode(0), rs(0), rt(0), rd(0), sa(0), function(0),
+   73:                         immediate(0), simmediate(0), target(0), raw(0),
+   74:                         isMMI(false), isVU(false), isBranch(false), isJump(false), isCall(false),
+   75:                         isReturn(false), hasDelaySlot(false), isMultimedia(false), isStore(false), isLoad(false),
+   76:                         mmiType(0), mmiFunction(0), pmfhlVariation(0), vuFunction(0), isMmio(false), mmioAddress(0)
+   77:         {
+   78:             vectorInfo = {};
+   79:             modificationInfo = {};
+   80:         }
+   81:     };
+   82: 
+   83:     struct MemoryAccessHint
+--- Lines 70-84 ---
+   70:         } modificationInfo;
+   71: 
+   72:         Instruction() : address(0), opcode(0), rs(0), rt(0), rd(0), sa(0), function(0),
+   73:                         immediate(0), simmediate(0), target(0), raw(0),
+   74:                         isMMI(false), isVU(false), isBranch(false), isJump(false), isCall(false),
+   75:                         isReturn(false), hasDelaySlot(false), isMultimedia(false), isStore(false), isLoad(false),
+   76:                         mmiType(0), mmiFunction(0), pmfhlVariation(0), vuFunction(0), isMmio(false), mmioAddress(0)
+   77:         {
+   78:             vectorInfo = {};
+   79:             modificationInfo = {};
+   80:         }
+   81:     };
+   82: 
+   83:     struct MemoryAccessHint
+   84:     {
+--- Lines 74-88 ---
+   74:                         isMMI(false), isVU(false), isBranch(false), isJump(false), isCall(false),
+   75:                         isReturn(false), hasDelaySlot(false), isMultimedia(false), isStore(false), isLoad(false),
+   76:                         mmiType(0), mmiFunction(0), pmfhlVariation(0), vuFunction(0), isMmio(false), mmioAddress(0)
+   77:         {
+   78:             vectorInfo = {};
+   79:             modificationInfo = {};
+   80:         }
+   81:     };
+   82: 
+   83:     struct MemoryAccessHint
+   84:     {
+   85:         bool hasAddress = false;
+   86:         uint32_t address = 0;
+   87:     };
+   88: 
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp =====
+--- Lines 47-61 ---
+   47:         }
+   48: 
+   49:         return disassembleInstruction(inst.address, inst.raw);
+   50:     }
+   51: 
+   52:     Instruction R5900Decoder::decodeInstruction(uint32_t address, uint32_t rawInstruction, bool includeDisassembly) const
+   53:     {
+   54:         Instruction inst;
+   55: 
+   56:         inst.address = address;
+   57:         inst.raw = rawInstruction;
+   58:         inst.opcode = OPCODE(rawInstruction);
+   59:         inst.rs = RS(rawInstruction);
+   60:         inst.rt = RT(rawInstruction);
+   61:         inst.rd = RD(rawInstruction);
+--- Lines 88-102 ---
+   88:         inst.vectorInfo.usesQReg = false;
+   89:         inst.vectorInfo.usesPReg = false;
+   90:         inst.vectorInfo.modifiesMAC = false;
+   91:         inst.vectorInfo.vectorField = 0xF; // All fields (xyzw)
+   92: 
+   93:         inst.modificationInfo.modifiesGPR = false;
+   94:         inst.modificationInfo.modifiesFPR = false;
+   95:         inst.modificationInfo.modifiesVFR = false;
+   96:         inst.modificationInfo.modifiesVIR = false;
+   97:         inst.modificationInfo.modifiesVIC = false;
+   98:         inst.modificationInfo.modifiesMemory = false;
+   99:         inst.modificationInfo.modifiesControl = false;
+  100: 
+  101:         RabbitizerInstruction rabbitizerInst;
+  102:         RabbitizerInstructionR5900_init(&rabbitizerInst, rawInstruction, address);
+--- Lines 89-103 ---
+   89:         inst.vectorInfo.usesPReg = false;
+   90:         inst.vectorInfo.modifiesMAC = false;
+   91:         inst.vectorInfo.vectorField = 0xF; // All fields (xyzw)
+   92: 
+   93:         inst.modificationInfo.modifiesGPR = false;
+   94:         inst.modificationInfo.modifiesFPR = false;
+   95:         inst.modificationInfo.modifiesVFR = false;
+   96:         inst.modificationInfo.modifiesVIR = false;
+   97:         inst.modificationInfo.modifiesVIC = false;
+   98:         inst.modificationInfo.modifiesMemory = false;
+   99:         inst.modificationInfo.modifiesControl = false;
+  100: 
+  101:         RabbitizerInstruction rabbitizerInst;
+  102:         RabbitizerInstructionR5900_init(&rabbitizerInst, rawInstruction, address);
+  103:         RabbitizerInstructionR5900_processUniqueId(&rabbitizerInst);
+--- Lines 94-108 ---
+   94:         inst.modificationInfo.modifiesFPR = false;
+   95:         inst.modificationInfo.modifiesVFR = false;
+   96:         inst.modificationInfo.modifiesVIR = false;
+   97:         inst.modificationInfo.modifiesVIC = false;
+   98:         inst.modificationInfo.modifiesMemory = false;
+   99:         inst.modificationInfo.modifiesControl = false;
+  100: 
+  101:         RabbitizerInstruction rabbitizerInst;
+  102:         RabbitizerInstructionR5900_init(&rabbitizerInst, rawInstruction, address);
+  103:         RabbitizerInstructionR5900_processUniqueId(&rabbitizerInst);
+  104: 
+  105:         const RabbitizerInstrDescriptor *desc = rabbitizerInst.descriptor;
+  106: 
+  107:         inst.isBranch = RabbitizerInstrDescriptor_isBranch(desc);
+  108:         inst.isJump = RabbitizerInstrDescriptor_isJump(desc);
+--- Lines 119-133 ---
+  119:                     inst.opcode == OPCODE_LWC2 ||
+  120:                     inst.opcode == OPCODE_LDC2 ||
+  121:                     inst.opcode == OPCODE_SWC2 ||
+  122:                     inst.opcode == OPCODE_SDC2;
+  123: 
+  124:         bool modifiesGpr = false;
+  125:         if (RabbitizerInstrDescriptor_modifiesRs(desc) && inst.rs != 0)
+  126:         {
+  127:             modifiesGpr = true;
+  128:         }
+  129:         if (RabbitizerInstrDescriptor_modifiesRt(desc) && inst.rt != 0)
+  130:         {
+  131:             modifiesGpr = true;
+  132:         }
+  133:         if (RabbitizerInstrDescriptor_modifiesRd(desc) && inst.rd != 0)
+--- Lines 122-136 ---
+  122:                     inst.opcode == OPCODE_SDC2;
+  123: 
+  124:         bool modifiesGpr = false;
+  125:         if (RabbitizerInstrDescriptor_modifiesRs(desc) && inst.rs != 0)
+  126:         {
+  127:             modifiesGpr = true;
+  128:         }
+  129:         if (RabbitizerInstrDescriptor_modifiesRt(desc) && inst.rt != 0)
+  130:         {
+  131:             modifiesGpr = true;
+  132:         }
+  133:         if (RabbitizerInstrDescriptor_modifiesRd(desc) && inst.rd != 0)
+  134:         {
+  135:             modifiesGpr = true;
+  136:         }
+--- Lines 126-140 ---
+  126:         {
+  127:             modifiesGpr = true;
+  128:         }
+  129:         if (RabbitizerInstrDescriptor_modifiesRt(desc) && inst.rt != 0)
+  130:         {
+  131:             modifiesGpr = true;
+  132:         }
+  133:         if (RabbitizerInstrDescriptor_modifiesRd(desc) && inst.rd != 0)
+  134:         {
+  135:             modifiesGpr = true;
+  136:         }
+  137:         if (RabbitizerInstrDescriptor_doesLink(desc))
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+--- Lines 130-144 ---
+  130:         {
+  131:             modifiesGpr = true;
+  132:         }
+  133:         if (RabbitizerInstrDescriptor_modifiesRd(desc) && inst.rd != 0)
+  134:         {
+  135:             modifiesGpr = true;
+  136:         }
+  137:         if (RabbitizerInstrDescriptor_doesLink(desc))
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+  141:         inst.modificationInfo.modifiesGPR = modifiesGpr;
+  142: 
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+--- Lines 134-148 ---
+  134:         {
+  135:             modifiesGpr = true;
+  136:         }
+  137:         if (RabbitizerInstrDescriptor_doesLink(desc))
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+  141:         inst.modificationInfo.modifiesGPR = modifiesGpr;
+  142: 
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  145:                                             RabbitizerInstrDescriptor_modifiesFd(desc);
+  146: 
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  148:         inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+--- Lines 136-150 ---
+  136:         }
+  137:         if (RabbitizerInstrDescriptor_doesLink(desc))
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+  141:         inst.modificationInfo.modifiesGPR = modifiesGpr;
+  142: 
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  145:                                             RabbitizerInstrDescriptor_modifiesFd(desc);
+  146: 
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  148:         inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+  149:                                                 RabbitizerInstrDescriptor_isJump(desc) ||
+  150:                                                 RabbitizerInstrDescriptor_isTrap(desc) ||
+--- Lines 138-152 ---
+  138:         {
+  139:             modifiesGpr = true;
+  140:         }
+  141:         inst.modificationInfo.modifiesGPR = modifiesGpr;
+  142: 
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  145:                                             RabbitizerInstrDescriptor_modifiesFd(desc);
+  146: 
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  148:         inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+  149:                                                 RabbitizerInstrDescriptor_isJump(desc) ||
+  150:                                                 RabbitizerInstrDescriptor_isTrap(desc) ||
+  151:                                                 RabbitizerInstrDescriptor_modifiesHI(desc) ||
+  152:                                                 RabbitizerInstrDescriptor_modifiesLO(desc);
+--- Lines 143-157 ---
+  143:         inst.modificationInfo.modifiesFPR = RabbitizerInstrDescriptor_modifiesFs(desc) ||
+  144:                                             RabbitizerInstrDescriptor_modifiesFt(desc) ||
+  145:                                             RabbitizerInstrDescriptor_modifiesFd(desc);
+  146: 
+  147:         inst.modificationInfo.modifiesMemory = RabbitizerInstrDescriptor_doesStore(desc);
+  148:         inst.modificationInfo.modifiesControl = RabbitizerInstrDescriptor_isBranch(desc) ||
+  149:                                                 RabbitizerInstrDescriptor_isJump(desc) ||
+  150:                                                 RabbitizerInstrDescriptor_isTrap(desc) ||
+  151:                                                 RabbitizerInstrDescriptor_modifiesHI(desc) ||
+  152:                                                 RabbitizerInstrDescriptor_modifiesLO(desc);
+  153: 
+  154:         if (rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret)
+  155:         {
+  156:             inst.isReturn = true;
+  157:             inst.hasDelaySlot = false;
+--- Lines 153-167 ---
+  153: 
+  154:         if (rabbitizerInst.uniqueId == RABBITIZER_INSTR_ID_cpu_eret)
+  155:         {
+  156:             inst.isReturn = true;
+  157:             inst.hasDelaySlot = false;
+  158:             inst.modificationInfo.modifiesControl = true;
+  159:         }
+  160: 
+  161:         if (inst.opcode == OPCODE_LL || inst.opcode == OPCODE_LLD)
+  162:         {
+  163:             inst.isLoad = true;
+  164:             inst.modificationInfo.modifiesControl = true;
+  165:             if (inst.rt != 0)
+  166:             {
+  167:                 inst.modificationInfo.modifiesGPR = true;
+--- Lines 159-173 ---
+  159:         }
+  160: 
+  161:         if (inst.opcode == OPCODE_LL || inst.opcode == OPCODE_LLD)
+  162:         {
+  163:             inst.isLoad = true;
+  164:             inst.modificationInfo.modifiesControl = true;
+  165:             if (inst.rt != 0)
+  166:             {
+  167:                 inst.modificationInfo.modifiesGPR = true;
+  168:             }
+  169:         }
+  170: 
+  171:         if (inst.opcode == OPCODE_SC || inst.opcode == OPCODE_SCD)
+  172:         {
+  173:             inst.isStore = true;
+--- Lines 162-176 ---
+  162:         {
+  163:             inst.isLoad = true;
+  164:             inst.modificationInfo.modifiesControl = true;
+  165:             if (inst.rt != 0)
+  166:             {
+  167:                 inst.modificationInfo.modifiesGPR = true;
+  168:             }
+  169:         }
+  170: 
+  171:         if (inst.opcode == OPCODE_SC || inst.opcode == OPCODE_SCD)
+  172:         {
+  173:             inst.isStore = true;
+  174:             inst.modificationInfo.modifiesControl = true;
+  175:             if (inst.rt != 0)
+  176:             {
+--- Lines 169-183 ---
+  169:         }
+  170: 
+  171:         if (inst.opcode == OPCODE_SC || inst.opcode == OPCODE_SCD)
+  172:         {
+  173:             inst.isStore = true;
+  174:             inst.modificationInfo.modifiesControl = true;
+  175:             if (inst.rt != 0)
+  176:             {
+  177:                 inst.modificationInfo.modifiesGPR = true; // success flag to rt
+  178:             }
+  179:         }
+  180: 
+  181:         if (inst.opcode == OPCODE_COP1)
+  182:         {
+  183:             decodeCOP1(inst);
+--- Lines 172-186 ---
+  172:         {
+  173:             inst.isStore = true;
+  174:             inst.modificationInfo.modifiesControl = true;
+  175:             if (inst.rt != 0)
+  176:             {
+  177:                 inst.modificationInfo.modifiesGPR = true; // success flag to rt
+  178:             }
+  179:         }
+  180: 
+  181:         if (inst.opcode == OPCODE_COP1)
+  182:         {
+  183:             decodeCOP1(inst);
+  184:         }
+  185:         else if (inst.opcode == OPCODE_COP2)
+  186:         {
+--- Lines 178-192 ---
+  178:             }
+  179:         }
+  180: 
+  181:         if (inst.opcode == OPCODE_COP1)
+  182:         {
+  183:             decodeCOP1(inst);
+  184:         }
+  185:         else if (inst.opcode == OPCODE_COP2)
+  186:         {
+  187:             decodeCOP2(inst);
+  188:         }
+  189:         else if (inst.opcode == OPCODE_LWC2 || inst.opcode == OPCODE_LDC2)
+  190:         {
+  191:             inst.isVU = true;
+  192:             inst.modificationInfo.modifiesVFR = true;
+--- Lines 229-243 ---
+  229: 
+  230:     void R5900Decoder::decodeRType(Instruction &inst) const
+  231:     {
+  232:         // R-type instructions already have all fields set correctly
+  233:         if (inst.rd != 0)
+  234:             inst.modificationInfo.modifiesGPR = true;
+  235:     }
+  236: 
+  237:     void R5900Decoder::decodeIType(Instruction &inst) const
+  238:     {
+  239:         // I-type instructions already have all fields set correctly
+  240:         if (!inst.isStore && !inst.isBranch && inst.rt != 0)
+  241:         {
+  242:             inst.modificationInfo.modifiesGPR = true;
+  243:         }
+--- Lines 237-251 ---
+  237:     void R5900Decoder::decodeIType(Instruction &inst) const
+  238:     {
+  239:         // I-type instructions already have all fields set correctly
+  240:         if (!inst.isStore && !inst.isBranch && inst.rt != 0)
+  241:         {
+  242:             inst.modificationInfo.modifiesGPR = true;
+  243:         }
+  244:     }
+  245: 
+  246:     void R5900Decoder::decodeJType(Instruction &inst) const
+  247:     {
+  248:         // J-type instructions already have all fields set correctly
+  249:         inst.isJump = true;
+  250:         inst.hasDelaySlot = true;
+  251:         inst.modificationInfo.modifiesControl = true; // PC
+--- Lines 246-260 ---
+  246:     void R5900Decoder::decodeJType(Instruction &inst) const
+  247:     {
+  248:         // J-type instructions already have all fields set correctly
+  249:         inst.isJump = true;
+  250:         inst.hasDelaySlot = true;
+  251:         inst.modificationInfo.modifiesControl = true; // PC
+  252:         if (inst.opcode == OPCODE_JAL)
+  253:         {
+  254:             inst.isCall = true;
+  255:             inst.modificationInfo.modifiesGPR = true; // $ra (r[31])
+  256:         }
+  257:     }
+  258: 
+  259:     void R5900Decoder::decodeSpecial(Instruction &inst) const
+  260:     {
+--- Lines 250-264 ---
+  250:         inst.hasDelaySlot = true;
+  251:         inst.modificationInfo.modifiesControl = true; // PC
+  252:         if (inst.opcode == OPCODE_JAL)
+  253:         {
+  254:             inst.isCall = true;
+  255:             inst.modificationInfo.modifiesGPR = true; // $ra (r[31])
+  256:         }
+  257:     }
+  258: 
+  259:     void R5900Decoder::decodeSpecial(Instruction &inst) const
+  260:     {
+  261:         if (inst.rd != 0)
+  262:             inst.modificationInfo.modifiesGPR = true;
+  263: 
+  264:         switch (inst.function)
+--- Lines 257-271 ---
+  257:     }
+  258: 
+  259:     void R5900Decoder::decodeSpecial(Instruction &inst) const
+  260:     {
+  261:         if (inst.rd != 0)
+  262:             inst.modificationInfo.modifiesGPR = true;
+  263: 
+  264:         switch (inst.function)
+  265:         {
+  266:         case SPECIAL_JR:
+  267:             inst.isJump = true;
+  268:             inst.hasDelaySlot = true;
+  269:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify GPR itself
+  270:             inst.modificationInfo.modifiesControl = true; // PC
+  271:             if (inst.rs == 31)
+--- Lines 264-278 ---
+  264:         switch (inst.function)
+  265:         {
+  266:         case SPECIAL_JR:
+  267:             inst.isJump = true;
+  268:             inst.hasDelaySlot = true;
+  269:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify GPR itself
+  270:             inst.modificationInfo.modifiesControl = true; // PC
+  271:             if (inst.rs == 31)
+  272:             {
+  273:                 // jr $ra is typically a return
+  274:                 inst.isReturn = true;
+  275:             }
+  276:             break;
+  277: 
+  278:         case SPECIAL_JALR:
+--- Lines 265-279 ---
+  265:         {
+  266:         case SPECIAL_JR:
+  267:             inst.isJump = true;
+  268:             inst.hasDelaySlot = true;
+  269:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify GPR itself
+  270:             inst.modificationInfo.modifiesControl = true; // PC
+  271:             if (inst.rs == 31)
+  272:             {
+  273:                 // jr $ra is typically a return
+  274:                 inst.isReturn = true;
+  275:             }
+  276:             break;
+  277: 
+  278:         case SPECIAL_JALR:
+  279:             inst.isJump = true;
+--- Lines 278-292 ---
+  278:         case SPECIAL_JALR:
+  279:             inst.isJump = true;
+  280:             inst.isCall = true;
+  281:             inst.hasDelaySlot = true;
+  282:             if (inst.rd == 0)
+  283:                 inst.modificationInfo.modifiesGPR = false; // JALR $zero, $rs is like JR $rs
+  284:             else
+  285:                 inst.modificationInfo.modifiesGPR = true;
+  286:             inst.modificationInfo.modifiesControl = true; // PC
+  287:             break;
+  288: 
+  289:         case SPECIAL_SYSCALL:
+  290:         case SPECIAL_BREAK:
+  291:             // Special handling for syscall/break
+  292:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+--- Lines 280-294 ---
+  280:             inst.isCall = true;
+  281:             inst.hasDelaySlot = true;
+  282:             if (inst.rd == 0)
+  283:                 inst.modificationInfo.modifiesGPR = false; // JALR $zero, $rs is like JR $rs
+  284:             else
+  285:                 inst.modificationInfo.modifiesGPR = true;
+  286:             inst.modificationInfo.modifiesControl = true; // PC
+  287:             break;
+  288: 
+  289:         case SPECIAL_SYSCALL:
+  290:         case SPECIAL_BREAK:
+  291:             // Special handling for syscall/break
+  292:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+  293:             inst.modificationInfo.modifiesControl = true; // Changes control flow, potentially registers via handler
+  294:             break;
+--- Lines 281-295 ---
+  281:             inst.hasDelaySlot = true;
+  282:             if (inst.rd == 0)
+  283:                 inst.modificationInfo.modifiesGPR = false; // JALR $zero, $rs is like JR $rs
+  284:             else
+  285:                 inst.modificationInfo.modifiesGPR = true;
+  286:             inst.modificationInfo.modifiesControl = true; // PC
+  287:             break;
+  288: 
+  289:         case SPECIAL_SYSCALL:
+  290:         case SPECIAL_BREAK:
+  291:             // Special handling for syscall/break
+  292:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+  293:             inst.modificationInfo.modifiesControl = true; // Changes control flow, potentially registers via handler
+  294:             break;
+  295: 
+--- Lines 287-301 ---
+  287:             break;
+  288: 
+  289:         case SPECIAL_SYSCALL:
+  290:         case SPECIAL_BREAK:
+  291:             // Special handling for syscall/break
+  292:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+  293:             inst.modificationInfo.modifiesControl = true; // Changes control flow, potentially registers via handler
+  294:             break;
+  295: 
+  296:         case SPECIAL_MFHI:
+  297:         case SPECIAL_MFLO:
+  298:             if (inst.rd == 0)
+  299:                 inst.modificationInfo.modifiesGPR = false;
+  300:             break;
+  301:         case SPECIAL_MTHI:
+--- Lines 288-302 ---
+  288: 
+  289:         case SPECIAL_SYSCALL:
+  290:         case SPECIAL_BREAK:
+  291:             // Special handling for syscall/break
+  292:             inst.modificationInfo.modifiesGPR = false;    // No GPR change
+  293:             inst.modificationInfo.modifiesControl = true; // Changes control flow, potentially registers via handler
+  294:             break;
+  295: 
+  296:         case SPECIAL_MFHI:
+  297:         case SPECIAL_MFLO:
+  298:             if (inst.rd == 0)
+  299:                 inst.modificationInfo.modifiesGPR = false;
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+--- Lines 294-308 ---
+  294:             break;
+  295: 
+  296:         case SPECIAL_MFHI:
+  297:         case SPECIAL_MFLO:
+  298:             if (inst.rd == 0)
+  299:                 inst.modificationInfo.modifiesGPR = false;
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+  303:             // HI/LO register operations
+  304:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+--- Lines 299-313 ---
+  299:                 inst.modificationInfo.modifiesGPR = false;
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+  303:             // HI/LO register operations
+  304:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+  310:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+--- Lines 300-314 ---
+  300:             break;
+  301:         case SPECIAL_MTHI:
+  302:         case SPECIAL_MTLO:
+  303:             // HI/LO register operations
+  304:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+  310:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+--- Lines 305-319 ---
+  305:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+  310:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+  315:             // R5900 MULT/MULTU also write rd when rd != 0.
+  316:             inst.modificationInfo.modifiesGPR = (inst.rd != 0);
+  317:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  318:             break;
+  319:         case SPECIAL_ADD:
+--- Lines 306-320 ---
+  306:             break;
+  307:         case SPECIAL_DIV:
+  308:         case SPECIAL_DIVU:
+  309:             // Multiplication and division operations
+  310:             inst.modificationInfo.modifiesGPR = false;    // Doesn't modify rd
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+  315:             // R5900 MULT/MULTU also write rd when rd != 0.
+  316:             inst.modificationInfo.modifiesGPR = (inst.rd != 0);
+  317:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  318:             break;
+  319:         case SPECIAL_ADD:
+  320:         case SPECIAL_ADDU:
+--- Lines 311-325 ---
+  311:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+  315:             // R5900 MULT/MULTU also write rd when rd != 0.
+  316:             inst.modificationInfo.modifiesGPR = (inst.rd != 0);
+  317:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  318:             break;
+  319:         case SPECIAL_ADD:
+  320:         case SPECIAL_ADDU:
+  321:         case SPECIAL_SUB:
+  322:         case SPECIAL_SUBU:
+  323:         case SPECIAL_AND:
+  324:         case SPECIAL_OR:
+  325:         case SPECIAL_XOR:
+--- Lines 312-326 ---
+  312:             break;
+  313:         case SPECIAL_MULT:
+  314:         case SPECIAL_MULTU:
+  315:             // R5900 MULT/MULTU also write rd when rd != 0.
+  316:             inst.modificationInfo.modifiesGPR = (inst.rd != 0);
+  317:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  318:             break;
+  319:         case SPECIAL_ADD:
+  320:         case SPECIAL_ADDU:
+  321:         case SPECIAL_SUB:
+  322:         case SPECIAL_SUBU:
+  323:         case SPECIAL_AND:
+  324:         case SPECIAL_OR:
+  325:         case SPECIAL_XOR:
+  326:         case SPECIAL_NOR:
+--- Lines 324-338 ---
+  324:         case SPECIAL_OR:
+  325:         case SPECIAL_XOR:
+  326:         case SPECIAL_NOR:
+  327:             // ALU operations
+  328:             if (inst.rd == 0)
+  329:                 inst.modificationInfo.modifiesGPR = false;
+  330:             break;
+  331: 
+  332:         case SPECIAL_SLL:
+  333:         case SPECIAL_SRL:
+  334:         case SPECIAL_SRA:
+  335:         case SPECIAL_SLLV:
+  336:         case SPECIAL_SRLV:
+  337:         case SPECIAL_SRAV:
+  338:             // Shift operations
+--- Lines 335-349 ---
+  335:         case SPECIAL_SLLV:
+  336:         case SPECIAL_SRLV:
+  337:         case SPECIAL_SRAV:
+  338:             // Shift operations
+  339:             if (inst.rd == 0)
+  340:                 inst.modificationInfo.modifiesGPR = false;
+  341:             break;
+  342: 
+  343:         // 64-bit specific operations
+  344:         case SPECIAL_DADD:
+  345:         case SPECIAL_DADDU:
+  346:         case SPECIAL_DSUB:
+  347:         case SPECIAL_DSUBU:
+  348:         case SPECIAL_DSLL:
+  349:         case SPECIAL_DSRL:
+--- Lines 354-368 ---
+  354:         case SPECIAL_DSLLV:
+  355:         case SPECIAL_DSRLV:
+  356:         case SPECIAL_DSRAV:
+  357:             // 64-bit operations
+  358:             if (inst.rd == 0)
+  359:                 inst.modificationInfo.modifiesGPR = false;
+  360:             break;
+  361: 
+  362:         case SPECIAL_MOVZ:
+  363:         case SPECIAL_MOVN:
+  364:             if (inst.rd == 0)
+  365:                 inst.modificationInfo.modifiesGPR = false;
+  366:             break;
+  367: 
+  368:         // Set on Less Than
+--- Lines 360-374 ---
+  360:             break;
+  361: 
+  362:         case SPECIAL_MOVZ:
+  363:         case SPECIAL_MOVN:
+  364:             if (inst.rd == 0)
+  365:                 inst.modificationInfo.modifiesGPR = false;
+  366:             break;
+  367: 
+  368:         // Set on Less Than
+  369:         case SPECIAL_SLT:
+  370:         case SPECIAL_SLTU:
+  371:             if (inst.rd == 0)
+  372:                 inst.modificationInfo.modifiesGPR = false;
+  373:             break;
+  374: 
+--- Lines 367-381 ---
+  367: 
+  368:         // Set on Less Than
+  369:         case SPECIAL_SLT:
+  370:         case SPECIAL_SLTU:
+  371:             if (inst.rd == 0)
+  372:                 inst.modificationInfo.modifiesGPR = false;
+  373:             break;
+  374: 
+  375:         case SPECIAL_TGE:
+  376:         case SPECIAL_TGEU:
+  377:         case SPECIAL_TLT:
+  378:         case SPECIAL_TLTU:
+  379:         case SPECIAL_TEQ:
+  380:         case SPECIAL_TNE:
+  381:             inst.modificationInfo.modifiesGPR = false;
+--- Lines 376-390 ---
+  376:         case SPECIAL_TGEU:
+  377:         case SPECIAL_TLT:
+  378:         case SPECIAL_TLTU:
+  379:         case SPECIAL_TEQ:
+  380:         case SPECIAL_TNE:
+  381:             inst.modificationInfo.modifiesGPR = false;
+  382:             inst.modificationInfo.modifiesControl = true; // Control flow change via trap
+  383:             break;
+  384: 
+  385:         // PS2 Specific (MFSA/MTSA)
+  386:         case SPECIAL_MFSA: // Modifies rd GPR
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+  389:             break;
+  390:         case SPECIAL_MTSA: // Modifies SA control register
+--- Lines 377-391 ---
+  377:         case SPECIAL_TLT:
+  378:         case SPECIAL_TLTU:
+  379:         case SPECIAL_TEQ:
+  380:         case SPECIAL_TNE:
+  381:             inst.modificationInfo.modifiesGPR = false;
+  382:             inst.modificationInfo.modifiesControl = true; // Control flow change via trap
+  383:             break;
+  384: 
+  385:         // PS2 Specific (MFSA/MTSA)
+  386:         case SPECIAL_MFSA: // Modifies rd GPR
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+  389:             break;
+  390:         case SPECIAL_MTSA: // Modifies SA control register
+  391:             inst.modificationInfo.modifiesGPR = false;
+--- Lines 383-397 ---
+  383:             break;
+  384: 
+  385:         // PS2 Specific (MFSA/MTSA)
+  386:         case SPECIAL_MFSA: // Modifies rd GPR
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+  389:             break;
+  390:         case SPECIAL_MTSA: // Modifies SA control register
+  391:             inst.modificationInfo.modifiesGPR = false;
+  392:             inst.modificationInfo.modifiesControl = true; // SA reg
+  393:             break;
+  394: 
+  395:         case SPECIAL_SYNC:
+  396:             inst.modificationInfo.modifiesGPR = false;
+  397:             inst.modificationInfo.modifiesControl = true;
+--- Lines 386-400 ---
+  386:         case SPECIAL_MFSA: // Modifies rd GPR
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+  389:             break;
+  390:         case SPECIAL_MTSA: // Modifies SA control register
+  391:             inst.modificationInfo.modifiesGPR = false;
+  392:             inst.modificationInfo.modifiesControl = true; // SA reg
+  393:             break;
+  394: 
+  395:         case SPECIAL_SYNC:
+  396:             inst.modificationInfo.modifiesGPR = false;
+  397:             inst.modificationInfo.modifiesControl = true;
+  398:             break;
+  399:         }
+  400:     }
+--- Lines 387-401 ---
+  387:             if (inst.rd == 0)
+  388:                 inst.modificationInfo.modifiesGPR = false;
+  389:             break;
+  390:         case SPECIAL_MTSA: // Modifies SA control register
+  391:             inst.modificationInfo.modifiesGPR = false;
+  392:             inst.modificationInfo.modifiesControl = true; // SA reg
+  393:             break;
+  394: 
+  395:         case SPECIAL_SYNC:
+  396:             inst.modificationInfo.modifiesGPR = false;
+  397:             inst.modificationInfo.modifiesControl = true;
+  398:             break;
+  399:         }
+  400:     }
+  401: 
+--- Lines 391-405 ---
+  391:             inst.modificationInfo.modifiesGPR = false;
+  392:             inst.modificationInfo.modifiesControl = true; // SA reg
+  393:             break;
+  394: 
+  395:         case SPECIAL_SYNC:
+  396:             inst.modificationInfo.modifiesGPR = false;
+  397:             inst.modificationInfo.modifiesControl = true;
+  398:             break;
+  399:         }
+  400:     }
+  401: 
+  402:     void R5900Decoder::decodeRegimm(Instruction &inst) const
+  403:     {
+  404:         uint32_t rt = inst.rt;
+  405: 
+--- Lines 392-406 ---
+  392:             inst.modificationInfo.modifiesControl = true; // SA reg
+  393:             break;
+  394: 
+  395:         case SPECIAL_SYNC:
+  396:             inst.modificationInfo.modifiesGPR = false;
+  397:             inst.modificationInfo.modifiesControl = true;
+  398:             break;
+  399:         }
+  400:     }
+  401: 
+  402:     void R5900Decoder::decodeRegimm(Instruction &inst) const
+  403:     {
+  404:         uint32_t rt = inst.rt;
+  405: 
+  406:         switch (rt)
+--- Lines 410-424 ---
+  410:         case REGIMM_BLTZL:
+  411:         case REGIMM_BGEZL:
+  412:             // Branches
+  413:             inst.isBranch = true;
+  414:             inst.hasDelaySlot = true;
+  415:             inst.modificationInfo.modifiesControl = true; // PC potentially
+  416:             break;
+  417: 
+  418:         case REGIMM_BLTZAL:
+  419:         case REGIMM_BGEZAL:
+  420:         case REGIMM_BLTZALL:
+  421:         case REGIMM_BGEZALL:
+  422:             // Branch and Link
+  423:             inst.isBranch = true;
+  424:             inst.isCall = true;
+--- Lines 421-435 ---
+  421:         case REGIMM_BGEZALL:
+  422:             // Branch and Link
+  423:             inst.isBranch = true;
+  424:             inst.isCall = true;
+  425:             inst.hasDelaySlot = true;
+  426:             inst.modificationInfo.modifiesGPR = true;     // $ra (r[31])
+  427:             inst.modificationInfo.modifiesControl = true; // PC
+  428:             break;
+  429: 
+  430:         case REGIMM_TGEI:
+  431:         case REGIMM_TGEIU:
+  432:         case REGIMM_TLTI:
+  433:         case REGIMM_TLTIU:
+  434:         case REGIMM_TEQI:
+  435:         case REGIMM_TNEI:
+--- Lines 422-436 ---
+  422:             // Branch and Link
+  423:             inst.isBranch = true;
+  424:             inst.isCall = true;
+  425:             inst.hasDelaySlot = true;
+  426:             inst.modificationInfo.modifiesGPR = true;     // $ra (r[31])
+  427:             inst.modificationInfo.modifiesControl = true; // PC
+  428:             break;
+  429: 
+  430:         case REGIMM_TGEI:
+  431:         case REGIMM_TGEIU:
+  432:         case REGIMM_TLTI:
+  433:         case REGIMM_TLTIU:
+  434:         case REGIMM_TEQI:
+  435:         case REGIMM_TNEI:
+  436:             // Trap Instructions
+--- Lines 432-446 ---
+  432:         case REGIMM_TLTI:
+  433:         case REGIMM_TLTIU:
+  434:         case REGIMM_TEQI:
+  435:         case REGIMM_TNEI:
+  436:             // Trap Instructions
+  437:             inst.modificationInfo.modifiesControl = true;
+  438:             break;
+  439: 
+  440:         case REGIMM_MTSAB:
+  441:         case REGIMM_MTSAH:
+  442:             // PS2 specific MTSAB/MTSAH instructions (for QMFC2/QMTC2)
+  443:             inst.isMultimedia = true;
+  444:             inst.modificationInfo.modifiesControl = true; // SA register
+  445:             break;
+  446: 
+--- Lines 439-453 ---
+  439: 
+  440:         case REGIMM_MTSAB:
+  441:         case REGIMM_MTSAH:
+  442:             // PS2 specific MTSAB/MTSAH instructions (for QMFC2/QMTC2)
+  443:             inst.isMultimedia = true;
+  444:             inst.modificationInfo.modifiesControl = true; // SA register
+  445:             break;
+  446: 
+  447:         default:
+  448:             // Unknown REGIMM instructions
+  449:             std::cerr << "Unknown REGIMM instruction: " << std::hex << inst.raw << std::endl;
+  450:             break;
+  451:         }
+  452:     }
+  453: 
+--- Lines 453-467 ---
+  453: 
+  454:     void R5900Decoder::decodeMMI(Instruction &inst) const
+  455:     {
+  456:         inst.isMMI = true;
+  457:         inst.isMultimedia = true;
+  458:         inst.modificationInfo.modifiesGPR = true; // Most MMI ops write to rd GPR
+  459:         if (inst.rd == 0)
+  460:             inst.modificationInfo.modifiesGPR = false; // Except if rd is $zero
+  461: 
+  462:         // The function field is actually determined by the lowest 6 bits (as in R-type)
+  463:         uint32_t mmiFunction = inst.function;
+  464: 
+  465:         uint32_t rs = inst.rs;
+  466: 
+  467:         if (mmiFunction == MMI_MMI0)
+--- Lines 455-469 ---
+  455:     {
+  456:         inst.isMMI = true;
+  457:         inst.isMultimedia = true;
+  458:         inst.modificationInfo.modifiesGPR = true; // Most MMI ops write to rd GPR
+  459:         if (inst.rd == 0)
+  460:             inst.modificationInfo.modifiesGPR = false; // Except if rd is $zero
+  461: 
+  462:         // The function field is actually determined by the lowest 6 bits (as in R-type)
+  463:         uint32_t mmiFunction = inst.function;
+  464: 
+  465:         uint32_t rs = inst.rs;
+  466: 
+  467:         if (mmiFunction == MMI_MMI0)
+  468:         {
+  469:             decodeMMI0(inst);
+--- Lines 493-507 ---
+  493:         case MMI_MFHI1:
+  494:         case MMI_MFLO1:
+  495:             // Move from HI1/LO1 -> rd
+  496:             if (inst.rd == 0)
+  497:             {
+  498:                 inst.modificationInfo.modifiesGPR = false;
+  499:             }
+  500:             inst.modificationInfo.modifiesControl = false;
+  501:             break;
+  502:         case MMI_MTHI1:
+  503:         case MMI_MTLO1:
+  504:             // Move to HI1/LO1
+  505:             inst.modificationInfo.modifiesGPR = false;
+  506:             inst.modificationInfo.modifiesControl = true;
+  507:             break;
+--- Lines 495-509 ---
+  495:             // Move from HI1/LO1 -> rd
+  496:             if (inst.rd == 0)
+  497:             {
+  498:                 inst.modificationInfo.modifiesGPR = false;
+  499:             }
+  500:             inst.modificationInfo.modifiesControl = false;
+  501:             break;
+  502:         case MMI_MTHI1:
+  503:         case MMI_MTLO1:
+  504:             // Move to HI1/LO1
+  505:             inst.modificationInfo.modifiesGPR = false;
+  506:             inst.modificationInfo.modifiesControl = true;
+  507:             break;
+  508:         case MMI_PSLLH:
+  509:         case MMI_PSRLH:
+--- Lines 500-514 ---
+  500:             inst.modificationInfo.modifiesControl = false;
+  501:             break;
+  502:         case MMI_MTHI1:
+  503:         case MMI_MTLO1:
+  504:             // Move to HI1/LO1
+  505:             inst.modificationInfo.modifiesGPR = false;
+  506:             inst.modificationInfo.modifiesControl = true;
+  507:             break;
+  508:         case MMI_PSLLH:
+  509:         case MMI_PSRLH:
+  510:         case MMI_PSRAH:
+  511:         case MMI_PSLLW:
+  512:         case MMI_PSRLW:
+  513:         case MMI_PSRAW:
+  514:             // Packed shift instructions; defaults already mark GPR modify (unless rd==0)
+--- Lines 501-515 ---
+  501:             break;
+  502:         case MMI_MTHI1:
+  503:         case MMI_MTLO1:
+  504:             // Move to HI1/LO1
+  505:             inst.modificationInfo.modifiesGPR = false;
+  506:             inst.modificationInfo.modifiesControl = true;
+  507:             break;
+  508:         case MMI_PSLLH:
+  509:         case MMI_PSRLH:
+  510:         case MMI_PSRAH:
+  511:         case MMI_PSLLW:
+  512:         case MMI_PSRLW:
+  513:         case MMI_PSRAW:
+  514:             // Packed shift instructions; defaults already mark GPR modify (unless rd==0)
+  515:             break;
+--- Lines 519-533 ---
+  519:         case MMI_MADDU:
+  520:         case MMI_MSUB:
+  521:         case MMI_MSUBU:
+  522:         case MMI_MADD1:
+  523:         case MMI_MADDU1:
+  524:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // Also writes rd on R5900 I checkd on EE manual
+  525:             inst.modificationInfo.modifiesControl = true;
+  526:             break;
+  527:         case MMI_MULT1:
+  528:         case MMI_MULTU1:
+  529:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // same
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+--- Lines 520-534 ---
+  520:         case MMI_MSUB:
+  521:         case MMI_MSUBU:
+  522:         case MMI_MADD1:
+  523:         case MMI_MADDU1:
+  524:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // Also writes rd on R5900 I checkd on EE manual
+  525:             inst.modificationInfo.modifiesControl = true;
+  526:             break;
+  527:         case MMI_MULT1:
+  528:         case MMI_MULTU1:
+  529:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // same
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+  534:             inst.modificationInfo.modifiesGPR = false; // Writes to HI1/LO1
+--- Lines 524-538 ---
+  524:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // Also writes rd on R5900 I checkd on EE manual
+  525:             inst.modificationInfo.modifiesControl = true;
+  526:             break;
+  527:         case MMI_MULT1:
+  528:         case MMI_MULTU1:
+  529:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // same
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+  534:             inst.modificationInfo.modifiesGPR = false; // Writes to HI1/LO1
+  535:             inst.modificationInfo.modifiesControl = true;
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+--- Lines 525-539 ---
+  525:             inst.modificationInfo.modifiesControl = true;
+  526:             break;
+  527:         case MMI_MULT1:
+  528:         case MMI_MULTU1:
+  529:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // same
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+  534:             inst.modificationInfo.modifiesGPR = false; // Writes to HI1/LO1
+  535:             inst.modificationInfo.modifiesControl = true;
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+  539:         case MMI3_PMTLO:
+--- Lines 529-543 ---
+  529:             inst.modificationInfo.modifiesGPR = (inst.rd != 0); // same
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+  534:             inst.modificationInfo.modifiesGPR = false; // Writes to HI1/LO1
+  535:             inst.modificationInfo.modifiesControl = true;
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+  539:         case MMI3_PMTLO:
+  540:             inst.modificationInfo.modifiesGPR = false; // Writes to HI/LO or HI1/LO1
+  541:             inst.modificationInfo.modifiesControl = true;
+  542:             break;
+  543:         case MMI_PMFHL:
+--- Lines 530-544 ---
+  530:             inst.modificationInfo.modifiesControl = true;
+  531:             break;
+  532:         case MMI_DIV1:
+  533:         case MMI_DIVU1:
+  534:             inst.modificationInfo.modifiesGPR = false; // Writes to HI1/LO1
+  535:             inst.modificationInfo.modifiesControl = true;
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+  539:         case MMI3_PMTLO:
+  540:             inst.modificationInfo.modifiesGPR = false; // Writes to HI/LO or HI1/LO1
+  541:             inst.modificationInfo.modifiesControl = true;
+  542:             break;
+  543:         case MMI_PMFHL:
+  544:             decodePMFHL(inst);
+--- Lines 535-549 ---
+  535:             inst.modificationInfo.modifiesControl = true;
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+  539:         case MMI3_PMTLO:
+  540:             inst.modificationInfo.modifiesGPR = false; // Writes to HI/LO or HI1/LO1
+  541:             inst.modificationInfo.modifiesControl = true;
+  542:             break;
+  543:         case MMI_PMFHL:
+  544:             decodePMFHL(inst);
+  545:             break;
+  546:         default:
+  547:             std::cerr << "Unknown MMI function: " << std::hex << mmiFunction << std::endl;
+  548:             break;
+  549:         }
+--- Lines 536-550 ---
+  536:             break;
+  537:         case MMI_PMTHL:
+  538:         case MMI3_PMTHI:
+  539:         case MMI3_PMTLO:
+  540:             inst.modificationInfo.modifiesGPR = false; // Writes to HI/LO or HI1/LO1
+  541:             inst.modificationInfo.modifiesControl = true;
+  542:             break;
+  543:         case MMI_PMFHL:
+  544:             decodePMFHL(inst);
+  545:             break;
+  546:         default:
+  547:             std::cerr << "Unknown MMI function: " << std::hex << mmiFunction << std::endl;
+  548:             break;
+  549:         }
+  550:     }
+--- Lines 656-670 ---
+  656:         if (inst.sa == MMI2_PMADDW || inst.sa == MMI2_PMSUBW ||
+  657:             inst.sa == MMI2_PMULTW || inst.sa == MMI2_PDIVW || inst.sa == MMI2_PDIVBW ||
+  658:             inst.sa == MMI2_PMADDH || inst.sa == MMI2_PHMADH ||
+  659:             inst.sa == MMI2_PMSUBH || inst.sa == MMI2_PHMSBH || inst.sa == MMI2_PMULTH)
+  660:         {
+  661:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  662:         }
+  663: 
+  664:         uint32_t sa = inst.sa;
+  665: 
+  666:         switch (sa)
+  667:         {
+  668:         case MMI2_PMADDW:
+  669:         case MMI2_PMSUBW:
+  670:         case MMI2_PMADDH:
+--- Lines 729-743 ---
+  729:         switch (sa)
+  730:         {
+  731:         case MMI3_PMADDUW:
+  732:             // Unsigned multiply-add
+  733:             inst.isMultimedia = true;
+  734:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  735:             break;
+  736: 
+  737:         case MMI3_PSRAVW:
+  738:             // Packed shift right arithmetic variable word
+  739:             break;
+  740: 
+  741:         case MMI3_PMTHI:
+  742:             inst.mmiFunction = MMI3_PMTHI;
+  743:             inst.modificationInfo.modifiesGPR = false;
+--- Lines 738-752 ---
+  738:             // Packed shift right arithmetic variable word
+  739:             break;
+  740: 
+  741:         case MMI3_PMTHI:
+  742:             inst.mmiFunction = MMI3_PMTHI;
+  743:             inst.modificationInfo.modifiesGPR = false;
+  744:             inst.modificationInfo.modifiesControl = true; // HI register is modified
+  745:             break;
+  746: 
+  747:         case MMI3_PMTLO:
+  748:             inst.mmiFunction = MMI3_PMTLO;
+  749:             inst.modificationInfo.modifiesGPR = false;
+  750:             inst.modificationInfo.modifiesControl = true; // LO register is modified
+  751:             break;
+  752: 
+--- Lines 739-753 ---
+  739:             break;
+  740: 
+  741:         case MMI3_PMTHI:
+  742:             inst.mmiFunction = MMI3_PMTHI;
+  743:             inst.modificationInfo.modifiesGPR = false;
+  744:             inst.modificationInfo.modifiesControl = true; // HI register is modified
+  745:             break;
+  746: 
+  747:         case MMI3_PMTLO:
+  748:             inst.mmiFunction = MMI3_PMTLO;
+  749:             inst.modificationInfo.modifiesGPR = false;
+  750:             inst.modificationInfo.modifiesControl = true; // LO register is modified
+  751:             break;
+  752: 
+  753:         case MMI3_PINTEH:
+--- Lines 744-758 ---
+  744:             inst.modificationInfo.modifiesControl = true; // HI register is modified
+  745:             break;
+  746: 
+  747:         case MMI3_PMTLO:
+  748:             inst.mmiFunction = MMI3_PMTLO;
+  749:             inst.modificationInfo.modifiesGPR = false;
+  750:             inst.modificationInfo.modifiesControl = true; // LO register is modified
+  751:             break;
+  752: 
+  753:         case MMI3_PINTEH:
+  754:             // Interleave even halfwords
+  755:             break;
+  756: 
+  757:         case MMI3_PMULTUW:
+  758:         case MMI3_PDIVUW:
+--- Lines 745-759 ---
+  745:             break;
+  746: 
+  747:         case MMI3_PMTLO:
+  748:             inst.mmiFunction = MMI3_PMTLO;
+  749:             inst.modificationInfo.modifiesGPR = false;
+  750:             inst.modificationInfo.modifiesControl = true; // LO register is modified
+  751:             break;
+  752: 
+  753:         case MMI3_PINTEH:
+  754:             // Interleave even halfwords
+  755:             break;
+  756: 
+  757:         case MMI3_PMULTUW:
+  758:         case MMI3_PDIVUW:
+  759:             // Unsigned multiply/divide operations
+--- Lines 756-770 ---
+  756: 
+  757:         case MMI3_PMULTUW:
+  758:         case MMI3_PDIVUW:
+  759:             // Unsigned multiply/divide operations
+  760:             inst.isMultimedia = true;
+  761:             inst.modificationInfo.modifiesControl = true; // HI/LO
+  762:             break;
+  763: 
+  764:         case MMI3_PCPYUD:
+  765:             // Copy upper doubleword
+  766:             break;
+  767: 
+  768:         case MMI3_POR:
+  769:         case MMI3_PNOR:
+  770:             // Logical operations
+--- Lines 784-798 ---
+  784: 
+  785:     void R5900Decoder::decodeCOP0(Instruction &inst) const
+  786:     {
+  787:         // COP0 (System Control) instructions
+  788:         uint8_t format = inst.rs;
+  789:         inst.modificationInfo.modifiesControl = true; // Assume COP0 always modifies some control state
+  790:         if (format == COP0_MF && inst.rt != 0)
+  791:         {
+  792:             inst.modificationInfo.modifiesGPR = true;
+  793:         }
+  794:         else if (format == COP0_CO && inst.function == COP0_CO_ERET)
+  795:         {
+  796:             inst.isReturn = true;
+  797:             inst.hasDelaySlot = false;
+  798:         } // ERET is special
+--- Lines 787-801 ---
+  787:         // COP0 (System Control) instructions
+  788:         uint8_t format = inst.rs;
+  789:         inst.modificationInfo.modifiesControl = true; // Assume COP0 always modifies some control state
+  790:         if (format == COP0_MF && inst.rt != 0)
+  791:         {
+  792:             inst.modificationInfo.modifiesGPR = true;
+  793:         }
+  794:         else if (format == COP0_CO && inst.function == COP0_CO_ERET)
+  795:         {
+  796:             inst.isReturn = true;
+  797:             inst.hasDelaySlot = false;
+  798:         } // ERET is special
+  799:         else if (format == COP0_BC)
+  800:         {
+  801:             inst.isBranch = true;
+--- Lines 801-815 ---
+  801:             inst.isBranch = true;
+  802:             inst.hasDelaySlot = true;
+  803:         }
+  804:     }
+  805: 
+  806:     void R5900Decoder::decodeCOP1(Instruction &inst) const
+  807:     {
+  808:         uint8_t format = inst.rs;
+  809: 
+  810:         if (format == COP1_MF || format == COP1_CF)
+  811:         {
+  812:             if (inst.rt != 0)
+  813:                 inst.modificationInfo.modifiesGPR = true;
+  814:         }
+  815:         else if (format == COP1_MT)
+--- Lines 808-822 ---
+  808:         uint8_t format = inst.rs;
+  809: 
+  810:         if (format == COP1_MF || format == COP1_CF)
+  811:         {
+  812:             if (inst.rt != 0)
+  813:                 inst.modificationInfo.modifiesGPR = true;
+  814:         }
+  815:         else if (format == COP1_MT)
+  816:         {
+  817:             inst.modificationInfo.modifiesFPR = true;
+  818:         }
+  819:         else if (format == COP1_BC)
+  820:         {
+  821:             inst.isBranch = true;
+  822:             inst.hasDelaySlot = true;
+--- Lines 812-826 ---
+  812:             if (inst.rt != 0)
+  813:                 inst.modificationInfo.modifiesGPR = true;
+  814:         }
+  815:         else if (format == COP1_MT)
+  816:         {
+  817:             inst.modificationInfo.modifiesFPR = true;
+  818:         }
+  819:         else if (format == COP1_BC)
+  820:         {
+  821:             inst.isBranch = true;
+  822:             inst.hasDelaySlot = true;
+  823:             inst.modificationInfo.modifiesControl = true;
+  824:         }
+  825:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  826:         {
+--- Lines 818-832 ---
+  818:         }
+  819:         else if (format == COP1_BC)
+  820:         {
+  821:             inst.isBranch = true;
+  822:             inst.hasDelaySlot = true;
+  823:             inst.modificationInfo.modifiesControl = true;
+  824:         }
+  825:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  826:         {
+  827:             const bool isCompare =
+  828:                 format == COP1_S && inst.function >= COP1_S_C_F;
+  829: 
+  830:             inst.modificationInfo.modifiesFPR = !isCompare;
+  831: 
+  832:             if (isCompare)
+--- Lines 823-837 ---
+  823:             inst.modificationInfo.modifiesControl = true;
+  824:         }
+  825:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  826:         {
+  827:             const bool isCompare =
+  828:                 format == COP1_S && inst.function >= COP1_S_C_F;
+  829: 
+  830:             inst.modificationInfo.modifiesFPR = !isCompare;
+  831: 
+  832:             if (isCompare)
+  833:                 inst.modificationInfo.modifiesControl = true;
+  834:         }
+  835: 
+  836:         if (format == COP1_CT)
+  837:             inst.modificationInfo.modifiesControl = true;
+--- Lines 825-839 ---
+  825:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+  826:         {
+  827:             const bool isCompare =
+  828:                 format == COP1_S && inst.function >= COP1_S_C_F;
+  829: 
+  830:             inst.modificationInfo.modifiesFPR = !isCompare;
+  831: 
+  832:             if (isCompare)
+  833:                 inst.modificationInfo.modifiesControl = true;
+  834:         }
+  835: 
+  836:         if (format == COP1_CT)
+  837:             inst.modificationInfo.modifiesControl = true;
+  838:     }
+  839:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+--- Lines 828-842 ---
+  828:                 format == COP1_S && inst.function >= COP1_S_C_F;
+  829: 
+  830:             inst.modificationInfo.modifiesFPR = !isCompare;
+  831: 
+  832:             if (isCompare)
+  833:                 inst.modificationInfo.modifiesControl = true;
+  834:         }
+  835: 
+  836:         if (format == COP1_CT)
+  837:             inst.modificationInfo.modifiesControl = true;
+  838:     }
+  839:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  840:     {
+  841:         uint8_t format = inst.rs;
+  842:         inst.isVU = true;
+--- Lines 832-846 ---
+  832:             if (isCompare)
+  833:                 inst.modificationInfo.modifiesControl = true;
+  834:         }
+  835: 
+  836:         if (format == COP1_CT)
+  837:             inst.modificationInfo.modifiesControl = true;
+  838:     }
+  839:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+  840:     {
+  841:         uint8_t format = inst.rs;
+  842:         inst.isVU = true;
+  843:         inst.isMultimedia = true;
+  844: 
+  845:         switch (format)
+  846:         {
+--- Lines 845-859 ---
+  845:         switch (format)
+  846:         {
+  847:         case COP2_QMFC2:
+  848:         case COP2_CFC2:
+  849:             if (inst.rt != 0)
+  850:                 inst.modificationInfo.modifiesGPR = true;
+  851:             break;
+  852:         case COP2_QMTC2:
+  853:             inst.modificationInfo.modifiesVFR = true;
+  854:             break; // Modifies VU state
+  855:         case COP2_CTC2:
+  856:             inst.modificationInfo.modifiesControl = true;
+  857:             break; // Modifies VU control state
+  858:         case COP2_BC:
+  859:             inst.isBranch = true;
+--- Lines 851-865 ---
+  851:             break;
+  852:         case COP2_QMTC2:
+  853:             inst.modificationInfo.modifiesVFR = true;
+  854:             break; // Modifies VU state
+  855:         case COP2_CTC2:
+  856:             inst.modificationInfo.modifiesControl = true;
+  857:             break; // Modifies VU control state
+  858:         case COP2_BC:
+  859:             inst.isBranch = true;
+  860:             inst.hasDelaySlot = true;
+  861:             inst.modificationInfo.modifiesControl = true;
+  862:             break;
+  863:         case COP2_CO: // VU Macro instructions (format >= 0x10)
+  864:         case COP2_CO + 1:
+  865:         case COP2_CO + 2:
+--- Lines 856-870 ---
+  856:             inst.modificationInfo.modifiesControl = true;
+  857:             break; // Modifies VU control state
+  858:         case COP2_BC:
+  859:             inst.isBranch = true;
+  860:             inst.hasDelaySlot = true;
+  861:             inst.modificationInfo.modifiesControl = true;
+  862:             break;
+  863:         case COP2_CO: // VU Macro instructions (format >= 0x10)
+  864:         case COP2_CO + 1:
+  865:         case COP2_CO + 2:
+  866:         case COP2_CO + 3:
+  867:         case COP2_CO + 4:
+  868:         case COP2_CO + 5:
+  869:         case COP2_CO + 6:
+  870:         case COP2_CO + 7:
+--- Lines 894-908 ---
+  894:             {
+  895:                 inst.vectorInfo.ftf = static_cast<uint8_t>((inst.raw >> 23) & 0x3); // M selector
+  896:             }
+  897: 
+  898:             inst.modificationInfo.modifiesVFR = true;     // Default: Modifies Vector Float Reg
+  899:             inst.modificationInfo.modifiesControl = true; // Default: Modifies Flags/Special Regs (Q, P, I, MAC, Clip...)
+  900: 
+  901:             if (isSpecial2)
+  902:             {
+  903:                 switch (vuFunc)
+  904:                 {
+  905:                 case VU0_S2_VDIV:
+  906:                 case VU0_S2_VSQRT:
+  907:                 case VU0_S2_VRSQRT:
+  908:                     inst.vectorInfo.usesQReg = true;
+--- Lines 928-942 ---
+  928:                 case VU0_S2_VRINIT:
+  929:                 case VU0_S2_VRXOR:
+  930:                     inst.modificationInfo.modifiesVFR = false; /* Modifies R */
+  931:                     break;
+  932:                 case VU0_S2_VRGET:
+  933:                     inst.modificationInfo.modifiesControl = false; /* Reads R, writes VF */
+  934:                     break;
+  935:                 case VU0_S2_VRNEXT:
+  936:                     inst.modificationInfo.modifiesControl = true; /* Modifies R */
+  937:                     inst.modificationInfo.modifiesVFR = false;
+  938:                     break;
+  939:                 case VU0_S2_VABS:
+  940:                 case VU0_S2_VMOVE:
+  941:                 case VU0_S2_VMR32:
+  942:                     inst.modificationInfo.modifiesControl = false;
+--- Lines 931-945 ---
+  931:                     break;
+  932:                 case VU0_S2_VRGET:
+  933:                     inst.modificationInfo.modifiesControl = false; /* Reads R, writes VF */
+  934:                     break;
+  935:                 case VU0_S2_VRNEXT:
+  936:                     inst.modificationInfo.modifiesControl = true; /* Modifies R */
+  937:                     inst.modificationInfo.modifiesVFR = false;
+  938:                     break;
+  939:                 case VU0_S2_VABS:
+  940:                 case VU0_S2_VMOVE:
+  941:                 case VU0_S2_VMR32:
+  942:                     inst.modificationInfo.modifiesControl = false;
+  943:                     break; // Only VF
+  944:                 case VU0_S2_VNOP:
+  945:                     inst.modificationInfo.modifiesVFR = false;
+--- Lines 937-951 ---
+  937:                     inst.modificationInfo.modifiesVFR = false;
+  938:                     break;
+  939:                 case VU0_S2_VABS:
+  940:                 case VU0_S2_VMOVE:
+  941:                 case VU0_S2_VMR32:
+  942:                     inst.modificationInfo.modifiesControl = false;
+  943:                     break; // Only VF
+  944:                 case VU0_S2_VNOP:
+  945:                     inst.modificationInfo.modifiesVFR = false;
+  946:                     inst.modificationInfo.modifiesControl = false;
+  947:                     break;
+  948:                 case VU0_S2_VCLIPw:
+  949:                     inst.modificationInfo.modifiesVFR = false; /* Modifies Clip flags */
+  950:                     break;
+  951:                 }
+--- Lines 941-955 ---
+  941:                 case VU0_S2_VMR32:
+  942:                     inst.modificationInfo.modifiesControl = false;
+  943:                     break; // Only VF
+  944:                 case VU0_S2_VNOP:
+  945:                     inst.modificationInfo.modifiesVFR = false;
+  946:                     inst.modificationInfo.modifiesControl = false;
+  947:                     break;
+  948:                 case VU0_S2_VCLIPw:
+  949:                     inst.modificationInfo.modifiesVFR = false; /* Modifies Clip flags */
+  950:                     break;
+  951:                 }
+  952:             }
+  953:             else // Special1 Table
+  954:             {
+  955:                 if (vuFunc >= VU0_S1_VIADD && vuFunc <= VU0_S1_VIOR)
