@@ -1,0 +1,1545 @@
+MARK OF KRI — FPU COMPARISON INSTRUCTION TRANSLATOR AUDIT
+Generated: 11/26/2026 00:03:38
+
+
+========== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\instruction_translator.cpp ==========
+LINE COUNT: 359
+----- around line 9 -----
+5: #include "ps2recomp/types.h"
+6: #include "ps2recomp/control_flow_utils.h"
+7: #include "runtime/ps2_address.h"
+8: 
+9: #include <fmt/format.h>
+10: 
+11: namespace ps2recomp
+12: {
+13:     namespace
+14:     {
+15:         std::string addressLiteral(uint32_t address)
+16:         {
+17:             return fmt::format("0x{:X}u", address);
+----- around line 17 -----
+13:     namespace
+14:     {
+15:         std::string addressLiteral(uint32_t address)
+16:         {
+17:             return fmt::format("0x{:X}u", address);
+18:         }
+19: 
+20:         uint32_t memoryAccessSize(int width)
+21:         {
+22:             return static_cast<uint32_t>(width / 8);
+23:         }
+24: 
+25:         std::string memoryValueType(int width)
+----- around line 47 -----
+43:         {
+44:             const std::string addr = addressLiteral(address);
+45:             if (width == 128)
+46:             {
+47:                 return fmt::format(
+48:                     "do {{ __m128i _value = ({}); "
+49:                     "const uint64_t _lo = static_cast<uint64_t>(PS2_EXTRACT_EPI64_0(_value)); "
+50:                     "const uint64_t _hi = static_cast<uint64_t>(PS2_EXTRACT_EPI64_1(_value)); "
+51:                     "ps2TraceGuestWrite(rdram, {}, 16u, _lo, _hi, \"WRITE128\", ctx); "
+52:                     "FAST_WRITE128({}, _value); }} while (0)",
+53:                     val, addr, addr);
+54:             }
+55: 
+----- around line 57 -----
+53:                     val, addr, addr);
+54:             }
+55: 
+56:             const std::string valueType = memoryValueType(width);
+57:             return fmt::format(
+58:                 "do {{ {} _value = static_cast<{}>({}); "
+59:                 "ps2TraceGuestWrite(rdram, {}, {}u, _value, 0u, \"WRITE{}\", ctx); "
+60:                 "FAST_WRITE{}({}, _value); }} while (0)",
+61:                 valueType, valueType, val, addr, memoryAccessSize(width), width, width, addr);
+62:         }
+63:     }
+64: 
+65:     InstructionTranslator::InstructionTranslator(CodeGenerator &codeGenerator)
+----- around line 87 -----
+83:             const uint32_t resolvedAddress = memoryHint.address;
+84:             const std::string resolvedAddressExpr = addressLiteral(resolvedAddress);
+85:             if (inst.isMmio || Ps2IsSpecialAddress(resolvedAddress))
+86:             {
+87:                 return fmt::format("runtime->Load{}(rdram, ctx, {})", width, resolvedAddressExpr);
+88:             }
+89:             return fmt::format("FAST_READ{}({})", width, resolvedAddressExpr);
+90:         }
+91: 
+92:         if (inst.isMmio)
+93:         {
+94:             return fmt::format("runtime->Load{}(rdram, ctx, {})", width, addr);
+95:         }
+----- around line 89 -----
+85:             if (inst.isMmio || Ps2IsSpecialAddress(resolvedAddress))
+86:             {
+87:                 return fmt::format("runtime->Load{}(rdram, ctx, {})", width, resolvedAddressExpr);
+88:             }
+89:             return fmt::format("FAST_READ{}({})", width, resolvedAddressExpr);
+90:         }
+91: 
+92:         if (inst.isMmio)
+93:         {
+94:             return fmt::format("runtime->Load{}(rdram, ctx, {})", width, addr);
+95:         }
+96:         return fmt::format("READ{}({})", width, addr);
+97:     }
+----- around line 94 -----
+90:         }
+91: 
+92:         if (inst.isMmio)
+93:         {
+94:             return fmt::format("runtime->Load{}(rdram, ctx, {})", width, addr);
+95:         }
+96:         return fmt::format("READ{}({})", width, addr);
+97:     }
+98: 
+99:     std::string InstructionTranslator::translateMemoryWrite(const Instruction &inst,
+100:                                                             const MemoryAccessHint &memoryHint,
+101:                                                             int width,
+102:                                                             const std::string &addr,
+----- around line 96 -----
+92:         if (inst.isMmio)
+93:         {
+94:             return fmt::format("runtime->Load{}(rdram, ctx, {})", width, addr);
+95:         }
+96:         return fmt::format("READ{}({})", width, addr);
+97:     }
+98: 
+99:     std::string InstructionTranslator::translateMemoryWrite(const Instruction &inst,
+100:                                                             const MemoryAccessHint &memoryHint,
+101:                                                             int width,
+102:                                                             const std::string &addr,
+103:                                                             const std::string &value) const
+104:     {
+----- around line 111 -----
+107:             const uint32_t resolvedAddress = memoryHint.address;
+108:             const std::string resolvedAddressExpr = addressLiteral(resolvedAddress);
+109:             if (inst.isMmio || Ps2IsSpecialAddress(resolvedAddress))
+110:             {
+111:                 return fmt::format("runtime->Store{}(rdram, ctx, {}, {})", width, resolvedAddressExpr, value);
+112:             }
+113:             return genFastWrite(width, resolvedAddress, value);
+114:         }
+115: 
+116:         if (inst.isMmio)
+117:         {
+118:             return fmt::format("runtime->Store{}(rdram, ctx, {}, {})", width, addr, value);
+119:         }
+----- around line 118 -----
+114:         }
+115: 
+116:         if (inst.isMmio)
+117:         {
+118:             return fmt::format("runtime->Store{}(rdram, ctx, {}, {})", width, addr, value);
+119:         }
+120:         return fmt::format("WRITE{}({}, {})", width, addr, value);
+121:     }
+122: 
+123:     std::string InstructionTranslator::translate(const Instruction &inst, const MemoryAccessHint &memoryHint)
+124:     {
+125:         if (inst.isMMI)
+126:         {
+----- around line 120 -----
+116:         if (inst.isMmio)
+117:         {
+118:             return fmt::format("runtime->Store{}(rdram, ctx, {}, {})", width, addr, value);
+119:         }
+120:         return fmt::format("WRITE{}({}, {})", width, addr, value);
+121:     }
+122: 
+123:     std::string InstructionTranslator::translate(const Instruction &inst, const MemoryAccessHint &memoryHint)
+124:     {
+125:         if (inst.isMMI)
+126:         {
+127:             return m_codeGenerator.translateMMIInstruction(inst);
+128:         }
+----- around line 123 -----
+119:         }
+120:         return fmt::format("WRITE{}({}, {})", width, addr, value);
+121:     }
+122: 
+123:     std::string InstructionTranslator::translate(const Instruction &inst, const MemoryAccessHint &memoryHint)
+124:     {
+125:         if (inst.isMMI)
+126:         {
+127:             return m_codeGenerator.translateMMIInstruction(inst);
+128:         }
+129: 
+130:         const MemoryAccessHint effectiveMemoryHint = effectiveMemoryHintFor(inst, memoryHint);
+131: 
+----- around line 142 -----
+138:         {
+139:             return translateMemoryWrite(inst, effectiveMemoryHint, width, addr, val);
+140:         };
+141: 
+142:         switch (inst.opcode)
+143:         {
+144:         case OPCODE_SPECIAL:
+145:             return m_codeGenerator.translateSpecialInstruction(inst);
+146:         case OPCODE_REGIMM:
+147:             return m_codeGenerator.translateRegimmInstruction(inst);
+148:         case OPCODE_COP0:
+149:             return m_codeGenerator.translateCOP0Instruction(inst);
+150:         case OPCODE_COP1:
+----- around line 144 -----
+140:         };
+141: 
+142:         switch (inst.opcode)
+143:         {
+144:         case OPCODE_SPECIAL:
+145:             return m_codeGenerator.translateSpecialInstruction(inst);
+146:         case OPCODE_REGIMM:
+147:             return m_codeGenerator.translateRegimmInstruction(inst);
+148:         case OPCODE_COP0:
+149:             return m_codeGenerator.translateCOP0Instruction(inst);
+150:         case OPCODE_COP1:
+151:             return m_codeGenerator.translateFPUInstruction(inst);
+152:         case OPCODE_COP2:
+----- around line 146 -----
+142:         switch (inst.opcode)
+143:         {
+144:         case OPCODE_SPECIAL:
+145:             return m_codeGenerator.translateSpecialInstruction(inst);
+146:         case OPCODE_REGIMM:
+147:             return m_codeGenerator.translateRegimmInstruction(inst);
+148:         case OPCODE_COP0:
+149:             return m_codeGenerator.translateCOP0Instruction(inst);
+150:         case OPCODE_COP1:
+151:             return m_codeGenerator.translateFPUInstruction(inst);
+152:         case OPCODE_COP2:
+153:             return m_codeGenerator.translateVUInstruction(inst);
+154:         case OPCODE_ADDI:
+----- around line 148 -----
+144:         case OPCODE_SPECIAL:
+145:             return m_codeGenerator.translateSpecialInstruction(inst);
+146:         case OPCODE_REGIMM:
+147:             return m_codeGenerator.translateRegimmInstruction(inst);
+148:         case OPCODE_COP0:
+149:             return m_codeGenerator.translateCOP0Instruction(inst);
+150:         case OPCODE_COP1:
+151:             return m_codeGenerator.translateFPUInstruction(inst);
+152:         case OPCODE_COP2:
+153:             return m_codeGenerator.translateVUInstruction(inst);
+154:         case OPCODE_ADDI:
+155:             if (inst.rt == 0)
+156:                 return "// NOP (addi to $zero)";
+----- around line 150 -----
+146:         case OPCODE_REGIMM:
+147:             return m_codeGenerator.translateRegimmInstruction(inst);
+148:         case OPCODE_COP0:
+149:             return m_codeGenerator.translateCOP0Instruction(inst);
+150:         case OPCODE_COP1:
+151:             return m_codeGenerator.translateFPUInstruction(inst);
+152:         case OPCODE_COP2:
+153:             return m_codeGenerator.translateVUInstruction(inst);
+154:         case OPCODE_ADDI:
+155:             if (inst.rt == 0)
+156:                 return "// NOP (addi to $zero)";
+157:             return fmt::format(
+158:                 "{{ uint32_t tmp; bool ov; "
+----- around line 151 -----
+147:             return m_codeGenerator.translateRegimmInstruction(inst);
+148:         case OPCODE_COP0:
+149:             return m_codeGenerator.translateCOP0Instruction(inst);
+150:         case OPCODE_COP1:
+151:             return m_codeGenerator.translateFPUInstruction(inst);
+152:         case OPCODE_COP2:
+153:             return m_codeGenerator.translateVUInstruction(inst);
+154:         case OPCODE_ADDI:
+155:             if (inst.rt == 0)
+156:                 return "// NOP (addi to $zero)";
+157:             return fmt::format(
+158:                 "{{ uint32_t tmp; bool ov; "
+159:                 "ADD32_OV(GPR_U32(ctx, {}), (int32_t){}, tmp, ov); "
+----- around line 152 -----
+148:         case OPCODE_COP0:
+149:             return m_codeGenerator.translateCOP0Instruction(inst);
+150:         case OPCODE_COP1:
+151:             return m_codeGenerator.translateFPUInstruction(inst);
+152:         case OPCODE_COP2:
+153:             return m_codeGenerator.translateVUInstruction(inst);
+154:         case OPCODE_ADDI:
+155:             if (inst.rt == 0)
+156:                 return "// NOP (addi to $zero)";
+157:             return fmt::format(
+158:                 "{{ uint32_t tmp; bool ov; "
+159:                 "ADD32_OV(GPR_U32(ctx, {}), (int32_t){}, tmp, ov); "
+160:                 "if (ov) runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+----- around line 154 -----
+150:         case OPCODE_COP1:
+151:             return m_codeGenerator.translateFPUInstruction(inst);
+152:         case OPCODE_COP2:
+153:             return m_codeGenerator.translateVUInstruction(inst);
+154:         case OPCODE_ADDI:
+155:             if (inst.rt == 0)
+156:                 return "// NOP (addi to $zero)";
+157:             return fmt::format(
+158:                 "{{ uint32_t tmp; bool ov; "
+159:                 "ADD32_OV(GPR_U32(ctx, {}), (int32_t){}, tmp, ov); "
+160:                 "if (ov) runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+161:                 "else SET_GPR_S32(ctx, {}, (int32_t)tmp); }}",
+162:                 inst.rs, inst.simmediate, inst.rt);
+----- around line 157 -----
+153:             return m_codeGenerator.translateVUInstruction(inst);
+154:         case OPCODE_ADDI:
+155:             if (inst.rt == 0)
+156:                 return "// NOP (addi to $zero)";
+157:             return fmt::format(
+158:                 "{{ uint32_t tmp; bool ov; "
+159:                 "ADD32_OV(GPR_U32(ctx, {}), (int32_t){}, tmp, ov); "
+160:                 "if (ov) runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+161:                 "else SET_GPR_S32(ctx, {}, (int32_t)tmp); }}",
+162:                 inst.rs, inst.simmediate, inst.rt);
+163: 
+164:         case OPCODE_ADDIU:
+165:             if (inst.rt == 0)
+----- around line 164 -----
+160:                 "if (ov) runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+161:                 "else SET_GPR_S32(ctx, {}, (int32_t)tmp); }}",
+162:                 inst.rs, inst.simmediate, inst.rt);
+163: 
+164:         case OPCODE_ADDIU:
+165:             if (inst.rt == 0)
+166:                 return "// NOP (addiu $zero, ...)";
+167:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ADD32(GPR_U32(ctx, {}), {}));", inst.rt, inst.rs, inst.simmediate);
+168:         case OPCODE_SLTI:
+169:             return fmt::format("SET_GPR_U64(ctx, {}, ((int64_t)GPR_S64(ctx, {}) < (int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+170:         case OPCODE_SLTIU:
+171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+172:         case OPCODE_ANDI:
+----- around line 167 -----
+163: 
+164:         case OPCODE_ADDIU:
+165:             if (inst.rt == 0)
+166:                 return "// NOP (addiu $zero, ...)";
+167:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ADD32(GPR_U32(ctx, {}), {}));", inst.rt, inst.rs, inst.simmediate);
+168:         case OPCODE_SLTI:
+169:             return fmt::format("SET_GPR_U64(ctx, {}, ((int64_t)GPR_S64(ctx, {}) < (int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+170:         case OPCODE_SLTIU:
+171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+172:         case OPCODE_ANDI:
+173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+174:         case OPCODE_ORI:
+175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+----- around line 168 -----
+164:         case OPCODE_ADDIU:
+165:             if (inst.rt == 0)
+166:                 return "// NOP (addiu $zero, ...)";
+167:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ADD32(GPR_U32(ctx, {}), {}));", inst.rt, inst.rs, inst.simmediate);
+168:         case OPCODE_SLTI:
+169:             return fmt::format("SET_GPR_U64(ctx, {}, ((int64_t)GPR_S64(ctx, {}) < (int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+170:         case OPCODE_SLTIU:
+171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+172:         case OPCODE_ANDI:
+173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+174:         case OPCODE_ORI:
+175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+176:         case OPCODE_XORI:
+----- around line 169 -----
+165:             if (inst.rt == 0)
+166:                 return "// NOP (addiu $zero, ...)";
+167:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ADD32(GPR_U32(ctx, {}), {}));", inst.rt, inst.rs, inst.simmediate);
+168:         case OPCODE_SLTI:
+169:             return fmt::format("SET_GPR_U64(ctx, {}, ((int64_t)GPR_S64(ctx, {}) < (int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+170:         case OPCODE_SLTIU:
+171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+172:         case OPCODE_ANDI:
+173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+174:         case OPCODE_ORI:
+175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+176:         case OPCODE_XORI:
+177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+----- around line 170 -----
+166:                 return "// NOP (addiu $zero, ...)";
+167:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ADD32(GPR_U32(ctx, {}), {}));", inst.rt, inst.rs, inst.simmediate);
+168:         case OPCODE_SLTI:
+169:             return fmt::format("SET_GPR_U64(ctx, {}, ((int64_t)GPR_S64(ctx, {}) < (int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+170:         case OPCODE_SLTIU:
+171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+172:         case OPCODE_ANDI:
+173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+174:         case OPCODE_ORI:
+175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+176:         case OPCODE_XORI:
+177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+178:         case OPCODE_LUI:
+----- around line 171 -----
+167:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)ADD32(GPR_U32(ctx, {}), {}));", inst.rt, inst.rs, inst.simmediate);
+168:         case OPCODE_SLTI:
+169:             return fmt::format("SET_GPR_U64(ctx, {}, ((int64_t)GPR_S64(ctx, {}) < (int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+170:         case OPCODE_SLTIU:
+171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+172:         case OPCODE_ANDI:
+173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+174:         case OPCODE_ORI:
+175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+176:         case OPCODE_XORI:
+177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+178:         case OPCODE_LUI:
+179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+----- around line 172 -----
+168:         case OPCODE_SLTI:
+169:             return fmt::format("SET_GPR_U64(ctx, {}, ((int64_t)GPR_S64(ctx, {}) < (int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+170:         case OPCODE_SLTIU:
+171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+172:         case OPCODE_ANDI:
+173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+174:         case OPCODE_ORI:
+175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+176:         case OPCODE_XORI:
+177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+178:         case OPCODE_LUI:
+179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+180:         case OPCODE_LB:
+----- around line 173 -----
+169:             return fmt::format("SET_GPR_U64(ctx, {}, ((int64_t)GPR_S64(ctx, {}) < (int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+170:         case OPCODE_SLTIU:
+171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+172:         case OPCODE_ANDI:
+173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+174:         case OPCODE_ORI:
+175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+176:         case OPCODE_XORI:
+177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+178:         case OPCODE_LUI:
+179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+180:         case OPCODE_LB:
+181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+----- around line 174 -----
+170:         case OPCODE_SLTIU:
+171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+172:         case OPCODE_ANDI:
+173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+174:         case OPCODE_ORI:
+175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+176:         case OPCODE_XORI:
+177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+178:         case OPCODE_LUI:
+179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+180:         case OPCODE_LB:
+181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+182:         case OPCODE_LH:
+----- around line 175 -----
+171:             return fmt::format("SET_GPR_U64(ctx, {}, ((uint64_t)GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) ? 1 : 0);", inst.rt, inst.rs, inst.simmediate);
+172:         case OPCODE_ANDI:
+173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+174:         case OPCODE_ORI:
+175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+176:         case OPCODE_XORI:
+177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+178:         case OPCODE_LUI:
+179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+180:         case OPCODE_LB:
+181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+182:         case OPCODE_LH:
+183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+----- around line 176 -----
+172:         case OPCODE_ANDI:
+173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+174:         case OPCODE_ORI:
+175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+176:         case OPCODE_XORI:
+177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+178:         case OPCODE_LUI:
+179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+180:         case OPCODE_LB:
+181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+182:         case OPCODE_LH:
+183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+184:         case OPCODE_LW:
+----- around line 177 -----
+173:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) & (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+174:         case OPCODE_ORI:
+175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+176:         case OPCODE_XORI:
+177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+178:         case OPCODE_LUI:
+179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+180:         case OPCODE_LB:
+181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+182:         case OPCODE_LH:
+183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+184:         case OPCODE_LW:
+185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+----- around line 178 -----
+174:         case OPCODE_ORI:
+175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+176:         case OPCODE_XORI:
+177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+178:         case OPCODE_LUI:
+179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+180:         case OPCODE_LB:
+181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+182:         case OPCODE_LH:
+183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+184:         case OPCODE_LW:
+185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+186:         case OPCODE_LBU:
+----- around line 179 -----
+175:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) | (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+176:         case OPCODE_XORI:
+177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+178:         case OPCODE_LUI:
+179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+180:         case OPCODE_LB:
+181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+182:         case OPCODE_LH:
+183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+184:         case OPCODE_LW:
+185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+186:         case OPCODE_LBU:
+187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+----- around line 180 -----
+176:         case OPCODE_XORI:
+177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+178:         case OPCODE_LUI:
+179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+180:         case OPCODE_LB:
+181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+182:         case OPCODE_LH:
+183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+184:         case OPCODE_LW:
+185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+186:         case OPCODE_LBU:
+187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+188:         case OPCODE_LHU:
+----- around line 181 -----
+177:             return fmt::format("SET_GPR_U64(ctx, {}, GPR_U64(ctx, {}) ^ (uint64_t)(uint16_t){});", inst.rt, inst.rs, inst.immediate);
+178:         case OPCODE_LUI:
+179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+180:         case OPCODE_LB:
+181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+182:         case OPCODE_LH:
+183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+184:         case OPCODE_LW:
+185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+186:         case OPCODE_LBU:
+187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+188:         case OPCODE_LHU:
+189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+----- around line 182 -----
+178:         case OPCODE_LUI:
+179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+180:         case OPCODE_LB:
+181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+182:         case OPCODE_LH:
+183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+184:         case OPCODE_LW:
+185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+186:         case OPCODE_LBU:
+187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+188:         case OPCODE_LHU:
+189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+190:         case OPCODE_LWU:
+----- around line 183 -----
+179:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t)((uint32_t){} << 16));", inst.rt, inst.immediate);
+180:         case OPCODE_LB:
+181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+182:         case OPCODE_LH:
+183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+184:         case OPCODE_LW:
+185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+186:         case OPCODE_LBU:
+187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+188:         case OPCODE_LHU:
+189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+190:         case OPCODE_LWU:
+191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+----- around line 184 -----
+180:         case OPCODE_LB:
+181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+182:         case OPCODE_LH:
+183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+184:         case OPCODE_LW:
+185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+186:         case OPCODE_LBU:
+187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+188:         case OPCODE_LHU:
+189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+190:         case OPCODE_LWU:
+191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+192:         case OPCODE_SB:
+----- around line 185 -----
+181:             return fmt::format("SET_GPR_S32(ctx, {}, (int8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+182:         case OPCODE_LH:
+183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+184:         case OPCODE_LW:
+185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+186:         case OPCODE_LBU:
+187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+188:         case OPCODE_LHU:
+189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+190:         case OPCODE_LWU:
+191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+192:         case OPCODE_SB:
+193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+----- around line 186 -----
+182:         case OPCODE_LH:
+183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+184:         case OPCODE_LW:
+185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+186:         case OPCODE_LBU:
+187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+188:         case OPCODE_LHU:
+189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+190:         case OPCODE_LWU:
+191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+192:         case OPCODE_SB:
+193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+194:         case OPCODE_SH:
+----- around line 187 -----
+183:             return fmt::format("SET_GPR_S32(ctx, {}, (int16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+184:         case OPCODE_LW:
+185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+186:         case OPCODE_LBU:
+187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+188:         case OPCODE_LHU:
+189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+190:         case OPCODE_LWU:
+191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+192:         case OPCODE_SB:
+193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+194:         case OPCODE_SH:
+195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+----- around line 188 -----
+184:         case OPCODE_LW:
+185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+186:         case OPCODE_LBU:
+187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+188:         case OPCODE_LHU:
+189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+190:         case OPCODE_LWU:
+191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+192:         case OPCODE_SB:
+193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+194:         case OPCODE_SH:
+195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+196:         case OPCODE_SW:
+----- around line 189 -----
+185:             return fmt::format("SET_GPR_S32(ctx, {}, (int32_t){});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+186:         case OPCODE_LBU:
+187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+188:         case OPCODE_LHU:
+189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+190:         case OPCODE_LWU:
+191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+192:         case OPCODE_SB:
+193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+194:         case OPCODE_SH:
+195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+196:         case OPCODE_SW:
+197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+----- around line 190 -----
+186:         case OPCODE_LBU:
+187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+188:         case OPCODE_LHU:
+189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+190:         case OPCODE_LWU:
+191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+192:         case OPCODE_SB:
+193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+194:         case OPCODE_SH:
+195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+196:         case OPCODE_SW:
+197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+198:         case OPCODE_LQ:
+----- around line 191 -----
+187:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint8_t){});", inst.rt, genRead(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+188:         case OPCODE_LHU:
+189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+190:         case OPCODE_LWU:
+191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+192:         case OPCODE_SB:
+193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+194:         case OPCODE_SH:
+195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+196:         case OPCODE_SW:
+197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+198:         case OPCODE_LQ:
+199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+----- around line 192 -----
+188:         case OPCODE_LHU:
+189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+190:         case OPCODE_LWU:
+191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+192:         case OPCODE_SB:
+193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+194:         case OPCODE_SH:
+195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+196:         case OPCODE_SW:
+197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+198:         case OPCODE_LQ:
+199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+200:         case OPCODE_SQ:
+----- around line 193 -----
+189:             return fmt::format("SET_GPR_ZE32(ctx, {}, (uint16_t){});", inst.rt, genRead(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+190:         case OPCODE_LWU:
+191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+192:         case OPCODE_SB:
+193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+194:         case OPCODE_SH:
+195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+196:         case OPCODE_SW:
+197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+198:         case OPCODE_LQ:
+199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+200:         case OPCODE_SQ:
+201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+----- around line 194 -----
+190:         case OPCODE_LWU:
+191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+192:         case OPCODE_SB:
+193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+194:         case OPCODE_SH:
+195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+196:         case OPCODE_SW:
+197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+198:         case OPCODE_LQ:
+199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+200:         case OPCODE_SQ:
+201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+202:         case OPCODE_LD:
+----- around line 195 -----
+191:             return fmt::format("SET_GPR_ZE32(ctx, {}, {});", inst.rt, genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+192:         case OPCODE_SB:
+193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+194:         case OPCODE_SH:
+195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+196:         case OPCODE_SW:
+197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+198:         case OPCODE_LQ:
+199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+200:         case OPCODE_SQ:
+201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+202:         case OPCODE_LD:
+203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+----- around line 196 -----
+192:         case OPCODE_SB:
+193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+194:         case OPCODE_SH:
+195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+196:         case OPCODE_SW:
+197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+198:         case OPCODE_LQ:
+199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+200:         case OPCODE_SQ:
+201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+202:         case OPCODE_LD:
+203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+204:         case OPCODE_SD:
+----- around line 197 -----
+193:             return genWrite(8, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint8_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+194:         case OPCODE_SH:
+195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+196:         case OPCODE_SW:
+197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+198:         case OPCODE_LQ:
+199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+200:         case OPCODE_SQ:
+201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+202:         case OPCODE_LD:
+203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+204:         case OPCODE_SD:
+205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+----- around line 198 -----
+194:         case OPCODE_SH:
+195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+196:         case OPCODE_SW:
+197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+198:         case OPCODE_LQ:
+199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+200:         case OPCODE_SQ:
+201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+202:         case OPCODE_LD:
+203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+204:         case OPCODE_SD:
+205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+206:         case OPCODE_LWC1:
+----- around line 199 -----
+195:             return genWrite(16, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("(uint16_t)GPR_U32(ctx, {})", inst.rt)) + ";";
+196:         case OPCODE_SW:
+197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+198:         case OPCODE_LQ:
+199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+200:         case OPCODE_SQ:
+201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+202:         case OPCODE_LD:
+203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+204:         case OPCODE_SD:
+205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+206:         case OPCODE_LWC1:
+207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+----- around line 200 -----
+196:         case OPCODE_SW:
+197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+198:         case OPCODE_LQ:
+199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+200:         case OPCODE_SQ:
+201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+202:         case OPCODE_LD:
+203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+204:         case OPCODE_SD:
+205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+206:         case OPCODE_LWC1:
+207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+208:         case OPCODE_SWC1:
+----- around line 201 -----
+197:             return genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U32(ctx, {})", inst.rt)) + ";";
+198:         case OPCODE_LQ:
+199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+200:         case OPCODE_SQ:
+201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+202:         case OPCODE_LD:
+203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+204:         case OPCODE_SD:
+205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+206:         case OPCODE_LWC1:
+207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+208:         case OPCODE_SWC1:
+209:             return fmt::format(
+----- around line 202 -----
+198:         case OPCODE_LQ:
+199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+200:         case OPCODE_SQ:
+201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+202:         case OPCODE_LD:
+203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+204:         case OPCODE_SD:
+205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+206:         case OPCODE_LWC1:
+207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+208:         case OPCODE_SWC1:
+209:             return fmt::format(
+210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+----- around line 203 -----
+199:             return fmt::format("SET_GPR_VEC(ctx, {}, {});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+200:         case OPCODE_SQ:
+201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+202:         case OPCODE_LD:
+203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+204:         case OPCODE_SD:
+205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+206:         case OPCODE_LWC1:
+207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+208:         case OPCODE_SWC1:
+209:             return fmt::format(
+210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+211:                 inst.rt,
+----- around line 204 -----
+200:         case OPCODE_SQ:
+201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+202:         case OPCODE_LD:
+203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+204:         case OPCODE_SD:
+205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+206:         case OPCODE_LWC1:
+207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+208:         case OPCODE_SWC1:
+209:             return fmt::format(
+210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+211:                 inst.rt,
+212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+----- around line 205 -----
+201:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_VEC(ctx, {})", inst.rt)) + ";";
+202:         case OPCODE_LD:
+203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+204:         case OPCODE_SD:
+205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+206:         case OPCODE_LWC1:
+207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+208:         case OPCODE_SWC1:
+209:             return fmt::format(
+210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+211:                 inst.rt,
+212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+213:         case OPCODE_LDC2:
+----- around line 206 -----
+202:         case OPCODE_LD:
+203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+204:         case OPCODE_SD:
+205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+206:         case OPCODE_LWC1:
+207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+208:         case OPCODE_SWC1:
+209:             return fmt::format(
+210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+211:                 inst.rt,
+212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+213:         case OPCODE_LDC2:
+214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+----- around line 207 -----
+203:             return fmt::format("SET_GPR_U64(ctx, {}, {});", inst.rt, genRead(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+204:         case OPCODE_SD:
+205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+206:         case OPCODE_LWC1:
+207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+208:         case OPCODE_SWC1:
+209:             return fmt::format(
+210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+211:                 inst.rt,
+212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+213:         case OPCODE_LDC2:
+214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+215:         case OPCODE_SDC2:
+----- around line 208 -----
+204:         case OPCODE_SD:
+205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+206:         case OPCODE_LWC1:
+207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+208:         case OPCODE_SWC1:
+209:             return fmt::format(
+210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+211:                 inst.rt,
+212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+213:         case OPCODE_LDC2:
+214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+215:         case OPCODE_SDC2:
+216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+----- around line 209 -----
+205:             return genWrite(64, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("GPR_U64(ctx, {})", inst.rt)) + ";";
+206:         case OPCODE_LWC1:
+207:             return fmt::format("{{ uint32_t bits = {}; float f; std::memcpy(&f, &bits, sizeof(f)); ctx->f[{}] = f; }}", genRead(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)), inst.rt);
+208:         case OPCODE_SWC1:
+209:             return fmt::format(
+210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+211:                 inst.rt,
+212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+213:         case OPCODE_LDC2:
+214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+215:         case OPCODE_SDC2:
+216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+217:         case OPCODE_DADDI:
+----- around line 212 -----
+208:         case OPCODE_SWC1:
+209:             return fmt::format(
+210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+211:                 inst.rt,
+212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+213:         case OPCODE_LDC2:
+214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+215:         case OPCODE_SDC2:
+216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+217:         case OPCODE_DADDI:
+218:             return fmt::format(
+219:                 "{{ int64_t src = (int64_t)GPR_S64(ctx, {}); "
+220:                 "int64_t imm = (int64_t)(int32_t){}; "
+----- around line 213 -----
+209:             return fmt::format(
+210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+211:                 inst.rt,
+212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+213:         case OPCODE_LDC2:
+214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+215:         case OPCODE_SDC2:
+216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+217:         case OPCODE_DADDI:
+218:             return fmt::format(
+219:                 "{{ int64_t src = (int64_t)GPR_S64(ctx, {}); "
+220:                 "int64_t imm = (int64_t)(int32_t){}; "
+221:                 "int64_t res = src + imm; "
+----- around line 214 -----
+210:                 "{{ float f = ctx->f[{}]; uint32_t bits; std::memcpy(&bits, &f, sizeof(bits)); {}; }}",
+211:                 inst.rt,
+212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+213:         case OPCODE_LDC2:
+214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+215:         case OPCODE_SDC2:
+216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+217:         case OPCODE_DADDI:
+218:             return fmt::format(
+219:                 "{{ int64_t src = (int64_t)GPR_S64(ctx, {}); "
+220:                 "int64_t imm = (int64_t)(int32_t){}; "
+221:                 "int64_t res = src + imm; "
+222:                 "if (((src ^ imm) >= 0) && ((src ^ res) < 0)) "
+----- around line 215 -----
+211:                 inst.rt,
+212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+213:         case OPCODE_LDC2:
+214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+215:         case OPCODE_SDC2:
+216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+217:         case OPCODE_DADDI:
+218:             return fmt::format(
+219:                 "{{ int64_t src = (int64_t)GPR_S64(ctx, {}); "
+220:                 "int64_t imm = (int64_t)(int32_t){}; "
+221:                 "int64_t res = src + imm; "
+222:                 "if (((src ^ imm) >= 0) && ((src ^ res) < 0)) "
+223:                 "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+----- around line 216 -----
+212:                 genWrite(32, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), "bits"));
+213:         case OPCODE_LDC2:
+214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+215:         case OPCODE_SDC2:
+216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+217:         case OPCODE_DADDI:
+218:             return fmt::format(
+219:                 "{{ int64_t src = (int64_t)GPR_S64(ctx, {}); "
+220:                 "int64_t imm = (int64_t)(int32_t){}; "
+221:                 "int64_t res = src + imm; "
+222:                 "if (((src ^ imm) >= 0) && ((src ^ res) < 0)) "
+223:                 "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+224:                 "else SET_GPR_S64(ctx, {}, res); }}",
+----- around line 217 -----
+213:         case OPCODE_LDC2:
+214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+215:         case OPCODE_SDC2:
+216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+217:         case OPCODE_DADDI:
+218:             return fmt::format(
+219:                 "{{ int64_t src = (int64_t)GPR_S64(ctx, {}); "
+220:                 "int64_t imm = (int64_t)(int32_t){}; "
+221:                 "int64_t res = src + imm; "
+222:                 "if (((src ^ imm) >= 0) && ((src ^ res) < 0)) "
+223:                 "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+224:                 "else SET_GPR_S64(ctx, {}, res); }}",
+225:                 inst.rs, inst.simmediate, inst.rt);
+----- around line 218 -----
+214:             return fmt::format("ctx->vu0_vf[{}] = _mm_castsi128_ps({});", inst.rt, genRead(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate)));
+215:         case OPCODE_SDC2:
+216:             return genWrite(128, fmt::format("ADD32(GPR_U32(ctx, {}), {})", inst.rs, inst.simmediate), fmt::format("_mm_castps_si128(ctx->vu0_vf[{}])", inst.rt)) + ";";
+217:         case OPCODE_DADDI:
+218:             return fmt::format(
+219:                 "{{ int64_t src = (int64_t)GPR_S64(ctx, {}); "
+220:                 "int64_t imm = (int64_t)(int32_t){}; "
+221:                 "int64_t res = src + imm; "
+222:                 "if (((src ^ imm) >= 0) && ((src ^ res) < 0)) "
+223:                 "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+224:                 "else SET_GPR_S64(ctx, {}, res); }}",
+225:                 inst.rs, inst.simmediate, inst.rt);
+226:         case OPCODE_DADDIU:
+----- around line 226 -----
+222:                 "if (((src ^ imm) >= 0) && ((src ^ res) < 0)) "
+223:                 "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+224:                 "else SET_GPR_S64(ctx, {}, res); }}",
+225:                 inst.rs, inst.simmediate, inst.rt);
+226:         case OPCODE_DADDIU:
+227:             return fmt::format(
+228:                 "SET_GPR_S64(ctx, {}, (int64_t)GPR_S64(ctx, {}) + (int64_t)(int32_t){});",
+229:                 inst.rt, inst.rs, inst.simmediate);
+230:         case OPCODE_J:
+231:             return fmt::format("// J 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+232:         case OPCODE_JAL:
+233:             return fmt::format("// JAL 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+234:         case OPCODE_BEQ:
+----- around line 227 -----
+223:                 "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+224:                 "else SET_GPR_S64(ctx, {}, res); }}",
+225:                 inst.rs, inst.simmediate, inst.rt);
+226:         case OPCODE_DADDIU:
+227:             return fmt::format(
+228:                 "SET_GPR_S64(ctx, {}, (int64_t)GPR_S64(ctx, {}) + (int64_t)(int32_t){});",
+229:                 inst.rt, inst.rs, inst.simmediate);
+230:         case OPCODE_J:
+231:             return fmt::format("// J 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+232:         case OPCODE_JAL:
+233:             return fmt::format("// JAL 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+234:         case OPCODE_BEQ:
+235:         case OPCODE_BNE:
+----- around line 230 -----
+226:         case OPCODE_DADDIU:
+227:             return fmt::format(
+228:                 "SET_GPR_S64(ctx, {}, (int64_t)GPR_S64(ctx, {}) + (int64_t)(int32_t){});",
+229:                 inst.rt, inst.rs, inst.simmediate);
+230:         case OPCODE_J:
+231:             return fmt::format("// J 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+232:         case OPCODE_JAL:
+233:             return fmt::format("// JAL 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+234:         case OPCODE_BEQ:
+235:         case OPCODE_BNE:
+236:         case OPCODE_BLEZ:
+237:         case OPCODE_BGTZ:
+238:         case OPCODE_BEQL:
+----- around line 231 -----
+227:             return fmt::format(
+228:                 "SET_GPR_S64(ctx, {}, (int64_t)GPR_S64(ctx, {}) + (int64_t)(int32_t){});",
+229:                 inst.rt, inst.rs, inst.simmediate);
+230:         case OPCODE_J:
+231:             return fmt::format("// J 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+232:         case OPCODE_JAL:
+233:             return fmt::format("// JAL 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+234:         case OPCODE_BEQ:
+235:         case OPCODE_BNE:
+236:         case OPCODE_BLEZ:
+237:         case OPCODE_BGTZ:
+238:         case OPCODE_BEQL:
+239:         case OPCODE_BNEL:
+----- around line 232 -----
+228:                 "SET_GPR_S64(ctx, {}, (int64_t)GPR_S64(ctx, {}) + (int64_t)(int32_t){});",
+229:                 inst.rt, inst.rs, inst.simmediate);
+230:         case OPCODE_J:
+231:             return fmt::format("// J 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+232:         case OPCODE_JAL:
+233:             return fmt::format("// JAL 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+234:         case OPCODE_BEQ:
+235:         case OPCODE_BNE:
+236:         case OPCODE_BLEZ:
+237:         case OPCODE_BGTZ:
+238:         case OPCODE_BEQL:
+239:         case OPCODE_BNEL:
+240:         case OPCODE_BLEZL:
+----- around line 233 -----
+229:                 inst.rt, inst.rs, inst.simmediate);
+230:         case OPCODE_J:
+231:             return fmt::format("// J 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+232:         case OPCODE_JAL:
+233:             return fmt::format("// JAL 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+234:         case OPCODE_BEQ:
+235:         case OPCODE_BNE:
+236:         case OPCODE_BLEZ:
+237:         case OPCODE_BGTZ:
+238:         case OPCODE_BEQL:
+239:         case OPCODE_BNEL:
+240:         case OPCODE_BLEZL:
+241:         case OPCODE_BGTZL:
+----- around line 234 -----
+230:         case OPCODE_J:
+231:             return fmt::format("// J 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+232:         case OPCODE_JAL:
+233:             return fmt::format("// JAL 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+234:         case OPCODE_BEQ:
+235:         case OPCODE_BNE:
+236:         case OPCODE_BLEZ:
+237:         case OPCODE_BGTZ:
+238:         case OPCODE_BEQL:
+239:         case OPCODE_BNEL:
+240:         case OPCODE_BLEZL:
+241:         case OPCODE_BGTZL:
+242:             return fmt::format("// Likely branch instruction at 0x{:X} - Handled by branch logic", inst.address);
+----- around line 235 -----
+231:             return fmt::format("// J 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+232:         case OPCODE_JAL:
+233:             return fmt::format("// JAL 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+234:         case OPCODE_BEQ:
+235:         case OPCODE_BNE:
+236:         case OPCODE_BLEZ:
+237:         case OPCODE_BGTZ:
+238:         case OPCODE_BEQL:
+239:         case OPCODE_BNEL:
+240:         case OPCODE_BLEZL:
+241:         case OPCODE_BGTZL:
+242:             return fmt::format("// Likely branch instruction at 0x{:X} - Handled by branch logic", inst.address);
+243: 
+----- around line 236 -----
+232:         case OPCODE_JAL:
+233:             return fmt::format("// JAL 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+234:         case OPCODE_BEQ:
+235:         case OPCODE_BNE:
+236:         case OPCODE_BLEZ:
+237:         case OPCODE_BGTZ:
+238:         case OPCODE_BEQL:
+239:         case OPCODE_BNEL:
+240:         case OPCODE_BLEZL:
+241:         case OPCODE_BGTZL:
+242:             return fmt::format("// Likely branch instruction at 0x{:X} - Handled by branch logic", inst.address);
+243: 
+244:         case OPCODE_LDL:
+----- around line 237 -----
+233:             return fmt::format("// JAL 0x{:X} - Handled by branch logic", buildAbsoluteJumpTarget(inst.address, inst.target));
+234:         case OPCODE_BEQ:
+235:         case OPCODE_BNE:
+236:         case OPCODE_BLEZ:
+237:         case OPCODE_BGTZ:
+238:         case OPCODE_BEQL:
+239:         case OPCODE_BNEL:
+240:         case OPCODE_BLEZL:
+241:         case OPCODE_BGTZL:
+242:             return fmt::format("// Likely branch instruction at 0x{:X} - Handled by branch logic", inst.address);
+243: 
+244:         case OPCODE_LDL:
+245:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+----- around line 238 -----
+234:         case OPCODE_BEQ:
+235:         case OPCODE_BNE:
+236:         case OPCODE_BLEZ:
+237:         case OPCODE_BGTZ:
+238:         case OPCODE_BEQL:
+239:         case OPCODE_BNEL:
+240:         case OPCODE_BLEZL:
+241:         case OPCODE_BGTZL:
+242:             return fmt::format("// Likely branch instruction at 0x{:X} - Handled by branch logic", inst.address);
+243: 
+244:         case OPCODE_LDL:
+245:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+246:                                "uint32_t aligned_addr = addr & ~7u; "
+----- around line 239 -----
+235:         case OPCODE_BNE:
+236:         case OPCODE_BLEZ:
+237:         case OPCODE_BGTZ:
+238:         case OPCODE_BEQL:
+239:         case OPCODE_BNEL:
+240:         case OPCODE_BLEZL:
+241:         case OPCODE_BGTZL:
+242:             return fmt::format("// Likely branch instruction at 0x{:X} - Handled by branch logic", inst.address);
+243: 
+244:         case OPCODE_LDL:
+245:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+246:                                "uint32_t aligned_addr = addr & ~7u; "
+247:                                "uint32_t offset = addr & 7u; "
+----- around line 240 -----
+236:         case OPCODE_BLEZ:
+237:         case OPCODE_BGTZ:
+238:         case OPCODE_BEQL:
+239:         case OPCODE_BNEL:
+240:         case OPCODE_BLEZL:
+241:         case OPCODE_BGTZL:
+242:             return fmt::format("// Likely branch instruction at 0x{:X} - Handled by branch logic", inst.address);
+243: 
+244:         case OPCODE_LDL:
+245:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+246:                                "uint32_t aligned_addr = addr & ~7u; "
+247:                                "uint32_t offset = addr & 7u; "
+248:                                "uint64_t mem = {}; "
+----- around line 241 -----
+237:         case OPCODE_BGTZ:
+238:         case OPCODE_BEQL:
+239:         case OPCODE_BNEL:
+240:         case OPCODE_BLEZL:
+241:         case OPCODE_BGTZL:
+242:             return fmt::format("// Likely branch instruction at 0x{:X} - Handled by branch logic", inst.address);
+243: 
+244:         case OPCODE_LDL:
+245:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+246:                                "uint32_t aligned_addr = addr & ~7u; "
+247:                                "uint32_t offset = addr & 7u; "
+248:                                "uint64_t mem = {}; "
+249:                                "uint32_t shift = (7u - offset) << 3; "
+----- around line 242 -----
+238:         case OPCODE_BEQL:
+239:         case OPCODE_BNEL:
+240:         case OPCODE_BLEZL:
+241:         case OPCODE_BGTZL:
+242:             return fmt::format("// Likely branch instruction at 0x{:X} - Handled by branch logic", inst.address);
+243: 
+244:         case OPCODE_LDL:
+245:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+246:                                "uint32_t aligned_addr = addr & ~7u; "
+247:                                "uint32_t offset = addr & 7u; "
+248:                                "uint64_t mem = {}; "
+249:                                "uint32_t shift = (7u - offset) << 3; "
+250:                                "uint64_t keepMask = (shift == 0) ? 0ull : ((1ull << shift) - 1ull); "
+----- around line 244 -----
+240:         case OPCODE_BLEZL:
+241:         case OPCODE_BGTZL:
+242:             return fmt::format("// Likely branch instruction at 0x{:X} - Handled by branch logic", inst.address);
+243: 
+244:         case OPCODE_LDL:
+245:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+246:                                "uint32_t aligned_addr = addr & ~7u; "
+247:                                "uint32_t offset = addr & 7u; "
+248:                                "uint64_t mem = {}; "
+249:                                "uint32_t shift = (7u - offset) << 3; "
+250:                                "uint64_t keepMask = (shift == 0) ? 0ull : ((1ull << shift) - 1ull); "
+251:                                "SET_GPR_U64(ctx, {}, (GPR_U64(ctx, {}) & keepMask) | (mem << shift)); }}",
+252:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, inst.rt);
+----- around line 245 -----
+241:         case OPCODE_BGTZL:
+242:             return fmt::format("// Likely branch instruction at 0x{:X} - Handled by branch logic", inst.address);
+243: 
+244:         case OPCODE_LDL:
+245:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+246:                                "uint32_t aligned_addr = addr & ~7u; "
+247:                                "uint32_t offset = addr & 7u; "
+248:                                "uint64_t mem = {}; "
+249:                                "uint32_t shift = (7u - offset) << 3; "
+250:                                "uint64_t keepMask = (shift == 0) ? 0ull : ((1ull << shift) - 1ull); "
+251:                                "SET_GPR_U64(ctx, {}, (GPR_U64(ctx, {}) & keepMask) | (mem << shift)); }}",
+252:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, inst.rt);
+253: 
+----- around line 254 -----
+250:                                "uint64_t keepMask = (shift == 0) ? 0ull : ((1ull << shift) - 1ull); "
+251:                                "SET_GPR_U64(ctx, {}, (GPR_U64(ctx, {}) & keepMask) | (mem << shift)); }}",
+252:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, inst.rt);
+253: 
+254:         case OPCODE_LDR:
+255:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+256:                                "uint32_t aligned_addr = addr & ~7u; "
+257:                                "uint32_t offset = addr & 7u; "
+258:                                "uint64_t mem = {}; "
+259:                                "uint32_t shift = offset << 3; "
+260:                                "uint64_t keepMask = (offset == 0) ? 0ull : (0xFFFFFFFFFFFFFFFFull << ((8u - offset) << 3)); "
+261:                                "SET_GPR_U64(ctx, {}, (GPR_U64(ctx, {}) & keepMask) | (mem >> shift)); }}",
+262:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, inst.rt);
+----- around line 255 -----
+251:                                "SET_GPR_U64(ctx, {}, (GPR_U64(ctx, {}) & keepMask) | (mem << shift)); }}",
+252:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, inst.rt);
+253: 
+254:         case OPCODE_LDR:
+255:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+256:                                "uint32_t aligned_addr = addr & ~7u; "
+257:                                "uint32_t offset = addr & 7u; "
+258:                                "uint64_t mem = {}; "
+259:                                "uint32_t shift = offset << 3; "
+260:                                "uint64_t keepMask = (offset == 0) ? 0ull : (0xFFFFFFFFFFFFFFFFull << ((8u - offset) << 3)); "
+261:                                "SET_GPR_U64(ctx, {}, (GPR_U64(ctx, {}) & keepMask) | (mem >> shift)); }}",
+262:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, inst.rt);
+263: 
+----- around line 264 -----
+260:                                "uint64_t keepMask = (offset == 0) ? 0ull : (0xFFFFFFFFFFFFFFFFull << ((8u - offset) << 3)); "
+261:                                "SET_GPR_U64(ctx, {}, (GPR_U64(ctx, {}) & keepMask) | (mem >> shift)); }}",
+262:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, inst.rt);
+263: 
+264:         case OPCODE_LWL:
+265:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+266:                                "uint32_t aligned_addr = addr & ~3u; "
+267:                                "uint32_t offset = addr & 3u; "
+268:                                "uint32_t mem = {}; "
+269:                                "uint32_t shift = (3u - offset) << 3; "
+270:                                "uint32_t keepMask = (shift == 0) ? 0u : ((1u << shift) - 1u); "
+271:                                "uint32_t merged = (GPR_U32(ctx, {}) & keepMask) | (mem << shift); "
+272:                                "SET_GPR_S32(ctx, {}, (int32_t)merged); }}",
+----- around line 265 -----
+261:                                "SET_GPR_U64(ctx, {}, (GPR_U64(ctx, {}) & keepMask) | (mem >> shift)); }}",
+262:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, inst.rt);
+263: 
+264:         case OPCODE_LWL:
+265:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+266:                                "uint32_t aligned_addr = addr & ~3u; "
+267:                                "uint32_t offset = addr & 3u; "
+268:                                "uint32_t mem = {}; "
+269:                                "uint32_t shift = (3u - offset) << 3; "
+270:                                "uint32_t keepMask = (shift == 0) ? 0u : ((1u << shift) - 1u); "
+271:                                "uint32_t merged = (GPR_U32(ctx, {}) & keepMask) | (mem << shift); "
+272:                                "SET_GPR_S32(ctx, {}, (int32_t)merged); }}",
+273:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"), inst.rt, inst.rt);
+----- around line 275 -----
+271:                                "uint32_t merged = (GPR_U32(ctx, {}) & keepMask) | (mem << shift); "
+272:                                "SET_GPR_S32(ctx, {}, (int32_t)merged); }}",
+273:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"), inst.rt, inst.rt);
+274: 
+275:         case OPCODE_LWR:
+276:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+277:                                "uint32_t aligned_addr = addr & ~3u; "
+278:                                "uint32_t offset = addr & 3u; "
+279:                                "uint32_t mem = {}; "
+280:                                "uint32_t shift = offset << 3; "
+281:                                "uint32_t keepMask = (offset == 0) ? 0u : (0xFFFFFFFFu << ((4u - offset) << 3)); "
+282:                                "uint32_t merged32 = (GPR_U32(ctx, {}) & keepMask) | (mem >> shift); "
+283:                                "uint64_t merged64 = (GPR_U64(ctx, {}) & 0xFFFFFFFF00000000ull) | (uint64_t)merged32; "
+----- around line 276 -----
+272:                                "SET_GPR_S32(ctx, {}, (int32_t)merged); }}",
+273:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"), inst.rt, inst.rt);
+274: 
+275:         case OPCODE_LWR:
+276:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+277:                                "uint32_t aligned_addr = addr & ~3u; "
+278:                                "uint32_t offset = addr & 3u; "
+279:                                "uint32_t mem = {}; "
+280:                                "uint32_t shift = offset << 3; "
+281:                                "uint32_t keepMask = (offset == 0) ? 0u : (0xFFFFFFFFu << ((4u - offset) << 3)); "
+282:                                "uint32_t merged32 = (GPR_U32(ctx, {}) & keepMask) | (mem >> shift); "
+283:                                "uint64_t merged64 = (GPR_U64(ctx, {}) & 0xFFFFFFFF00000000ull) | (uint64_t)merged32; "
+284:                                "if (offset == 0) merged64 = (uint64_t)(int64_t)(int32_t)merged32; "
+----- around line 289 -----
+285:                                "SET_GPR_U64(ctx, {}, merged64); }}",
+286:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"),
+287:                                inst.rt, inst.rt, inst.rt);
+288: 
+289:         case OPCODE_SWL:
+290:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+291:                                "uint32_t aligned_addr = addr & ~3u; "
+292:                                "uint32_t offset = addr & 3u; "
+293:                                "uint32_t shift = (3u - offset) << 3; "
+294:                                "uint32_t mask = 0xFFFFFFFFu >> shift; "
+295:                                "uint32_t old_data = {}; "
+296:                                "uint32_t val = GPR_U32(ctx, {}); "
+297:                                "uint32_t new_data = (old_data & ~mask) | ((val >> shift) & mask); "
+----- around line 290 -----
+286:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"),
+287:                                inst.rt, inst.rt, inst.rt);
+288: 
+289:         case OPCODE_SWL:
+290:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+291:                                "uint32_t aligned_addr = addr & ~3u; "
+292:                                "uint32_t offset = addr & 3u; "
+293:                                "uint32_t shift = (3u - offset) << 3; "
+294:                                "uint32_t mask = 0xFFFFFFFFu >> shift; "
+295:                                "uint32_t old_data = {}; "
+296:                                "uint32_t val = GPR_U32(ctx, {}); "
+297:                                "uint32_t new_data = (old_data & ~mask) | ((val >> shift) & mask); "
+298:                                "{}; }}",
+----- around line 301 -----
+297:                                "uint32_t new_data = (old_data & ~mask) | ((val >> shift) & mask); "
+298:                                "{}; }}",
+299:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"), inst.rt, genWrite(32, "aligned_addr", "new_data"));
+300: 
+301:         case OPCODE_SWR:
+302:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+303:                                "uint32_t aligned_addr = addr & ~3u; "
+304:                                "uint32_t offset = addr & 3u; "
+305:                                "uint32_t shift = offset << 3; "
+306:                                "uint32_t mask = 0xFFFFFFFFu << shift; "
+307:                                "uint32_t old_data = {}; "
+308:                                "uint32_t val = GPR_U32(ctx, {}); "
+309:                                "uint32_t new_data = (old_data & ~mask) | ((val << shift) & mask); "
+----- around line 302 -----
+298:                                "{}; }}",
+299:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"), inst.rt, genWrite(32, "aligned_addr", "new_data"));
+300: 
+301:         case OPCODE_SWR:
+302:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+303:                                "uint32_t aligned_addr = addr & ~3u; "
+304:                                "uint32_t offset = addr & 3u; "
+305:                                "uint32_t shift = offset << 3; "
+306:                                "uint32_t mask = 0xFFFFFFFFu << shift; "
+307:                                "uint32_t old_data = {}; "
+308:                                "uint32_t val = GPR_U32(ctx, {}); "
+309:                                "uint32_t new_data = (old_data & ~mask) | ((val << shift) & mask); "
+310:                                "{}; }}",
+----- around line 313 -----
+309:                                "uint32_t new_data = (old_data & ~mask) | ((val << shift) & mask); "
+310:                                "{}; }}",
+311:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"), inst.rt, genWrite(32, "aligned_addr", "new_data"));
+312: 
+313:         case OPCODE_SDL:
+314:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+315:                                "uint32_t aligned_addr = addr & ~7u; "
+316:                                "uint32_t offset = addr & 7u; "
+317:                                "uint32_t shift = (7u - offset) << 3; "
+318:                                "uint64_t mask = 0xFFFFFFFFFFFFFFFFull >> shift; "
+319:                                "uint64_t old_data = {}; "
+320:                                "uint64_t val = GPR_U64(ctx, {}); "
+321:                                "uint64_t new_data = (old_data & ~mask) | ((val >> shift) & mask); "
+----- around line 314 -----
+310:                                "{}; }}",
+311:                                inst.rs, inst.simmediate, genRead(32, "aligned_addr"), inst.rt, genWrite(32, "aligned_addr", "new_data"));
+312: 
+313:         case OPCODE_SDL:
+314:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+315:                                "uint32_t aligned_addr = addr & ~7u; "
+316:                                "uint32_t offset = addr & 7u; "
+317:                                "uint32_t shift = (7u - offset) << 3; "
+318:                                "uint64_t mask = 0xFFFFFFFFFFFFFFFFull >> shift; "
+319:                                "uint64_t old_data = {}; "
+320:                                "uint64_t val = GPR_U64(ctx, {}); "
+321:                                "uint64_t new_data = (old_data & ~mask) | ((val >> shift) & mask); "
+322:                                "{}; }}",
+----- around line 325 -----
+321:                                "uint64_t new_data = (old_data & ~mask) | ((val >> shift) & mask); "
+322:                                "{}; }}",
+323:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, genWrite(64, "aligned_addr", "new_data"));
+324: 
+325:         case OPCODE_SDR:
+326:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+327:                                "uint32_t aligned_addr = addr & ~7u; "
+328:                                "uint32_t offset = addr & 7u; "
+329:                                "uint32_t shift = offset << 3; "
+330:                                "uint64_t mask = 0xFFFFFFFFFFFFFFFFull << shift; "
+331:                                "uint64_t old_data = {}; "
+332:                                "uint64_t val = GPR_U64(ctx, {}); "
+333:                                "uint64_t new_data = (old_data & ~mask) | ((val << shift) & mask); "
+----- around line 326 -----
+322:                                "{}; }}",
+323:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, genWrite(64, "aligned_addr", "new_data"));
+324: 
+325:         case OPCODE_SDR:
+326:             return fmt::format("{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+327:                                "uint32_t aligned_addr = addr & ~7u; "
+328:                                "uint32_t offset = addr & 7u; "
+329:                                "uint32_t shift = offset << 3; "
+330:                                "uint64_t mask = 0xFFFFFFFFFFFFFFFFull << shift; "
+331:                                "uint64_t old_data = {}; "
+332:                                "uint64_t val = GPR_U64(ctx, {}); "
+333:                                "uint64_t new_data = (old_data & ~mask) | ((val << shift) & mask); "
+334:                                "{}; }}",
+----- around line 336 -----
+332:                                "uint64_t val = GPR_U64(ctx, {}); "
+333:                                "uint64_t new_data = (old_data & ~mask) | ((val << shift) & mask); "
+334:                                "{}; }}",
+335:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, genWrite(64, "aligned_addr", "new_data"));
+336:         case OPCODE_CACHE:
+337:             return "// CACHE instruction (ignored)";
+338:         case OPCODE_PREF:
+339:             return "// PREF instruction (ignored)";
+340:         case OPCODE_LL:
+341:             return fmt::format(
+342:                 "{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+343:                 "SET_GPR_S32(ctx, {}, (int32_t)READ32(addr)); "
+344:                 "ctx->llbit = 1; ctx->lladdr = addr; }}",
+----- around line 338 -----
+334:                                "{}; }}",
+335:                                inst.rs, inst.simmediate, genRead(64, "aligned_addr"), inst.rt, genWrite(64, "aligned_addr", "new_data"));
+336:         case OPCODE_CACHE:
+337:             return "// CACHE instruction (ignored)";
+338:         case OPCODE_PREF:
+339:             return "// PREF instruction (ignored)";
+340:         case OPCODE_LL:
+341:             return fmt::format(
+342:                 "{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+343:                 "SET_GPR_S32(ctx, {}, (int32_t)READ32(addr)); "
+344:                 "ctx->llbit = 1; ctx->lladdr = addr; }}",
+345:                 inst.rs, inst.simmediate, inst.rt);
+346:         case OPCODE_SC:
+----- around line 340 -----
+336:         case OPCODE_CACHE:
+337:             return "// CACHE instruction (ignored)";
+338:         case OPCODE_PREF:
+339:             return "// PREF instruction (ignored)";
+340:         case OPCODE_LL:
+341:             return fmt::format(
+342:                 "{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+343:                 "SET_GPR_S32(ctx, {}, (int32_t)READ32(addr)); "
+344:                 "ctx->llbit = 1; ctx->lladdr = addr; }}",
+345:                 inst.rs, inst.simmediate, inst.rt);
+346:         case OPCODE_SC:
+347:             return fmt::format(
+348:                 "{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+----- around line 341 -----
+337:             return "// CACHE instruction (ignored)";
+338:         case OPCODE_PREF:
+339:             return "// PREF instruction (ignored)";
+340:         case OPCODE_LL:
+341:             return fmt::format(
+342:                 "{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+343:                 "SET_GPR_S32(ctx, {}, (int32_t)READ32(addr)); "
+344:                 "ctx->llbit = 1; ctx->lladdr = addr; }}",
+345:                 inst.rs, inst.simmediate, inst.rt);
+346:         case OPCODE_SC:
+347:             return fmt::format(
+348:                 "{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+349:                 "if (ctx->llbit && ctx->lladdr == addr) {{ WRITE32(addr, GPR_U32(ctx, {})); "
+----- around line 346 -----
+342:                 "{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+343:                 "SET_GPR_S32(ctx, {}, (int32_t)READ32(addr)); "
+344:                 "ctx->llbit = 1; ctx->lladdr = addr; }}",
+345:                 inst.rs, inst.simmediate, inst.rt);
+346:         case OPCODE_SC:
+347:             return fmt::format(
+348:                 "{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+349:                 "if (ctx->llbit && ctx->lladdr == addr) {{ WRITE32(addr, GPR_U32(ctx, {})); "
+350:                 "SET_GPR_S32(ctx, {}, 1); }} "
+351:                 "else {{ SET_GPR_S32(ctx, {}, 0); }} "
+352:                 "ctx->llbit = 0; ctx->lladdr = 0; }}",
+353:                 inst.rs, inst.simmediate, inst.rt, inst.rt, inst.rt);
+354:         default:
+----- around line 347 -----
+343:                 "SET_GPR_S32(ctx, {}, (int32_t)READ32(addr)); "
+344:                 "ctx->llbit = 1; ctx->lladdr = addr; }}",
+345:                 inst.rs, inst.simmediate, inst.rt);
+346:         case OPCODE_SC:
+347:             return fmt::format(
+348:                 "{{ uint32_t addr = ADD32(GPR_U32(ctx, {}), {}); "
+349:                 "if (ctx->llbit && ctx->lladdr == addr) {{ WRITE32(addr, GPR_U32(ctx, {})); "
+350:                 "SET_GPR_S32(ctx, {}, 1); }} "
+351:                 "else {{ SET_GPR_S32(ctx, {}, 0); }} "
+352:                 "ctx->llbit = 0; ctx->lladdr = 0; }}",
+353:                 inst.rs, inst.simmediate, inst.rt, inst.rt, inst.rt);
+354:         default:
+355:             return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled opcode: 0x{:X}", inst.opcode));
+----- around line 355 -----
+351:                 "else {{ SET_GPR_S32(ctx, {}, 0); }} "
+352:                 "ctx->llbit = 0; ctx->lladdr = 0; }}",
+353:                 inst.rs, inst.simmediate, inst.rt, inst.rt, inst.rt);
+354:         default:
+355:             return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled opcode: 0x{:X}", inst.opcode));
+356:         }
+357:     }
+358: 
+359: }
+
+========== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instruction_translator.h ==========
+FILE NOT FOUND
