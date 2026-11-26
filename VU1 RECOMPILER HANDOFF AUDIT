@@ -1,0 +1,1668 @@
+MARK OF KRI — VU1 RECOMPILER HANDOFF AUDIT
+Generated: 2026-11-26 11:23:39
+Root: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+Files scanned: 37
+Expected execution time: approximately 2–10 seconds
+
+========== VU1Interpreter : 93 MATCHES ==========
+ps2xRuntime\include\runtime\ps2_vu1.h:38: class VU1Interpreter
+ps2xRuntime\include\runtime\ps2_vu1.h:47: explicit VU1Interpreter(Unit unit = Unit::VU1);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:25: void VU1Interpreter::addVfRead(InstructionUsage &usage, uint8_t reg, uint8_t lanes)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:41: void VU1Interpreter::addVfWrite(InstructionUsage &usage, uint8_t reg, uint8_t lanes)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:51: uint8_t VU1Interpreter::vfReadLanes(const InstructionUsage &usage, uint8_t reg)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:61: VU1Interpreter::VU1Interpreter(Unit unit)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:67: void VU1Interpreter::resetScheduler()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:94: void VU1Interpreter::reset()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:104: float VU1Interpreter::broadcast(const float *vf, uint8_t bc)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:109: float VU1Interpreter::normalizeOperand(float value) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:126: float VU1Interpreter::normalizeResult(float value, uint32_t &laneFlags) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:154: uint32_t VU1Interpreter::microAddressMask() const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:159: int32_t VU1Interpreter::readBranchVi(uint8_t reg) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:171: void VU1Interpreter::recordViWriteForBranch(uint8_t reg, int32_t oldValue)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:180: void VU1Interpreter::applyDest(float *dst, const float *result, uint8_t dest)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:192: void VU1Interpreter::applyDestAcc(const float *result, uint8_t dest)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:197: void VU1Interpreter::normalizeFmacResult(float *result, uint8_t dest,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:219: bool VU1Interpreter::calculateFmacExactResult(uint32_t component,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:402: uint8_t VU1Interpreter::normalizeFmacExactResult(float &value,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:432: uint32_t VU1Interpreter::calculateFmacProductSticky(uint8_t dest) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:491: void VU1Interpreter::updateFmacFlags(const uint8_t laneFlags[4], uint8_t dest,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:543: void VU1Interpreter::applyFmacDest(float *dst, float *result, uint8_t dest)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:551: void VU1Interpreter::applyFmacDestAcc(float *result, uint8_t dest)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:559: void VU1Interpreter::queueFsset(uint16_t immediate)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:583: void VU1Interpreter::queueClip(uint32_t clip)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:602: void VU1Interpreter::queueFcset(uint32_t clip)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:626: void VU1Interpreter::queueQ(float value, uint32_t latency, uint32_t statusDi)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:636: void VU1Interpreter::queueP(float value, uint32_t latency)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:655: void VU1Interpreter::queueStore(uint32_t address, const uint32_t words[4], uint8_t laneMask)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:672: void VU1Interpreter::queueVfWrite(uint8_t reg, uint8_t laneMask,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:699: void VU1Interpreter::queueViWrite(uint8_t reg, int32_t value, uint32_t latency)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:720: void VU1Interpreter::queueAccWrite(uint8_t laneMask, const float value[4], uint32_t latency)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:745: void VU1Interpreter::commitReadyPipelines()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:843: void VU1Interpreter::progressXgkick()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:917: void VU1Interpreter::finishXgkick()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:929: void VU1Interpreter::startXgkick(uint32_t qwordAddress)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:942: void VU1Interpreter::advanceOneCycle()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:952: void VU1Interpreter::advanceTo(uint64_t targetCycle)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:958: bool VU1Interpreter::pipelinesPending() const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:983: void VU1Interpreter::flushPipelines()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:989: uint64_t VU1Interpreter::calculatePairReadyCycle(const DecodedInstructionPair &decoded) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1037: void VU1Interpreter::markPairWrites(const DecodedInstructionPair &decoded)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1078: VU1Interpreter::InstructionUsage VU1Interpreter::decodeUpperUsage(uint32_t upper) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1159: VU1Interpreter::InstructionUsage VU1Interpreter::decodeLowerUsage(uint32_t lower) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1510: VU1Interpreter::DecodedInstructionPair VU1Interpreter::decodeInstructionPair(const uint8_t *vuCode, uint32_t pc) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1534: void VU1Interpreter::rebuildDecodedCodeCache(const uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1548: VU1Interpreter::DecodedInstructionPair VU1Interpreter::getDecodedInstructionPairForPc(
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1575: void VU1Interpreter::reportReservedInstruction(bool upper, uint32_t instruction)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1587: void VU1Interpreter::execute(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1611: void VU1Interpreter::resume(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1623: void VU1Interpreter::run(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:72: void VU1Interpreter::execLower(uint32_t instr, uint8_t *vuData, uint32_t dataSize, GS &gs, PS2Memory *memory, uint32_t upperInstr)
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:24: void VU1Interpreter::execUpper(uint32_t instr)
+ps2xTest\src\ps2_vu1_tests.cpp:227: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:264: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:295: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:328: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:357: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:395: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:414: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:431: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:449: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:493: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:535: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:564: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:594: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:623: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:647: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:679: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:705: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:746: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:786: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:828: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:860: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:963: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1040: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1077: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1098: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1129: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1175: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1238: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1294: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1348: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1419: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1462: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1486: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1511: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1537: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1573: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1621: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1644: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1677: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1703: VU1Interpreter vu1;
+
+========== executeVU1 : 0 MATCHES ==========
+
+========== execute_vu1 : 0 MATCHES ==========
+
+========== runVU1 : 0 MATCHES ==========
+
+========== run_vu1 : 0 MATCHES ==========
+
+========== MSCAL : 20 MATCHES ==========
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:18: VIF_MSCAL = 0x14,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:19: VIF_MSCALF = 0x15,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:369: // BASE only updates the base register. TOPS changes on OFFSET/MSCAL.
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:375: // ITOP VIFcode writes pending ITOPS; VU XITOP observes it after MSCAL/MSCNT.
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:403: else if (opcode == VIF_MSCAL || opcode == VIF_MSCALF)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:419: if (m_vu1MscalCallback)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:420: m_vu1MscalCallback(startPC, runTop, runItop);
+ps2xTest\src\ps2_vu1_tests.cpp:1093: tc.Run("MPG upload invalidates cached VU1 decode before MSCAL", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1099: fx.mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+ps2xTest\src\ps2_vu1_tests.cpp:1114: const uint32_t firstMscal = makeVifCmd(0x14u, 0u, 0u);
+ps2xTest\src\ps2_vu1_tests.cpp:1115: fx.mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&firstMscal), sizeof(firstMscal));
+ps2xTest\src\ps2_vu1_tests.cpp:1116: t.Equals(vu1.state().vi[1], 1, "first MSCAL should execute the first uploaded program");
+ps2xTest\src\ps2_vu1_tests.cpp:1119: const uint32_t secondMscal = makeVifCmd(0x14u, 0u, 0u);
+ps2xTest\src\ps2_vu1_tests.cpp:1120: fx.mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&secondMscal), sizeof(secondMscal));
+ps2xTest\src\ps2_vu1_tests.cpp:1121: t.Equals(vu1.state().vi[1], 2, "second MSCAL should see the MPG-updated instruction");
+ps2xTest\src\ps2_vu1_tests.cpp:1375: tc.Run("MSCAL can start a VU1 XGKICK program and update GS VRAM", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1420: mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+ps2xTest\src\ps2_vu1_tests.cpp:1434: const uint32_t mscalCmd = makeVifCmd(0x14u, 0u, 0u);
+ps2xTest\src\ps2_vu1_tests.cpp:1435: mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&mscalCmd), sizeof(mscalCmd));
+ps2xTest\src\ps2_vu1_tests.cpp:1451: t.IsTrue(imageOk, "MSCAL-triggered XGKICK should route PATH1 packet into GS VRAM");
+
+========== MSCNT : 6 MATCHES ==========
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:20: VIF_MSCNT = 0x17,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:375: // ITOP VIFcode writes pending ITOPS; VU XITOP observes it after MSCAL/MSCNT.
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:423: else if (opcode == VIF_MSCNT)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:437: if (m_vu1MscntCallback)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:438: m_vu1MscntCallback(runTop, runItop);
+ps2xTest\src\ps2_vu1_tests.cpp:916: "MSCNT-style resume should continue at the stopped TPC");
+
+========== MSKIP : 0 MATCHES ==========
+
+========== XGKICK : 59 MATCHES ==========
+ps2xRuntime\include\runtime\ps2_vu1.h:75: PipelineXgkick
+ps2xRuntime\include\runtime\ps2_vu1.h:180: struct XgkickPipeline
+ps2xRuntime\include\runtime\ps2_vu1.h:219: XgkickPipeline m_xgkick{};
+ps2xRuntime\include\runtime\ps2_vu1.h:277: void startXgkick(uint32_t qwordAddress);
+ps2xRuntime\include\runtime\ps2_vu1.h:284: void progressXgkick();
+ps2xRuntime\include\runtime\ps2_vu1.h:285: void finishXgkick();
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:76: m_xgkick = {};
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:843: void VU1Interpreter::progressXgkick()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:845: if (!m_xgkick.active || !m_activeVuData || m_activeVuDataSize == 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:848: ++m_xgkick.cycleCredit;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:849: while (m_xgkick.active && m_xgkick.cycleCredit >= 2u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:851: m_xgkick.cycleCredit -= 2u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:852: if (m_xgkick.copiedBytes > XgkickPipeline::kBufferSize - 16u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:855: m_xgkick.active = false;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:859: const uint32_t qwordOffset = m_xgkick.copiedBytes;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:862: const uint32_t source = (m_xgkick.sourceAddress + m_xgkick.copiedBytes + i) % m_activeVuDataSize;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:863: m_xgkick.packet[m_xgkick.copiedBytes + i] = m_activeVuData[source];
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:865: m_xgkick.copiedBytes += 16u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:867: if (m_xgkick.currentTagEnd == 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:870: std::memcpy(&tagLo, m_xgkick.packet.data() + qwordOffset, sizeof(tagLo));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:887: m_xgkick.active = false;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:891: if (tagBytes > XgkickPipeline::kBufferSize - qwordOffset)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:894: m_xgkick.active = false;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:897: m_xgkick.currentTagEnd = qwordOffset + static_cast<uint32_t>(tagBytes);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:898: m_xgkick.currentTagEop = ((tagLo >> 15) & 1u) != 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:899: if (m_xgkick.currentTagEop)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:900: m_xgkick.totalBytes = m_xgkick.currentTagEnd;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:903: if (m_xgkick.copiedBytes >= m_xgkick.currentTagEnd)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:905: if (m_xgkick.currentTagEop)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:906: finishXgkick();
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:910: m_xgkick.currentTagEnd = 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:911: m_xgkick.currentTagEop = false;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:917: void VU1Interpreter::finishXgkick()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:919: if (!m_xgkick.active)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:923: m_activeMemory->submitGifPacket(GifPathId::Path1, m_xgkick.packet.data(), m_xgkick.totalBytes);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:925: m_activeGs->processGIFPacket(m_xgkick.packet.data(), m_xgkick.totalBytes);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:926: m_xgkick.active = false;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:929: void VU1Interpreter::startXgkick(uint32_t qwordAddress)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:935: m_xgkick = {};
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:936: m_xgkick.active = true;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:937: m_xgkick.sourceAddress = sourceAddress;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:938: m_xgkick.cycleCredit = 1u; // XGKICK's issue cycle counts toward PATH1.
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:939: m_xgkick.issueCycle = m_cycle;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:949: progressXgkick();
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:960: if (m_fdiv.valid || m_xgkick.active)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1032: if (decoded.lowerUsage.pipeline == PipelineXgkick && m_xgkick.active)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1428: usage.pipeline = PipelineXgkick;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:667: case 0x6C: // XGKICK - send GIF packet from VU1 data memory
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:668: startXgkick(static_cast<uint32_t>(static_cast<uint16_t>(m_state.vi[viS])));
+ps2xTest\src\ps2_vu1_tests.cpp:1139: tc.Run("XGKICK sends a VU memory GIF packet through PATH1", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1188: t.Equals(captured.size(), static_cast<size_t>(1u), "XGKICK should emit one wrapped GIF packet");
+ps2xTest\src\ps2_vu1_tests.cpp:1205: tc.Run("XGKICK observes stores committed before a future PATH1 qword", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1255: "XGKICK must read each qword in its transfer cycle");
+ps2xTest\src\ps2_vu1_tests.cpp:1259: tc.Run("a second XGKICK stalls until the active PATH1 transfer completes", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1306: "the first XGKICK payload should be delivered first");
+ps2xTest\src\ps2_vu1_tests.cpp:1308: "the stalled XGKICK should retain its own source address");
+ps2xTest\src\ps2_vu1_tests.cpp:1311: "XGKICK resource stalls should consume VU cycles");
+ps2xTest\src\ps2_vu1_tests.cpp:1375: tc.Run("MSCAL can start a VU1 XGKICK program and update GS VRAM", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1451: t.IsTrue(imageOk, "MSCAL-triggered XGKICK should route PATH1 packet into GS VRAM");
+
+========== vuCode : 37 MATCHES ==========
+ps2xRuntime\include\runtime\ps2_vu1.h:51: void execute(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\include\runtime\ps2_vu1.h:57: void resume(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\include\runtime\ps2_vu1.h:206: const uint8_t *m_cachedVuCode = nullptr;
+ps2xRuntime\include\runtime\ps2_vu1.h:243: void run(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\include\runtime\ps2_vu1.h:252: DecodedInstructionPair decodeInstructionPair(const uint8_t *vuCode, uint32_t pc) const;
+ps2xRuntime\include\runtime\ps2_vu1.h:253: DecodedInstructionPair getDecodedInstructionPairForPc(const uint8_t *vuCode, uint32_t codeSize, PS2Memory *memory, uint32_t pc);
+ps2xRuntime\include\runtime\ps2_vu1.h:254: void rebuildDecodedCodeCache(const uint8_t *vuCode, uint32_t codeSize, const PS2Memory *memory, uint64_t generation);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1510: VU1Interpreter::DecodedInstructionPair VU1Interpreter::decodeInstructionPair(const uint8_t *vuCode, uint32_t pc) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1513: std::memcpy(&decoded.lower, vuCode + pc, sizeof(decoded.lower));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1514: std::memcpy(&decoded.upper, vuCode + pc + sizeof(decoded.lower), sizeof(decoded.upper));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1534: void VU1Interpreter::rebuildDecodedCodeCache(const uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1539: m_decodedCodeCache[i] = decodeInstructionPair(vuCode, i * 8u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1541: m_cachedVuCode = vuCode;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1549: const uint8_t *vuCode, uint32_t codeSize, PS2Memory *memory, uint32_t pc)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1552: return decodeInstructionPair(vuCode, pc);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1555: ((m_unit == Unit::VU1 && vuCode == memory->getVU1Code()) ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1556: (m_unit == Unit::VU0 && vuCode == memory->getVU0Code()));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1558: return decodeInstructionPair(vuCode, pc);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1562: m_cachedVuCode != vuCode ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1567: rebuildDecodedCodeCache(vuCode, codeSize, memory, generation);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1571: return decodeInstructionPair(vuCode, pc);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1587: void VU1Interpreter::execute(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1608: run(vuCode, codeSize, vuData, dataSize, gs, memory, maxCycles);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1611: void VU1Interpreter::resume(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1620: run(vuCode, codeSize, vuData, dataSize, gs, memory, maxCycles);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1623: void VU1Interpreter::run(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1642: const DecodedInstructionPair decoded = getDecodedInstructionPairForPc(vuCode, codeSize, memory, m_state.pc);
+ps2xTest\src\ps2_vu1_tests.cpp:1154: uint8_t *vuCode = mem.getVU1Code();
+ps2xTest\src\ps2_vu1_tests.cpp:1156: std::memset(vuCode, 0, PS2_VU1_CODE_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1171: std::memcpy(vuCode + 0u, &lower, sizeof(lower));
+ps2xTest\src\ps2_vu1_tests.cpp:1173: std::memcpy(vuCode + 4u, &upper, sizeof(upper));
+ps2xTest\src\ps2_vu1_tests.cpp:1177: vu1.execute(vuCode,
+ps2xTest\src\ps2_vu1_tests.cpp:1400: uint8_t *vuCode = mem.getVU1Code();
+ps2xTest\src\ps2_vu1_tests.cpp:1402: std::memset(vuCode, 0, PS2_VU1_CODE_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1406: std::memcpy(vuCode + 0u, &lower, sizeof(lower));
+ps2xTest\src\ps2_vu1_tests.cpp:1408: std::memcpy(vuCode + 4u, &upper, sizeof(upper));
+ps2xTest\src\ps2_vu1_tests.cpp:1422: vu1.execute(vuCode,
+
+========== vuData : 40 MATCHES ==========
+ps2xRuntime\include\runtime\ps2_vu1.h:52: uint8_t *vuData, uint32_t dataSize,
+ps2xRuntime\include\runtime\ps2_vu1.h:58: uint8_t *vuData, uint32_t dataSize,
+ps2xRuntime\include\runtime\ps2_vu1.h:235: uint8_t *m_activeVuData = nullptr;
+ps2xRuntime\include\runtime\ps2_vu1.h:236: uint32_t m_activeVuDataSize = 0;
+ps2xRuntime\include\runtime\ps2_vu1.h:244: uint8_t *vuData, uint32_t dataSize,
+ps2xRuntime\include\runtime\ps2_vu1.h:257: void execLower(uint32_t instr, uint8_t *vuData, uint32_t dataSize, GS &gs, PS2Memory *memory, uint32_t upperInstr);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:789: if (m_activeVuData && store.address + 16u <= m_activeVuDataSize)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:792: std::memcpy(oldWords, m_activeVuData + store.address, sizeof(oldWords));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:798: std::memcpy(m_activeVuData + store.address, oldWords, sizeof(oldWords));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:845: if (!m_xgkick.active || !m_activeVuData || m_activeVuDataSize == 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:862: const uint32_t source = (m_xgkick.sourceAddress + m_xgkick.copiedBytes + i) % m_activeVuDataSize;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:863: m_xgkick.packet[m_xgkick.copiedBytes + i] = m_activeVuData[source];
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:931: if (m_unit != Unit::VU1 || !m_activeVuData || m_activeVuDataSize < 16u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:934: const uint32_t sourceAddress = (qwordAddress * 16u) % m_activeVuDataSize;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1588: uint8_t *vuData, uint32_t dataSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1608: run(vuCode, codeSize, vuData, dataSize, gs, memory, maxCycles);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1612: uint8_t *vuData, uint32_t dataSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1620: run(vuCode, codeSize, vuData, dataSize, gs, memory, maxCycles);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1624: uint8_t *vuData, uint32_t dataSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1627: m_activeVuData = vuData;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1628: m_activeVuDataSize = dataSize;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1714: execLower(decoded.lower, vuData, dataSize, gs, memory, decoded.upper);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1722: execLower(decoded.lower, vuData, dataSize, gs, memory, decoded.upper);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:72: void VU1Interpreter::execLower(uint32_t instr, uint8_t *vuData, uint32_t dataSize, GS &gs, PS2Memory *memory, uint32_t upperInstr)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:95: std::memcpy(tmp, vuData + addr, 16);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:136: std::memcpy(&v, vuData + addr + comp * 4, 4);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:450: std::memcpy(tmp, vuData + addr, 16);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:480: std::memcpy(tmp, vuData + addr, 16);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:594: std::memcpy(&v, vuData + addr + comp * 4, 4);
+ps2xTest\src\ps2_vu1_tests.cpp:1155: uint8_t *vuData = mem.getVU1Data();
+ps2xTest\src\ps2_vu1_tests.cpp:1157: std::memset(vuData, 0, PS2_VU1_DATA_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1163: std::memcpy(vuData + tagOffset, &imageTag, sizeof(imageTag));
+ps2xTest\src\ps2_vu1_tests.cpp:1167: vuData[i] = static_cast<uint8_t>(0xC0u + i);
+ps2xTest\src\ps2_vu1_tests.cpp:1179: vuData,
+ps2xTest\src\ps2_vu1_tests.cpp:1401: uint8_t *vuData = mem.getVU1Data();
+ps2xTest\src\ps2_vu1_tests.cpp:1403: std::memset(vuData, 0, PS2_VU1_DATA_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1411: std::memcpy(vuData + 0u, &gifTag, sizeof(gifTag));
+ps2xTest\src\ps2_vu1_tests.cpp:1413: std::memcpy(vuData + 8u, &tagHi, sizeof(tagHi));
+ps2xTest\src\ps2_vu1_tests.cpp:1416: vuData[16u + i] = static_cast<uint8_t>(0x90u + i);
+ps2xTest\src\ps2_vu1_tests.cpp:1424: vuData,
+
+========== VU1 : 616 MATCHES ==========
+ps2xRecomp\include\ps2recomp\instructions.h:245: MMI_DIVU1 = 0x1B,  // Divide Unsigned Word using LO1/HI1
+ps2xRecomp\src\lib\mmi_translator.cpp:62: case MMI_DIVU1:
+ps2xRuntime\include\runtime\ps2_vu1.h:1: #ifndef PS2_VU1_H
+ps2xRuntime\include\runtime\ps2_vu1.h:2: #define PS2_VU1_H
+ps2xRuntime\include\runtime\ps2_vu1.h:10: struct VU1State
+ps2xRuntime\include\runtime\ps2_vu1.h:38: class VU1Interpreter
+ps2xRuntime\include\runtime\ps2_vu1.h:44: VU1
+ps2xRuntime\include\runtime\ps2_vu1.h:47: explicit VU1Interpreter(Unit unit = Unit::VU1);
+ps2xRuntime\include\runtime\ps2_vu1.h:62: VU1State &state() { return m_state; }
+ps2xRuntime\include\runtime\ps2_vu1.h:63: const VU1State &state() const { return m_state; }
+ps2xRuntime\include\runtime\ps2_vu1.h:204: VU1State m_state;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:419: if (m_vu1MscalCallback)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:420: m_vu1MscalCallback(startPC, runTop, runItop);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:437: if (m_vu1MscntCallback)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:438: m_vu1MscntCallback(runTop, runItop);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:472: if (m_vu1Code && destAddr < PS2_VU1_CODE_SIZE && mpgBytes > 0)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:475: if (destAddr + copyBytes > PS2_VU1_CODE_SIZE)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:476: copyBytes = PS2_VU1_CODE_SIZE - destAddr;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:479: std::memcpy(m_vu1Code + destAddr, data + pos, copyBytes);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:480: markVU1CodeModified();
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:575: if (m_vu1Data && totalBytes > 0 && pos + totalBytes <= sizeBytes)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:595: if (destOff + 16u > PS2_VU1_DATA_SIZE)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:603: std::memcpy(lanes, m_vu1Data + destOff, sizeof(lanes));
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:717: std::memcpy(m_vu1Data + destOff, srcVec, copyBytes);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:769: std::memcpy(m_vu1Data + destOff, lanes, sizeof(lanes));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1: #include "runtime/ps2_vu1.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:5: #include "ps2_vu1_detail.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:25: void VU1Interpreter::addVfRead(InstructionUsage &usage, uint8_t reg, uint8_t lanes)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:41: void VU1Interpreter::addVfWrite(InstructionUsage &usage, uint8_t reg, uint8_t lanes)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:51: uint8_t VU1Interpreter::vfReadLanes(const InstructionUsage &usage, uint8_t reg)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:61: VU1Interpreter::VU1Interpreter(Unit unit)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:67: void VU1Interpreter::resetScheduler()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:94: void VU1Interpreter::reset()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:104: float VU1Interpreter::broadcast(const float *vf, uint8_t bc)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:109: float VU1Interpreter::normalizeOperand(float value) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:126: float VU1Interpreter::normalizeResult(float value, uint32_t &laneFlags) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:154: uint32_t VU1Interpreter::microAddressMask() const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:156: return m_unit == Unit::VU1 ? 0x3FFFu : 0x0FFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:159: int32_t VU1Interpreter::readBranchVi(uint8_t reg) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:171: void VU1Interpreter::recordViWriteForBranch(uint8_t reg, int32_t oldValue)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:180: void VU1Interpreter::applyDest(float *dst, const float *result, uint8_t dest)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:192: void VU1Interpreter::applyDestAcc(const float *result, uint8_t dest)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:197: void VU1Interpreter::normalizeFmacResult(float *result, uint8_t dest,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:219: bool VU1Interpreter::calculateFmacExactResult(uint32_t component,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:402: uint8_t VU1Interpreter::normalizeFmacExactResult(float &value,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:432: uint32_t VU1Interpreter::calculateFmacProductSticky(uint8_t dest) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:491: void VU1Interpreter::updateFmacFlags(const uint8_t laneFlags[4], uint8_t dest,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:543: void VU1Interpreter::applyFmacDest(float *dst, float *result, uint8_t dest)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:551: void VU1Interpreter::applyFmacDestAcc(float *result, uint8_t dest)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:559: void VU1Interpreter::queueFsset(uint16_t immediate)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:583: void VU1Interpreter::queueClip(uint32_t clip)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:602: void VU1Interpreter::queueFcset(uint32_t clip)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:626: void VU1Interpreter::queueQ(float value, uint32_t latency, uint32_t statusDi)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:636: void VU1Interpreter::queueP(float value, uint32_t latency)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:655: void VU1Interpreter::queueStore(uint32_t address, const uint32_t words[4], uint8_t laneMask)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:672: void VU1Interpreter::queueVfWrite(uint8_t reg, uint8_t laneMask,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:699: void VU1Interpreter::queueViWrite(uint8_t reg, int32_t value, uint32_t latency)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:720: void VU1Interpreter::queueAccWrite(uint8_t laneMask, const float value[4], uint32_t latency)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:745: void VU1Interpreter::commitReadyPipelines()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:843: void VU1Interpreter::progressXgkick()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:917: void VU1Interpreter::finishXgkick()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:929: void VU1Interpreter::startXgkick(uint32_t qwordAddress)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:931: if (m_unit != Unit::VU1 || !m_activeVuData || m_activeVuDataSize < 16u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:942: void VU1Interpreter::advanceOneCycle()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:952: void VU1Interpreter::advanceTo(uint64_t targetCycle)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:958: bool VU1Interpreter::pipelinesPending() const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:983: void VU1Interpreter::flushPipelines()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:989: uint64_t VU1Interpreter::calculatePairReadyCycle(const DecodedInstructionPair &decoded) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1037: void VU1Interpreter::markPairWrites(const DecodedInstructionPair &decoded)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1078: VU1Interpreter::InstructionUsage VU1Interpreter::decodeUpperUsage(uint32_t upper) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1159: VU1Interpreter::InstructionUsage VU1Interpreter::decodeLowerUsage(uint32_t lower) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1510: VU1Interpreter::DecodedInstructionPair VU1Interpreter::decodeInstructionPair(const uint8_t *vuCode, uint32_t pc) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1534: void VU1Interpreter::rebuildDecodedCodeCache(const uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1548: VU1Interpreter::DecodedInstructionPair VU1Interpreter::getDecodedInstructionPairForPc(
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1554: const bool trackedVu1Code = memory != nullptr &&
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1555: ((m_unit == Unit::VU1 && vuCode == memory->getVU1Code()) ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1557: if (!trackedVu1Code)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1560: const uint64_t generation = m_unit == Unit::VU1 ? memory->getVU1CodeGeneration() : memory->getVU0CodeGeneration();
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1575: void VU1Interpreter::reportReservedInstruction(bool upper, uint32_t instruction)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1578: "[VU" << (m_unit == Unit::VU1 ? "1" : "0")
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1587: void VU1Interpreter::execute(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1611: void VU1Interpreter::resume(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1623: void VU1Interpreter::run(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_detail.h:1: #ifndef PS2_VU1_DETAIL_H
+ps2xRuntime\src\lib\vu\ps2_vu1_detail.h:2: #define PS2_VU1_DETAIL_H
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:1: #include "runtime/ps2_vu1.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:5: #include "ps2_vu1_detail.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:72: void VU1Interpreter::execLower(uint32_t instr, uint8_t *vuData, uint32_t dataSize, GS &gs, PS2Memory *memory, uint32_t upperInstr)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:667: case 0x6C: // XGKICK - send GIF packet from VU1 data memory
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:1: #include "runtime/ps2_vu1.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:2: #include "ps2_vu1_detail.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:24: void VU1Interpreter::execUpper(uint32_t instr)
+ps2xTest\src\ps2_vu1_tests.cpp:6: #include "runtime/ps2_vu1.h"
+ps2xTest\src\ps2_vu1_tests.cpp:18: struct Vu1Fixture
+ps2xTest\src\ps2_vu1_tests.cpp:30: code = mem.getVU1Code();
+ps2xTest\src\ps2_vu1_tests.cpp:31: data = mem.getVU1Data();
+ps2xTest\src\ps2_vu1_tests.cpp:32: std::memset(code, 0, PS2_VU1_CODE_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:33: std::memset(data, 0, PS2_VU1_DATA_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:185: void writeTrackedVuInstructionPair(Vu1Fixture &fx, uint32_t pc, uint32_t lower, uint32_t upper)
+ps2xTest\src\ps2_vu1_tests.cpp:187: fx.mem.write64(PS2_VU1_CODE_BASE + pc, packVuInstructionPair(lower, upper));
+ps2xTest\src\ps2_vu1_tests.cpp:196: void uploadVu1Mpg(PS2Memory &mem, uint16_t instructionAddress, uint32_t lower, uint32_t upper)
+ps2xTest\src\ps2_vu1_tests.cpp:216: void register_ps2_vu1_tests()
+ps2xTest\src\ps2_vu1_tests.cpp:218: MiniTest::Case("PS2VU1", [](TestCase &tc)
+ps2xTest\src\ps2_vu1_tests.cpp:222: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:223: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:227: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:228: vu1.state().vf[1][0] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:229: vu1.state().vf[1][1] = 2.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:230: vu1.state().vf[1][2] = 3.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:231: vu1.state().vf[1][3] = 4.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:232: vu1.state().vf[2][0] = 10.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:233: vu1.state().vf[2][1] = 20.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:234: vu1.state().vf[2][2] = 30.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:235: vu1.state().vf[2][3] = 40.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:236: vu1.state().vf[3][0] = -1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:237: vu1.state().vf[3][1] = -2.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:238: vu1.state().vf[3][2] = -3.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:239: vu1.state().vf[3][3] = -4.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:241: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 1u);
+ps2xTest\src\ps2_vu1_tests.cpp:243: t.Equals(vu1.state().vf[3][0], -1.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:245: vu1.resume(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:247: t.Equals(vu1.state().vf[3][0], 11.0f, "ADD.x should write x");
+ps2xTest\src\ps2_vu1_tests.cpp:248: t.Equals(vu1.state().vf[3][1], -2.0f, "ADD.xz should preserve y");
+ps2xTest\src\ps2_vu1_tests.cpp:249: t.Equals(vu1.state().vf[3][2], 33.0f, "ADD.xz should write z");
+ps2xTest\src\ps2_vu1_tests.cpp:250: t.Equals(vu1.state().vf[3][3], -4.0f, "ADD.xz should preserve w");
+ps2xTest\src\ps2_vu1_tests.cpp:255: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:256: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:264: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:265: vu1.state().i = 2.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:266: vu1.state().vf[1][0] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:267: vu1.state().vf[1][1] = 2.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:268: vu1.state().vf[1][2] = 3.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:269: vu1.state().vf[1][3] = 4.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:271: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 1u);
+ps2xTest\src\ps2_vu1_tests.cpp:273: t.Equals(vu1.state().vf[2][0], 0.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:275: t.Equals(vu1.state().i, 7.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:277: vu1.resume(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:279: t.Equals(vu1.state().vf[2][0], 3.0f, "ADDi should use old I for x");
+ps2xTest\src\ps2_vu1_tests.cpp:280: t.Equals(vu1.state().vf[2][1], 4.0f, "ADDi should use old I for y");
+ps2xTest\src\ps2_vu1_tests.cpp:281: t.Equals(vu1.state().vf[2][2], 5.0f, "ADDi should use old I for z");
+ps2xTest\src\ps2_vu1_tests.cpp:282: t.Equals(vu1.state().vf[2][3], 6.0f, "ADDi should use old I for w");
+ps2xTest\src\ps2_vu1_tests.cpp:283: t.Equals(vu1.state().i, 7.0f, "LOI should commit lower immediate into I after upper execution");
+ps2xTest\src\ps2_vu1_tests.cpp:288: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:289: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:295: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:297: std::memcpy(vu1.state().vf[1], raw, sizeof(raw));
+ps2xTest\src\ps2_vu1_tests.cpp:298: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:299: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:302: t.Equals(vu1.state().vf[2][0], 1.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:304: t.Equals(vu1.state().vf[2][1], -16.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:306: t.Equals(vu1.state().vf[2][2], 4096.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:308: t.Equals(vu1.state().vf[2][3], -32768.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:314: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:315: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:328: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:330: std::memcpy(vu1.state().vf[1], raw, sizeof(raw));
+ps2xTest\src\ps2_vu1_tests.cpp:331: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:332: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:335: t.Equals(vu1.state().vi[2], 0x1111,
+ps2xTest\src\ps2_vu1_tests.cpp:337: t.Equals(vu1.state().vi[3], 0x2222,
+ps2xTest\src\ps2_vu1_tests.cpp:339: t.Equals(vu1.state().vi[4], 0x3333,
+ps2xTest\src\ps2_vu1_tests.cpp:341: t.Equals(vu1.state().vi[5], 0x4444,
+ps2xTest\src\ps2_vu1_tests.cpp:347: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:348: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:357: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:358: vu1.state().vi[1] = 2;
+ps2xTest\src\ps2_vu1_tests.cpp:359: vu1.state().vi[2] = 4;
+ps2xTest\src\ps2_vu1_tests.cpp:360: vu1.state().vf[4][0] = 100.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:361: vu1.state().vf[4][1] = 200.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:362: vu1.state().vf[4][2] = 300.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:363: vu1.state().vf[4][3] = 400.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:365: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 3u);
+ps2xTest\src\ps2_vu1_tests.cpp:367: t.Equals(vu1.state().vf[4][1], 200.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:369: vu1.resume(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:371: t.Equals(vu1.state().vf[4][0], 100.0f, "LQ.yw should preserve x");
+ps2xTest\src\ps2_vu1_tests.cpp:372: t.Equals(vu1.state().vf[4][1], 20.0f, "LQ.yw should load y");
+ps2xTest\src\ps2_vu1_tests.cpp:373: t.Equals(vu1.state().vf[4][2], 300.0f, "LQ.yw should preserve z");
+ps2xTest\src\ps2_vu1_tests.cpp:374: t.Equals(vu1.state().vf[4][3], 40.0f, "LQ.yw should load w");
+ps2xTest\src\ps2_vu1_tests.cpp:382: t.Equals(vu1.state().cycles, static_cast<uint64_t>(4u),
+ps2xTest\src\ps2_vu1_tests.cpp:388: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:389: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:395: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:396: vu1.state().vi[0] = 99;
+ps2xTest\src\ps2_vu1_tests.cpp:397: vu1.state().vi[1] = 10;
+ps2xTest\src\ps2_vu1_tests.cpp:399: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 3u);
+ps2xTest\src\ps2_vu1_tests.cpp:401: t.Equals(vu1.state().vi[2], 15, "IADDIU should add signed immediate to VI source");
+ps2xTest\src\ps2_vu1_tests.cpp:402: t.Equals(vu1.state().vi[3], 25, "IADD should add VI source registers");
+ps2xTest\src\ps2_vu1_tests.cpp:403: t.Equals(vu1.state().vi[0], 0, "VI0 should remain hardwired to zero");
+ps2xTest\src\ps2_vu1_tests.cpp:408: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:409: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:414: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:415: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0x123u, 0x2ABu, 2u);
+ps2xTest\src\ps2_vu1_tests.cpp:417: t.Equals(vu1.state().vi[2], 0x123, "XTOP should move TOP into the target VI register");
+ps2xTest\src\ps2_vu1_tests.cpp:418: t.Equals(vu1.state().vi[3], 0x2AB, "XITOP should move ITOP into the target VI register");
+ps2xTest\src\ps2_vu1_tests.cpp:423: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:424: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:431: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:432: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 3u);
+ps2xTest\src\ps2_vu1_tests.cpp:434: t.Equals(vu1.state().vi[1], 1, "branch delay slot should execute");
+ps2xTest\src\ps2_vu1_tests.cpp:435: t.Equals(vu1.state().vi[2], 0, "instruction between delay slot and target should be skipped");
+ps2xTest\src\ps2_vu1_tests.cpp:436: t.Equals(vu1.state().vi[3], 7, "branch target should execute after the delay slot");
+ps2xTest\src\ps2_vu1_tests.cpp:441: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:442: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:449: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:450: vu1.state().vi[1] = 6;
+ps2xTest\src\ps2_vu1_tests.cpp:451: vu1.state().vf[1][0] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:452: vu1.state().vf[1][1] = 2.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:453: vu1.state().vf[1][2] = 3.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:454: vu1.state().vf[1][3] = 4.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:455: vu1.state().vf[2][0] = 10.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:456: vu1.state().vf[2][1] = 20.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:457: vu1.state().vf[2][2] = 30.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:458: vu1.state().vf[2][3] = 40.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:459: vu1.state().vf[3][0] = 100.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:460: vu1.state().vf[3][1] = 200.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:461: vu1.state().vf[3][2] = 300.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:462: vu1.state().vf[3][3] = 400.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:464: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 2u);
+ps2xTest\src\ps2_vu1_tests.cpp:472: vu1.resume(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:474: t.Equals(vu1.state().vf[1][0], 110.0f, "upper ADD should write x after lower read");
+ps2xTest\src\ps2_vu1_tests.cpp:475: t.Equals(vu1.state().vf[1][1], 220.0f, "upper ADD should write y after lower read");
+ps2xTest\src\ps2_vu1_tests.cpp:476: t.Equals(vu1.state().vf[1][2], 330.0f, "upper ADD should write z after lower read");
+ps2xTest\src\ps2_vu1_tests.cpp:477: t.Equals(vu1.state().vf[1][3], 440.0f, "upper ADD should write w after lower read");
+ps2xTest\src\ps2_vu1_tests.cpp:482: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:483: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:493: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:494: vu1.state().vi[1] = 5;
+ps2xTest\src\ps2_vu1_tests.cpp:495: vu1.state().vf[1][0] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:496: vu1.state().vf[1][1] = 2.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:497: vu1.state().vf[1][2] = 3.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:498: vu1.state().vf[1][3] = 4.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:499: vu1.state().vf[2][0] = 10.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:500: vu1.state().vf[3][0] = 100.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:502: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:503: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:506: t.Equals(vu1.state().vf[1][0], 1.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:508: t.Equals(vu1.state().vi[1], 6,
+ps2xTest\src\ps2_vu1_tests.cpp:510: vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:511: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:513: t.Equals(vu1.state().vf[1][0], 110.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:515: t.Equals(vu1.state().vf[1][1], 2.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:517: t.Equals(vu1.state().vf[1][2], 3.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:519: t.Equals(vu1.state().vf[1][3], 4.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:521: t.Equals(vu1.state().vi[1], 6,
+ps2xTest\src\ps2_vu1_tests.cpp:527: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:528: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:535: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:536: vu1.state().vf[1][0] = 10.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:537: vu1.state().vf[2][0] = 20.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:538: vu1.state().vf[3][0] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:539: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:540: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:543: vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:544: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:546: t.Equals(vu1.state().vf[1][0], 21.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:548: t.Equals(vu1.state().vf[2][0], 10.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:554: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:555: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:564: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:565: vu1.state().vf[1][0] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:566: vu1.state().vf[2][0] = 2.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:567: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:568: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:571: t.Equals(vu1.state().vf[4][0], 0.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:573: vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:574: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:576: t.Equals(vu1.state().vf[4][0], 5.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:578: t.Equals(vu1.state().cycles, static_cast<uint64_t>(8u),
+ps2xTest\src\ps2_vu1_tests.cpp:584: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:585: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:594: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:595: vu1.state().vf[1][0] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:596: vu1.state().vf[2][0] = 10.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:597: vu1.state().vf[3][0] = 2.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:598: vu1.state().vf[4][0] = 3.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:599: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:600: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:603: t.Equals(vu1.state().acc[0], 11.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:605: t.Equals(vu1.state().vf[5][0], 17.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:607: t.Equals(vu1.state().cycles, static_cast<uint64_t>(5u),
+ps2xTest\src\ps2_vu1_tests.cpp:613: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:614: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:623: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:624: vu1.state().vi[1] = 2;
+ps2xTest\src\ps2_vu1_tests.cpp:625: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:626: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:629: t.Equals(vu1.state().vi[2], 0x1234,
+ps2xTest\src\ps2_vu1_tests.cpp:631: t.Equals(vu1.state().vi[3], 0x1235,
+ps2xTest\src\ps2_vu1_tests.cpp:633: t.Equals(vu1.state().cycles, static_cast<uint64_t>(5u),
+ps2xTest\src\ps2_vu1_tests.cpp:639: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:640: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:647: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:648: vu1.state().vf[1][1] = 18.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:649: vu1.state().vf[2][2] = 3.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:650: vu1.state().vf[3][3] = 25.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:652: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 8u);
+ps2xTest\src\ps2_vu1_tests.cpp:653: t.Equals(vu1.state().q, 6.0f, "WAITQ should expose DIV after its seven-cycle latency");
+ps2xTest\src\ps2_vu1_tests.cpp:654: t.Equals(vu1.state().cycles, static_cast<uint64_t>(8u),
+ps2xTest\src\ps2_vu1_tests.cpp:657: vu1.resume(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 8u);
+ps2xTest\src\ps2_vu1_tests.cpp:658: t.Equals(vu1.state().q, 5.0f, "WAITQ should expose SQRT after its seven-cycle latency");
+ps2xTest\src\ps2_vu1_tests.cpp:663: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:664: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:679: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:680: vu1.state().vf[1][0] = 18.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:681: vu1.state().vf[2][0] = 3.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:682: vu1.state().vf[3][0] = 25.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:683: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:684: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:687: t.Equals(vu1.state().q, 5.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:689: t.Equals(vu1.state().cycles, static_cast<uint64_t>(15u),
+ps2xTest\src\ps2_vu1_tests.cpp:695: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:696: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:705: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:706: vu1.state().vf[1][0] = 0.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:707: vu1.state().vf[2][0] = 0.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:708: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:709: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:711: t.Equals(vu1.state().status, 0x410u,
+ps2xTest\src\ps2_vu1_tests.cpp:714: vu1.reset();
+ps2xTest\src\ps2_vu1_tests.cpp:715: vu1.state().vf[1][0] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:716: vu1.state().vf[2][0] = 0.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:717: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:718: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:720: t.Equals(vu1.state().status, 0x820u,
+ps2xTest\src\ps2_vu1_tests.cpp:726: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:727: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:746: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:747: vu1.state().vf[1][0] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:748: vu1.state().vf[1][1] = 2.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:749: vu1.state().vf[1][2] = 3.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:750: vu1.state().vf[2][0] = 1.5f;
+ps2xTest\src\ps2_vu1_tests.cpp:751: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:752: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:755: t.Equals(vu1.state().p, 14.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:757: t.Equals(vu1.state().vf[3][0], 0.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:759: vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:760: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:762: t.IsTrue(vu1.state().vf[3][0] >= 1.0f &&
+ps2xTest\src\ps2_vu1_tests.cpp:763: vu1.state().vf[3][0] < 2.0f &&
+ps2xTest\src\ps2_vu1_tests.cpp:764: vu1.state().vf[3][0] != 1.5f,
+ps2xTest\src\ps2_vu1_tests.cpp:770: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:771: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:786: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:787: vu1.state().vf[1][0] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:788: vu1.state().vf[1][1] = 2.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:789: vu1.state().vf[1][2] = 3.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:790: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:791: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:794: t.IsTrue(vu1.state().p > 3.7f && vu1.state().p < 3.8f,
+ps2xTest\src\ps2_vu1_tests.cpp:796: t.Equals(vu1.state().cycles, static_cast<uint64_t>(29u),
+ps2xTest\src\ps2_vu1_tests.cpp:802: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:803: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:818: std::memset(fx.code, 0, PS2_VU1_CODE_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:828: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:829: vu1.state().vf[1][0] = 0.25f;
+ps2xTest\src\ps2_vu1_tests.cpp:830: vu1.state().vf[1][1] = 0.5f;
+ps2xTest\src\ps2_vu1_tests.cpp:831: vu1.state().vf[1][2] = 0.75f;
+ps2xTest\src\ps2_vu1_tests.cpp:832: vu1.state().vf[1][3] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:833: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:834: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:837: t.Equals(vu1.state().cycles,
+ps2xTest\src\ps2_vu1_tests.cpp:840: t.IsTrue(std::isfinite(vu1.state().p),
+ps2xTest\src\ps2_vu1_tests.cpp:847: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:848: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:860: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:861: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:862: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:864: t.Equals(vu1.state().vi[1], 7,
+ps2xTest\src\ps2_vu1_tests.cpp:866: t.Equals(vu1.state().vi[2], 0,
+ps2xTest\src\ps2_vu1_tests.cpp:869: vu1.reset();
+ps2xTest\src\ps2_vu1_tests.cpp:876: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:877: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:879: t.Equals(vu1.state().vi[2], 5,
+ps2xTest\src\ps2_vu1_tests.cpp:882: vu1.reset();
+ps2xTest\src\ps2_vu1_tests.cpp:883: vu1.state().tBitEnabled = true;
+ps2xTest\src\ps2_vu1_tests.cpp:884: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:885: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:887: t.Equals(vu1.state().vi[1], 3,
+ps2xTest\src\ps2_vu1_tests.cpp:889: t.Equals(vu1.state().vi[2], 0,
+ps2xTest\src\ps2_vu1_tests.cpp:891: t.IsTrue(vu1.state().stoppedByT,
+ps2xTest\src\ps2_vu1_tests.cpp:894: vu1.reset();
+ps2xTest\src\ps2_vu1_tests.cpp:895: vu1.state().dBitEnabled = true;
+ps2xTest\src\ps2_vu1_tests.cpp:902: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:903: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:905: t.Equals(vu1.state().vi[1], 4,
+ps2xTest\src\ps2_vu1_tests.cpp:907: t.Equals(vu1.state().vi[2], 0,
+ps2xTest\src\ps2_vu1_tests.cpp:909: t.IsTrue(vu1.state().stoppedByD,
+ps2xTest\src\ps2_vu1_tests.cpp:912: vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:913: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:915: t.Equals(vu1.state().vi[2], 6,
+ps2xTest\src\ps2_vu1_tests.cpp:917: t.IsTrue(!vu1.state().stoppedByD && !vu1.state().stoppedByT,
+ps2xTest\src\ps2_vu1_tests.cpp:920: vu1.reset();
+ps2xTest\src\ps2_vu1_tests.cpp:921: vu1.state().tBitEnabled = true;
+ps2xTest\src\ps2_vu1_tests.cpp:931: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:932: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:934: t.Equals(vu1.state().vi[2], 11,
+ps2xTest\src\ps2_vu1_tests.cpp:936: t.Equals(vu1.state().vi[3], 0,
+ps2xTest\src\ps2_vu1_tests.cpp:938: t.Equals(vu1.state().pc, 16u,
+ps2xTest\src\ps2_vu1_tests.cpp:944: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:945: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:963: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:964: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:965: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:968: t.Equals(vu1.state().vi[2], 2,
+ps2xTest\src\ps2_vu1_tests.cpp:970: t.Equals(vu1.state().vi[3], 3,
+ps2xTest\src\ps2_vu1_tests.cpp:973: vu1.reset();
+ps2xTest\src\ps2_vu1_tests.cpp:981: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:982: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:984: t.Equals(vu1.state().vi[3], 3,
+ps2xTest\src\ps2_vu1_tests.cpp:986: t.Equals(vu1.state().vi[4], 0,
+ps2xTest\src\ps2_vu1_tests.cpp:988: t.Equals(vu1.state().vi[5], 5,
+ps2xTest\src\ps2_vu1_tests.cpp:991: vu1.reset();
+ps2xTest\src\ps2_vu1_tests.cpp:1007: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1008: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1010: t.Equals(vu1.state().vi[2], 2,
+ps2xTest\src\ps2_vu1_tests.cpp:1012: t.Equals(vu1.state().vi[3], 3,
+ps2xTest\src\ps2_vu1_tests.cpp:1014: t.Equals(vu1.state().vi[4], 0,
+ps2xTest\src\ps2_vu1_tests.cpp:1020: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:1021: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:1040: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1041: vu1.state().status = 0x001u;
+ps2xTest\src\ps2_vu1_tests.cpp:1042: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1043: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1046: t.Equals(vu1.state().vi[1], 1,
+ps2xTest\src\ps2_vu1_tests.cpp:1048: t.Equals(vu1.state().vi[2], 2,
+ps2xTest\src\ps2_vu1_tests.cpp:1050: t.Equals(vu1.state().vi[3], 0,
+ps2xTest\src\ps2_vu1_tests.cpp:1052: t.Equals(vu1.state().vi[4], 4,
+ps2xTest\src\ps2_vu1_tests.cpp:1058: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:1059: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:1077: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1078: vu1.state().vi[1] = 4;
+ps2xTest\src\ps2_vu1_tests.cpp:1079: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1080: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1083: t.Equals(vu1.state().vi[1], 2,
+ps2xTest\src\ps2_vu1_tests.cpp:1085: t.Equals(vu1.state().vi[2], 2,
+ps2xTest\src\ps2_vu1_tests.cpp:1087: t.Equals(vu1.state().vi[3], 0,
+ps2xTest\src\ps2_vu1_tests.cpp:1089: t.Equals(vu1.state().vi[4], 4,
+ps2xTest\src\ps2_vu1_tests.cpp:1093: tc.Run("MPG upload invalidates cached VU1 decode before MSCAL", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1095: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:1096: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:1098: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1099: fx.mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+ps2xTest\src\ps2_vu1_tests.cpp:1101: vu1.execute(fx.code,
+ps2xTest\src\ps2_vu1_tests.cpp:1102: PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1104: PS2_VU1_DATA_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1113: uploadVu1Mpg(fx.mem, 0u, makeVuIaddiu(1u, 0u, 1), kVuUpperNop);
+ps2xTest\src\ps2_vu1_tests.cpp:1116: t.Equals(vu1.state().vi[1], 1, "first MSCAL should execute the first uploaded program");
+ps2xTest\src\ps2_vu1_tests.cpp:1118: uploadVu1Mpg(fx.mem, 0u, makeVuIaddiu(1u, 0u, 2), kVuUpperNop);
+ps2xTest\src\ps2_vu1_tests.cpp:1121: t.Equals(vu1.state().vi[1], 2, "second MSCAL should see the MPG-updated instruction");
+ps2xTest\src\ps2_vu1_tests.cpp:1124: tc.Run("direct VU1 code writes invalidate cached decode", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1126: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:1127: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:1129: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1130: fx.mem.write64(PS2_VU1_CODE_BASE, packVuInstructionPair(makeVuIaddiu(1u, 0u, 1), kVuUpperNop));
+ps2xTest\src\ps2_vu1_tests.cpp:1131: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 1u);
+ps2xTest\src\ps2_vu1_tests.cpp:1132: t.Equals(vu1.state().vi[1], 1, "first execution should use the original direct write");
+ps2xTest\src\ps2_vu1_tests.cpp:1134: fx.mem.write64(PS2_VU1_CODE_BASE, packVuInstructionPair(makeVuIaddiu(1u, 0u, 2), kVuUpperNop));
+ps2xTest\src\ps2_vu1_tests.cpp:1135: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 1u);
+ps2xTest\src\ps2_vu1_tests.cpp:1136: t.Equals(vu1.state().vi[1], 2, "second execution should rebuild decode after the direct write");
+ps2xTest\src\ps2_vu1_tests.cpp:1154: uint8_t *vuCode = mem.getVU1Code();
+ps2xTest\src\ps2_vu1_tests.cpp:1155: uint8_t *vuData = mem.getVU1Data();
+ps2xTest\src\ps2_vu1_tests.cpp:1156: std::memset(vuCode, 0, PS2_VU1_CODE_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1157: std::memset(vuData, 0, PS2_VU1_DATA_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1159: constexpr uint32_t kLastQw = (PS2_VU1_DATA_SIZE / 16u) - 1u;
+ps2xTest\src\ps2_vu1_tests.cpp:1175: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1176: vu1.state().vi[1] = static_cast<int32_t>(kLastQw);
+ps2xTest\src\ps2_vu1_tests.cpp:1177: vu1.execute(vuCode,
+ps2xTest\src\ps2_vu1_tests.cpp:1178: PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1180: PS2_VU1_DATA_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1201: t.IsTrue(payloadOk, "wrapped payload should be copied from start of VU1 memory");
+ps2xTest\src\ps2_vu1_tests.cpp:1220: uint8_t *code = mem.getVU1Code();
+ps2xTest\src\ps2_vu1_tests.cpp:1221: uint8_t *data = mem.getVU1Data();
+ps2xTest\src\ps2_vu1_tests.cpp:1222: std::memset(code, 0, PS2_VU1_CODE_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1223: std::memset(data, 0xFF, PS2_VU1_DATA_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1238: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1239: vu1.state().vi[1] = 0;
+ps2xTest\src\ps2_vu1_tests.cpp:1240: vu1.state().vi[2] = 1;
+ps2xTest\src\ps2_vu1_tests.cpp:1242: std::memcpy(vu1.state().vf[4], replacement, sizeof(replacement));
+ps2xTest\src\ps2_vu1_tests.cpp:1243: vu1.execute(code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1244: data, PS2_VU1_DATA_SIZE, gs, &mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1273: uint8_t *code = mem.getVU1Code();
+ps2xTest\src\ps2_vu1_tests.cpp:1274: uint8_t *data = mem.getVU1Data();
+ps2xTest\src\ps2_vu1_tests.cpp:1275: std::memset(code, 0, PS2_VU1_CODE_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1276: std::memset(data, 0, PS2_VU1_DATA_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1294: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1295: vu1.state().vi[1] = 0;
+ps2xTest\src\ps2_vu1_tests.cpp:1296: vu1.state().vi[2] = 2;
+ps2xTest\src\ps2_vu1_tests.cpp:1297: vu1.execute(code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1298: data, PS2_VU1_DATA_SIZE, gs, &mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1310: t.Equals(vu1.state().cycles, static_cast<uint64_t>(6u),
+ps2xTest\src\ps2_vu1_tests.cpp:1329: uint8_t *code = mem.getVU1Code();
+ps2xTest\src\ps2_vu1_tests.cpp:1330: uint8_t *data = mem.getVU1Data();
+ps2xTest\src\ps2_vu1_tests.cpp:1331: std::memset(code, 0, PS2_VU1_CODE_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1332: std::memset(data, 0, PS2_VU1_DATA_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1348: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1349: vu1.state().vi[1] = 0;
+ps2xTest\src\ps2_vu1_tests.cpp:1350: vu1.state().vi[2] = 1;
+ps2xTest\src\ps2_vu1_tests.cpp:1353: std::memcpy(vu1.state().vf[2], a, sizeof(a));
+ps2xTest\src\ps2_vu1_tests.cpp:1354: std::memcpy(vu1.state().vf[3], b, sizeof(b));
+ps2xTest\src\ps2_vu1_tests.cpp:1356: vu1.execute(code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1357: data, PS2_VU1_DATA_SIZE, gs, &mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1375: tc.Run("MSCAL can start a VU1 XGKICK program and update GS VRAM", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1400: uint8_t *vuCode = mem.getVU1Code();
+ps2xTest\src\ps2_vu1_tests.cpp:1401: uint8_t *vuData = mem.getVU1Data();
+ps2xTest\src\ps2_vu1_tests.cpp:1402: std::memset(vuCode, 0, PS2_VU1_CODE_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1403: std::memset(vuData, 0, PS2_VU1_DATA_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1419: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1420: mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+ps2xTest\src\ps2_vu1_tests.cpp:1422: vu1.execute(vuCode,
+ps2xTest\src\ps2_vu1_tests.cpp:1423: PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1425: PS2_VU1_DATA_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1454: tc.Run("standalone VU1 code honors the nullable PS2Memory API", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1462: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1463: vu1.execute(code.data(), static_cast<uint32_t>(code.size()),
+ps2xTest\src\ps2_vu1_tests.cpp:1467: t.Equals(vu1.state().pc, 0u,
+ps2xTest\src\ps2_vu1_tests.cpp:1471: tc.Run("VU1 status-immediate ops decode IMM12 and their target VI", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1473: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:1474: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:1486: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1487: vu1.state().status = 0x812u;
+ps2xTest\src\ps2_vu1_tests.cpp:1488: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1489: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1492: t.Equals(vu1.state().vi[5], 1,
+ps2xTest\src\ps2_vu1_tests.cpp:1494: t.Equals(vu1.state().vi[6], 0x810,
+ps2xTest\src\ps2_vu1_tests.cpp:1496: t.Equals(vu1.state().vi[7], 0x852,
+ps2xTest\src\ps2_vu1_tests.cpp:1498: t.Equals(vu1.state().vi[1], 0,
+ps2xTest\src\ps2_vu1_tests.cpp:1502: tc.Run("VU1 FSSET enters the four-cycle flag pipeline", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1504: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:1505: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:1511: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1512: vu1.state().status = 0x015u;
+ps2xTest\src\ps2_vu1_tests.cpp:1513: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1514: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1516: t.Equals(vu1.state().status, 0x015u,
+ps2xTest\src\ps2_vu1_tests.cpp:1519: vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1520: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1522: t.Equals(vu1.state().status, 0xA95u,
+ps2xTest\src\ps2_vu1_tests.cpp:1526: tc.Run("VU1 has one flag pipeline and FSSET wins a same-pair conflict", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1528: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:1529: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:1537: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1538: vu1.state().vf[1][0] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1539: vu1.state().vf[1][2] = -3.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1540: vu1.state().vf[2][0] = -1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1541: vu1.state().vf[2][2] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1543: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1544: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1547: t.Equals(vu1.state().mac, 0x28u,
+ps2xTest\src\ps2_vu1_tests.cpp:1549: t.Equals(vu1.state().status, 0xA80u,
+ps2xTest\src\ps2_vu1_tests.cpp:1553: tc.Run("VU1 FMAC flags respect destination lanes and become visible after four cycles", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1555: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:1556: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:1573: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1574: vu1.state().vf[1][0] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1575: vu1.state().vf[1][2] = -3.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1576: vu1.state().vf[2][0] = -1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1577: vu1.state().vf[2][2] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1578: vu1.state().vi[5] = 0xFFFF;
+ps2xTest\src\ps2_vu1_tests.cpp:1579: vu1.state().vi[7] = 0;
+ps2xTest\src\ps2_vu1_tests.cpp:1581: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1582: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1585: t.Equals(vu1.state().mac, 0u,
+ps2xTest\src\ps2_vu1_tests.cpp:1587: t.Equals(vu1.state().vi[6], 1,
+ps2xTest\src\ps2_vu1_tests.cpp:1590: vu1.resume(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1591: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1594: t.Equals(vu1.state().mac, 0x28u,
+ps2xTest\src\ps2_vu1_tests.cpp:1596: t.Equals(vu1.state().status, 0xC3u,
+ps2xTest\src\ps2_vu1_tests.cpp:1598: t.Equals(vu1.state().vi[4], 0x28,
+ps2xTest\src\ps2_vu1_tests.cpp:1602: tc.Run("VU1 CLIP and FCGET share the four-cycle flag timeline", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1604: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:1605: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:1621: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1622: vu1.state().vf[1][0] = 2.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1623: vu1.state().vf[2][3] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1624: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1625: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1628: t.Equals(vu1.state().vi[3], 0,
+ps2xTest\src\ps2_vu1_tests.cpp:1630: t.Equals(vu1.state().vi[4], 1,
+ps2xTest\src\ps2_vu1_tests.cpp:1632: t.Equals(vu1.state().clip, 1u,
+ps2xTest\src\ps2_vu1_tests.cpp:1636: tc.Run("VU1 FMAC normalizes overflow and underflow before writing results", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1638: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:1639: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:1644: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1645: vu1.state().vf[1][0] = std::numeric_limits<float>::max();
+ps2xTest\src\ps2_vu1_tests.cpp:1646: vu1.state().vf[1][1] = std::numeric_limits<float>::min();
+ps2xTest\src\ps2_vu1_tests.cpp:1647: vu1.state().vf[1][2] = -2.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1648: vu1.state().vf[1][3] = 0.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1649: vu1.state().vf[2][0] = 2.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1650: vu1.state().vf[2][1] = 0.5f;
+ps2xTest\src\ps2_vu1_tests.cpp:1651: vu1.state().vf[2][2] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1652: vu1.state().vf[2][3] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1654: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1655: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1658: t.Equals(vu1.state().mac, 0x8425u,
+ps2xTest\src\ps2_vu1_tests.cpp:1660: t.Equals(vu1.state().status, 0x3CFu,
+ps2xTest\src\ps2_vu1_tests.cpp:1662: t.Equals(vu1.state().vf[3][0], std::numeric_limits<float>::max(),
+ps2xTest\src\ps2_vu1_tests.cpp:1664: t.Equals(vu1.state().vf[3][1], 0.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:1670: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:1671: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:1677: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1678: vu1.state().acc[0] = 1.0f;
+ps2xTest\src\ps2_vu1_tests.cpp:1679: vu1.state().vf[1][0] = std::numeric_limits<float>::min();
+ps2xTest\src\ps2_vu1_tests.cpp:1680: vu1.state().vf[2][0] = 0.5f;
+ps2xTest\src\ps2_vu1_tests.cpp:1681: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1682: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1685: t.Equals(vu1.state().vf[3][0], 1.0f,
+ps2xTest\src\ps2_vu1_tests.cpp:1687: t.Equals(vu1.state().mac, 0u,
+ps2xTest\src\ps2_vu1_tests.cpp:1689: t.Equals(vu1.state().status, 0x140u,
+ps2xTest\src\ps2_vu1_tests.cpp:1695: Vu1Fixture fx;
+ps2xTest\src\ps2_vu1_tests.cpp:1696: t.IsTrue(fx.initialize(), "VU1 fixture should initialize");
+ps2xTest\src\ps2_vu1_tests.cpp:1703: VU1Interpreter vu1;
+ps2xTest\src\ps2_vu1_tests.cpp:1704: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1705: fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem,
+ps2xTest\src\ps2_vu1_tests.cpp:1708: t.Equals(vu1.state().cycles, static_cast<uint64_t>(0u),
+ps2xTest\src\ps2_vu1_tests.cpp:1710: t.Equals(vu1.state().pc, 0u,
+ps2xTest\src\ps2_vu1_tests.cpp:1712: t.Equals(vu1.state().vi[1], 0,
+
+========== VU1 / VIF IMPLEMENTATION FILES ==========
+ps2xRecomp\include\ps2recomp\Translators\vu_translator.h
+ps2xRecomp\src\lib\vu_translation_helpers.cpp
+ps2xRecomp\src\lib\vu_translator.cpp
+ps2xRuntime\include\runtime\ps2_vu1.h
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp
+ps2xRuntime\src\lib\vu\ps2_vu1_detail.h
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp
+ps2xTest\src\ps2_vu_tests.cpp
+ps2xTest\src\ps2_vu1_tests.cpp
+
+========== LIKELY VU1 ENTRYPOINTS ==========
+ps2xRecomp\include\ps2recomp\instructions.h:738: VU0OPS_VXITOP = 0x08,   // Execute Interrupt on VU0
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2211: // slot, decode it here too so the branch executes the real instruction instead of a NOP.
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:160: "    runtime->executeVU0Microprogram(rdram, ctx, 0x{:X}); "
+ps2xRuntime\include\runtime\ps2_vu1.h:51: void execute(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1587: void VU1Interpreter::execute(uint8_t *vuCode, uint32_t codeSize,
+ps2xTest\src\ps2_vu1_tests.cpp:241: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 1u);
+ps2xTest\src\ps2_vu1_tests.cpp:271: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 1u);
+ps2xTest\src\ps2_vu1_tests.cpp:298: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:331: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:365: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 3u);
+ps2xTest\src\ps2_vu1_tests.cpp:399: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 3u);
+ps2xTest\src\ps2_vu1_tests.cpp:415: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0x123u, 0x2ABu, 2u);
+ps2xTest\src\ps2_vu1_tests.cpp:432: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 3u);
+ps2xTest\src\ps2_vu1_tests.cpp:434: t.Equals(vu1.state().vi[1], 1, "branch delay slot should execute");
+ps2xTest\src\ps2_vu1_tests.cpp:436: t.Equals(vu1.state().vi[3], 7, "branch target should execute after the delay slot");
+ps2xTest\src\ps2_vu1_tests.cpp:464: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 2u);
+ps2xTest\src\ps2_vu1_tests.cpp:502: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:539: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:567: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:599: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:625: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:652: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 8u);
+ps2xTest\src\ps2_vu1_tests.cpp:683: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:708: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:717: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:724: tc.Run("EFU WAITP and RNG execute with architectural latency and state", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:751: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:790: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:833: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:861: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:865: "E should execute exactly one sequential delay slot");
+ps2xTest\src\ps2_vu1_tests.cpp:876: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:884: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:902: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:931: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:935: "T on a branch should still execute its branch delay slot");
+ps2xTest\src\ps2_vu1_tests.cpp:964: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:981: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:985: "taken branch should still execute its delay slot");
+ps2xTest\src\ps2_vu1_tests.cpp:1007: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1042: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1049: "the taken branch should still execute its delay slot");
+ps2xTest\src\ps2_vu1_tests.cpp:1079: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1086: "JR should execute exactly one delay-slot pair");
+ps2xTest\src\ps2_vu1_tests.cpp:1101: vu1.execute(fx.code,
+ps2xTest\src\ps2_vu1_tests.cpp:1116: t.Equals(vu1.state().vi[1], 1, "first MSCAL should execute the first uploaded program");
+ps2xTest\src\ps2_vu1_tests.cpp:1131: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 1u);
+ps2xTest\src\ps2_vu1_tests.cpp:1135: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0u, 0u, 1u);
+ps2xTest\src\ps2_vu1_tests.cpp:1177: vu1.execute(vuCode,
+ps2xTest\src\ps2_vu1_tests.cpp:1243: vu1.execute(code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1297: vu1.execute(code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1356: vu1.execute(code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1422: vu1.execute(vuCode,
+ps2xTest\src\ps2_vu1_tests.cpp:1463: vu1.execute(code.data(), static_cast<uint32_t>(code.size()),
+ps2xTest\src\ps2_vu1_tests.cpp:1468: "external code should execute and wrap without dereferencing a null memory tracker");
+ps2xTest\src\ps2_vu1_tests.cpp:1488: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1513: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1543: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1581: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1624: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1654: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1681: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1704: vu1.execute(fx.code, PS2_VU1_CODE_SIZE,
+ps2xTest\src\ps2_vu1_tests.cpp:1713: "instruction following a reserved opcode must not execute");
+ps2xRecomp\include\ps2recomp\Emitters\control_flow_emitter.h:73: void emitRuntimeBranchDispatch(std::string_view targetExpression,
+ps2xRecomp\include\ps2recomp\Emitters\control_flow_emitter.h:76: std::string_view runtimeKind,
+ps2xRecomp\include\ps2recomp\instructions.h:468: COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+ps2xRecomp\include\ps2recomp\instructions.h:472: COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+ps2xRecomp\src\lib\control_flow_emitter.cpp:6: #include "ps2_runtime_calls.h"
+ps2xRecomp\src\lib\control_flow_emitter.cpp:180: m_ss << fmt::format("{}if (runtime->eeCheckpointDue()) {{\n", indent);
+ps2xRecomp\src\lib\control_flow_emitter.cpp:187: void ControlFlowEmitter::emitRuntimeBranchDispatch(std::string_view targetExpression,
+ps2xRecomp\src\lib\control_flow_emitter.cpp:190: std::string_view runtimeKind,
+ps2xRecomp\src\lib\control_flow_emitter.cpp:196: "{}if (!runtime->dispatchGuestBranch(rdram, ctx, {}, 0x{:X}u, 0x{:X}u, PS2Runtime::GuestBranchKind::{}, \"{}\")) {{\n",
+ps2xRecomp\src\lib\control_flow_emitter.cpp:201: runtimeKind,
+ps2xRecomp\src\lib\control_flow_emitter.cpp:223: m_ss << indent << functionName << "(rdram, ctx, runtime); return;\n";
+ps2xRecomp\src\lib\control_flow_emitter.cpp:230: emitRuntimeBranchDispatch(fmt::format("0x{:X}u", target),
+ps2xRecomp\src\lib\control_flow_emitter.cpp:241: emitRuntimeBranchDispatch(jumpTargetExpression,
+ps2xRecomp\src\lib\control_flow_emitter.cpp:260: m_ss << indent << "(void)runtime->dispatchGuestBranch(rdram, ctx, " << jumpTargetExpression
+ps2xRecomp\src\lib\control_flow_emitter.cpp:262: << "u, 0u, PS2Runtime::GuestBranchKind::Return, \"JR $ra\");\n";
+ps2xRecomp\src\lib\control_flow_emitter.cpp:271: emitRuntimeBranchDispatch(jumpTargetExpression,
+ps2xRecomp\src\lib\control_flow_emitter.cpp:288: const std::string_view resolvedSyscallName = ps2_runtime_calls::resolveSyscallName(relocIt->second);
+ps2xRecomp\src\lib\control_flow_emitter.cpp:289: const std::string_view resolvedStubName = ps2_runtime_calls::resolveStubName(relocIt->second);
+ps2xRecomp\src\lib\control_flow_emitter.cpp:308: << handlerName << "(rdram, ctx, runtime);\n";
+ps2xRecomp\src\lib\cop0_translator.cpp:135: return fmt::format("runtime->handleTLBR(rdram, ctx);");
+ps2xRecomp\src\lib\cop0_translator.cpp:137: return fmt::format("runtime->handleTLBWI(rdram, ctx);");
+ps2xRecomp\src\lib\cop0_translator.cpp:139: return fmt::format("runtime->handleTLBWR(rdram, ctx);");
+ps2xRecomp\src\lib\cop0_translator.cpp:141: return fmt::format("runtime->handleTLBP(rdram, ctx);");
+ps2xRecomp\src\lib\cop0_translator.cpp:151: "runtime->clearLLBit(ctx); \n" // Essential: Clear Load-Linked bit
+ps2xRecomp\src\lib\function_emitter.cpp:46: ss << "#include \"ps2_runtime_macros.h\"\n";
+ps2xRecomp\src\lib\function_emitter.cpp:47: ss << "#include \"ps2_runtime.h\"\n";
+ps2xRecomp\src\lib\function_emitter.cpp:86: ss << "void " << sanitizedName << "(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {\n";
+ps2xRecomp\src\lib\function_table_emitter.cpp:46: throw std::runtime_error(oss.str());
+ps2xRecomp\src\lib\function_table_emitter.cpp:98: throw std::runtime_error("No entry function name available for registration.");
+ps2xRecomp\src\lib\function_table_emitter.cpp:149: ss << "#include \"ps2_runtime.h\"\n";
+ps2xRecomp\src\lib\function_table_emitter.cpp:158: ss << "PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[" << std::dec << (slotCount == 0u ? 1u : slotCount) << "u] = {};\n\n";
+ps2xRecomp\src\lib\instruction_translator.cpp:7: #include "runtime/ps2_address.h"
+ps2xRecomp\src\lib\instruction_translator.cpp:87: return fmt::format("runtime->Load{}(rdram, ctx, {})", width, resolvedAddressExpr);
+ps2xRecomp\src\lib\instruction_translator.cpp:94: return fmt::format("runtime->Load{}(rdram, ctx, {})", width, addr);
+ps2xRecomp\src\lib\instruction_translator.cpp:111: return fmt::format("runtime->Store{}(rdram, ctx, {}, {})", width, resolvedAddressExpr, value);
+ps2xRecomp\src\lib\instruction_translator.cpp:118: return fmt::format("runtime->Store{}(rdram, ctx, {}, {})", width, addr, value);
+ps2xRecomp\src\lib\instruction_translator.cpp:160: "if (ov) runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+ps2xRecomp\src\lib\instruction_translator.cpp:223: "    runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+ps2xRecomp\src\lib\jump_table_switch_emitter.cpp:27: ss << "        " << funcName << "(rdram, ctx, runtime);\n";
+ps2xRecomp\src\lib\jump_table_switch_emitter.cpp:31: ss << "        func_" << std::hex << target << std::dec << "(rdram, ctx,  runtime);\n";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:6: #include "ps2_runtime_calls.h"
+ps2xRecomp\src\lib\ps2_recompiler.cpp:106: output << "#include \"ps2_runtime_macros.h\"\n";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:107: output << "#include \"ps2_runtime.h\"\n";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1136: // would otherwise get no wrapper, and any branch to it hits an unregistered address at runtime.
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1187: "Configured stub has no runtime handler; recompiling the original guest function");
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1340: << "(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {\n";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1349: stub << "ps2_stubs::TODO_NAMED(\"" << escapeCStringLiteral(function.name) << "\", rdram, ctx, runtime); ";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1361: const std::string_view resolvedSyscallName = ps2_runtime_calls::resolveSyscallName(dispatchName);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1362: const std::string_view resolvedStubName = ps2_runtime_calls::resolveStubName(dispatchName);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1365: stub << "ps2_syscalls::" << resolvedSyscallName << "(rdram, ctx, runtime); ";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1369: stub << "ps2_stubs::" << resolvedStubName << "(rdram, ctx, runtime); ";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1377: stub << "ps2_stubs::TODO_NAMED(\"" << escapeCStringLiteral(dispatchName) << "\", rdram, ctx, runtime); ";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1388: throw std::runtime_error("Failed to generate function header");
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1428: stubFile << "#include \"ps2_runtime.h\"\n";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1459: throw std::runtime_error("Failed to open combined output: " + outputPath.string());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1599: throw std::runtime_error("Failed while writing combined output: " + outputPath.string());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1640: throw std::runtime_error("Internal error: combined output completion queue is missing index " + std::to_string(nextOutputIndex));
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1656: throw std::runtime_error("Failed to finish combined output: " + outputPath.string());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1690: throw std::runtime_error("Failed to write function output: " + generated.outputPath.string());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1855: throw std::runtime_error("Failed to write function registration file: " + registerPath.string());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1865: throw std::runtime_error("Failed to generate stub header");
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1884: ss << "#include \"ps2_runtime.h\"\n";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1908: ss << "void " << generatedName << "(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);\n";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1942: ss << "class PS2Runtime;\n\n";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1953: ss << "void " << finalName << "(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);\n";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2205: bool truncated = false;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2226: msg << "Invalid address 0x" << std::hex << address << " (truncating decode)";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2229: truncated = true;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2279: msg << "Error decoding instruction: " << e.what() << " (truncating decode)";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2282: truncated = true;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2297: if (truncated)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2328: return ps2_runtime_calls::isStubName(function.name);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2545: if (!ps2_runtime_calls::resolveSyscallName(name).empty())
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2549: if (!ps2_runtime_calls::resolveStubName(name).empty())
+ps2xRecomp\src\lib\regimm_translator.cpp:41: return fmt::format("if (GPR_S64(ctx, {}) >= (int64_t)(int32_t){}) {{ runtime->handleTrap(rdram, ctx); }}", inst.rs, inst.simmediate);
+ps2xRecomp\src\lib\regimm_translator.cpp:43: return fmt::format("if (GPR_U64(ctx, {}) >= (uint64_t)(int64_t)(int32_t){}) {{ runtime->handleTrap(rdram, ctx); }}", inst.rs, inst.simmediate);
+ps2xRecomp\src\lib\regimm_translator.cpp:45: return fmt::format("if (GPR_S64(ctx, {}) < (int64_t)(int32_t){}) {{ runtime->handleTrap(rdram, ctx); }}", inst.rs, inst.simmediate);
+ps2xRecomp\src\lib\regimm_translator.cpp:47: return fmt::format("if (GPR_U64(ctx, {}) < (uint64_t)(int64_t)(int32_t){}) {{ runtime->handleTrap(rdram, ctx); }}", inst.rs, inst.simmediate);
+ps2xRecomp\src\lib\regimm_translator.cpp:49: return fmt::format("if (GPR_S64(ctx, {}) == (int64_t)(int32_t){}) {{ runtime->handleTrap(rdram, ctx); }}", inst.rs, inst.simmediate);
+ps2xRecomp\src\lib\regimm_translator.cpp:51: return fmt::format("if (GPR_S64(ctx, {}) != (int64_t)(int32_t){}) {{ runtime->handleTrap(rdram, ctx); }}", inst.rs, inst.simmediate);
+ps2xRecomp\src\lib\special_translator.cpp:44: return fmt::format("ctx->pc = 0x{:X}u;\nruntime->handleSyscall(rdram, ctx, 0x{:X}u);",
+ps2xRecomp\src\lib\special_translator.cpp:48: return fmt::format("runtime->handleBreak(rdram, ctx);");
+ps2xRecomp\src\lib\special_translator.cpp:94: "        runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+ps2xRecomp\src\lib\special_translator.cpp:106: "if (ov) runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+ps2xRecomp\src\lib\special_translator.cpp:136: "if (((a ^ b) >= 0) && ((a ^ r) < 0)) runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+ps2xRecomp\src\lib\special_translator.cpp:148: "if (((a ^ b) < 0) && ((a ^ r) < 0)) runtime->SignalException(ctx, EXCEPTION_INTEGER_OVERFLOW); "
+ps2xRecomp\src\lib\special_translator.cpp:172: return fmt::format("if (GPR_S64(ctx, {}) >= GPR_S64(ctx, {})) {{ runtime->handleTrap(rdram, ctx); }}", inst.rs, inst.rt);
+ps2xRecomp\src\lib\special_translator.cpp:174: return fmt::format("if (GPR_U64(ctx, {}) >= GPR_U64(ctx, {})) {{ runtime->handleTrap(rdram, ctx); }}", inst.rs, inst.rt);
+ps2xRecomp\src\lib\special_translator.cpp:176: return fmt::format("if (GPR_S64(ctx, {}) < GPR_S64(ctx, {})) {{ runtime->handleTrap(rdram, ctx); }}", inst.rs, inst.rt);
+ps2xRecomp\src\lib\special_translator.cpp:178: return fmt::format("if (GPR_U64(ctx, {}) < GPR_U64(ctx, {})) {{ runtime->handleTrap(rdram, ctx); }}", inst.rs, inst.rt);
+ps2xRecomp\src\lib\special_translator.cpp:180: return fmt::format("if (GPR_U64(ctx, {}) == GPR_U64(ctx, {})) {{ runtime->handleTrap(rdram, ctx); }}", inst.rs, inst.rt);
+ps2xRecomp\src\lib\special_translator.cpp:182: return fmt::format("if (GPR_U64(ctx, {}) != GPR_U64(ctx, {})) {{ runtime->handleTrap(rdram, ctx); }}", inst.rs, inst.rt);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:160: "    runtime->executeVU0Microprogram(rdram, ctx, 0x{:X}); "
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:175: "    runtime->vu0StartMicroProgram(rdram, ctx, target_byte_addr); "
+ps2xRecomp\src\lib\vu_translator.cpp:218: return fmt::format("// VWAITQ (Q already resolved in this runtime)");
+ps2xRuntime\include\runtime\ps2_vu1.h:243: void run(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:153: // integer-truncated (FTOI0) after the divide instead.
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:196: void sceVpu0Reset(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:201: void sceVu0AddVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:218: void sceVu0ApplyMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:239: void sceVu0CameraMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:290: void sceVu0ClampVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:311: void sceVu0ClipAll(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:346: void sceVu0ClipScreen(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:358: void sceVu0ClipScreen3(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:380: void sceVu0CopyMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:393: void sceVu0CopyVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:406: void sceVu0CopyVectorXYZ(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:419: void sceVu0DivVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:437: void sceVu0DivVectorXYZ(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:455: void sceVu0DropShadowMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:516: void sceVu0ecossin(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:525: void sceVu0FTOI0Vector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:542: void sceVu0FTOI4Vector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:559: void sceVu0InnerProduct(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:580: void sceVu0InterVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:599: void sceVu0InterVectorXYZ(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:618: void sceVu0InversMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:631: void sceVu0ITOF0Vector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:648: void sceVu0ITOF12Vector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:665: void sceVu0ITOF4Vector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:682: void sceVu0LightColorMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:706: void sceVu0MulMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:723: void sceVu0MulVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:740: void sceVu0Normalize(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:762: void sceVu0NormalLightMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:773: // libvu0 runs ScaleVector(-1) then Normalize, which measures and scales xyz only and clears w,
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:805: void sceVu0OuterProduct(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:822: void sceVu0RotMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:839: void sceVu0RotMatrixX(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:860: void sceVu0RotMatrixY(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:881: void sceVu0RotMatrixZ(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:902: void sceVu0RotTransPers(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:919: void sceVu0RotTransPersN(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:945: void sceVu0ScaleVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:964: void sceVu0ScaleVectorXYZ(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:981: void sceVu0SubVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:998: void sceVu0TransMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:1016: void sceVu0TransposeMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:1036: void sceVu0UnitMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:1045: if (!writeGuestBytes(rdram, runtime, dstAddr, reinterpret_cast<const uint8_t *>(identity), sizeof(identity)))
+ps2xRuntime\src\lib\Kernel\Stubs\VU.cpp:1059: void sceVu0ViewScreenMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:7: void sceVu0ecossin(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:8: void sceVpu0Reset(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:9: void sceVu0AddVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:10: void sceVu0ApplyMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:11: void sceVu0CameraMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:12: void sceVu0ClampVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:13: void sceVu0ClipAll(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:14: void sceVu0ClipScreen(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:15: void sceVu0ClipScreen3(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:16: void sceVu0CopyMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:17: void sceVu0CopyVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:18: void sceVu0CopyVectorXYZ(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:19: void sceVu0DivVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:20: void sceVu0DivVectorXYZ(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:21: void sceVu0DropShadowMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:22: void sceVu0FTOI0Vector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:23: void sceVu0FTOI4Vector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:24: void sceVu0InnerProduct(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:25: void sceVu0InterVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:26: void sceVu0InterVectorXYZ(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:27: void sceVu0InversMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:28: void sceVu0ITOF0Vector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:29: void sceVu0ITOF12Vector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:30: void sceVu0ITOF4Vector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:31: void sceVu0LightColorMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:32: void sceVu0MulMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:33: void sceVu0MulVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:34: void sceVu0Normalize(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:35: void sceVu0NormalLightMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:36: void sceVu0OuterProduct(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:37: void sceVu0RotMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:38: void sceVu0RotMatrixX(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:39: void sceVu0RotMatrixY(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:40: void sceVu0RotMatrixZ(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:41: void sceVu0RotTransPers(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:42: void sceVu0RotTransPersN(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:43: void sceVu0ScaleVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:44: void sceVu0ScaleVectorXYZ(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:45: void sceVu0SubVector(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:46: void sceVu0TransMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:47: void sceVu0TransposeMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:48: void sceVu0UnitMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\Kernel\Stubs\VU.h:49: void sceVu0ViewScreenMatrix(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:2: #include "runtime/ps2_memory.h"
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:407: const uint32_t runTop = vif1_regs.tops & 0x3FFu;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:408: const uint32_t runItop = vif1_regs.itops & 0x3FFu;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:409: vif1_regs.top = runTop;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:410: vif1_regs.itop = runItop;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:420: m_vu1MscalCallback(startPC, runTop, runItop);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:425: const uint32_t runTop = vif1_regs.tops & 0x3FFu;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:426: const uint32_t runItop = vif1_regs.itops & 0x3FFu;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:427: vif1_regs.top = runTop;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:428: vif1_regs.itop = runItop;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:438: m_vu1MscntCallback(runTop, runItop);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:494: const bool truncated = qwCount > availableQw;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:512: if (truncated)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1: #include "runtime/ps2_vu1.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:2: #include "runtime/gs/ps2_gif_arbiter.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:3: #include "runtime/gs/gs_frontend.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:4: #include "runtime/ps2_memory.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1577: RUNTIME_ERROR(
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1608: run(vuCode, codeSize, vuData, dataSize, gs, memory, maxCycles);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1620: run(vuCode, codeSize, vuData, dataSize, gs, memory, maxCycles);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1623: void VU1Interpreter::run(uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:1: #include "runtime/ps2_vu1.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:2: #include "runtime/gs/ps2_gif_arbiter.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:3: #include "runtime/gs/gs_frontend.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:4: #include "runtime/ps2_memory.h"
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:1: #include "runtime/ps2_vu1.h"
+ps2xTest\src\ps2_vu_tests.cpp:2: #include "ps2_runtime.h"
+ps2xTest\src\ps2_vu_tests.cpp:3: #include "ps2_runtime_macros.h"
+ps2xTest\src\ps2_vu_tests.cpp:4: #include "runtime/ps2_memory.h"
+ps2xTest\src\ps2_vu_tests.cpp:36: PS2Runtime runtime;
+ps2xTest\src\ps2_vu_tests.cpp:84: tc.Run("MulVector_componentwise", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:92: ps2_stubs::sceVu0MulVector(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:100: tc.Run("ScaleVector_zero_scale_ignores_a2", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:109: ps2_stubs::sceVu0ScaleVector(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:116: tc.Run("ScaleVectorXYZ_scales_xyz", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:123: ps2_stubs::sceVu0ScaleVectorXYZ(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:130: tc.Run("ScaleVectorXYZ_w_passthrough", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:137: ps2_stubs::sceVu0ScaleVectorXYZ(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:143: tc.Run("ClampVector_low", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:151: ps2_stubs::sceVu0ClampVector(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:157: tc.Run("ClampVector_high", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:165: ps2_stubs::sceVu0ClampVector(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:171: tc.Run("DivVector_reciprocal", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:178: ps2_stubs::sceVu0DivVector(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:186: tc.Run("DivVector_divzero_zero", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:193: ps2_stubs::sceVu0DivVector(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:201: tc.Run("DivVectorXYZ_w_passthrough", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:208: ps2_stubs::sceVu0DivVectorXYZ(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:214: tc.Run("InterVector_lerp", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:223: ps2_stubs::sceVu0InterVector(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:230: tc.Run("InterVectorXYZ_w_from_a", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:239: ps2_stubs::sceVu0InterVectorXYZ(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:245: tc.Run("TransMatrix_adds_translation", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:258: ps2_stubs::sceVu0TransMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:265: tc.Run("TransMatrix_rows_unchanged", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:278: ps2_stubs::sceVu0TransMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:286: tc.Run("MulMatrix_identity_left", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:301: ps2_stubs::sceVu0MulMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:315: tc.Run("MulMatrix_pushes_arg2_rows_through_arg1_like_libvu0", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:348: ps2_stubs::sceVu0MulMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:362: tc.Run("MulMatrix_product_applies_second_operand_first", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:378: ps2_stubs::sceVu0MulMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:384: ps2_stubs::sceVu0ApplyMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:391: tc.Run("Normalize_and_InnerProduct_ignore_w", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:397: ps2_stubs::sceVu0Normalize(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:406: ps2_stubs::sceVu0InnerProduct(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:410: tc.Run("RotMatrix_Z_matches_RotMatrixZ", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:421: ps2_stubs::sceVu0RotMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:430: ps2_stubs::sceVu0RotMatrixZ(env2.rdram.data(), &env2.ctx, &env2.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:445: tc.Run("RotMatrix_X_matches_RotMatrixX", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:456: ps2_stubs::sceVu0RotMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:465: ps2_stubs::sceVu0RotMatrixX(env2.rdram.data(), &env2.ctx, &env2.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:480: tc.Run("RotMatrix_Y_matches_RotMatrixY", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:491: ps2_stubs::sceVu0RotMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:500: ps2_stubs::sceVu0RotMatrixY(env2.rdram.data(), &env2.ctx, &env2.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:515: tc.Run("RotMatrix_multi_axis_order", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:531: ps2_stubs::sceVu0RotMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:541: ps2_stubs::sceVu0RotMatrixZ(env2.rdram.data(), &env2.ctx, &env2.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:545: ps2_stubs::sceVu0RotMatrixY(env2.rdram.data(), &env2.ctx, &env2.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:549: ps2_stubs::sceVu0RotMatrixX(env2.rdram.data(), &env2.ctx, &env2.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:565: tc.Run("InversMatrix_transposes_rotation", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:576: ps2_stubs::sceVu0InversMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:582: tc.Run("InversMatrix_negRt_translation", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:593: ps2_stubs::sceVu0InversMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:605: tc.Run("InversMatrix_roundtrip_identity", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:614: ps2_stubs::sceVu0RotMatrixZ(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:621: ps2_stubs::sceVu0InversMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:630: ps2_stubs::sceVu0MulMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:647: tc.Run("InversMatrix_roundtrip_rigid", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:659: ps2_stubs::sceVu0RotMatrixZ(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:669: ps2_stubs::sceVu0InversMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:678: ps2_stubs::sceVu0MulMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:695: tc.Run("CameraMatrix_orthonormal_basis", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:705: ps2_stubs::sceVu0CameraMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:721: tc.Run("CameraMatrix_nonorigin_eye_maps_to_origin", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:735: ps2_stubs::sceVu0CameraMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:741: ps2_stubs::sceVu0ApplyMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:749: tc.Run("NormalLightMatrix_neg_normalized", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:759: ps2_stubs::sceVu0NormalLightMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:765: tc.Run("NormalLightMatrix_transposed", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:780: ps2_stubs::sceVu0NormalLightMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:787: tc.Run("NormalLightMatrix_ignores_light_w", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:798: ps2_stubs::sceVu0NormalLightMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:807: tc.Run("LightColorMatrix_verbatim_rows", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:819: ps2_stubs::sceVu0LightColorMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:826: tc.Run("RotTransPers_apply_persp_ftoi4", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:837: ps2_stubs::sceVu0RotTransPers(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:844: tc.Run("RotTransPers_ftoi0_zw_when_mode_nonzero", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:854: SET_GPR_U32(&env.ctx, 7, 1u); // libvu0: mode != 0 runs VFTOI0 on z/w (integer Z for 32-bit Z buffers)
+ps2xTest\src\ps2_vu_tests.cpp:855: ps2_stubs::sceVu0RotTransPers(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:859: "RotTransPers should keep x/y in 12.4 and FTOI0-truncate z/w when mode is nonzero");
+ps2xTest\src\ps2_vu_tests.cpp:862: tc.Run("RotTransPers_persp_wzero_zero", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:873: ps2_stubs::sceVu0RotTransPers(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:880: tc.Run("RotTransPers_nonidentity_matrix_apply", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:906: ps2_stubs::sceVu0RotTransPers(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:913: tc.Run("RotTransPersN_iterates", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:926: ps2_stubs::sceVu0RotTransPersN(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:934: tc.Run("ecossin_cos_sin", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:940: ps2_stubs::sceVu0ecossin(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:948: tc.Run("ClipScreen_inside_zero", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:953: ps2_stubs::sceVu0ClipScreen(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:957: tc.Run("ClipScreen_offscreen_nonzero", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:962: ps2_stubs::sceVu0ClipScreen(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:966: tc.Run("ClipScreen_negx_nonzero", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:972: ps2_stubs::sceVu0ClipScreen(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:976: tc.Run("ClipScreen_w_and_edges", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:981: ps2_stubs::sceVu0ClipScreen(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:985: ps2_stubs::sceVu0ClipScreen(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:989: tc.Run("ClipScreen3_ors_three", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:1000: ps2_stubs::sceVu0ClipScreen3(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:1004: tc.Run("ClipAll_all_out_returns_1", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:1019: ps2_stubs::sceVu0ClipAll(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:1023: tc.Run("ClipAll_one_in_returns_0", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:1038: ps2_stubs::sceVu0ClipAll(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:1042: tc.Run("ClipAll_w_scaling_homogeneous", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:1060: ps2_stubs::sceVu0ClipAll(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:1065: tc.Run("ClipAll_w_outside_far_bound_returns_1", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:1080: ps2_stubs::sceVu0ClipAll(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:1084: tc.Run("ViewScreenMatrix_zscale", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:1099: ps2_stubs::sceVu0ViewScreenMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:1105: tc.Run("ViewScreenMatrix_denom_zero", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:1120: ps2_stubs::sceVu0ViewScreenMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:1127: tc.Run("DropShadow_directional_mode", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:1137: ps2_stubs::sceVu0DropShadowMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu_tests.cpp:1143: tc.Run("DropShadow_point_mode", [](TestCase &t)
+ps2xTest\src\ps2_vu_tests.cpp:1153: ps2_stubs::sceVu0DropShadowMatrix(env.rdram.data(), &env.ctx, &env.runtime);
+ps2xTest\src\ps2_vu1_tests.cpp:2: #include "runtime/gs/ps2_gif_arbiter.h"
+ps2xTest\src\ps2_vu1_tests.cpp:3: #include "runtime/gs/gs_frontend.h"
+ps2xTest\src\ps2_vu1_tests.cpp:4: #include "runtime/gs/ps2_gs_psmct32.h"
+ps2xTest\src\ps2_vu1_tests.cpp:5: #include "runtime/ps2_memory.h"
+ps2xTest\src\ps2_vu1_tests.cpp:6: #include "runtime/ps2_vu1.h"
+ps2xTest\src\ps2_vu1_tests.cpp:220: tc.Run("upper ADD applies the destination mask", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:253: tc.Run("LOI commits the lower immediate after the upper instruction", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:286: tc.Run("ITOF converts the raw signed integer bits without float normalization", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:312: tc.Run("MTIR decodes fsf as a component selector", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:345: tc.Run("LQ and SQ use VI qword addressing and destination masks", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:386: tc.Run("integer lower ops keep VI0 hardwired to zero", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:406: tc.Run("XTOP and XITOP expose VIF TOP values to VI registers", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:421: tc.Run("lower branch commits after one delay-slot instruction", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:439: tc.Run("lower side sees old VF value when upper writes the same register", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:480: tc.Run("upper suppresses only the colliding lower VF write", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:525: tc.Run("upper and lower both read the pre-pair VF state", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:552: tc.Run("FMAC dependency stalls only the lanes that are read", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:582: tc.Run("ACC forwarding feeds the next upper instruction without a dependency stall", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:611: tc.Run("ILW result becomes visible after four cycles before IALU consumes it", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:637: tc.Run("DIV and SQRT update the Q register from selected vector components", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:661: tc.Run("FDIV resource serializes back-to-back scalar operations", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:693: tc.Run("FDIV commits current and sticky divide-invalid status", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:724: tc.Run("EFU WAITP and RNG execute with architectural latency and state", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:768: tc.Run("EFU resource observes throughput separately from P visibility", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:800: tc.Run("all EFU opcodes produce P at their architectural latency", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:845: tc.Run("E and enabled D/T stop with their architectural delay rules", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:942: tc.Run("conditional branch sees the previous VI value for one instruction", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1018: tc.Run("flag checks are visible to an immediately following branch", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1056: tc.Run("JR shares the one-instruction VI branch visibility rule", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1093: tc.Run("MPG upload invalidates cached VU1 decode before MSCAL", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1124: tc.Run("direct VU1 code writes invalidate cached decode", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1139: tc.Run("XGKICK sends a VU memory GIF packet through PATH1", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1205: tc.Run("XGKICK observes stores committed before a future PATH1 qword", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1259: tc.Run("a second XGKICK stalls until the active PATH1 transfer completes", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1314: tc.Run("synthetic Code Veronica text packet preserves black-frame PATH1 data", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1375: tc.Run("MSCAL can start a VU1 XGKICK program and update GS VRAM", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1454: tc.Run("standalone VU1 code honors the nullable PS2Memory API", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1471: tc.Run("VU1 status-immediate ops decode IMM12 and their target VI", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1502: tc.Run("VU1 FSSET enters the four-cycle flag pipeline", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1526: tc.Run("VU1 has one flag pipeline and FSSET wins a same-pair conflict", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1550: "the single runtime pipeline should commit FSSET sticky bits");
+ps2xTest\src\ps2_vu1_tests.cpp:1553: tc.Run("VU1 FMAC flags respect destination lanes and become visible after four cycles", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1602: tc.Run("VU1 CLIP and FCGET share the four-cycle flag timeline", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1636: tc.Run("VU1 FMAC normalizes overflow and underflow before writing results", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1668: tc.Run("FMAC product contributes Z/S/U/O sticky flags", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1693: tc.Run("reserved opcodes stop before executing or corrupting state", [](TestCase &t)
+ps2xRecomp\include\ps2recomp\Emitters\control_flow_emitter.h:70: void emitExternalJumpDispatch(uint32_t target, StaticBranchKind kind, std::string_view indent);
+ps2xRecomp\include\ps2recomp\Emitters\control_flow_emitter.h:71: void emitExternalRegisterCallDispatch(std::string_view jumpTargetExpression, std::string_view indent);
+ps2xRecomp\include\ps2recomp\Emitters\control_flow_emitter.h:72: void emitExternalRegisterJumpDispatch(std::string_view jumpTargetExpression, RegisterBranchKind kind, uint8_t rsReg, std::string_view indent);
+ps2xRecomp\include\ps2recomp\Emitters\control_flow_emitter.h:73: void emitRuntimeBranchDispatch(std::string_view targetExpression,
+ps2xRecomp\src\lib\control_flow_emitter.cpp:187: void ControlFlowEmitter::emitRuntimeBranchDispatch(std::string_view targetExpression,
+ps2xRecomp\src\lib\control_flow_emitter.cpp:196: "{}if (!runtime->dispatchGuestBranch(rdram, ctx, {}, 0x{:X}u, 0x{:X}u, PS2Runtime::GuestBranchKind::{}, \"{}\")) {{\n",
+ps2xRecomp\src\lib\control_flow_emitter.cpp:227: void ControlFlowEmitter::emitExternalJumpDispatch(uint32_t target, StaticBranchKind kind, std::string_view indent)
+ps2xRecomp\src\lib\control_flow_emitter.cpp:230: emitRuntimeBranchDispatch(fmt::format("0x{:X}u", target),
+ps2xRecomp\src\lib\control_flow_emitter.cpp:239: void ControlFlowEmitter::emitExternalRegisterCallDispatch(std::string_view jumpTargetExpression, std::string_view indent)
+ps2xRecomp\src\lib\control_flow_emitter.cpp:241: emitRuntimeBranchDispatch(jumpTargetExpression,
+ps2xRecomp\src\lib\control_flow_emitter.cpp:250: void ControlFlowEmitter::emitExternalRegisterJumpDispatch(std::string_view jumpTargetExpression,
+ps2xRecomp\src\lib\control_flow_emitter.cpp:260: m_ss << indent << "(void)runtime->dispatchGuestBranch(rdram, ctx, " << jumpTargetExpression
+ps2xRecomp\src\lib\control_flow_emitter.cpp:271: emitRuntimeBranchDispatch(jumpTargetExpression,
+ps2xRecomp\src\lib\control_flow_emitter.cpp:351: emitExternalJumpDispatch(target, kind, "    ");
+ps2xRecomp\src\lib\control_flow_emitter.cpp:384: emitExternalRegisterJumpDispatch("jumpTarget", kind, rsReg, "        ");
+ps2xRecomp\src\lib\control_flow_emitter.cpp:388: emitExternalRegisterCallDispatch("jumpTarget", "        ");
+ps2xRecomp\src\lib\function_emitter.cpp:229: // Fallthrough with no terminating branch: publish the next PC so the EE dispatcher does not re-enter this function.
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1353: std::string dispatchName = function.name;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1358: dispatchName = bindingIt->second;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1361: const std::string_view resolvedSyscallName = ps2_runtime_calls::resolveSyscallName(dispatchName);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1362: const std::string_view resolvedStubName = ps2_runtime_calls::resolveStubName(dispatchName);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1373: if (dispatchName.empty())
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1375: dispatchName = function.name;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1377: stub << "ps2_stubs::TODO_NAMED(\"" << escapeCStringLiteral(dispatchName) << "\", rdram, ctx, runtime); ";
+ps2xRecomp\include\ps2recomp\ps2_recompiler.h:73: std::unordered_set<uint32_t> m_skipFunctionStarts;
+ps2xRecomp\include\ps2recomp\ps2_recompiler.h:75: std::unordered_set<uint32_t> m_stubFunctionStarts;
+ps2xRecomp\include\ps2recomp\ps2_recompiler.h:76: std::unordered_map<uint32_t, std::string> m_stubHandlerBindingsByStart;
+ps2xRecomp\include\ps2recomp\ps2_recompiler.h:77: std::unordered_set<uint32_t> m_entryPointHintStarts;
+ps2xRecomp\include\ps2recomp\ps2_recompiler.h:78: std::unordered_set<uint32_t> m_correctnessCriticalFunctionStarts;
+ps2xRecomp\include\ps2recomp\ps2_recompiler.h:90: void collectCorrectnessCriticalFunctionStarts();
+ps2xRecomp\src\lib\function_emitter.cpp:60: auto resumeIt = cg.m_resumeEntryTargetsByOwner.find(function.start);
+ps2xRecomp\src\lib\function_emitter.cpp:76: ss << "// Address: 0x" << std::hex << function.start << " - 0x" << function.end << std::dec << "\n";
+ps2xRecomp\src\lib\function_emitter.cpp:78: std::string sanitizedName = cg.getFunctionName(function.start);
+ps2xRecomp\src\lib\function_emitter.cpp:82: nameBuilder << "Errorfunc_" << std::hex << function.start;
+ps2xRecomp\src\lib\function_emitter.cpp:102: ss << "    ctx->pc = 0x" << std::hex << function.start << "u;\n"
+ps2xRecomp\src\lib\function_table_emitter.cpp:65: std::string generatedName = cg.getFunctionName(function.start);
+ps2xRecomp\src\lib\function_table_emitter.cpp:69: libraryFunctions.emplace_back(function.start, generatedName);
+ps2xRecomp\src\lib\function_table_emitter.cpp:76: systemCallFunctions.emplace_back(function.start, generatedName);
+ps2xRecomp\src\lib\function_table_emitter.cpp:80: stubFunctions.emplace_back(function.start, generatedName);
+ps2xRecomp\src\lib\function_table_emitter.cpp:85: normalFunctions.emplace_back(function.start, generatedName);
+ps2xRecomp\src\lib\function_table_emitter.cpp:108: for (const auto &[ownerStart, targets] : cg.m_resumeEntryTargetsByOwner)
+ps2xRecomp\src\lib\function_table_emitter.cpp:110: const std::string ownerName = cg.getFunctionName(ownerStart);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:234: std::optional<uint32_t> start;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:255: selector.start = parsedAddress;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:267: selector.start = parsedAddress;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:294: std::unordered_set<uint32_t> existingStarts;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:297: existingStarts.insert(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:329: auto isSimpleReturnThunkStart = [](const Instruction &inst) -> bool
+ps2xRecomp\src\lib\ps2_recompiler.cpp:341: if (address < function.start || address >= function.end)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:351: auto decodedIt = decodedFunctions.find(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:366: if (!best || function.start > best->start)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:382: std::optional<uint32_t> containingStart;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:388: std::unordered_set<uint32_t> pendingStarts;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:397: if (existingStarts.contains(target) || pendingStarts.contains(target))
+ps2xRecomp\src\lib\ps2_recompiler.cpp:406: pending.containingStart = containingFunction->start;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:411: pendingStarts.insert(target);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:434: auto decodedIt = decodedFunctions.find(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:473: std::vector<uint32_t> boundaryStarts;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:474: boundaryStarts.reserve(existingStarts.size() + pendingStarts.size());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:475: boundaryStarts.insert(boundaryStarts.end(), existingStarts.begin(), existingStarts.end());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:476: boundaryStarts.insert(boundaryStarts.end(), pendingStarts.begin(), pendingStarts.end());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:477: std::sort(boundaryStarts.begin(), boundaryStarts.end());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:478: boundaryStarts.erase(std::unique(boundaryStarts.begin(), boundaryStarts.end()), boundaryStarts.end());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:480: auto findNextBoundaryStart = [&](uint32_t address) -> std::optional<uint32_t>
+ps2xRecomp\src\lib\ps2_recompiler.cpp:482: auto it = std::upper_bound(boundaryStarts.begin(), boundaryStarts.end(), address);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:483: if (it == boundaryStarts.end())
+ps2xRecomp\src\lib\ps2_recompiler.cpp:490: std::unordered_set<uint32_t> successfulStarts;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:500: entryFunction.start = target;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:505: if (pending.containingStart.has_value())
+ps2xRecomp\src\lib\ps2_recompiler.cpp:507: auto containingDecodedIt = decodedFunctions.find(*pending.containingStart);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:524: auto nextStartOpt = findNextBoundaryStart(target);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:525: if (nextStartOpt.has_value() && nextStartOpt.value() < sliceEndAddress)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:527: sliceEndAddress = nextStartOpt.value();
+ps2xRecomp\src\lib\ps2_recompiler.cpp:530: if (isSimpleReturnThunkStart(*sliceIt) &&
+ps2xRecomp\src\lib\ps2_recompiler.cpp:566: auto nextStartOpt = findNextBoundaryStart(target);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:567: if (nextStartOpt.has_value() && nextStartOpt.value() < entryEnd)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:569: entryEnd = nextStartOpt.value();
+ps2xRecomp\src\lib\ps2_recompiler.cpp:584: successfulStarts.insert(target);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:594: existingStarts.insert(successfulStarts.begin(), successfulStarts.end());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:597: { return a.start < b.start; });
+ps2xRecomp\src\lib\ps2_recompiler.cpp:606: std::vector<uint32_t> boundaryStarts;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:607: boundaryStarts.reserve(functions.size());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:614: boundaryStarts.push_back(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:617: std::sort(boundaryStarts.begin(), boundaryStarts.end());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:618: boundaryStarts.erase(std::unique(boundaryStarts.begin(), boundaryStarts.end()), boundaryStarts.end());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:635: if (address < function.start || address >= function.end)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:640: auto decodedIt = decodedFunctions.find(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:655: if (!best || function.start > best->start)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:677: const Function *containingFunction = findContainingFunction(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:679: auto nextIt = std::upper_bound(boundaryStarts.begin(), boundaryStarts.end(), function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:680: if (nextIt != boundaryStarts.end() && *nextIt < sliceEndAddress)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:685: if (sliceEndAddress <= function.start)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:693: auto containingDecodedIt = decodedFunctions.find(containingFunction->start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:702: auto entryDecodedIt = decodedFunctions.find(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:712: { return candidate.address == function.start; });
+ps2xRecomp\src\lib\ps2_recompiler.cpp:728: auto existingIt = decodedFunctions.find(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:751: decodedFunctions[function.start] = std::move(slicedInstructions);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:768: std::unordered_set<uint32_t> functionStarts;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:769: functionStarts.reserve(functions.size());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:772: functionStarts.insert(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:778: if (functionStarts.contains(entryAddress))
+ps2xRecomp\src\lib\ps2_recompiler.cpp:787: entryAddress <= function.start || entryAddress >= function.end)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:792: const auto decodedIt = decodedFunctions.find(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:805: if (!owner || function.start > owner->start)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:816: auto &targets = targetsByOwner[owner->start];
+ps2xRecomp\src\lib\ps2_recompiler.cpp:828: // Every instruction that follows an unconditional transfer and its delay slot starts a block no
+ps2xRecomp\src\lib\ps2_recompiler.cpp:852: const auto decodedIt = decodedFunctions.find(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:862: // Padding between functions is zero words; a routine never starts with one.
+ps2xRecomp\src\lib\ps2_recompiler.cpp:863: if (candidate.raw == 0u || candidate.address == function.start)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:866: targets = &targetsByOwner[function.start];
+ps2xRecomp\src\lib\ps2_recompiler.cpp:897: m_skipFunctionStarts.clear();
+ps2xRecomp\src\lib\ps2_recompiler.cpp:899: m_stubFunctionStarts.clear();
+ps2xRecomp\src\lib\ps2_recompiler.cpp:900: m_stubHandlerBindingsByStart.clear();
+ps2xRecomp\src\lib\ps2_recompiler.cpp:901: m_entryPointHintStarts.clear();
+ps2xRecomp\src\lib\ps2_recompiler.cpp:902: m_correctnessCriticalFunctionStarts.clear();
+ps2xRecomp\src\lib\ps2_recompiler.cpp:911: if (selector.start.has_value())
+ps2xRecomp\src\lib\ps2_recompiler.cpp:913: m_skipFunctionStarts.insert(*selector.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:923: if (selector.start.has_value())
+ps2xRecomp\src\lib\ps2_recompiler.cpp:925: m_stubFunctionStarts.insert(*selector.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:928: auto bindingIt = m_stubHandlerBindingsByStart.find(*selector.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:929: if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+ps2xRecomp\src\lib\ps2_recompiler.cpp:934: << std::hex << *selector.start
+ps2xRecomp\src\lib\ps2_recompiler.cpp:939: m_stubHandlerBindingsByStart[*selector.start] = selector.name;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:946: if (selector.start.has_value())
+ps2xRecomp\src\lib\ps2_recompiler.cpp:948: m_entryPointHintStarts.insert(*selector.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:970: collectCorrectnessCriticalFunctionStarts();
+ps2xRecomp\src\lib\ps2_recompiler.cpp:986: uint32_t bssStart = std::numeric_limits<uint32_t>::max();
+ps2xRecomp\src\lib\ps2_recompiler.cpp:992: bssStart = std::min(bssStart, sec.address);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1007: if (bssStart != std::numeric_limits<uint32_t>::max())
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1010: msg << "BSS range: 0x" << std::hex << bssStart << " - 0x" << bssEnd
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1011: << " (size 0x" << (bssEnd - bssStart) << "), gp=0x" << gp;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1025: if (bssStart != std::numeric_limits<uint32_t>::max() && bssEnd > bssStart)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1027: m_bootstrapInfo.bssStart = bssStart;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1032: m_bootstrapInfo.bssStart = 0;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1101: for (uint32_t initializerStart : m_correctnessCriticalFunctionStarts)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1105: [initializerStart](const Function &function)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1106: { return function.start == initializerStart; });
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1109: const auto bindingIt = m_stubHandlerBindingsByStart.find(initializerStart);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1110: if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1115: manualInitializer.start = initializerStart;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1116: manualInitializer.end = initializerStart + 4u;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1130: initializerStart,
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1137: for (const auto &[stubStart, handlerName] : m_stubHandlerBindingsByStart)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1148: return stubStart >= function.start &&
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1149: stubStart < std::max(function.end, function.start + 4u) &&
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1150: (function.start == stubStart || !isStubFunction(function));
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1158: stubEntry.start = stubStart;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1159: stubEntry.end = stubStart + 4u;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1186: function.start,
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1204: function.start,
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1221: function.start,
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1226: m_reporter.warningAt("decode", function.name, function.start, "Skipping function due decode failure");
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1283: std::stringstream expectedStartName;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1284: expectedStartName << "entry_" << std::hex << function.start;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1285: if (sanitized == expectedStartName.str())
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1294: ss << sanitized << "_0x" << std::hex << function.start;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1303: m_functionRenames[function.start] = makeName(function);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1315: { return fn.start == m_bootstrapInfo.entry; });
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1318: auto renameIt = m_functionRenames.find(entryIt->start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1337: std::string generatedName = m_codeGenerator->getFunctionName(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1354: const auto bindingIt = m_stubHandlerBindingsByStart.find(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1355: if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1382: m_generatedStubs[function.start] = stub.str();
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1424: return generatedStubs.at(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1435: stubFile << generatedStubs.at(function.start) << "\n";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1439: const auto &instructions = decodedFunctions.at(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1447: m_reporter.errorAt("codegen", function.name, function.start, msg.str());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1897: const std::string generatedName = m_codeGenerator->getFunctionName(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1951: std::string finalName = m_codeGenerator->getFunctionName(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1983: std::unordered_set<uint32_t> guestFallbackEntryAddresses = m_entryPointHintStarts;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1984: for (uint32_t address : m_stubFunctionStarts)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1986: const auto bindingIt = m_stubHandlerBindingsByStart.find(address);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:1987: if (bindingIt == m_stubHandlerBindingsByStart.end() ||
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2004: coveredEntryAddresses.insert(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2055: if (address < function.start || address >= function.end)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2060: auto decodedIt = m_decodedFunctions.find(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2075: if (!best || function.start > best->start)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2090: !isEntryFunctionName(function.name) && function.end > function.start)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2092: ownerRanges.emplace_back(function.start, function.end);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2122: if (isEntryFunctionName(function.name) && nestedInRealFunction(function.start))
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2127: auto decodedIt = m_decodedFunctions.find(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2137: auto &ownerTargets = m_resumeEntryTargetsByOwner[function.start];
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2153: if (owner->start == target)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2158: auto &targets = m_resumeEntryTargetsByOwner[owner->start];
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2168: msg << "registered " << postTransferTargets << " block start(s) after unconditional transfers as resume entries";
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2207: uint32_t start = function.start;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2210: // A branch in the last word still owns the word after it: when the next function starts on that delay
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2218: for (uint32_t address = start; address < end || endsInBranch(address); address += 4)
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2291: msg << "No decodable instructions found at 0x" << std::hex << function.start;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2292: m_reporter.warningAt("decode", function.name, function.start, msg.str());
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2302: m_decodedFunctions.insert_or_assign(function.start, std::move(instructions));
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2309: if (m_skipFunctionStarts.contains(function.start))
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2319: if (m_stubFunctionStarts.contains(function.start))
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2353: m_correctnessCriticalFunctionStarts.contains(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2359: const auto bindingIt = m_stubHandlerBindingsByStart.find(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2360: if (bindingIt != m_stubHandlerBindingsByStart.end() && !bindingIt->second.empty())
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2365: void PS2Recompiler::collectCorrectnessCriticalFunctionStarts()
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2367: m_correctnessCriticalFunctionStarts.clear();
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2384: m_correctnessCriticalFunctionStarts.insert(target);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2408: auto renameIt = m_functionRenames.find(function.start);
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2427: ss << "func_" << std::hex << function.start;
+ps2xRecomp\src\lib\ps2_recompiler.cpp:2434: suffix << "_0x" << std::hex << function.start;
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:175: "    runtime->vu0StartMicroProgram(rdram, ctx, target_byte_addr); "
+ps2xRuntime\include\runtime\ps2_vu1.h:54: uint32_t startPC = 0, uint32_t top = 0, uint32_t itop = 0,
+ps2xRuntime\include\runtime\ps2_vu1.h:277: void startXgkick(uint32_t qwordAddress);
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:405: uint32_t startPC = (uint32_t)imm * 8u;
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:420: m_vu1MscalCallback(startPC, runTop, runItop);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:929: void VU1Interpreter::startXgkick(uint32_t qwordAddress)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1590: uint32_t startPC, uint32_t top, uint32_t itop,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1594: m_state.pc = startPC & microAddressMask();
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:668: startXgkick(static_cast<uint32_t>(static_cast<uint16_t>(m_state.vi[viS])));
+ps2xTest\src\ps2_vu1_tests.cpp:1099: fx.mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+ps2xTest\src\ps2_vu1_tests.cpp:1107: startPC,
+ps2xTest\src\ps2_vu1_tests.cpp:1201: t.IsTrue(payloadOk, "wrapped payload should be copied from start of VU1 memory");
+ps2xTest\src\ps2_vu1_tests.cpp:1375: tc.Run("MSCAL can start a VU1 XGKICK program and update GS VRAM", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1420: mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+ps2xTest\src\ps2_vu1_tests.cpp:1428: startPC,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:18: VIF_MSCAL = 0x14,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:19: VIF_MSCALF = 0x15,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:369: // BASE only updates the base register. TOPS changes on OFFSET/MSCAL.
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:375: // ITOP VIFcode writes pending ITOPS; VU XITOP observes it after MSCAL/MSCNT.
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:403: else if (opcode == VIF_MSCAL || opcode == VIF_MSCALF)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:419: if (m_vu1MscalCallback)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:420: m_vu1MscalCallback(startPC, runTop, runItop);
+ps2xTest\src\ps2_vu1_tests.cpp:1093: tc.Run("MPG upload invalidates cached VU1 decode before MSCAL", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1099: fx.mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+ps2xTest\src\ps2_vu1_tests.cpp:1114: const uint32_t firstMscal = makeVifCmd(0x14u, 0u, 0u);
+ps2xTest\src\ps2_vu1_tests.cpp:1115: fx.mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&firstMscal), sizeof(firstMscal));
+ps2xTest\src\ps2_vu1_tests.cpp:1116: t.Equals(vu1.state().vi[1], 1, "first MSCAL should execute the first uploaded program");
+ps2xTest\src\ps2_vu1_tests.cpp:1119: const uint32_t secondMscal = makeVifCmd(0x14u, 0u, 0u);
+ps2xTest\src\ps2_vu1_tests.cpp:1120: fx.mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&secondMscal), sizeof(secondMscal));
+ps2xTest\src\ps2_vu1_tests.cpp:1121: t.Equals(vu1.state().vi[1], 2, "second MSCAL should see the MPG-updated instruction");
+ps2xTest\src\ps2_vu1_tests.cpp:1375: tc.Run("MSCAL can start a VU1 XGKICK program and update GS VRAM", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1420: mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+ps2xTest\src\ps2_vu1_tests.cpp:1434: const uint32_t mscalCmd = makeVifCmd(0x14u, 0u, 0u);
+ps2xTest\src\ps2_vu1_tests.cpp:1435: mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&mscalCmd), sizeof(mscalCmd));
+ps2xTest\src\ps2_vu1_tests.cpp:1451: t.IsTrue(imageOk, "MSCAL-triggered XGKICK should route PATH1 packet into GS VRAM");
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:20: VIF_MSCNT = 0x17,
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:375: // ITOP VIFcode writes pending ITOPS; VU XITOP observes it after MSCAL/MSCNT.
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:423: else if (opcode == VIF_MSCNT)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:437: if (m_vu1MscntCallback)
+ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:438: m_vu1MscntCallback(runTop, runItop);
+ps2xTest\src\ps2_vu1_tests.cpp:916: "MSCNT-style resume should continue at the stopped TPC");
+ps2xRuntime\include\runtime\ps2_vu1.h:75: PipelineXgkick
+ps2xRuntime\include\runtime\ps2_vu1.h:180: struct XgkickPipeline
+ps2xRuntime\include\runtime\ps2_vu1.h:219: XgkickPipeline m_xgkick{};
+ps2xRuntime\include\runtime\ps2_vu1.h:277: void startXgkick(uint32_t qwordAddress);
+ps2xRuntime\include\runtime\ps2_vu1.h:284: void progressXgkick();
+ps2xRuntime\include\runtime\ps2_vu1.h:285: void finishXgkick();
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:76: m_xgkick = {};
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:843: void VU1Interpreter::progressXgkick()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:845: if (!m_xgkick.active || !m_activeVuData || m_activeVuDataSize == 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:848: ++m_xgkick.cycleCredit;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:849: while (m_xgkick.active && m_xgkick.cycleCredit >= 2u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:851: m_xgkick.cycleCredit -= 2u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:852: if (m_xgkick.copiedBytes > XgkickPipeline::kBufferSize - 16u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:855: m_xgkick.active = false;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:859: const uint32_t qwordOffset = m_xgkick.copiedBytes;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:862: const uint32_t source = (m_xgkick.sourceAddress + m_xgkick.copiedBytes + i) % m_activeVuDataSize;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:863: m_xgkick.packet[m_xgkick.copiedBytes + i] = m_activeVuData[source];
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:865: m_xgkick.copiedBytes += 16u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:867: if (m_xgkick.currentTagEnd == 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:870: std::memcpy(&tagLo, m_xgkick.packet.data() + qwordOffset, sizeof(tagLo));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:887: m_xgkick.active = false;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:891: if (tagBytes > XgkickPipeline::kBufferSize - qwordOffset)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:894: m_xgkick.active = false;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:897: m_xgkick.currentTagEnd = qwordOffset + static_cast<uint32_t>(tagBytes);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:898: m_xgkick.currentTagEop = ((tagLo >> 15) & 1u) != 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:899: if (m_xgkick.currentTagEop)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:900: m_xgkick.totalBytes = m_xgkick.currentTagEnd;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:903: if (m_xgkick.copiedBytes >= m_xgkick.currentTagEnd)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:905: if (m_xgkick.currentTagEop)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:906: finishXgkick();
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:910: m_xgkick.currentTagEnd = 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:911: m_xgkick.currentTagEop = false;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:917: void VU1Interpreter::finishXgkick()
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:919: if (!m_xgkick.active)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:923: m_activeMemory->submitGifPacket(GifPathId::Path1, m_xgkick.packet.data(), m_xgkick.totalBytes);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:925: m_activeGs->processGIFPacket(m_xgkick.packet.data(), m_xgkick.totalBytes);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:926: m_xgkick.active = false;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:929: void VU1Interpreter::startXgkick(uint32_t qwordAddress)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:935: m_xgkick = {};
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:936: m_xgkick.active = true;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:937: m_xgkick.sourceAddress = sourceAddress;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:938: m_xgkick.cycleCredit = 1u; // XGKICK's issue cycle counts toward PATH1.
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:939: m_xgkick.issueCycle = m_cycle;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:949: progressXgkick();
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:960: if (m_fdiv.valid || m_xgkick.active)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1032: if (decoded.lowerUsage.pipeline == PipelineXgkick && m_xgkick.active)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1428: usage.pipeline = PipelineXgkick;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:667: case 0x6C: // XGKICK - send GIF packet from VU1 data memory
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:668: startXgkick(static_cast<uint32_t>(static_cast<uint16_t>(m_state.vi[viS])));
+ps2xTest\src\ps2_vu1_tests.cpp:1139: tc.Run("XGKICK sends a VU memory GIF packet through PATH1", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1188: t.Equals(captured.size(), static_cast<size_t>(1u), "XGKICK should emit one wrapped GIF packet");
+ps2xTest\src\ps2_vu1_tests.cpp:1205: tc.Run("XGKICK observes stores committed before a future PATH1 qword", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1255: "XGKICK must read each qword in its transfer cycle");
+ps2xTest\src\ps2_vu1_tests.cpp:1259: tc.Run("a second XGKICK stalls until the active PATH1 transfer completes", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1306: "the first XGKICK payload should be delivered first");
+ps2xTest\src\ps2_vu1_tests.cpp:1308: "the stalled XGKICK should retain its own source address");
+ps2xTest\src\ps2_vu1_tests.cpp:1311: "XGKICK resource stalls should consume VU cycles");
+ps2xTest\src\ps2_vu1_tests.cpp:1375: tc.Run("MSCAL can start a VU1 XGKICK program and update GS VRAM", [](TestCase &t)
+ps2xTest\src\ps2_vu1_tests.cpp:1451: t.IsTrue(imageOk, "MSCAL-triggered XGKICK should route PATH1 packet into GS VRAM");
+
+========== AUDIT STATUS ==========
+READ-ONLY AUDIT
+Production source modified: NO
+Backups created: NO
+Build/tests executed: NO
+Actual execution time: 0.47 seconds
+Next decision: determine whether VU1 execution is intentionally interpreter-backed or represents a recompilation gap.
