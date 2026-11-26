@@ -1,0 +1,1382 @@
+MARK OF KRI — COP1 BRANCH FIXTURE CONSTRUCTION AUDIT
+Timestamp: 2026-11-26 03:35:55
+MODE: READ-ONLY — NO SOURCE FILES MODIFIED
+
+===== ps2xRecomp\src\lib\control_flow_emitter.cpp : 1-155 =====
+    1: #include "ps2recomp/Emitters/control_flow_emitter.h"
+    2: 
+    3: #include "ps2recomp/control_flow_utils.h"
+    4: #include "ps2recomp/instructions.h"
+    5: #include "ps2recomp/r5900_decoder.h"
+    6: #include "ps2_runtime_calls.h"
+    7: 
+    8: #include <algorithm>
+    9: #include <fmt/format.h>
+   10: #include <sstream>
+   11: #include <utility>
+   12: 
+   13: namespace ps2recomp
+   14: {
+   15:     ControlFlowEmitter::ControlFlowEmitter(CodeGenerator &generator,
+   16:                                            const Instruction &branchInst,
+   17:                                            const Instruction &delaySlot,
+   18:                                            const Function &function,
+   19:                                            const CodeGenerator::AnalysisResult &analysisResult,
+   20:                                            std::string delaySlotOverride)
+   21:         : m_gen(generator),
+   22:           m_branchInst(branchInst),
+   23:           m_delaySlot(delaySlot),
+   24:           m_function(function),
+   25:           m_analysisResult(analysisResult),
+   26:           m_delaySlotOverride(std::move(delaySlotOverride))
+   27:     {
+   28:     }
+   29: 
+   30:     uint32_t ControlFlowEmitter::branchPc() const
+   31:     {
+   32:         return m_branchInst.address;
+   33:     }
+   34: 
+   35:     uint32_t ControlFlowEmitter::delayPc() const
+   36:     {
+   37:         return m_branchInst.address + 4u;
+   38:     }
+   39: 
+   40:     uint32_t ControlFlowEmitter::fallthroughPc() const
+   41:     {
+   42:         return m_branchInst.address + 8u;
+   43:     }
+   44: 
+   45:     bool ControlFlowEmitter::hasRealDelaySlot() const
+   46:     {
+   47:         return !m_delaySlotOverride.empty() || !isGuestNop(m_delaySlot);
+   48:     }
+   49: 
+   50:     bool ControlFlowEmitter::isCallLikeEdge() const
+   51:     {
+   52:         return (m_branchInst.opcode == OPCODE_JAL) ||
+   53:                (m_branchInst.opcode == OPCODE_SPECIAL && m_branchInst.function == SPECIAL_JALR);
+   54:     }
+   55: 
+   56:     bool ControlFlowEmitter::isInternalTarget(uint32_t target) const
+   57:     {
+   58:         return m_analysisResult.entryPoints.contains(target);
+   59:     }
+   60: 
+   61:     bool ControlFlowEmitter::isLikelyBranch() const
+   62:     {
+   63:         return (m_branchInst.opcode == OPCODE_BEQL || m_branchInst.opcode == OPCODE_BNEL ||
+   64:                 m_branchInst.opcode == OPCODE_BLEZL || m_branchInst.opcode == OPCODE_BGTZL ||
+   65:                 (m_branchInst.opcode == OPCODE_REGIMM &&
+   66:                  (m_branchInst.rt == REGIMM_BLTZL || m_branchInst.rt == REGIMM_BGEZL ||
+   67:                   m_branchInst.rt == REGIMM_BLTZALL || m_branchInst.rt == REGIMM_BGEZALL)) ||
+   68:                 (m_branchInst.opcode == OPCODE_COP1 && m_branchInst.rs == COP1_BC &&
+   69:                  (m_branchInst.rt == COP1_BC_BCFL || m_branchInst.rt == COP1_BC_BCTL)) ||
+   70:                 (m_branchInst.opcode == OPCODE_COP2 && m_branchInst.rs == COP2_BC &&
+   71:                  (m_branchInst.rt == COP2_BC_BCFL || m_branchInst.rt == COP2_BC_BCTL)));
+   72:     }
+   73: 
+   74:     std::vector<uint32_t> ControlFlowEmitter::resolvedLocalIndirectTargets() const
+   75:     {
+   76:         if (m_branchInst.opcode != OPCODE_SPECIAL)
+   77:         {
+   78:             return {};
+   79:         }
+   80: 
+   81:         if (!((m_branchInst.function == SPECIAL_JR && m_branchInst.rs != 31u) ||
+   82:               m_branchInst.function == SPECIAL_JALR))
+   83:         {
+   84:             return {};
+   85:         }
+   86: 
+   87:         auto jtIt = m_analysisResult.jumpTableTargets.find(m_branchInst.address);
+   88:         if (jtIt == m_analysisResult.jumpTableTargets.end())
+   89:         {
+   90:             return {};
+   91:         }
+   92: 
+   93:         std::vector<uint32_t> targets = jtIt->second;
+   94:         std::sort(targets.begin(), targets.end());
+   95:         targets.erase(std::unique(targets.begin(), targets.end()), targets.end());
+   96:         return targets;
+   97:     }
+   98: 
+   99:     std::string ControlFlowEmitter::delaySlotCode() const
+  100:     {
+  101:         if (!hasRealDelaySlot())
+  102:         {
+  103:             return {};
+  104:         }
+  105: 
+  106:         if (!m_delaySlotOverride.empty())
+  107:         {
+  108:             return m_delaySlotOverride;
+  109:         }
+  110: 
+  111:         std::string code;
+  112:         if (m_gen.m_emitInstructionComments)
+  113:         {
+  114:             code = "// 0x" + fmt::format("{:x}", m_delaySlot.address) + ": 0x" + fmt::format("{:x}", m_delaySlot.raw);
+  115:             std::string disassembly = R5900Decoder::disassembleInstruction(m_delaySlot);
+  116:             if (!disassembly.empty())
+  117:             {
+  118:                 code += "  " + disassembly;
+  119:             }
+  120:             code += " (Delay Slot)\n";
+  121:         }
+  122: 
+  123:         code += m_gen.translateInstruction(m_delaySlot);
+  124:         return code;
+  125:     }
+  126: 
+  127:     void ControlFlowEmitter::emitDelaySlot(std::string_view indent)
+  128:     {
+  129:         if (!hasRealDelaySlot())
+  130:         {
+  131:             return;
+  132:         }
+  133: 
+  134:         m_ss << fmt::format("{}ctx->pc = 0x{:X}u;\n", indent, delayPc());
+  135:         m_ss << fmt::format("{}ctx->in_delay_slot = true;\n", indent);
+  136:         m_ss << fmt::format("{}ctx->branch_pc = 0x{:X}u;\n", indent, branchPc());
+  137: 
+  138:         const std::string code = delaySlotCode();
+  139:         std::istringstream lines(code);
+  140:         std::string line;
+  141:         while (std::getline(lines, line))
+  142:         {
+  143:             if (!line.empty())
+  144:             {
+  145:                 m_ss << indent << line << "\n";
+  146:             }
+  147:         }
+  148: 
+  149:         m_ss << fmt::format("{}ctx->in_delay_slot = false;\n", indent);
+  150:     }
+  151: 
+  152:     void ControlFlowEmitter::emitResumeFromDelaySlotEntry()
+  153:     {
+  154:         if (!isInternalTarget(delayPc()))
+  155:         {
+
+===== ps2xRecomp\src\lib\control_flow_emitter.cpp : 390-455 =====
+  390: 
+  391:         m_ss << "    }\n";
+  392:     }
+  393: 
+  394:     std::string ControlFlowEmitter::conditionalBranchExpression() const
+  395:     {
+  396:         const uint8_t rsReg = static_cast<uint8_t>(m_branchInst.rs);
+  397:         const uint8_t rtReg = static_cast<uint8_t>(m_branchInst.rt);
+  398: 
+  399:         switch (m_branchInst.opcode)
+  400:         {
+  401:         case OPCODE_BEQ:
+  402:         case OPCODE_BEQL:
+  403:             return fmt::format("GPR_U64(ctx, {}) == GPR_U64(ctx, {})", rsReg, rtReg);
+  404:         case OPCODE_BNE:
+  405:         case OPCODE_BNEL:
+  406:             return fmt::format("GPR_U64(ctx, {}) != GPR_U64(ctx, {})", rsReg, rtReg);
+  407:         // Sign branches test all 64 bits: an ld of an IPU register yields 0x00000000_8xxxxxxx, which is positive.
+  408:         case OPCODE_BLEZ:
+  409:         case OPCODE_BLEZL:
+  410:             return fmt::format("GPR_S64(ctx, {}) <= 0", rsReg);
+  411:         case OPCODE_BGTZ:
+  412:         case OPCODE_BGTZL:
+  413:             return fmt::format("GPR_S64(ctx, {}) > 0", rsReg);
+  414:         case OPCODE_REGIMM:
+  415:             switch (m_branchInst.rt)
+  416:             {
+  417:             case REGIMM_BLTZ:
+  418:             case REGIMM_BLTZL:
+  419:             case REGIMM_BLTZAL:
+  420:             case REGIMM_BLTZALL:
+  421:                 return fmt::format("GPR_S64(ctx, {}) < 0", rsReg);
+  422:             case REGIMM_BGEZ:
+  423:             case REGIMM_BGEZL:
+  424:             case REGIMM_BGEZAL:
+  425:             case REGIMM_BGEZALL:
+  426:                 return fmt::format("GPR_S64(ctx, {}) >= 0", rsReg);
+  427:             default:
+  428:                 return "false";
+  429:             }
+  430:         case OPCODE_COP1:
+  431:             if (m_branchInst.rs == COP1_BC)
+  432:             {
+  433:                 const uint8_t bcCond = static_cast<uint8_t>(m_branchInst.rt);
+  434:                 return (bcCond == COP1_BC_BCF || bcCond == COP1_BC_BCFL)
+  435:                            ? "!(ctx->fcr31 & 0x800000)"
+  436:                            : "(ctx->fcr31 & 0x800000)";
+  437:             }
+  438:             break;
+  439:         case OPCODE_COP2:
+  440:             if (m_branchInst.rs == COP2_BC)
+  441:             {
+  442:                 const uint8_t bcCond = static_cast<uint8_t>(m_branchInst.rt);
+  443:                 return (bcCond == COP2_BC_BCF || bcCond == COP2_BC_BCFL)
+  444:                            ? "!(ctx->vu0_status & 0x1)"
+  445:                            : "(ctx->vu0_status & 0x1)";
+  446:             }
+  447:             break;
+  448:         default:
+  449:             break;
+  450:         }
+  451: 
+  452:         return "false";
+  453:     }
+  454: 
+  455:     uint32_t ControlFlowEmitter::conditionalBranchTarget() const
+
+===== ps2xRecomp\src\lib\control_flow_emitter.cpp : 554-625 =====
+  554:     std::string ControlFlowEmitter::emit()
+  555:     {
+  556:         (void)m_function;
+  557:         emitResumeFromDelaySlotEntry();
+  558:         m_ss << fmt::format("    ctx->pc = 0x{:X}u;\n", branchPc());
+  559: 
+  560:         if (m_branchInst.opcode == OPCODE_J || m_branchInst.opcode == OPCODE_JAL)
+  561:         {
+  562:             emitStaticJump(m_branchInst.opcode == OPCODE_JAL ? StaticBranchKind::Call : StaticBranchKind::Jump);
+  563:         }
+  564:         else if (m_branchInst.opcode == OPCODE_SPECIAL &&
+  565:                  (m_branchInst.function == SPECIAL_JR || m_branchInst.function == SPECIAL_JALR))
+  566:         {
+  567:             emitRegisterJump(m_branchInst.function == SPECIAL_JALR ? RegisterBranchKind::Call : RegisterBranchKind::Jump);
+  568:         }
+  569:         else if (m_branchInst.isBranch)
+  570:         {
+  571:             emitConditionalBranch();
+  572:         }
+  573:         else
+  574:         {
+  575:             emitFallbackInstruction();
+  576:         }
+  577: 
+  578:         emitFallthroughLabelIfNeeded();
+  579:         emitFinalFallthrough();
+  580:         return m_ss.str();
+  581:     }
+  582: }
+
+===== ps2xTest\src\generate_fpu_execution_fixture.cpp : 1-330 =====
+    1: #include "ps2recomp/code_generator.h"
+    2: #include "ps2recomp/instructions.h"
+    3: #include "ps2recomp/types.h"
+    4: 
+    5: #include <fstream>
+    6: #include <iostream>
+    7: #include <stdexcept>
+    8: #include <string>
+    9: #include <unordered_map>
+   10: #include <vector>
+   11: 
+   12: using namespace ps2recomp;
+   13: 
+   14: int main(int argc, char** argv)
+   15: {
+   16:     if (argc != 2)
+   17:     {
+   18:         std::cerr << "Usage: generate_fpu_execution_fixture <output.cpp>\n";
+   19:         return 2;
+   20:     }
+   21: 
+   22:     const struct Op
+   23:     {
+   24:         const char* name;
+   25:         uint32_t function;
+   26:     } ops[] = {
+   27:         {"generated_fpu_adda", COP1_S_ADDA},
+   28:         {"generated_fpu_suba", COP1_S_SUBA},
+   29:         {"generated_fpu_mula", COP1_S_MULA},
+   30:         {"generated_fpu_madd", COP1_S_MADD},
+   31:         {"generated_fpu_msub", COP1_S_MSUB},
+   32:         {"generated_fpu_madda", COP1_S_MADDA},
+   33:         {"generated_fpu_msuba", COP1_S_MSUBA}
+   34:     };
+   35: 
+   36:     const struct Op scalarOps[] = {
+   37:         {"generated_fpu_add", COP1_S_ADD},
+   38:         {"generated_fpu_sub", COP1_S_SUB},
+   39:         {"generated_fpu_mul", COP1_S_MUL},
+   40:         {"generated_fpu_div", COP1_S_DIV},
+   41:         {"generated_fpu_sqrt", COP1_S_SQRT},
+   42:         {"generated_fpu_abs", COP1_S_ABS},
+   43:         {"generated_fpu_mov", COP1_S_MOV},
+   44:         {"generated_fpu_neg", COP1_S_NEG},
+   45:         {"generated_fpu_rsqrt", COP1_S_RSQRT},
+   46:         {"generated_fpu_max", COP1_S_MAX},
+   47:         {"generated_fpu_min", COP1_S_MIN},
+   48:         {"generated_fpu_cvt_w", COP1_S_CVT_W}
+   49:     };
+   50:     std::vector<Symbol> symbols;
+   51:     std::vector<Section> sections;
+   52:     CodeGenerator generator(symbols, sections);
+   53: 
+   54:     std::unordered_map<uint32_t, std::string> names;
+   55:     std::vector<Function> functions;
+   56:     std::vector<std::vector<Instruction>> instructionSets;
+   57: 
+   58:     constexpr uint32_t base = 0x00100000u;
+   59: 
+   60:     const struct TransferOp
+   61:     {
+   62:         const char* name;
+   63:         uint32_t rs;
+   64:         uint32_t rt;
+   65:         uint32_t rd;
+   66:         uint32_t function;
+   67:     } transferOps[] = {
+   68:         {"generated_fpu_mfc1", COP1_MF, 2, 1, 0},
+   69:         {"generated_fpu_mtc1", COP1_MT, 2, 1, 0},
+   70:         {"generated_fpu_cfc1", COP1_CF, 2, 31, 0},
+   71:         {"generated_fpu_ctc1", COP1_CT, 2, 31, 0}
+   72:     };
+   73: 
+   74:     for (size_t i = 0; i < std::size(transferOps); ++i)
+   75:     {
+   76:         // Keep COP1 transfer fixtures outside every existing fixture range.
+   77:         // Current compare fixtures occupy base + 0x180 through base + 0x270.
+   78:         const uint32_t address =
+   79:             base + 0x300u + static_cast<uint32_t>(i * 0x10u);
+   80: 
+   81:         Instruction inst{};
+   82:         inst.address = address;
+   83:         inst.opcode = OPCODE_COP1;
+   84:         inst.rs = transferOps[i].rs;
+   85:         inst.rt = transferOps[i].rt;
+   86:         inst.rd = transferOps[i].rd;
+   87:         inst.sa = 0;
+   88:         inst.function = transferOps[i].function;
+   89: 
+   90:         Function function{};
+   91:         function.name = transferOps[i].name;
+   92:         function.start = address;
+   93:         function.end = address + 4u;
+   94:         function.instructions.push_back(inst);
+   95: 
+   96:         names.emplace(address, transferOps[i].name);
+   97:         functions.push_back(function);
+   98:         instructionSets.push_back({inst});
+   99:     }
+  100:     for (size_t i = 0; i < std::size(ops); ++i)
+  101:     {
+  102:         const uint32_t address = base + static_cast<uint32_t>(i * 0x10u);
+  103: 
+  104:         Instruction inst{};
+  105:         inst.address = address;
+  106:         inst.opcode = OPCODE_COP1;
+  107:         inst.rs = COP1_S;
+  108:         inst.rt = 2;             // ft
+  109:         inst.rd = 1;             // fs
+  110:         inst.sa = 3;             // fd
+  111:         inst.function = ops[i].function;
+  112: 
+  113:         Function function{};
+  114:         function.name = ops[i].name;
+  115:         function.start = address;
+  116:         function.end = address + 4u;
+  117:         function.instructions.push_back(inst);
+  118: 
+  119:         names.emplace(address, ops[i].name);
+  120:         functions.push_back(function);
+  121:         instructionSets.push_back({inst});
+  122:     }
+  123: 
+  124:     constexpr uint32_t sequenceAddress = base + 0x70u;
+  125: 
+  126:     Instruction mula{};
+  127:     mula.address = sequenceAddress;
+  128:     mula.opcode = OPCODE_COP1;
+  129:     mula.rs = COP1_S;
+  130:     mula.rt = 2;
+  131:     mula.rd = 1;
+  132:     mula.sa = 3;
+  133:     mula.function = COP1_S_MULA;
+  134: 
+  135:     Instruction madda{};
+  136:     madda.address = sequenceAddress + 4u;
+  137:     madda.opcode = OPCODE_COP1;
+  138:     madda.rs = COP1_S;
+  139:     madda.rt = 2;
+  140:     madda.rd = 1;
+  141:     madda.sa = 3;
+  142:     madda.function = COP1_S_MADDA;
+  143: 
+  144:     Function sequence{};
+  145:     sequence.name = "generated_fpu_sequence_mula_madda";
+  146:     sequence.start = sequenceAddress;
+  147:     sequence.end = sequenceAddress + 8u;
+  148:     sequence.instructions.push_back(mula);
+  149:     sequence.instructions.push_back(madda);
+  150: 
+  151:     names.emplace(sequenceAddress, sequence.name);
+  152: 
+  153:     // CVT.S.W uses COP1.W, not COP1.S.
+  154:     {
+  155:         constexpr uint32_t address = base + 0x140u;
+  156: 
+  157:         Instruction inst{};
+  158:         inst.address = address;
+  159:         inst.opcode = OPCODE_COP1;
+  160:         inst.rs = COP1_W;
+  161:         inst.rt = 0;
+  162:         inst.rd = 1;
+  163:         inst.sa = 3;
+  164:         inst.function = COP1_W_CVT_S;
+  165: 
+  166:         Function function{};
+  167:         function.name = "generated_fpu_cvt_s_w";
+  168:         function.start = address;
+  169:         function.end = address + 4u;
+  170:         function.instructions.push_back(inst);
+  171: 
+  172:         names.emplace(address, function.name);
+  173:         functions.push_back(function);
+  174:         instructionSets.push_back({inst});
+  175:     }
+  176:     for (size_t i = 0; i < std::size(scalarOps); ++i)
+  177:     {
+  178:         const uint32_t address =
+  179:             base + 0x80u + static_cast<uint32_t>(i * 0x10u);
+  180: 
+  181:         Instruction inst{};
+  182:         inst.address = address;
+  183:         inst.opcode = OPCODE_COP1;
+  184:         inst.rs = COP1_S;
+  185:         inst.rt = 2;
+  186:         inst.rd = 1;
+  187:         inst.sa = 3;
+  188:         inst.function = scalarOps[i].function;
+  189: 
+  190:         Function function{};
+  191:         function.name = scalarOps[i].name;
+  192:         function.start = address;
+  193:         function.end = address + 4u;
+  194:         function.instructions.push_back(inst);
+  195: 
+  196:         names.emplace(address, scalarOps[i].name);
+  197:         functions.push_back(function);
+  198:         instructionSets.push_back({inst});
+  199:     }
+  200:     const Op compareOps[] = {
+  201:         {"generated_fpu_c_f",    COP1_S_C_F},
+  202:         {"generated_fpu_c_un",   COP1_S_C_UN},
+  203:         {"generated_fpu_c_eq",   COP1_S_C_EQ},
+  204:         {"generated_fpu_c_ueq",  COP1_S_C_UEQ},
+  205:         {"generated_fpu_c_olt",  COP1_S_C_OLT},
+  206:         {"generated_fpu_c_ult",  COP1_S_C_ULT},
+  207:         {"generated_fpu_c_ole",  COP1_S_C_OLE},
+  208:         {"generated_fpu_c_ule",  COP1_S_C_ULE},
+  209:         {"generated_fpu_c_sf",   COP1_S_C_SF},
+  210:         {"generated_fpu_c_ngle", COP1_S_C_NGLE},
+  211:         {"generated_fpu_c_seq",  COP1_S_C_SEQ},
+  212:         {"generated_fpu_c_ngl",  COP1_S_C_NGL},
+  213:         {"generated_fpu_c_lt",   COP1_S_C_LT},
+  214:         {"generated_fpu_c_nge",  COP1_S_C_NGE},
+  215:         {"generated_fpu_c_le",   COP1_S_C_LE},
+  216:         {"generated_fpu_c_ngt",  COP1_S_C_NGT},
+  217:     };
+  218: 
+  219:     for (size_t i = 0; i < std::size(compareOps); ++i)
+  220:     {
+  221:         const uint32_t address =
+  222:             base + 0x180u + static_cast<uint32_t>(i * 0x10u);
+  223: 
+  224:         Instruction inst{};
+  225:         inst.address = address;
+  226:         inst.opcode = OPCODE_COP1;
+  227:         inst.rs = COP1_S;
+  228:         inst.rt = 2;
+  229:         inst.rd = 1;
+  230:         inst.sa = 3;
+  231:         inst.function = compareOps[i].function;
+  232: 
+  233:         Function function{};
+  234:         function.name = compareOps[i].name;
+  235:         function.start = address;
+  236:         function.end = address + 4u;
+  237:         function.instructions.push_back(inst);
+  238: 
+  239:         names.emplace(address, compareOps[i].name);
+  240:         functions.push_back(function);
+  241:         instructionSets.push_back({inst});
+  242:     }
+  243:     // Reserved gap: base + 0x280 through base + 0x2B0.
+  244:     generator.setRenamedFunctions(names);
+  245:     generator.setEmitInstructionComments(false);
+  246: 
+  247:     std::ofstream out(argv[1], std::ios::binary | std::ios::trunc);
+  248:     if (!out)
+  249:         throw std::runtime_error("Could not create generated fixture source");
+  250: 
+  251:     out << "#include \"ps2_runtime.h\"\n";
+  252:     out << "#include \"ps2_runtime_macros.h\"\n";
+  253:     out << "#include <cstdint>\n\n";
+  254: 
+  255:     for (size_t i = 0; i < functions.size(); ++i)
+  256:     {
+  257:         const std::string emitted =
+  258:             generator.generateFunction(functions[i], instructionSets[i], false);
+  259: 
+  260:         if (emitted.find("runtime->") != std::string::npos ||
+  261:             emitted.find("runtime.") != std::string::npos)
+  262:         {
+  263:             throw std::runtime_error(
+  264:                 std::string("Generated function unexpectedly accesses runtime: ") +
+  265:                 functions[i].name);
+  266:         }
+  267: 
+  268:         out << emitted << "\n\n";
+  269:     }
+  270: 
+  271:     const std::string sequenceEmitted =
+  272:         generator.generateFunction(sequence, sequence.instructions, false);
+  273: 
+  274:     if (sequenceEmitted.find("runtime->") != std::string::npos ||
+  275:         sequenceEmitted.find("runtime.") != std::string::npos)
+  276:     {
+  277:         throw std::runtime_error(
+  278:             "Generated sequence unexpectedly accesses runtime");
+  279:     }
+  280: 
+  281:     out << sequenceEmitted << "\n\n";
+  282: 
+  283:     out.close();
+  284:     if (!out)
+  285:         throw std::runtime_error("Failed while writing generated fixture source");
+  286: 
+  287:     std::cout << "Generated " << functions.size()
+  288:               << " guest-instruction functions: " << argv[1] << "\n";
+  289:     return 0;
+  290: }
+  291: 
+  292: 
+  293: 
+  294: 
+
+===== ps2xTest\src\generated_fpu_execution_tests.cpp : 1-175 =====
+    1: #include "MiniTest.h"
+    2: #include "ps2_runtime.h"
+    3: #include "ps2_runtime_macros.h"
+    4: 
+    5: #include <cstdint>
+    6: #include <cstring>
+    7: #include <limits>
+    8: #include <string>
+    9: 
+   10: using GeneratedFpuFunction =
+   11:     void (*)(uint8_t*, R5900Context*, PS2Runtime*);
+   12: 
+   13: void generated_fpu_adda(uint8_t*, R5900Context*, PS2Runtime*);
+   14: void generated_fpu_suba(uint8_t*, R5900Context*, PS2Runtime*);
+   15: void generated_fpu_mula(uint8_t*, R5900Context*, PS2Runtime*);
+   16: void generated_fpu_madd(uint8_t*, R5900Context*, PS2Runtime*);
+   17: void generated_fpu_msub(uint8_t*, R5900Context*, PS2Runtime*);
+   18: void generated_fpu_madda(uint8_t*, R5900Context*, PS2Runtime*);
+   19: void generated_fpu_msuba(uint8_t*, R5900Context*, PS2Runtime*);
+   20: void generated_fpu_add(uint8_t*, R5900Context*, PS2Runtime*);
+   21: void generated_fpu_sub(uint8_t*, R5900Context*, PS2Runtime*);
+   22: void generated_fpu_mul(uint8_t*, R5900Context*, PS2Runtime*);
+   23: void generated_fpu_div(uint8_t*, R5900Context*, PS2Runtime*);
+   24: void generated_fpu_sqrt(uint8_t*, R5900Context*, PS2Runtime*);
+   25: void generated_fpu_abs(uint8_t*, R5900Context*, PS2Runtime*);
+   26: void generated_fpu_mov(uint8_t*, R5900Context*, PS2Runtime*);
+   27: void generated_fpu_neg(uint8_t*, R5900Context*, PS2Runtime*);
+   28: void generated_fpu_rsqrt(uint8_t*, R5900Context*, PS2Runtime*);
+   29: void generated_fpu_max(uint8_t*, R5900Context*, PS2Runtime*);
+   30: void generated_fpu_min(uint8_t*, R5900Context*, PS2Runtime*);
+   31: void generated_fpu_cvt_w(uint8_t*, R5900Context*, PS2Runtime*);
+   32: void generated_fpu_cvt_s_w(uint8_t*, R5900Context*, PS2Runtime*);
+   33: void generated_fpu_sequence_mula_madda(uint8_t*, R5900Context*, PS2Runtime*);
+   34: void generated_fpu_c_f(uint8_t*, R5900Context*, PS2Runtime*);
+   35: void generated_fpu_c_un(uint8_t*, R5900Context*, PS2Runtime*);
+   36: void generated_fpu_c_eq(uint8_t*, R5900Context*, PS2Runtime*);
+   37: void generated_fpu_c_ueq(uint8_t*, R5900Context*, PS2Runtime*);
+   38: void generated_fpu_c_olt(uint8_t*, R5900Context*, PS2Runtime*);
+   39: void generated_fpu_c_ult(uint8_t*, R5900Context*, PS2Runtime*);
+   40: void generated_fpu_c_ole(uint8_t*, R5900Context*, PS2Runtime*);
+   41: void generated_fpu_c_ule(uint8_t*, R5900Context*, PS2Runtime*);
+   42: void generated_fpu_c_sf(uint8_t*, R5900Context*, PS2Runtime*);
+   43: void generated_fpu_c_ngle(uint8_t*, R5900Context*, PS2Runtime*);
+   44: void generated_fpu_c_seq(uint8_t*, R5900Context*, PS2Runtime*);
+   45: void generated_fpu_c_ngl(uint8_t*, R5900Context*, PS2Runtime*);
+   46: void generated_fpu_c_lt(uint8_t*, R5900Context*, PS2Runtime*);
+   47: void generated_fpu_c_nge(uint8_t*, R5900Context*, PS2Runtime*);
+   48: void generated_fpu_c_le(uint8_t*, R5900Context*, PS2Runtime*);
+   49: void generated_fpu_c_ngt(uint8_t*, R5900Context*, PS2Runtime*);
+   50: void generated_fpu_mfc1(uint8_t*, R5900Context*, PS2Runtime*);
+   51: void generated_fpu_mtc1(uint8_t*, R5900Context*, PS2Runtime*);
+   52: void generated_fpu_cfc1(uint8_t*, R5900Context*, PS2Runtime*);
+   53: void generated_fpu_ctc1(uint8_t*, R5900Context*, PS2Runtime*);
+   54: 
+   55: static R5900Context makeGeneratedFpuContext()
+   56: {
+   57:     R5900Context ctx{};
+   58:     ctx.f[1] = 2.0f;
+   59:     ctx.f[2] = 3.0f;
+   60:     ctx.f[3] = 0.0f;
+   61:     ctx.f_acc = 5.0f;
+   62:     return ctx;
+   63: }
+   64: 
+   65: void register_generated_fpu_execution_tests()
+   66: {
+   67:     MiniTest::Case("GeneratedFPUExecution", [](TestCase& tc)
+   68:     {
+   69: 
+   70:     // COP1 transfer execution coverage.
+   71:     tc.Run("generated COP1 transfers", [](TestCase& t) {
+   72:         R5900Context ctx{};
+   73:         R5900Context* ctxPtr = &ctx;
+   74:         PS2Runtime runtime{};
+   75: 
+   76:         // MFC1: FPR raw IEEE-754 bits -> GPR low 32 bits.
+   77:         std::memset(&ctx, 0, sizeof(ctx));
+   78:         uint32_t mfc1Bits = 0x3FC12345u;
+   79:         std::memcpy(&ctx.f[1], &mfc1Bits, sizeof(mfc1Bits));
+   80:         generated_fpu_mfc1(nullptr, &ctx, &runtime);
+   81:         t.Equals(
+   82:             GPR_U32(ctxPtr, 2),
+   83:             0x3FC12345u,
+   84:             "MFC1 preserves FPR bit pattern"
+   85:         );
+   86: 
+   87:         // MTC1: GPR low 32 bits -> FPR raw IEEE-754 bits.
+   88:         std::memset(&ctx, 0, sizeof(ctx));
+   89:         SET_GPR_U32(ctxPtr, 2, 0xBF912345u);
+   90:         generated_fpu_mtc1(nullptr, &ctx, &runtime);
+   91: 
+   92:         uint32_t mtc1Bits = 0;
+   93:         std::memcpy(&mtc1Bits, &ctx.f[1], sizeof(mtc1Bits));
+   94: 
+   95:         t.Equals(
+   96:             mtc1Bits,
+   97:             0xBF912345u,
+   98:             "MTC1 preserves GPR bit pattern"
+   99:         );
+  100: 
+  101:         // CFC1: FCR31 -> GPR low 32 bits.
+  102:         std::memset(&ctx, 0, sizeof(ctx));
+  103:         ctx.fcr31 = 0x0183FFFFu;
+  104:         generated_fpu_cfc1(nullptr, &ctx, &runtime);
+  105:         t.Equals(
+  106:             GPR_U32(ctxPtr, 2),
+  107:             0x0183FFFFu,
+  108:             "CFC1 reads FCR31"
+  109:         );
+  110: 
+  111:         // CTC1: GPR low 32 bits -> writable FCR31 bits only.
+  112:         std::memset(&ctx, 0, sizeof(ctx));
+  113:         SET_GPR_U32(ctxPtr, 2, 0xFFFFFFFFu);
+  114:         generated_fpu_ctc1(nullptr, &ctx, &runtime);
+  115:         t.Equals(
+  116:             ctx.fcr31,
+  117:             0x0183FFFFu,
+  118:             "CTC1 applies FCR31 mask"
+  119:         );
+  120:     });
+  121:     // COP1.S comparison execution coverage.
+  122:     tc.Run("generated COP1.S comparisons", [](TestCase& t) {
+  123:         R5900Context ctx{};
+  124:         PS2Runtime runtime{};
+  125: 
+  126:         auto run = [&](GeneratedFpuFunction fn, float fs, float ft, bool initialCondition) {
+  127:             std::memset(&ctx, 0, sizeof(ctx));
+  128:             ctx.f[1] = fs;
+  129:             ctx.f[2] = ft;
+  130:             ctx.fcr31 = initialCondition ? 0x800000u : 0u;
+  131:             fn(nullptr, &ctx, &runtime);
+  132:             return (ctx.fcr31 & 0x800000u) != 0;
+  133:         };
+  134: 
+  135:         const float qnan = std::numeric_limits<float>::quiet_NaN();
+  136: 
+  137:         t.IsFalse(run(generated_fpu_c_f, 1.0f, 2.0f, false), "C.F false");
+  138:         t.IsFalse(run(generated_fpu_c_f, 1.0f, 2.0f, true), "C.F clears condition");
+  139:         t.IsFalse(run(generated_fpu_c_un, 1.0f, 2.0f, false), "C.UN ordered");
+  140:         t.IsTrue(run(generated_fpu_c_un, qnan, 2.0f, false), "C.UN unordered");
+  141:         t.IsTrue(run(generated_fpu_c_eq, 2.0f, 2.0f, false), "C.EQ equal");
+  142:         t.IsFalse(run(generated_fpu_c_eq, 1.0f, 2.0f, true), "C.EQ unequal");
+  143:         t.IsTrue(run(generated_fpu_c_ueq, qnan, 2.0f, false), "C.UEQ unordered");
+  144:         t.IsFalse(run(generated_fpu_c_ueq, 1.0f, 2.0f, true), "C.UEQ unequal");
+  145:         t.IsTrue(run(generated_fpu_c_olt, 1.0f, 2.0f, false), "C.OLT less");
+  146:         t.IsFalse(run(generated_fpu_c_olt, 2.0f, 1.0f, true), "C.OLT greater");
+  147:         t.IsTrue(run(generated_fpu_c_ult, qnan, 2.0f, false), "C.ULT unordered");
+  148:         t.IsFalse(run(generated_fpu_c_ult, 2.0f, 1.0f, true), "C.ULT greater");
+  149:         t.IsTrue(run(generated_fpu_c_ole, 1.0f, 2.0f, false), "C.OLE less");
+  150:         t.IsFalse(run(generated_fpu_c_ole, 2.0f, 1.0f, true), "C.OLE greater");
+  151:         t.IsTrue(run(generated_fpu_c_ule, qnan, 2.0f, false), "C.ULE unordered");
+  152:         t.IsFalse(run(generated_fpu_c_ule, 2.0f, 1.0f, true), "C.ULE greater");
+  153:         t.IsFalse(run(generated_fpu_c_sf, 1.0f, 2.0f, false), "C.SF false");
+  154:         t.IsFalse(run(generated_fpu_c_sf, 1.0f, 2.0f, true), "C.SF clears condition");
+  155:         t.IsTrue(run(generated_fpu_c_ngle, qnan, 2.0f, false), "C.NGLE unordered");
+  156:         t.IsFalse(run(generated_fpu_c_ngle, 1.0f, 2.0f, true), "C.NGLE ordered");
+  157:         t.IsTrue(run(generated_fpu_c_seq, 2.0f, 2.0f, false), "C.SEQ equal");
+  158:         t.IsFalse(run(generated_fpu_c_seq, 1.0f, 2.0f, true), "C.SEQ unequal");
+  159:         t.IsTrue(run(generated_fpu_c_ngl, qnan, 2.0f, false), "C.NGL unordered");
+  160:         t.IsFalse(run(generated_fpu_c_ngl, 1.0f, 2.0f, true), "C.NGL unequal");
+  161:         t.IsTrue(run(generated_fpu_c_lt, 1.0f, 2.0f, false), "C.LT less");
+  162:         t.IsFalse(run(generated_fpu_c_lt, 2.0f, 1.0f, true), "C.LT greater");
+  163:         t.IsTrue(run(generated_fpu_c_nge, qnan, 2.0f, false), "C.NGE unordered");
+  164:         t.IsFalse(run(generated_fpu_c_nge, 2.0f, 1.0f, true), "C.NGE greater");
+  165:         t.IsTrue(run(generated_fpu_c_le, 1.0f, 2.0f, false), "C.LE less");
+  166:         t.IsFalse(run(generated_fpu_c_le, 2.0f, 1.0f, true), "C.LE greater");
+  167:         t.IsTrue(run(generated_fpu_c_ngt, qnan, 2.0f, false), "C.NGT unordered");
+  168:         t.IsFalse(run(generated_fpu_c_ngt, 2.0f, 1.0f, true), "C.NGT greater");
+  169:     });
+  170:     {
+  171:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+  172:             auto ctx = makeGeneratedFpuContext();
+  173:             ctx.f_acc = 9.0f;
+  174:             generated_fpu_adda(nullptr, &ctx, nullptr);
+  175:             t.Equals(ctx.f_acc, 5.0f, "ADDA.S overwrites prior accumulator");
+
+===== ps2xTest\src\generated_fpu_execution_tests.cpp : 430-590 =====
+  430:                     std::memcpy(&input, &edge.inputBits, sizeof(input));
+  431: 
+  432:                     auto ctx = makeGeneratedFpuContext();
+  433:                     ctx.f[1] = input;
+  434:                     ctx.fcr31 = mode;
+  435:                     generated_fpu_cvt_w(nullptr, &ctx, nullptr);
+  436: 
+  437:                     int32_t actual = 0;
+  438:                     std::memcpy(&actual, &ctx.f[3], sizeof(actual));
+  439: 
+  440:                     t.Equals(actual, edge.expected,
+  441:                         std::string(edge.label) + " (FCR31 mode " +
+  442:                         std::to_string(mode) + ")");
+  443:                 }
+  444:             }
+  445:         });
+  446:         tc.Run("generated COP1.S comparisons update FCR31 condition bit", [](TestCase& t) {
+  447:             struct CompareCase
+  448:             {
+  449:                 const char* name;
+  450:                 GeneratedFpuFunction fn;
+  451:                 bool orderedTrue;
+  452:                 bool unorderedTrue;
+  453:             };
+  454: 
+  455:             const CompareCase cases[] = {
+  456:                 {"C.F",    generated_fpu_c_f,    false, false},
+  457:                 {"C.UN",   generated_fpu_c_un,   false, true},
+  458:                 {"C.EQ",   generated_fpu_c_eq,   false, false},
+  459:                 {"C.UEQ",  generated_fpu_c_ueq,  false, true},
+  460:                 {"C.OLT",  generated_fpu_c_olt,  true,  false},
+  461:                 {"C.ULT",  generated_fpu_c_ult,  true,  true},
+  462:                 {"C.OLE",  generated_fpu_c_ole,  true,  false},
+  463:                 {"C.ULE",  generated_fpu_c_ule,  true,  true},
+  464:                 {"C.SF",   generated_fpu_c_sf,   false, false},
+  465:                 {"C.NGLE", generated_fpu_c_ngle, false, true},
+  466:                 {"C.SEQ",  generated_fpu_c_seq,  false, false},
+  467:                 {"C.NGL",  generated_fpu_c_ngl,  false, true},
+  468:                 {"C.LT",   generated_fpu_c_lt,   true,  false},
+  469:                 {"C.NGE",  generated_fpu_c_nge,  true,  true},
+  470:                 {"C.LE",   generated_fpu_c_le,   true,  false},
+  471:                 {"C.NGT",  generated_fpu_c_ngt,  true,  true},
+  472:             };
+  473: 
+  474:             constexpr uint32_t conditionBit = 0x800000u;
+  475:             const float qnan = std::numeric_limits<float>::quiet_NaN();
+  476: 
+  477:             for (const auto& c : cases)
+  478:             {
+  479:                 // Ordered finite case.
+  480:                 {
+  481:                     auto ctx = makeGeneratedFpuContext();
+  482:                     ctx.f[1] = 1.0f;
+  483:                     ctx.f[2] = 2.0f;
+  484:                     ctx.fcr31 = 0;
+  485: 
+  486:                     c.fn(nullptr, &ctx, nullptr);
+  487: 
+  488:                     t.Equals(
+  489:                         c.orderedTrue ? conditionBit : 0u,
+  490:                         ctx.fcr31 & conditionBit,
+  491:                         c.name);
+  492:                 }
+  493: 
+  494:                 // FALSE must clear a previously-set condition bit.
+  495:                 {
+  496:                     auto ctx = makeGeneratedFpuContext();
+  497:                     ctx.f[1] = 2.0f;
+  498:                     ctx.f[2] = 1.0f;
+  499:                     ctx.fcr31 = conditionBit;
+  500: 
+  501:                     c.fn(nullptr, &ctx, nullptr);
+  502: 
+  503:                     t.Equals(
+  504:                         0u,
+  505:                         ctx.fcr31 & conditionBit,
+  506:                         c.name);
+  507:                 }
+  508: 
+  509:                 // qNaN in fs.
+  510:                 {
+  511:                     auto ctx = makeGeneratedFpuContext();
+  512:                     ctx.f[1] = qnan;
+  513:                     ctx.f[2] = 1.0f;
+  514:                     ctx.fcr31 = 0;
+  515: 
+  516:                     c.fn(nullptr, &ctx, nullptr);
+  517: 
+  518:                     t.Equals(
+  519:                         c.unorderedTrue ? conditionBit : 0u,
+  520:                         ctx.fcr31 & conditionBit,
+  521:                         c.name);
+  522:                 }
+  523: 
+  524:                 // qNaN in ft.
+  525:                 {
+  526:                     auto ctx = makeGeneratedFpuContext();
+  527:                     ctx.f[1] = 1.0f;
+  528:                     ctx.f[2] = qnan;
+  529:                     ctx.fcr31 = 0;
+  530: 
+  531:                     c.fn(nullptr, &ctx, nullptr);
+  532: 
+  533:                     t.Equals(
+  534:                         c.unorderedTrue ? conditionBit : 0u,
+  535:                         ctx.fcr31 & conditionBit,
+  536:                         c.name);
+  537:                 }
+  538: 
+  539:                 // +0 == -0 for equality predicates.
+  540:                 {
+  541:                     auto ctx = makeGeneratedFpuContext();
+  542:                     ctx.f[1] = 0.0f;
+  543:                     ctx.f[2] = -0.0f;
+  544:                     ctx.fcr31 = 0;
+  545: 
+  546:                     c.fn(nullptr, &ctx, nullptr);
+  547: 
+  548:                     const bool expected =
+  549:                         std::strcmp(c.name, "C.EQ") == 0 ||
+  550:                         std::strcmp(c.name, "C.UEQ") == 0 ||
+  551:                         std::strcmp(c.name, "C.SEQ") == 0 ||
+  552:                         std::strcmp(c.name, "C.NGL") == 0 ||
+  553:                         std::strcmp(c.name, "C.OLE") == 0 ||
+  554:                         std::strcmp(c.name, "C.ULE") == 0 ||
+  555:                         std::strcmp(c.name, "C.LE") == 0 ||
+  556:                         std::strcmp(c.name, "C.NGT") == 0;
+  557: 
+  558:                     t.Equals(
+  559:                         expected ? conditionBit : 0u,
+  560:                         ctx.fcr31 & conditionBit,
+  561:                         c.name);
+  562:                 }
+  563:             }
+  564:         });
+  565:         tc.Run("generated MULA.S then MADDA.S consumes live accumulator", [](TestCase& t) {
+  566:             auto ctx = makeGeneratedFpuContext();
+  567:             ctx.f_acc = 99.0f;
+  568:             generated_fpu_sequence_mula_madda(nullptr, &ctx, nullptr);
+  569:             t.Equals(ctx.f_acc, 12.0f, "MADDA.S consumes MULA.S accumulator");
+  570:             t.Equals(ctx.pc, 0x100078u, "two-instruction sequence final PC");
+  571:         });
+  572:     }
+  573:     });
+  574: }
+  575: 
+  576: 
+  577: 
+  578: 
+  579: 
+
+===== ps2xTest\CMakeLists.txt : 1-240 =====
+    1: cmake_minimum_required(VERSION 3.21)
+    2: 
+    3: project(ps2xTest LANGUAGES C CXX)
+    4: 
+    5: set(CMAKE_CXX_STANDARD 20)
+    6: set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    7: 
+    8: include(CTest)
+    9: if(BUILD_TESTING)
+   10:     add_subdirectory(gs_cache)
+   11: endif()
+   12: 
+   13: # Static library with test logic (no main), used by ps2xStudio
+   14: add_library(ps2_test_function_table OBJECT
+   15:     src/test_function_table.cpp
+   16: )
+   17: 
+   18: target_include_directories(ps2_test_function_table PRIVATE
+   19:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+   20:     ${CMAKE_SOURCE_DIR}/ps2xIOP/include
+   21: )
+   22: 
+   23: add_library(ps2_test_lib STATIC
+   24:     src/code_generator_tests.cpp
+   25:     src/r5900_decoder_tests.cpp
+   26:     src/elf_analyzer_tests.cpp
+   27:     src/pad_input_tests.cpp
+   28:     src/ps2_runtime_io_tests.cpp
+   29:     src/ps2_runtime_kernel_tests.cpp
+   30:     src/ps2_runtime_interrupt_tests.cpp
+   31:     src/ps2_memory_tests.cpp
+   32:     src/ps2_vu1_tests.cpp
+   33:     src/ps2_vu_tests.cpp
+   34:     src/ps2_gs_tests.cpp
+   35:     src/ps2_iop_tests.cpp
+   36:     src/ps2_sif_rpc_tests.cpp
+   37:     src/ps2_sif_dma_tests.cpp
+   38:     src/ps2_recompiler_tests.cpp
+   39:     src/ps2_runtime_expansion_tests.cpp
+   40:     src/ps2_float_semantics_tests.cpp
+   41:     src/ps2_audio_stream_tests.cpp
+   42: )
+   43: 
+   44: # Build-time generator for genuine emitted FPU guest functions.
+   45: add_executable(ps2_generate_fpu_execution_fixture
+   46:     src/generate_fpu_execution_fixture.cpp
+   47: )
+   48: target_link_libraries(ps2_generate_fpu_execution_fixture PRIVATE ps2_recomp_lib)
+   49: 
+   50: set(GENERATED_FPU_EXECUTION_SOURCE
+   51:     "${CMAKE_CURRENT_BINARY_DIR}/generated_fpu_execution_fixture.cpp"
+   52: )
+   53: 
+   54: add_custom_command(
+   55:     OUTPUT "${GENERATED_FPU_EXECUTION_SOURCE}"
+   56:     COMMAND $<TARGET_FILE:ps2_generate_fpu_execution_fixture>
+   57:             "${GENERATED_FPU_EXECUTION_SOURCE}"
+   58:     DEPENDS ps2_generate_fpu_execution_fixture
+   59:     VERBATIM
+   60: )
+   61: 
+   62: set_source_files_properties(
+   63:     "${GENERATED_FPU_EXECUTION_SOURCE}"
+   64:     PROPERTIES GENERATED TRUE
+   65: )
+   66: 
+   67: target_sources(ps2_test_lib PRIVATE
+   68:     src/generated_fpu_execution_tests.cpp
+   69:     "${GENERATED_FPU_EXECUTION_SOURCE}"
+   70: )
+   71: target_include_directories(ps2_test_lib PRIVATE
+   72:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+   73:     ${CMAKE_SOURCE_DIR}/ps2xRecomp/include
+   74:     ${CMAKE_SOURCE_DIR}/ps2xAnalyzer/include
+   75:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+   76:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/src/lib
+   77: )
+   78: 
+   79: target_link_libraries(ps2_test_lib PRIVATE
+   80:     ps2_recomp_lib
+   81:     ps2_analyzer_lib
+   82:     ps2_runtime
+   83:     ps2_iop
+   84: )
+   85: 
+   86: if(UNIX AND NOT APPLE)
+   87:     target_link_libraries(ps2_test_lib PRIVATE ${CMAKE_DL_LIBS})
+   88: endif()
+   89: 
+   90: add_executable(ps2x_tests
+   91:     src/main.cpp
+   92:     $<TARGET_OBJECTS:ps2_test_function_table>
+   93: )
+   94: 
+   95: option(PRINT_GENERATED_CODE "Print generated code in tests" OFF)
+   96: if(PRINT_GENERATED_CODE)
+   97: 
+   98:     target_compile_definitions(ps2x_tests PRIVATE PRINT_GENERATED_CODE)
+   99:     target_compile_definitions(ps2_test_lib PRIVATE PRINT_GENERATED_CODE)
+  100: endif()
+  101: 
+  102: target_include_directories(ps2x_tests PRIVATE
+  103:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+  104:     ${CMAKE_SOURCE_DIR}/ps2xRecomp/include
+  105:     ${CMAKE_SOURCE_DIR}/ps2xAnalyzer/include
+  106:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+  107: )
+  108: 
+  109: target_link_libraries(ps2x_tests PRIVATE
+  110:     ps2_test_lib
+  111:     ps2_recomp_lib
+  112:     ps2_analyzer_lib
+  113:     ps2_runtime
+  114: )
+  115: 
+  116: # VU/GS tests intentionally instantiate large interpreter state.
+  117: # Windows executables default to a much smaller stack than Linux, and
+  118: # sanitizer/debug instrumentation can push these test frames over 1 MiB.
+  119: if(MSVC)
+  120:     target_link_options(ps2x_tests PRIVATE "/STACK:8388608")
+  121: elseif(MINGW)
+  122:     target_link_options(ps2x_tests PRIVATE "--stack,8388608")
+  123: endif()
+  124: 
+  125: if(COMMAND ps2x_stage_ffmpeg_runtime_dlls)
+  126:     ps2x_stage_ffmpeg_runtime_dlls(ps2x_tests)
+  127: endif()
+  128: 
+  129: include("${CMAKE_SOURCE_DIR}/ps2xRuntime/cmake/ReleaseMode.cmake")
+  130: 
+  131: if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  132:     EnableFastReleaseMode(ps2_test_lib)
+  133:     EnableFastReleaseMode(ps2x_tests)
+  134: endif()
+  135: 
+  136: 
+  137: # Isolated generated FPU execution tests.
+  138: add_executable(ps2x_fpu_execution_tests src/fpu_execution_main.cpp)
+  139: target_sources(ps2x_fpu_execution_tests PRIVATE
+  140:     $<TARGET_OBJECTS:ps2_test_function_table>
+  141: )
+  142: target_include_directories(ps2x_fpu_execution_tests PRIVATE
+  143:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+  144:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+  145: )
+  146: target_link_libraries(ps2x_fpu_execution_tests PRIVATE
+  147:     ps2_test_lib ps2_recomp_lib ps2_analyzer_lib ps2_runtime
+  148: )
+  149: if(MSVC)
+  150:     target_link_options(ps2x_fpu_execution_tests PRIVATE "/STACK:8388608")
+  151: endif()
+  152: if(COMMAND ps2x_stage_ffmpeg_runtime_dlls)
+  153:     ps2x_stage_ffmpeg_runtime_dlls(ps2x_fpu_execution_tests)
+  154: endif()
+  155: if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  156:     EnableFastReleaseMode(ps2x_fpu_execution_tests)
+  157: endif()
+
+===== ps2xRecomp\include\ps2recomp\types.h : 1-180 =====
+    1: #ifndef PS2RECOMP_TYPES_H
+    2: #define PS2RECOMP_TYPES_H
+    3: 
+    4: #include <string>
+    5: #include <vector>
+    6: #include <cstdint>
+    7: #include <unordered_map>
+    8: #include <map>
+    9: 
+   10: namespace ps2recomp
+   11: {
+   12: 
+   13:     // Instruction representation
+   14:     struct Instruction
+   15:     {
+   16:         uint32_t address;
+   17:         uint32_t opcode;
+   18:         uint32_t rs;         // Source register
+   19:         uint32_t rt;         // Target register
+   20:         uint32_t rd;         // Destination register
+   21:         uint32_t sa;         // Shift amount
+   22:         uint32_t function;   // Function code for R-type instructions
+   23:         uint32_t immediate;  // Immediate value for I-type instructions
+   24:         uint32_t simmediate; // Sign-extended immediate value (extended to 32 bits)
+   25:         uint32_t target;     // Jump target for J-type instructions
+   26:         uint32_t raw;        // Raw instruction value
+   27: 
+   28:         // Instruction type flags
+   29:         bool isMMI;        // Is MMI instruction (PS2 specific)
+   30:         bool isVU;         // Is VU instruction (PS2 specific)
+   31:         bool isBranch;     // Is branch instruction
+   32:         bool isJump;       // Is jump instruction
+   33:         bool isCall;       // Is function call
+   34:         bool isReturn;     // Is return instruction
+   35:         bool hasDelaySlot; // Has delay slot
+   36:         bool isMultimedia; // PS2-specific multimedia operations
+   37:         bool isStore;      // Is store instruction
+   38:         bool isLoad;       // Is load instruction
+   39: 
+   40:         // Additional PS2-specific fields
+   41:         uint8_t mmiType;        // 0=MMI0, 1=MMI1, 2=MMI2, 3=MMI3
+   42:         uint8_t mmiFunction;    // Function within MMI type
+   43:         uint8_t pmfhlVariation; // For PMFHL instructions
+   44:         uint8_t vuFunction;     // For VU instructions
+   45: 
+   46:         bool isMmio = false;
+   47:         uint32_t mmioAddress = 0;
+   48:         std::string disassembly;
+   49: 
+   50:         struct
+   51:         {
+   52:             bool isVector;       // Uses vector operations
+   53:             bool usesQReg;       // Uses Q register
+   54:             bool usesPReg;       // Uses P register
+   55:             bool modifiesMAC;    // Modifies MAC flags
+   56:             uint8_t vectorField; // xyzw field mask
+   57:             uint8_t fsf;         // Field select for FS reg (bits 10-11)
+   58:             uint8_t ftf;         // Source Field select for FT reg (bits 8-9)
+   59:         } vectorInfo;
+   60: 
+   61:         struct
+   62:         {
+   63:             bool modifiesGPR;     // Modifies general purpose register
+   64:             bool modifiesFPR;     // Modifies floating point register
+   65:             bool modifiesVFR;     // Modifies vector float register
+   66:             bool modifiesVIR;     // Modifies vector integer register
+   67:             bool modifiesVIC;     // Modifies vector integer control register
+   68:             bool modifiesMemory;  // Modifies memory
+   69:             bool modifiesControl; // Modifies control register
+   70:         } modificationInfo;
+   71: 
+   72:         Instruction() : address(0), opcode(0), rs(0), rt(0), rd(0), sa(0), function(0),
+   73:                         immediate(0), simmediate(0), target(0), raw(0),
+   74:                         isMMI(false), isVU(false), isBranch(false), isJump(false), isCall(false),
+   75:                         isReturn(false), hasDelaySlot(false), isMultimedia(false), isStore(false), isLoad(false),
+   76:                         mmiType(0), mmiFunction(0), pmfhlVariation(0), vuFunction(0), isMmio(false), mmioAddress(0)
+   77:         {
+   78:             vectorInfo = {};
+   79:             modificationInfo = {};
+   80:         }
+   81:     };
+   82: 
+   83:     struct MemoryAccessHint
+   84:     {
+   85:         bool hasAddress = false;
+   86:         uint32_t address = 0;
+   87:     };
+   88: 
+   89:     // Function information
+   90:     struct Function
+   91:     {
+   92:         std::string name;
+   93:         uint32_t start;
+   94:         uint32_t end;
+   95:         std::vector<Instruction> instructions;
+   96:         std::vector<uint32_t> callers;
+   97:         std::vector<uint32_t> callees;
+   98:         bool isRecompiled = false;
+   99:         bool isStub = false;
+  100:         bool isSkipped = false;
+  101:     };
+  102: 
+  103:     // Symbol information
+  104:     struct Symbol
+  105:     {
+  106:         std::string name;
+  107:         uint32_t address;
+  108:         uint32_t size;
+  109:         bool isFunction;
+  110:         bool isImported;
+  111:         bool isExported;
+  112:     };
+  113: 
+  114:     // Section information
+  115:     struct Section
+  116:     {
+  117:         std::string name;
+  118:         uint32_t address;
+  119:         uint32_t size;
+  120:         uint32_t offset;
+  121:         bool isCode;
+  122:         bool isData;
+  123:         bool isBSS;
+  124:         bool isReadOnly;
+  125:         uint8_t *data;
+  126:     };
+  127: 
+  128:     // Relocation information
+  129:     struct Relocation
+  130:     {
+  131:         uint32_t offset;
+  132:         uint32_t info;
+  133:         uint32_t symbol;
+  134:         std::string symbolName;
+  135:         uint32_t type;
+  136:         int32_t addend;
+  137:     };
+  138: 
+  139:     // Jump table entry
+  140:     struct JumpTableEntry
+  141:     {
+  142:         uint32_t index;
+  143:         uint32_t target;
+  144:     };
+  145: 
+  146:     // Jump table
+  147:     struct JumpTable
+  148:     {
+  149:         uint32_t address;
+  150:         uint32_t baseRegister;
+  151:         std::vector<JumpTableEntry> entries;
+  152:     };
+  153: 
+  154:     // Control flow graph
+  155:     struct CFGNode
+  156:     {
+  157:         uint32_t startAddress;
+  158:         uint32_t endAddress;
+  159:         std::vector<Instruction> instructions;
+  160:         std::vector<uint32_t> predecessors;
+  161:         std::vector<uint32_t> successors;
+  162:         bool isJumpTarget;
+  163:         bool hasJumpTable;
+  164:         JumpTable jumpTable;
+  165:     };
+  166: 
+  167:     // Function call
+  168:     struct FunctionCall
+  169:     {
+  170:         uint32_t callerAddress;
+  171:         uint32_t calleeAddress;
+  172:         std::string calleeName;
+  173:     };
+  174: 
+  175:     // Recompiler configuration
+  176:     struct RecompilerConfig
+  177:     {
+  178:         std::string inputPath;
+  179:         std::string outputPath;
+  180:         std::string ghidraMapPath;
+
+===== ps2xRecomp\include\ps2recomp\instruction.h : 1-180 =====
+ERROR: FILE NOT FOUND
+
+===== BRANCH / DELAY-SLOT CONSTRUCTION REFERENCES =====
+
+--- Pattern: hasDelaySlot ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:24: inst.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:35: inst.hasDelaySlot = false;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:117: inst.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:130: inst.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:142: inst.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:153: inst.hasDelaySlot = false;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:556: j.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:796: j.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:863: j.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:890: j.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:947: j.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1720: br.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1756: branch.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1810: br.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2214: tailJump.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:24: inst.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:35: inst.hasDelaySlot = false;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:117: inst.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:130: inst.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:142: inst.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:153: inst.hasDelaySlot = false;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:556: j.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:796: j.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:863: j.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:890: j.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:947: j.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:1720: br.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:1758: br.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:2162: tailJump.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.bak_20261125_172510:24: inst.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.bak_20261125_172510:35: inst.hasDelaySlot = false;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.bak_20261125_172510:117: inst.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.bak_20261125_172510:130: inst.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.bak_20261125_172510:142: inst.hasDelaySlot = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.bak_20261125_172510:153: inst.hasDelaySlot = false;
+
+--- Pattern: COP1_BC_BCF ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1787: check(0x1400, COP1_BC_BCF, true, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1789: check(0x1440, COP1_BC_BCFL, true, true);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:246: (COP1_BC_BCF << 16) | 4;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:269: decodeBranch(0xB100, COP1_BC_BCF),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:271: decodeBranch(0xB108, COP1_BC_BCFL),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp.20261125_191641.bak:246: (COP1_BC_BCF << 16) | 4;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp.bak_20261125_173220:245: (COP1_BC_BCF << 16) | 4;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:525: COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:527: COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:69: (m_branchInst.rt == COP1_BC_BCFL || m_branchInst.rt == COP1_BC_BCTL)) ||
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:434: return (bcCond == COP1_BC_BCF || bcCond == COP1_BC_BCFL)
+
+--- Pattern: COP1_BC_BCT ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1788: check(0x1420, COP1_BC_BCT, false, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1790: check(0x1460, COP1_BC_BCTL, false, true);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:248: (COP1_BC_BCT << 16) | 4;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:270: decodeBranch(0xB104, COP1_BC_BCT),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:272: decodeBranch(0xB10C, COP1_BC_BCTL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp.20261125_191641.bak:248: (COP1_BC_BCT << 16) | 4;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp.bak_20261125_173220:247: (COP1_BC_BCT << 16) | 4;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:526: COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:528: COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:69: (m_branchInst.rt == COP1_BC_BCFL || m_branchInst.rt == COP1_BC_BCTL)) ||
+
+--- Pattern: COP1_BC_BCFL ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1789: check(0x1440, COP1_BC_BCFL, true, true);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:271: decodeBranch(0xB108, COP1_BC_BCFL),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:527: COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:69: (m_branchInst.rt == COP1_BC_BCFL || m_branchInst.rt == COP1_BC_BCTL)) ||
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:434: return (bcCond == COP1_BC_BCF || bcCond == COP1_BC_BCFL)
+
+--- Pattern: COP1_BC_BCTL ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1790: check(0x1460, COP1_BC_BCTL, false, true);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\r5900_decoder_tests.cpp:272: decodeBranch(0xB10C, COP1_BC_BCTL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:528: COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:69: (m_branchInst.rt == COP1_BC_BCFL || m_branchInst.rt == COP1_BC_BCTL)) ||
+
+--- Pattern: Instruction\s+\w+\s*\{ ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:46: Instruction inst{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:113: Instruction inst{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:124: Instruction inst{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:137: Instruction inst{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:149: Instruction inst{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:215: Instruction syscall{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:243: Instruction syscall{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:275: Instruction mult{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:297: Instruction mult1{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:552: Instruction j{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:792: Instruction j{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:859: Instruction j{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:886: Instruction j{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:917: Instruction inst{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:943: Instruction j{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:968: Instruction mfc0{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:981: Instruction mtc0{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:998: Instruction cfc1{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1010: Instruction ctc1{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1027: Instruction sqrt{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1045: Instruction cfc2{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1062: Instruction ctc2{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1081: Instruction cfc2{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1094: Instruction ctc2{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1111: Instruction andi{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1123: Instruction ori{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1135: Instruction xori{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1151: Instruction andInst{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1162: Instruction orInst{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1173: Instruction xorInst{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1184: Instruction norInst{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1201: Instruction sc{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1217: Instruction qfsrv{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1234: Instruction pcpyld{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1270: Instruction inst{};
+
+--- Pattern: generateFunction\s*\( ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:181: const std::string generated = gen.generateFunction(func, {makeNop(func.start)}, true);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:224: const std::string generated = gen.generateFunction(func, {syscall, after}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:257: const std::string generated = gen.generateFunction(func, {syscall, after}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:325: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:363: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:399: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:436: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:473: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:496: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:705: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:764: const std::string generated = gen.generateFunction(owner, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:839: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:871: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:897: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:956: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1505: std::string generated = gen.generateFunction(func, {jal, delay}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1537: const std::string generated = gen.generateFunction(
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1568: std::string generated = gen.generateFunction(func, {jal}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1598: std::string generated = gen.generateFunction(func, {jal, delay, targetInst}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1618: std::string generated = gen.generateFunction(func, {loopHead, backwardJal, delay}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1643: std::string generated = gen.generateFunction(func, {jalr, delay}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1685: std::string generated = gen.generateFunction(func, instructions, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1734: std::string generated = gen.generateFunction(func, { br, delay, target }, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1765: return gen.generateFunction(func, { branch, delay, target }, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1813: return gen.generateFunction(func, {br, makeNop(0x1304), makeNop(0x1308)}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1840: std::string generated = gen.generateFunction(func, { jal, jalDelay, atReturn, atTarget, jr, jrDelay }, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1872: std::string generated = gen.generateFunction(func, {jal, jalDelay, atReturn, atTarget, jr}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1909: std::string generated = gen.generateFunction(func, {i0, jr, delay, i3}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2125: std::string generated = gen.generateFunction(
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2160: std::string generated = gen.generateFunction(func, {jal, jalDelay, atReturn, atTarget, jalr, jalrDelay}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:2226: std::string generated = gen.generateFunction(
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:181: const std::string generated = gen.generateFunction(func, {makeNop(func.start)}, true);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:224: const std::string generated = gen.generateFunction(func, {syscall, after}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:257: const std::string generated = gen.generateFunction(func, {syscall, after}, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp.20261125_191641.bak:325: std::string generated = gen.generateFunction(func, instructions, false);
+
+===== REPORT COMPLETE =====
+Report: D:\Downloads\MarkOfKri_Audits\COP1_BRANCH_FIXTURE_CONSTRUCTION_20261126_033555.txt
