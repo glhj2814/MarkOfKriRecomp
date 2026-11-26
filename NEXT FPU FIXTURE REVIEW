@@ -1,0 +1,2111 @@
+MARK OF KRI — NEXT FPU FIXTURE REVIEW
+Generated: 2026-11-25 18:43:08
+
+========== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp ==========
+   1: #include "ps2recomp/Translators/fpu_translator.h"
+   2: #include "ps2recomp/code_generator.h"
+   3: #include "ps2recomp/codegen_helpers.h"
+   4: #include "ps2recomp/instructions.h"
+   5: #include "ps2recomp/types.h"
+   6: 
+   7: #include <fmt/format.h>
+   8: #include <sstream>
+   9: #include <cmath>
+  10: 
+  11: namespace ps2recomp
+  12: {
+  13:     FpuTranslator::FpuTranslator(CodeGenerator &codeGenerator)
+  14:         : m_codeGenerator(codeGenerator)
+  15:     {
+  16:     }
+  17: 
+  18:     std::string FpuTranslator::translate(const Instruction &inst)
+  19:     {
+  20:         uint8_t format = inst.rs; // Format field
+  21:         uint32_t ft = inst.rt;    // FPU source register
+  22:         uint32_t fs = inst.rd;    // FPU source register
+  23:         uint32_t fd = inst.sa;    // FPU destination register
+  24:         uint32_t function = inst.function;
+  25: 
+  26:         switch (format)
+  27:         {
+  28:         case COP1_MF:
+  29:             return fmt::format("{{ uint32_t bits; std::memcpy(&bits, &ctx->f[{}], sizeof(bits)); SET_GPR_U32(ctx, {}, bits); }}", fs, ft);
+  30:         case COP1_MT:
+  31:             return fmt::format("{{ uint32_t bits = GPR_U32(ctx, {}); std::memcpy(&ctx->f[{}], &bits, sizeof(bits)); }}", ft, fs);
+  32:         case COP1_CF:
+  33:             if (fs == 31)
+  34:                 return fmt::format("SET_GPR_U32(ctx, {}, ctx->fcr31);", ft); // FCR31 contains status/control
+  35:             if (fs == 0)
+  36:                 return fmt::format("SET_GPR_U32(ctx, {}, 0x00000000);", ft); // FCR0 is the FPU implementation register
+  37:             return fmt::format("SET_GPR_U32(ctx, {}, 0); // Unimplemented FCR{}", ft, fs);
+  38:         case COP1_CT:
+  39:             if (fs == 31)
+  40:                 return fmt::format("ctx->fcr31 = GPR_U32(ctx, {}) & 0x0183FFFF;", ft);
+  41:             else
+  42:                 return fmt::format("// CTC1 to FCR{} ignored", fs);
+  43:             return "";
+  44:         case COP1_BC:
+  45:             return "// FPU branch instruction - handled elsewhere";
+  46:         case COP1_S:
+  47:             switch (function)
+  48:             {
+  49:             case COP1_S_ADD:
+  50:                 return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  51:             case COP1_S_SUB:
+  52:                 return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  53:             case COP1_S_MUL:
+  54:                 return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  55:             case COP1_S_DIV:
+  56:                 // The EE has no Inf/NaN: x/0 gives +-max (sign of fs xor ft), see ps2_fdiv.
+  57:                 return fmt::format("{{ if (ctx->f[{}] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ "
+  58:                                    "ctx->f[{}] = FPU_DIV_S(ctx->f[{}], ctx->f[{}]); }}",
+  59:                                    ft, fd, fs, ft);
+  60:             case COP1_S_SQRT:
+  61:                 // The R5900 encodes SQRT.S as fd, ft (fs is zero), unlike MIPS-I's fd, fs.
+  62:                 return fmt::format("ctx->f[{}] = FPU_SQRT_S(ctx->f[{}]);", fd, ft);
+  63:             case COP1_S_ABS:
+  64:                 return fmt::format("ctx->f[{}] = FPU_ABS_S(ctx->f[{}]);", fd, fs);
+  65:             case COP1_S_MOV:
+  66:                 return fmt::format("ctx->f[{}] = FPU_MOV_S(ctx->f[{}]);", fd, fs);
+  67:             case COP1_S_NEG:
+  68:                 return fmt::format("ctx->f[{}] = FPU_NEG_S(ctx->f[{}]);", fd, fs);
+  69:             case COP1_S_ROUND_W:
+  70:                 return fmt::format("{{ int32_t tmp = FPU_ROUND_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  71:             case COP1_S_TRUNC_W:
+  72:                 return fmt::format("{{ int32_t tmp = FPU_TRUNC_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  73:             case COP1_S_CEIL_W:
+  74:                 return fmt::format("{{ int32_t tmp = FPU_CEIL_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  75:             case COP1_S_FLOOR_W:
+  76:                 return fmt::format("{{ int32_t tmp = FPU_FLOOR_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  77:             case COP1_S_CVT_W:
+  78:                 return fmt::format("{{ int32_t tmp = FPU_CVT_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+  79:             case COP1_S_RSQRT:
+  80:                 // RSQRT.S fd, fs, ft computes fs / sqrt(ft), not 1 / sqrt(fs).
+  81:                 return fmt::format("ctx->f[{}] = FPU_RSQRT_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  82:             case COP1_S_ADDA:
+  83:                 return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  84:             case COP1_S_SUBA:
+  85:                 return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  86:             case COP1_S_MULA:
+  87:                 return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+  88:             case COP1_S_MADD:
+  89:                 return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+  90:             case COP1_S_MSUB:
+  91:                 return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+  92:             case COP1_S_MADDA:
+  93:                 return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+  94:             case COP1_S_MSUBA:
+  95:                 return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+  96:             case COP1_S_MAX:
+  97:                 return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+  98:             case COP1_S_MIN:
+  99:                 return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+ 100:             case COP1_S_C_F:
+ 101:                 return fmt::format("ctx->fcr31 &= ~0x800000;");
+ 102:             case COP1_S_C_UN:
+ 103:                 return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 104:             case COP1_S_C_EQ:
+ 105:                 return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 106:             case COP1_S_C_UEQ:
+ 107:                 return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 108:             case COP1_S_C_OLT:
+ 109:                 return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 110:             case COP1_S_C_ULT:
+ 111:                 return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 112:             case COP1_S_C_OLE:
+ 113:                 return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 114:             case COP1_S_C_ULE:
+ 115:                 return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 116:             case COP1_S_C_SF:
+ 117:                 return fmt::format("ctx->fcr31 &= ~0x800000;");
+ 118:             case COP1_S_C_NGLE:
+ 119:                 return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 120:             case COP1_S_C_SEQ:
+ 121:                 return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 122:             case COP1_S_C_NGL:
+ 123:                 return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 124:             case COP1_S_C_LT:
+ 125:                 return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 126:             case COP1_S_C_NGE:
+ 127:                 return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 128:             case COP1_S_C_LE:
+ 129:                 return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 130:             case COP1_S_C_NGT:
+ 131:                 return fmt::format("ctx->fcr31 = (FPU_C_NGT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+ 132:             default:
+ 133:                 return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.S instruction: function 0x{:X}", function));
+ 134:             }
+ 135:         case COP1_W:
+ 136:             switch (function)
+ 137:             {
+ 138:             case COP1_W_CVT_S:
+ 139:                 return fmt::format("{{ int32_t tmp; std::memcpy(&tmp, &ctx->f[{}], sizeof(tmp)); ctx->f[{}] = FPU_CVT_S_W(tmp); }}", fs, fd);
+ 140:             default:
+ 141:                 return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.W instruction: function 0x{:X}", function));
+ 142:             }
+ 143:         default:
+ 144:             return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU instruction: format 0x{:X}, function 0x{:X}", format, function));
+ 145:         }
+ 146:     }
+ 147: 
+ 148: }
+
+========== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\r5900_decoder.cpp ==========
+ 800:         {
+ 801:             inst.isBranch = true;
+ 802:             inst.hasDelaySlot = true;
+ 803:         }
+ 804:     }
+ 805: 
+ 806:     void R5900Decoder::decodeCOP1(Instruction &inst) const
+ 807:     {
+ 808:         uint8_t format = inst.rs;
+ 809: 
+ 810:         if (format == COP1_MF || format == COP1_CF)
+ 811:         {
+ 812:             if (inst.rt != 0)
+ 813:                 inst.modificationInfo.modifiesGPR = true;
+ 814:         }
+ 815:         else if (format == COP1_MT)
+ 816:         {
+ 817:             inst.modificationInfo.modifiesFPR = true;
+ 818:         }
+ 819:         else if (format == COP1_BC)
+ 820:         {
+ 821:             inst.isBranch = true;
+ 822:             inst.hasDelaySlot = true;
+ 823:             inst.modificationInfo.modifiesControl = true;
+ 824:         }
+ 825:         else if (format == COP1_S || format == COP1_W || format == COP1_L)
+ 826:         {
+ 827:             const bool isCompare =
+ 828:                 format == COP1_S && inst.function >= COP1_S_C_F;
+ 829: 
+ 830:             inst.modificationInfo.modifiesFPR = !isCompare;
+ 831: 
+ 832:             if (isCompare)
+ 833:                 inst.modificationInfo.modifiesControl = true;
+ 834:         }
+ 835: 
+ 836:         if (format == COP1_CT)
+ 837:             inst.modificationInfo.modifiesControl = true;
+ 838:     }
+ 839:     void R5900Decoder::decodeCOP2(Instruction &inst) const
+ 840:     {
+ 841:         uint8_t format = inst.rs;
+ 842:         inst.isVU = true;
+ 843:         inst.isMultimedia = true;
+ 844: 
+ 845:         switch (format)
+ 846:         {
+ 847:         case COP2_QMFC2:
+ 848:         case COP2_CFC2:
+ 849:             if (inst.rt != 0)
+ 850:                 inst.modificationInfo.modifiesGPR = true;
+ 851:             break;
+ 852:         case COP2_QMTC2:
+ 853:             inst.modificationInfo.modifiesVFR = true;
+ 854:             break; // Modifies VU state
+ 855:         case COP2_CTC2:
+
+========== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h ==========
+   1: #ifndef PS2_RUNTIME_H
+   2: #define PS2_RUNTIME_H
+   3: 
+   4: #include <cstring>
+   5: #include <cstdint>
+   6: #include <vector>
+   7: #include <string>
+   8: #include <string_view>
+   9: #include <functional>
+  10: #if defined(_MSC_VER)
+  11: #include <intrin.h>
+  12: #elif defined(USE_SSE2NEON)
+  13: #include "sse2neon.h"
+  14: #else
+  15: #include <immintrin.h> // For SSE/AVX instructions
+  16: #include <smmintrin.h> // For SSE4.1 instructions
+  17: #endif
+  18: #include <atomic>
+  19: #include <array>
+  20: #include <mutex>
+  21: #include <filesystem>
+  22: #include <memory>
+  23: #include <unordered_map>
+  24: #include <unordered_set>
+  25: 
+  26: #include "ps2_log.h"
+  27: #include "runtime/ps2_address.h"
+  28: #include "runtime/gs/ps2_gif_arbiter.h"
+  29: #include "runtime/ps2_memory.h"
+  30: #include "runtime/gs/gs_frontend.h"
+  31: #include "runtime/ps2_vu1.h"
+  32: #include "runtime/ps2_audio.h"
+  33: #include "runtime/ps2_pad.h"
+  34: #include "runtime/ps2_rom_device.h"
+  35: #include "runtime/ps2_vfs.h"
+  36: #include "ps2x/iop/iop_types.h"
+  37: 
+  38: namespace ps2x::iop
+  39: {
+  40:     class IopSubsystem;
+  41: }
+  42: 
+  43: class PS2IopHostAdapter;
+  44: class PS2IopTransport;
+  45: class EeScheduler;
+  46: struct EeEvent;
+  47: 
+  48: enum PS2Exception
+  49: {
+  50:     EXCEPTION_TLB_REFILL = 0x02,          // TLB refill/load exception
+  51:     EXCEPTION_ADDRESS_ERROR_LOAD = 0x04,  // Address error on load
+  52:     EXCEPTION_ADDRESS_ERROR_STORE = 0x05, // Address error on store
+  53:     EXCEPTION_SYSCALL = 0x08,             // SYSCALL instruction
+  54:     EXCEPTION_BREAKPOINT = 0x09,          // BREAK instruction
+  55:     EXCEPTION_RESERVED_INSTRUCTION = 0x0A,
+  56:     EXCEPTION_INTEGER_OVERFLOW = 0x0C, // From MIPS spec
+  57:     EXCEPTION_TRAP = 0x0D,             // Trap instruction condition met
+  58: };
+  59: 
+  60: // PS2 CPU context (R5900)
+  61: struct alignas(16) R5900Context
+  62: {
+  63:     // General Purpose Registers (128-bit)
+  64:     __m128i r[32]; // Main registers
+  65: 
+  66:     // Control registers
+  67:     uint32_t pc;         // Program counter
+  68:     uint64_t insn_count; // Instruction counter
+  69:     uint64_t hi, lo;     // HI/LO registers for mult/div results
+  70:     uint64_t hi1, lo1;   // Secondary HI/LO registers for MULT1/DIV1
+  71:     uint32_t sa;         // Shift amount register
+  72: 
+  73:     // VU0 registers (when used in macro mode)
+  74:     __m128 vu0_vf[32];        // VU0 vector float registers
+  75:     uint16_t vi[16];          // VU0 vector integer registers
+  76:     float vu0_q;              // VU0 Q register (quotient)
+  77:     float vu0_p;              // VU0 P register (EFU result)
+  78:     float vu0_i;              // VU0 I register (integer value)
+  79:     __m128 vu0_r;             // VU0 R register
+  80:     __m128 vu0_acc;           // VU0 ACC accumulator register
+  81:     uint16_t vu0_status;      // VU0 status register
+  82:     uint32_t vu0_mac_flags;   // VU0 MAC flags
+  83:     uint32_t vu0_clip_flags;  // VU0 clipping flags
+  84:     uint32_t vu0_clip_flags2; // VU0 clipping flags
+  85:     uint32_t vu0_cmsar0;      // VU0 microprogram start address
+  86:     uint32_t vu0_cmsar1;      // VU0 microprogram start address
+  87:     uint32_t vu0_cmsar2;      // VU0 microprogram start address
+  88:     uint32_t vu0_cmsar3;      // VU0 microprogram start address
+  89:     uint32_t vu0_vpu_stat;
+  90:     uint32_t vu0_vpu_stat2; // extra VPU status (used by CR_VPU_STAT2)
+  91:     uint32_t vu0_vpu_stat3; // extra VPU status 3
+  92:     uint32_t vu0_vpu_stat4; // extra VPU status 4
+  93:     uint32_t vu0_tpc;       // TPC (VU0 PC)
+  94:     uint32_t vu0_tpc2;      // second TPC
+  95:     uint32_t vu0_fbrst;     // VIF/VU reset register
+  96:     uint32_t vu0_fbrst2;    // FBRST2
+  97:     uint32_t vu0_fbrst3;    // FBRST3
+  98:     uint32_t vu0_fbrst4;    // FBRST4
+  99:     uint32_t vu0_itop;
+ 100:     uint32_t vu0_top;
+ 101:     uint32_t vu0_info;
+ 102:     uint32_t vu0_xitop; // VU0 XITOP - input ITOP for VIF/VU sync
+ 103:     uint32_t vu0_pc;
+ 104: 
+ 105:     float vu0_cf[4]; // VU0 FMAC control floating-point registers
+ 106: 
+ 107:     // COP0 System control registers
+ 108:     uint32_t cop0_index;
+ 109:     uint32_t cop0_random;
+ 110:     uint32_t cop0_entrylo0;
+ 111:     uint32_t cop0_entrylo1;
+ 112:     uint32_t cop0_context;
+ 113:     uint32_t cop0_pagemask;
+ 114:     uint32_t cop0_wired;
+ 115:     uint32_t cop0_badvaddr;
+ 116:     uint32_t cop0_count;
+ 117:     uint32_t cop0_entryhi;
+ 118:     uint32_t cop0_compare;
+ 119:     uint32_t cop0_status;
+ 120:     uint32_t cop0_cause;
+ 121:     uint32_t cop0_epc;
+ 122:     uint32_t cop0_prid;
+ 123:     uint32_t cop0_config;
+ 124:     uint32_t cop0_badpaddr;
+ 125:     uint32_t cop0_debug;
+ 126:     uint32_t cop0_perf;
+ 127:     uint32_t cop0_taglo;
+ 128:     uint32_t cop0_taghi;
+ 129:     uint32_t cop0_errorepc;
+ 130: 
+ 131:     // LL/SC reservation state (not part of COP0 Status bits).
+ 132:     uint32_t llbit;
+ 133:     uint32_t lladdr;
+ 134: 
+ 135:     // Delay slot state tracking
+ 136:     bool in_delay_slot;
+ 137:     uint32_t branch_pc;
+ 138: 
+ 139:     // COP2 control registers (VU0 integer + control)
+ 140:     uint32_t cop2_ccr[32];
+ 141: 
+ 142:     // FPU registers (COP1)
+ 143:     float f[32];
+ 144:     float f_acc;    // FPU accumulator
+ 145:     uint32_t fcr31; // Control/status register
+ 146: 
+ 147:     R5900Context()
+ 148:     {
+ 149:         std::memset(this, 0, sizeof(*this));
+ 150: 
+ 151:         // Initialize VU0 registers
+ 152:         vu0_q = 1.0f; // Q register usually initialized to 1.0
+ 153: 
+ 154:         // Reset COP0 registers
+ 155:         cop0_random = 47; // Start at maximum value
+ 156:         // Status as the EE kernel leaves it at handoff. IE (bit 0) and EIE
+ 157:         // (bit 16) are separate enables and guest code reads both; libkernel's
+ 158:         // StartThread refuses to run while IE is clear.
+ 159:         cop0_status = 0x00010001; // EIE | IE
+ 160:         cop0_prid = 0x00002e20; // CPU ID for R5900
+ 161: 
+ 162:         in_delay_slot = false;
+ 163:         branch_pc = 0;
+ 164:     }
+ 165: 
+ 166:     void dump() const
+ 167:     {
+ 168:         std::ios_base::fmtflags flags = std::cout.flags();
+ 169:         std::cout << std::hex << std::setfill('0');
+ 170:         std::cout << "--- R5900 Context Dump ---\n";
+ 171:         std::cout << "PC: 0x" << std::setw(8) << pc << "\n";
+ 172:         std::cout << "HI: 0x" << std::setw(8) << hi << " LO: 0x" << std::setw(8) << lo << "\n";
+ 173:         std::cout << "HI1:0x" << std::setw(8) << hi1 << " LO1:0x" << std::setw(8) << lo1 << "\n";
+ 174:         std::cout << "SA: 0x" << std::setw(8) << sa << "\n";
+ 175:         for (int i = 0; i < 32; ++i)
+ 176:         {
+ 177:             std::cout << "R" << std::setw(2) << std::dec << i << ": 0x" << std::hex
+ 178:                       << std::setw(8) << static_cast<uint32_t>(_mm_extract_epi32(r[i], 3))
+ 179:                       << std::setw(8) << static_cast<uint32_t>(_mm_extract_epi32(r[i], 2)) << "_"
+ 180:                       << std::setw(8) << static_cast<uint32_t>(_mm_extract_epi32(r[i], 1))
+ 181:                       << std::setw(8) << static_cast<uint32_t>(_mm_extract_epi32(r[i], 0)) << "\n";
+ 182:         }
+ 183:         std::cout << "Status: 0x" << std::setw(8) << cop0_status
+ 184:                   << " Cause: 0x" << std::setw(8) << cop0_cause
+ 185:                   << " EPC: 0x" << std::setw(8) << cop0_epc << "\n";
+ 186:         std::cout << "--- End Context Dump ---\n";
+ 187:         std::cout.flags(flags); // Restore format flags
+ 188:     }
+ 189: 
+ 190:     ~R5900Context() = default;
+ 191: };
+ 192: 
+ 193: inline uint32_t getRegU32(const R5900Context *ctx, int reg)
+ 194: {
+ 195:     // Check if reg is valid (0-31)
+ 196:     if (reg < 0 || reg > 31)
+ 197:         return 0;
+ 198:     if (reg == 0)
+ 199:         return 0;
+ 200:     return static_cast<uint32_t>(_mm_extract_epi32(ctx->r[reg], 0));
+ 201: }
+ 202: 
+ 203: inline void setReturnU32(R5900Context *ctx, uint32_t value)
+ 204: {
+ 205:     // R5900 sign-extends 32-bit results into 64-bit GPR, even for unsigned values.
+ 206:     ctx->r[2] = _mm_set_epi64x(0, static_cast<int64_t>(static_cast<int32_t>(value))); // $v0
+ 207: }
+ 208: 
+ 209: inline void setReturnS32(R5900Context *ctx, int32_t value)
+ 210: {
+ 211:     // Signed 32-bit return should be sign-extended when observed as 64-bit.
+ 212:     ctx->r[2] = _mm_set_epi64x(0, static_cast<int64_t>(value)); // $v0
+ 213: }
+ 214: 
+ 215: inline void setReturnU64(R5900Context *ctx, uint64_t value)
+ 216: {
+ 217:     // Keep both conventions: full 64-bit value in $v0 and high 32-bit in $v1.
+ 218:     ctx->r[2] = _mm_set_epi64x(0, static_cast<int64_t>(value));
+ 219:     ctx->r[3] = _mm_set_epi64x(0, static_cast<int64_t>(static_cast<uint32_t>(value >> 32)));
+ 220: }
+ 221: 
+ 222: inline constexpr uint32_t PS2_PATH_WATCH_ADDR = 0x01EFFFA0u;
+ 223: inline constexpr uint32_t PS2_PATH_WATCH_BYTES = 0x200u;
+ 224: 
+ 225: inline uint32_t ps2PathWatchPhysAddr()
+ 226: {
+ 227:     return PS2_PATH_WATCH_ADDR & PS2_RAM_MASK;
+ 228: }
+ 229: 
+ 230: inline uint8_t ps2PathWatchExtractByteFromWrite(uint32_t writeAddr, uint32_t watchAddr, uint64_t valueLo, uint64_t valueHi)
+ 231: {
+ 232:     const uint32_t byteIndex = watchAddr - writeAddr;
+ 233:     if (byteIndex < 8u)
+ 234:     {
+ 235:         return static_cast<uint8_t>((valueLo >> (byteIndex * 8u)) & 0xFFu);
+ 236:     }
+ 237:     return static_cast<uint8_t>((valueHi >> ((byteIndex - 8u) * 8u)) & 0xFFu);
+ 238: }
+ 239: 
+ 240: inline void ps2TraceGuestWrite(uint8_t *rdram,
+ 241:                                uint32_t guestAddr,
+ 242:                                uint32_t size,
+ 243:                                uint64_t valueLo,
+ 244:                                uint64_t valueHi,
+ 245:                                const char *op,
+ 246:                                const R5900Context *ctx)
+ 247: {
+ 248:     (void)rdram;
+ 249:     (void)guestAddr;
+ 250:     (void)size;
+ 251:     (void)valueLo;
+ 252:     (void)valueHi;
+ 253:     (void)op;
+ 254:     (void)ctx;
+ 255:     // TODO we dont need this anymore so on next release it will be deleted
+ 256: }
+ 257: 
+ 258: inline void ps2TraceGuestRangeWrite(uint8_t *rdram,
+ 259:                                     uint32_t guestAddr,
+ 260:                                     uint32_t size,
+ 261:                                     const char *op,
+ 262:                                     const R5900Context *ctx)
+ 263: {
+ 264:     (void)rdram;
+ 265:     (void)guestAddr;
+ 266:     (void)size;
+ 267:     (void)op;
+ 268:     (void)ctx;
+ 269:     // TODO we dont need this anymore so on next release it will be deleted
+ 270: }
+ 271: 
+ 272: class PS2Runtime
+ 273: {
+ 274: public:
+ 275:     struct IoPaths
+ 276:     {
+ 277:         std::filesystem::path elfPath;
+ 278:         std::filesystem::path elfDirectory;
+ 279:         std::filesystem::path hostRoot;
+ 280:         std::filesystem::path cdRoot;
+ 281:         std::filesystem::path mcRoot;
+ 282:         std::filesystem::path cdImage;
+ 283:     };
+ 284: 
+ 285:     PS2Runtime();
+ 286:     ~PS2Runtime();
+ 287: 
+ 288:     bool initialize(const char *title = "PS2 Game");
+ 289:     bool syncCoreSubsystems();
+ 290:     bool loadELF(const std::string &elfPath);
+ 291:     void run();
+ 292: 
+ 293:     [[nodiscard]] ps2x::iop::ModuleLoadResult loadIopModule(std::string_view path, const void *arguments = nullptr, uint32_t argumentSize = 0);
+ 294:     [[nodiscard]] ps2x::iop::ModuleLoadResult loadIopModuleBuffer(uint32_t guestAddress, const void *arguments = nullptr, uint32_t argumentSize = 0);
+ 295:     [[nodiscard]] bool stopIopModule(int32_t moduleId, int32_t *result = nullptr);
+ 296:     [[nodiscard]] int32_t findIopModuleByAddress(uint32_t iopAddress) const noexcept;
+ 297:     [[nodiscard]] ps2x::iop::DebugSnapshot iopDebugSnapshot() const;
+ 298:     uint32_t allocateIopMemory(uint32_t size, uint32_t alignment = 16u);
+ 299:     bool freeIopMemory(uint32_t address);
+ 300:     bool readIopMemory(uint32_t address, void *destination, size_t size) const;
+ 301:     bool writeIopMemory(uint32_t address, const void *source, size_t size);
+ 302:     bool zeroIopMemory(uint32_t address, size_t size);
+ 303:     bool isIopMemoryRange(uint32_t address, size_t size) const;
+ 304: 
+ 305:     using DebugUiCallback = void (*)(PS2Runtime &runtime, void *userData);
+ 306:     void setDebugUiCallbacks(DebugUiCallback initCallback,
+ 307:                              DebugUiCallback drawCallback,
+ 308:                              DebugUiCallback shutdownCallback,
+ 309:                              void *userData);
+ 310: 
+ 311:     using RecompiledFunction = void (*)(uint8_t *, R5900Context *, PS2Runtime *);
+ 312: 
+ 313:     enum class GuestBranchKind
+ 314:     {
+ 315:         DirectJump,
+ 316:         DirectCall,
+ 317:         IndirectJump,
+ 318:         IndirectCall,
+ 319:         Return,
+ 320:     };
+ 321: 
+ 322:     enum class MissingFunctionPolicy : uint32_t
+ 323:     {
+ 324:         // Strict mode for tests/CI: log the bad target and request the runtime to stop.
+ 325:         Stop = 0,
+ 326: 
+ 327:         // Debug mode: log once, leave ctx->pc on the bad target, and let the caller unwind.
+ 328:         ContinueToTarget = 1,
+ 329: 
+ 330:         // Debug mode: same as ContinueToTarget, but triggers a debugger break once on MSVC.
+ 331:         BreakOnce = 2,
+ 332: 
+ 333:         // Escape hatch only: skip missing calls by returning to fallthrough (it can hide guest bugs)
+ 334:         SkipCallDebug = 3,
+ 335:     };
+ 336: 
+ 337:     bool replaceFunction(uint32_t address, RecompiledFunction func);
+ 338:     // TODO remove this later need to update all tests
+ 339:     bool registerFunction(uint32_t address, RecompiledFunction func);
+ 340:     RecompiledFunction lookupFunction(uint32_t address);
+ 341:     bool hasFunction(uint32_t address) const;
+ 342:     bool dispatchGuestBranch(uint8_t *rdram,
+ 343:                              R5900Context *ctx,
+ 344:                              uint32_t targetPc,
+ 345:                              uint32_t sourcePc,
+ 346:                              uint32_t fallthroughPc,
+ 347:                              GuestBranchKind kind,
+ 348:                              const char *debugName);
+ 349:     void reportMissingFunction(uint8_t *rdram,
+ 350:                                R5900Context *ctx,
+ 351:                                uint32_t targetPc,
+ 352:                                uint32_t sourcePc,
+ 353:                                GuestBranchKind kind,
+ 354:                                const char *debugName);
+ 355:     void setMissingFunctionPolicy(MissingFunctionPolicy policy);
+ 356:     MissingFunctionPolicy missingFunctionPolicy() const;
+ 357:     void resetMissingFunctionReportOnce();
+ 358: 
+ 359:     static const IoPaths &getIoPaths();
+ 360:     static void setIoPaths(const IoPaths &paths);
+ 361:     static void configureIoPathsFromElf(const std::string &elfPath);
+ 362: 
+ 363:     void SignalException(R5900Context *ctx, PS2Exception exception);
+ 364: 
+ 365:     void executeVU0Microprogram(uint8_t *rdram, R5900Context *ctx, uint32_t address);
+ 366:     void vu0StartMicroProgram(uint8_t *rdram, R5900Context *ctx, uint32_t address);
+ 367: 
+ 368: public:
+ 369:     void handleSyscall(uint8_t *rdram, R5900Context *ctx);
+ 370:     void handleSyscall(uint8_t *rdram, R5900Context *ctx, uint32_t encodedSyscallId);
+ 371:     void handleBreak(uint8_t *rdram, R5900Context *ctx);
+ 372: 
+ 373:     void handleTrap(uint8_t *rdram, R5900Context *ctx);
+ 374:     void handleTLBR(uint8_t *rdram, R5900Context *ctx);
+ 375:     void handleTLBWI(uint8_t *rdram, R5900Context *ctx);
+ 376:     void handleTLBWR(uint8_t *rdram, R5900Context *ctx);
+ 377:     void handleTLBP(uint8_t *rdram, R5900Context *ctx);
+ 378:     void clearLLBit(R5900Context *ctx);
+ 379:     void configureGuestHeap(uint32_t guestBase, uint32_t guestLimit = PS2_RAM_SIZE);
+ 380:     uint32_t guestMalloc(uint32_t size, uint32_t alignment = 16u);
+ 381:     uint32_t guestCalloc(uint32_t count, uint32_t size, uint32_t alignment = 16u);
+ 382:     uint32_t guestRealloc(uint32_t guestAddr, uint32_t newSize, uint32_t alignment = 16u);
+ 383:     void guestFree(uint32_t guestAddr);
+ 384:     uint32_t guestHeapBase() const;
+ 385:     uint32_t guestHeapEnd() const;
+ 386:     uint32_t guestHeapLimit() const;
+ 387:     uint32_t reserveAsyncCallbackStack(uint32_t size, uint32_t alignment = 16u);
+ 388:     // Keeps async callback stacks out of [base, end), e.g. a main-thread stack placed at the top of RAM.
+ 389:     void excludeAsyncCallbackStackRange(uint32_t base, uint32_t end);
+ 390: 
+ 391:     void drainCompletedDmacHandlers(uint8_t *rdram);
+ 392: 
+ 393:     void requestStop();
+ 394:     bool isStopRequested() const;
+ 395: 
+ 396:     EeScheduler &eeScheduler();
+ 397:     const EeScheduler &eeScheduler() const;
+ 398:     void postEeEvent(EeEvent event);
+ 399:     bool eeCheckpointDue(uint32_t cycles = 32u) noexcept;
+ 400:     [[noreturn]] void eeWaitVSyncTicks(uint32_t ticks, uint32_t resumePc);
+ 401: 
+ 402:     struct EeExitHandlerRegistration
+ 403:     {
+ 404:         uint32_t function = 0;
+ 405:         uint32_t argument = 0;
+ 406:     };
+ 407:     void addEeExitHandler(int threadId, uint32_t function, uint32_t argument);
+ 408:     std::vector<EeExitHandlerRegistration> takeEeExitHandlers(int threadId);
+ 409:     void removeEeExitHandlers(int threadId);
+ 410:     bool findEeSyscallOverride(uint32_t syscallNumber, uint32_t &handler) const;
+ 411:     void setEeSyscallOverride(uint8_t *rdram, uint32_t syscallNumber, uint32_t handler);
+ 412:     void initializeEeKernelState(uint8_t *rdram);
+ 413: 
+ 414:     uint8_t Load8(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr);
+ 415:     uint16_t Load16(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr);
+ 416:     uint32_t Load32(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr);
+ 417:     uint64_t Load64(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr);
+ 418:     __m128i Load128(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr);
+ 419: 
+ 420:     void Store8(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr, uint8_t value);
+ 421:     void Store16(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr, uint16_t value);
+ 422:     void Store32(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr, uint32_t value);
+ 423:     void Store64(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr, uint64_t value);
+ 424:     void Store128(uint8_t *rdram, R5900Context *ctx, uint32_t vaddr, __m128i value);
+ 425:     void kickGifDmaChainFromMMIO(uint8_t *rdram,
+ 426:                                  R5900Context *ctx,
+ 427:                                  uint32_t dPcrValue,
+ 428:                                  uint32_t dStatValue,
+ 429:                                  uint32_t tadr,
+ 430:                                  uint32_t chcr);
+ 431: 
+ 432:     static inline bool isSpecialAddress(uint32_t addr)
+ 433:     {
+ 434:         return Ps2IsSpecialAddress(addr);
+ 435:     }
+ 436: 
+ 437: public:
+ 438:     inline R5900Context &cpu() { return m_cpuContext; }
+ 439:     inline const R5900Context &cpu() const { return m_cpuContext; }
+ 440: 
+ 441:     inline PS2Memory &memory() { return m_memory; }
+ 442:     inline const PS2Memory &memory() const { return m_memory; }
+ 443: 
+ 444:     inline GS &gs() { return m_gs; }
+ 445:     inline const GS &gs() const { return m_gs; }
+ 446:     inline GifArbiter &gifArbiter() { return m_gifArbiter; }
+ 447:     inline const GifArbiter &gifArbiter() const { return m_gifArbiter; }
+ 448:     inline VU1Interpreter &vu0() { return m_vu0; }
+ 449:     inline const VU1Interpreter &vu0() const { return m_vu0; }
+ 450:     inline VU1Interpreter &vu1() { return m_vu1; }
+ 451:     inline const VU1Interpreter &vu1() const { return m_vu1; }
+ 452: 
+ 453:     inline PS2AudioBackend &audioBackend() { return m_audioBackend; }
+ 454:     inline const PS2AudioBackend &audioBackend() const { return m_audioBackend; }
+ 455:     inline PSPadBackend &padBackend() { return m_padBackend; }
+ 456:     inline const PSPadBackend &padBackend() const { return m_padBackend; }
+ 457:     inline PS2RomDevice &romDevice() { return m_romDevice; }
+ 458:     inline const PS2RomDevice &romDevice() const { return m_romDevice; }
+ 459:     inline PS2Vfs &vfs() { return m_vfs; }
+ 460:     inline const PS2Vfs &vfs() const { return m_vfs; }
+ 461: 
+ 462: private:
+ 463:     struct GuestHeapBlock
+ 464:     {
+ 465:         uint32_t addr = 0;
+ 466:         uint32_t size = 0;
+ 467:         bool free = true;
+ 468:     };
+ 469: 
+ 470:     static uint32_t alignGuestHeapValue(uint32_t value, uint32_t alignment);
+ 471:     static bool isGuestHeapAlignmentValid(uint32_t alignment);
+ 472:     static uint32_t normalizeGuestHeapAlignment(uint32_t alignment);
+ 473:     uint32_t clampGuestHeapBase(uint32_t guestBase) const;
+ 474:     uint32_t clampGuestHeapLimit(uint32_t guestLimit) const;
+ 475:     void resetGuestHeapLocked(uint32_t guestBase, uint32_t guestLimit);
+ 476:     void ensureGuestHeapInitializedLocked();
+ 477:     int32_t findGuestHeapBlockIndexLocked(uint32_t guestAddr) const;
+ 478:     uint32_t allocateGuestBlockLocked(uint32_t size, uint32_t alignment);
+ 479:     void freeGuestBlockLocked(uint32_t guestAddr);
+ 480:     void coalesceGuestHeapLocked();
+ 481:     void HandleIntegerOverflow(R5900Context *ctx);
+ 482: 
+ 483:     [[nodiscard]] ps2x::iop::RpcAbi selectIopRpcAbi(const ps2x::iop::RpcAbiRequest &request) const;
+ 484:     [[nodiscard]] bool canBindIopRpc(uint32_t sid) const noexcept;
+ 485:     [[nodiscard]] ps2x::iop::RpcResult handleIopRpc(uint8_t *rdram, R5900Context *ctx, ps2x::iop::RpcRequest request);
+ 486:     void notifyIopSifTransfer(uint8_t *rdram, const ps2x::iop::SifTransfer &transfer);
+ 487:     void advanceIopEeCycles(uint64_t eeCycles) noexcept;
+ 488:     void resetIop();
+ 489: 
+ 490:     friend class PS2IopTransport;
+ 491:     friend class EeScheduler;
+ 492: 
+ 493: private:
+ 494:     PS2Memory m_memory;
+ 495:     GifArbiter m_gifArbiter;
+ 496:     GS m_gs;
+ 497:     std::unique_ptr<PS2IopHostAdapter> m_iopHost;
+ 498:     std::unique_ptr<ps2x::iop::IopSubsystem> m_iopSubsystem;
+ 499:     PS2AudioBackend m_audioBackend;
+ 500:     PSPadBackend m_padBackend;
+ 501:     PS2RomDevice m_romDevice;
+ 502:     PS2Vfs m_vfs;
+ 503:     VU1Interpreter m_vu0{VU1Interpreter::Unit::VU0};
+ 504:     VU1Interpreter m_vu1{VU1Interpreter::Unit::VU1};
+ 505:     R5900Context m_cpuContext;
+ 506:     std::unique_ptr<EeScheduler> m_eeScheduler;
+ 507:     mutable std::mutex m_eeKernelStateMutex;
+ 508:     std::unordered_map<int, std::vector<EeExitHandlerRegistration>> m_eeExitHandlers;
+ 509:     std::unordered_map<uint32_t, uint32_t> m_eeSyscallOverrides;
+ 510:     std::unordered_set<uint32_t> m_eeSyscallMirrorAddresses;
+ 511:     mutable std::mutex m_guestHeapMutex;
+ 512:     mutable std::mutex m_asyncCallbackStackMutex;
+ 513:     std::vector<GuestHeapBlock> m_guestHeapBlocks;
+ 514:     uint32_t m_guestHeapBase = 0x00100000u;
+ 515:     uint32_t m_guestHeapEnd = 0x00100000u;
+ 516:     uint32_t m_guestHeapLimit = PS2_RAM_SIZE;
+ 517:     uint32_t m_guestHeapSuggestedBase = 0x00100000u;
+ 518:     bool m_guestHeapConfigured = false;
+ 519:     uint32_t m_asyncCallbackStackFloor = 0x01F00000u;
+ 520:     uint32_t m_asyncCallbackStackTop = PS2_RAM_SIZE;
+ 521: 
+ 522:     std::atomic<uint32_t> m_missingFunctionPolicy{static_cast<uint32_t>(MissingFunctionPolicy::ContinueToTarget)};
+ 523:     std::atomic<uint32_t> m_missingFunctionReports{0};
+ 524:     std::atomic<bool> m_stopRequested{false};
+ 525:     DebugUiCallback m_debugUiInitCallback = nullptr;
+ 526:     DebugUiCallback m_debugUiDrawCallback = nullptr;
+ 527:     DebugUiCallback m_debugUiShutdownCallback = nullptr;
+ 528:     void *m_debugUiUserData = nullptr;
+ 529:     bool m_debugUiInitialized = false;
+ 530: 
+ 531: public:
+ 532:     std::atomic<uint32_t> m_debugPc{0};
+ 533:     std::atomic<uint32_t> m_debugRa{0};
+ 534:     std::atomic<uint32_t> m_debugSp{0};
+ 535:     std::atomic<uint32_t> m_debugGp{0};
+ 536: 
+ 537: private:
+ 538:     struct LoadedModule
+ 539:     {
+ 540:         std::string name;
+ 541:         uint32_t baseAddress;
+ 542:         size_t size;
+ 543:         bool active;
+ 544:     };
+ 545: 
+ 546:     std::vector<LoadedModule> m_loadedModules;
+ 547:     uint8_t *m_boundRdram = nullptr;
+ 548:     uint8_t *m_boundGSVram = nullptr;
+ 549: };
+ 550: 
+ 551: // Generated by ps2xRecomp in ps2xRuntime/src/runner/register_functions.cpp.
+ 552: extern const uint32_t g_ps2RecompiledFunctionTableBase;
+ 553: extern const uint32_t g_ps2RecompiledFunctionTableEnd;
+ 554: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount;
+ 555: extern PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[];
+ 556: 
+ 557: #endif // PS2_RUNTIME_H
+
+========== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h ==========
+   1: #ifndef PS2_RUNTIME_MACROS_H
+   2: #define PS2_RUNTIME_MACROS_H
+   3: #include <cstdint>
+   4: #include <cmath>
+   5: #include <cstring>
+   6: #include <bit>
+   7: #if defined(_MSC_VER)
+   8: #include <intrin.h>
+   9: #elif defined(USE_SSE2NEON)
+  10: #include "sse2neon.h"
+  11: #else
+  12: #include <immintrin.h> // For SSE/AVX intrinsics
+  13: #endif
+  14: 
+  15: #include "ps2_runtime.h"
+  16: 
+  17: static inline int32_t Ps2ExtractEpi32(__m128i v, int index)
+  18: {
+  19:     switch (index & 3)
+  20:     {
+  21:     case 0:
+  22:         return _mm_extract_epi32(v, 0);
+  23:     case 1:
+  24:         return _mm_extract_epi32(v, 1);
+  25:     case 2:
+  26:         return _mm_extract_epi32(v, 2);
+  27:     default:
+  28:         return _mm_extract_epi32(v, 3);
+  29:     }
+  30: }
+  31: 
+  32: static inline int64_t Ps2ExtractEpi64(__m128i v, int index)
+  33: {
+  34:     if ((index & 1) == 0)
+  35:     {
+  36:         return _mm_cvtsi128_si64(v);
+  37:     }
+  38:     else
+  39:     {
+  40:         return _mm_extract_epi64(v, 1);
+  41:     }
+  42: }
+  43: 
+  44: static inline uint32_t ps2_clz32(uint32_t x)
+  45: {
+  46:     return static_cast<uint32_t>(std::countl_zero(x));
+  47: }
+  48: 
+  49: static inline uint64_t Ps2HiLoToU64(uint64_t hi, uint64_t lo)
+  50: {
+  51:     return ((hi & 0xFFFFFFFFull) << 32) | (lo & 0xFFFFFFFFull);
+  52: }
+  53: 
+  54: static inline uint64_t Ps2SignExt32ToU64(uint32_t v)
+  55: {
+  56:     return (uint64_t)(int64_t)(int32_t)v;
+  57: }
+  58: 
+  59: // PLZCW: Count leading bits that match the sign bit, minus 1.
+  60: // For positive values: count leading zeros minus 1 (excludes sign bit).
+  61: // For negative values: count leading ones minus 1 (excludes sign bit).
+  62: // Special cases: 0x00000000 -> 31, 0xFFFFFFFF -> 31.
+  63: static inline uint32_t ps2_plzcw32(uint32_t x)
+  64: {
+  65:     if (x == 0 || x == 0xFFFFFFFF)
+  66:         return 31;
+  67:     if (x & 0x80000000u)
+  68:         x = ~x; // If sign bit set, invert to count leading ones as zeros
+  69:     return static_cast<uint32_t>(std::countl_zero(x)) - 1;
+  70: }
+  71: 
+  72: #define PS2_BLENDV_PS(a, b, mask) _mm_blendv_ps((a), (b), (mask))
+  73: #define PS2_MIN_EPI32(a, b) _mm_min_epi32((a), (b))
+  74: #define PS2_MAX_EPI32(a, b) _mm_max_epi32((a), (b))
+  75: #define PS2_SHUFFLE_EPI8(v, mask) _mm_shuffle_epi8((v), (mask))
+  76: 
+  77: #define PS2_EXTRACT_EPI32(v, i) Ps2ExtractEpi32((v), (i))
+  78: #define PS2_EXTRACT_EPI64(v, i) Ps2ExtractEpi64((v), (i))
+  79: 
+  80: #define PS2_EXTRACT_EPI32_0(v) Ps2ExtractEpi32((v), 0)
+  81: #define PS2_EXTRACT_EPI32_1(v) Ps2ExtractEpi32((v), 1)
+  82: #define PS2_EXTRACT_EPI32_2(v) Ps2ExtractEpi32((v), 2)
+  83: #define PS2_EXTRACT_EPI32_3(v) Ps2ExtractEpi32((v), 3)
+  84: 
+  85: #define PS2_EXTRACT_EPI64_0(v) Ps2ExtractEpi64((v), 0)
+  86: #define PS2_EXTRACT_EPI64_1(v) Ps2ExtractEpi64((v), 1)
+  87: 
+  88: // Basic MIPS arithmetic operations
+  89: #define ADD32(a, b) ((uint32_t)((a) + (b)))
+  90: #define ADD32_OV(rs, rt, result32, overflow)              \
+  91:     do                                                    \
+  92:     {                                                     \
+  93:         int32_t _a = (int32_t)(rs);                       \
+  94:         int32_t _b = (int32_t)(rt);                       \
+  95:         int32_t _r = _a + _b;                             \
+  96:         overflow = (((_a ^ _b) >= 0) && ((_a ^ _r) < 0)); \
+  97:         result32 = (uint32_t)_r;                          \
+  98:     } while (0);
+  99: #define SUB32(a, b) ((uint32_t)((a) - (b)))
+ 100: #define SUB32_OV(rs, rt, result32, overflow)             \
+ 101:     do                                                   \
+ 102:     {                                                    \
+ 103:         int32_t _a = (int32_t)(rs);                      \
+ 104:         int32_t _b = (int32_t)(rt);                      \
+ 105:         int32_t _r = _a - _b;                            \
+ 106:         overflow = (((_a ^ _b) < 0) && ((_a ^ _r) < 0)); \
+ 107:         result32 = (uint32_t)_r;                         \
+ 108:     } while (0);
+ 109: #define MUL32(a, b) ((uint32_t)((a) * (b)))
+ 110: #define DIV32(a, b) ((uint32_t)((a) / (b)))
+ 111: #define AND32(a, b) ((uint32_t)((a) & (b)))
+ 112: #define OR32(a, b) ((uint32_t)((a) | (b)))
+ 113: #define XOR32(a, b) ((uint32_t)((a) ^ (b)))
+ 114: #define NOR32(a, b) ((uint32_t)(~((a) | (b))))
+ 115: #define SLL32(a, b) ((uint32_t)((a) << (b)))
+ 116: #define SRL32(a, b) ((uint32_t)((a) >> (b)))
+ 117: #define SRA32(a, b) ((uint32_t)((int32_t)(a) >> (b)))
+ 118: #define SLT32(a, b) ((uint32_t)((int32_t)(a) < (int32_t)(b) ? 1 : 0))
+ 119: #define SLTU32(a, b) ((uint32_t)((a) < (b) ? 1 : 0))
+ 120: 
+ 121: // PS2-specific 128-bit MMI operations
+ 122: #define PS2_PEXTLW(a, b) _mm_unpacklo_epi32((__m128i)(b), (__m128i)(a))
+ 123: #define PS2_PEXTUW(a, b) _mm_unpackhi_epi32((__m128i)(b), (__m128i)(a))
+ 124: #define PS2_PEXTLH(a, b) _mm_unpacklo_epi16((__m128i)(b), (__m128i)(a))
+ 125: #define PS2_PEXTUH(a, b) _mm_unpackhi_epi16((__m128i)(b), (__m128i)(a))
+ 126: #define PS2_PEXTLB(a, b) _mm_unpacklo_epi8((__m128i)(b), (__m128i)(a))
+ 127: #define PS2_PEXTUB(a, b) _mm_unpackhi_epi8((__m128i)(b), (__m128i)(a))
+ 128: #define PS2_PADDW(a, b) _mm_add_epi32((__m128i)(a), (__m128i)(b))
+ 129: #define PS2_PSUBW(a, b) _mm_sub_epi32((__m128i)(a), (__m128i)(b))
+ 130: #define PS2_PMAXW(a, b) PS2_MAX_EPI32((__m128i)(a), (__m128i)(b))
+ 131: #define PS2_PMINW(a, b) PS2_MIN_EPI32((__m128i)(a), (__m128i)(b))
+ 132: #define PS2_PADDH(a, b) _mm_add_epi16((__m128i)(a), (__m128i)(b))
+ 133: #define PS2_PSUBH(a, b) _mm_sub_epi16((__m128i)(a), (__m128i)(b))
+ 134: #define PS2_PMAXH(a, b) _mm_max_epi16((__m128i)(a), (__m128i)(b))
+ 135: #define PS2_PMINH(a, b) _mm_min_epi16((__m128i)(a), (__m128i)(b))
+ 136: #define PS2_PADDB(a, b) _mm_add_epi8((__m128i)(a), (__m128i)(b))
+ 137: #define PS2_PSUBB(a, b) _mm_sub_epi8((__m128i)(a), (__m128i)(b))
+ 138: #define PS2_PAND(a, b) _mm_and_si128((__m128i)(a), (__m128i)(b))
+ 139: #define PS2_POR(a, b) _mm_or_si128((__m128i)(a), (__m128i)(b))
+ 140: #define PS2_PXOR(a, b) _mm_xor_si128((__m128i)(a), (__m128i)(b))
+ 141: #define PS2_PNOR(a, b) _mm_xor_si128(_mm_or_si128((__m128i)(a), (__m128i)(b)), _mm_set1_epi32(0xFFFFFFFF))
+ 142: 
+ 143: // PS2 float semantics (EE FPU and VU0 macro mode). The PS2 format has no Inf, NaN or denormals:
+ 144: //   - exponent 255 is an ordinary exponent, so 0x7F800000 is 2^128 and the largest value is 0x7FFFFFFF;
+ 145: //   - exponent 0 is zero whatever the mantissa holds;
+ 146: //   - a result of 2^129 or more saturates to +-0x7FFFFFFF, one below 2^-126 becomes +-0;
+ 147: //   - x/0 gives +-0x7FFFFFFF.
+ 148: // A host float cannot hold the exponent-255 values, so anything that touches them is computed in double.
+ 149: // That path is rare and kept out of line; the inline part is the host operation and a range check.
+ 150: // One case is left to the host: ADD.S/SUB.S/MUL.S and the vector operations do not look for an operand with
+ 151: // exponent 0 and a non-zero mantissa, so it takes part with its tiny host value instead of as zero.
+ 152: // Checked against the hardware results in ps2autotests (tests/cpu/ee_fpu).
+ 153: #if defined(_MSC_VER)
+ 154: #define PS2_FLOAT_NOINLINE __declspec(noinline)
+ 155: #else
+ 156: #define PS2_FLOAT_NOINLINE __attribute__((noinline))
+ 157: #endif
+ 158: 
+ 159: constexpr uint32_t PS2_FLOAT_MAX_BITS = 0x7FFFFFFFu;
+ 160: constexpr uint32_t PS2_FLOAT_EXP_MASK = 0x7F800000u;
+ 161: constexpr uint32_t PS2_FLOAT_SIGN_MASK = 0x80000000u;
+ 162: 
+ 163: // True when a host float operation cannot be trusted with x: exponent 255, or exponent 0 with a mantissa.
+ 164: inline bool ps2_fspecial(float x)
+ 165: {
+ 166:     const uint32_t t = std::bit_cast<uint32_t>(x) & 0x7FFFFFFFu;
+ 167:     return t != 0u && (t - 0x00800000u) >= 0x7F000000u;
+ 168: }
+ 169: 
+ 170: inline double ps2_to_double(float x)
+ 171: {
+ 172:     uint32_t b = std::bit_cast<uint32_t>(x);
+ 173:     const uint32_t exponent = b & PS2_FLOAT_EXP_MASK;
+ 174:     if (exponent == 0u)
+ 175:         return static_cast<double>(std::bit_cast<float>(b & PS2_FLOAT_SIGN_MASK));
+ 176:     if (exponent == PS2_FLOAT_EXP_MASK)
+ 177:         return static_cast<double>(std::bit_cast<float>(b - 0x00800000u)) * 2.0;
+ 178:     return static_cast<double>(x);
+ 179: }
+ 180: 
+ 181: inline float ps2_from_double(double d)
+ 182: {
+ 183:     const double magnitude = std::fabs(d);
+ 184:     const uint32_t sign = std::signbit(d) ? PS2_FLOAT_SIGN_MASK : 0u;
+ 185:     if (magnitude >= 0x1p129)
+ 186:         return std::bit_cast<float>(sign | PS2_FLOAT_MAX_BITS);
+ 187:     if (magnitude < 0x1p-126)
+ 188:         return std::bit_cast<float>(sign);
+ 189:     if (magnitude >= 0x1p128)
+ 190:     {
+ 191:         // Convert one exponent lower, then put the exponent back as 255.
+ 192:         const uint32_t b = std::bit_cast<uint32_t>(static_cast<float>(d * 0.5));
+ 193:         if ((b & PS2_FLOAT_EXP_MASK) == PS2_FLOAT_EXP_MASK)
+ 194:             return std::bit_cast<float>(sign | PS2_FLOAT_MAX_BITS);
+ 195:         return std::bit_cast<float>(b + 0x00800000u);
+ 196:     }
+ 197:     // A value that rounds up to 2^128 comes out as the host's Inf pattern, which is 2^128 on the PS2.
+ 198:     return static_cast<float>(d);
+ 199: }
+ 200: 
+ 201: PS2_FLOAT_NOINLINE inline float ps2_fadd_slow(float a, float b)
+ 202: {
+ 203:     // Zero operands and results end up here too; the host result is right for them.
+ 204:     const float r = a + b;
+ 205:     if (!(ps2_fspecial(a) | ps2_fspecial(b) | ps2_fspecial(r)))
+ 206:         return r;
+ 207:     return ps2_from_double(ps2_to_double(a) + ps2_to_double(b));
+ 208: }
+ 209: 
+ 210: PS2_FLOAT_NOINLINE inline float ps2_fsub_slow(float a, float b)
+ 211: {
+ 212:     // Zero operands and results end up here too; the host result is right for them.
+ 213:     const float r = a - b;
+ 214:     if (!(ps2_fspecial(a) | ps2_fspecial(b) | ps2_fspecial(r)))
+ 215:         return r;
+ 216:     return ps2_from_double(ps2_to_double(a) - ps2_to_double(b));
+ 217: }
+ 218: 
+ 219: PS2_FLOAT_NOINLINE inline float ps2_fmul_slow(float a, float b)
+ 220: {
+ 221:     // Zero operands and results end up here too; the host result is right for them.
+ 222:     const float r = a * b;
+ 223:     if (!(ps2_fspecial(a) | ps2_fspecial(b) | ps2_fspecial(r)))
+ 224:         return r;
+ 225:     return ps2_from_double(ps2_to_double(a) * ps2_to_double(b));
+ 226: }
+ 227: 
+ 228: // A zero divisor gives +-max with the sign of fs xor ft.
+ 229: PS2_FLOAT_NOINLINE inline float ps2_fdiv_slow(float a, float b)
+ 230: {
+ 231:     const uint32_t ua = std::bit_cast<uint32_t>(a);
+ 232:     const uint32_t ub = std::bit_cast<uint32_t>(b);
+ 233:     if ((ub & PS2_FLOAT_EXP_MASK) == 0u)
+ 234:         return std::bit_cast<float>(((ua ^ ub) & PS2_FLOAT_SIGN_MASK) | PS2_FLOAT_MAX_BITS);
+ 235:     const float r = a / b;
+ 236:     if (!(ps2_fspecial(a) | ps2_fspecial(b) | ps2_fspecial(r)))
+ 237:         return r;
+ 238:     return ps2_from_double(ps2_to_double(a) / ps2_to_double(b));
+ 239: }
+ 240: 
+ 241: // sqrt(|ft|); the result is never negative, sqrt(-0) is +0.
+ 242: PS2_FLOAT_NOINLINE inline float ps2_fsqrt_slow(float a)
+ 243: {
+ 244:     if ((std::bit_cast<uint32_t>(a) & PS2_FLOAT_EXP_MASK) == 0u)
+ 245:         return 0.0f;
+ 246:     return ps2_from_double(std::sqrt(std::fabs(ps2_to_double(a))));
+ 247: }
+ 248: 
+ 249: // fs / sqrt(|ft|). The sign of ft is ignored everywhere, so a zero ft gives +-max with the sign of fs alone.
+ 250: PS2_FLOAT_NOINLINE inline float ps2_frsqrt_slow(float a, float b)
+ 251: {
+ 252:     if ((std::bit_cast<uint32_t>(b) & PS2_FLOAT_EXP_MASK) == 0u)
+ 253:         return std::bit_cast<float>((std::bit_cast<uint32_t>(a) & PS2_FLOAT_SIGN_MASK) | PS2_FLOAT_MAX_BITS);
+ 254:     // The root is rounded to a float before the division, as on the hardware.
+ 255:     const float root = ps2_from_double(std::sqrt(std::fabs(ps2_to_double(b))));
+ 256:     return ps2_from_double(ps2_to_double(a) / static_cast<double>(root));
+ 257: }
+ 258: 
+ 259: // True when a, b and the host result r are all normal numbers, so r is also the PS2 result.
+ 260: inline bool ps2_fall_normal(float a, float b, float r)
+ 261: {
+ 262:     // Doubling drops the sign; adding one exponent step wraps exponent 255 round to 0 next to exponent 0.
+ 263:     const uint32_t sa = std::bit_cast<uint32_t>(a) * 2u + 0x01000000u;
+ 264:     const uint32_t sb = std::bit_cast<uint32_t>(b) * 2u + 0x01000000u;
+ 265:     const uint32_t sr = std::bit_cast<uint32_t>(r) * 2u + 0x01000000u;
+ 266:     uint32_t lowest = sa < sb ? sa : sb;
+ 267:     lowest = lowest < sr ? lowest : sr;
+ 268:     return lowest >= 0x02000000u;
+ 269: }
+ 270: 
+ 271: // The same test on the result alone. An exponent-255 operand always leaves exponent 255 in the host result
+ 272: // of an addition, subtraction or multiplication (Inf or NaN), so this finds those operands as well.
+ 273: inline bool ps2_fnormal(float r)
+ 274: {
+ 275:     return (std::bit_cast<uint32_t>(r) * 2u + 0x01000000u) >= 0x02000000u;
+ 276: }
+ 277: 
+ 278: inline float ps2_fadd(float a, float b)
+ 279: {
+ 280:     const float r = a + b;
+ 281:     return ps2_fnormal(r) ? r : ps2_fadd_slow(a, b);
+ 282: }
+ 283: 
+ 284: inline float ps2_fsub(float a, float b)
+ 285: {
+ 286:     const float r = a - b;
+ 287:     return ps2_fnormal(r) ? r : ps2_fsub_slow(a, b);
+ 288: }
+ 289: 
+ 290: inline float ps2_fmul(float a, float b)
+ 291: {
+ 292:     const float r = a * b;
+ 293:     return ps2_fnormal(r) ? r : ps2_fmul_slow(a, b);
+ 294: }
+ 295: 
+ 296: inline float ps2_fdiv(float a, float b)
+ 297: {
+ 298:     const float r = a / b;
+ 299:     return ps2_fall_normal(a, b, r) ? r : ps2_fdiv_slow(a, b);
+ 300: }
+ 301: 
+ 302: inline float ps2_fsqrt(float a)
+ 303: {
+ 304:     const float r = std::sqrt(a);
+ 305:     return ps2_fall_normal(a, a, r) ? r : ps2_fsqrt_slow(a);
+ 306: }
+ 307: 
+ 308: inline float ps2_frsqrt(float a, float b)
+ 309: {
+ 310:     const float r = a / std::sqrt(b);
+ 311:     return ps2_fall_normal(a, b, r) ? r : ps2_frsqrt_slow(a, b);
+ 312: }
+ 313: 
+ 314: enum class Ps2VecOp
+ 315: {
+ 316:     Add,
+ 317:     Sub,
+ 318:     Mul
+ 319: };
+ 320: 
+ 321: // Lane by lane through the scalar helpers; only reached when a result lane has exponent 255.
+ 322: PS2_FLOAT_NOINLINE inline __m128 ps2_vslow(__m128 a, __m128 b, Ps2VecOp op)
+ 323: {
+ 324:     alignas(16) float la[4], lb[4], lr[4];
+ 325:     _mm_store_ps(la, a);
+ 326:     _mm_store_ps(lb, b);
+ 327:     for (int i = 0; i < 4; ++i)
+ 328:     {
+ 329:         switch (op)
+ 330:         {
+ 331:         case Ps2VecOp::Add:
+ 332:             lr[i] = ps2_fadd_slow(la[i], lb[i]);
+ 333:             break;
+ 334:         case Ps2VecOp::Sub:
+ 335:             lr[i] = ps2_fsub_slow(la[i], lb[i]);
+ 336:             break;
+ 337:         default:
+ 338:             lr[i] = ps2_fmul_slow(la[i], lb[i]);
+ 339:             break;
+ 340:         }
+ 341:     }
+ 342:     return _mm_load_ps(lr);
+ 343: }
+ 344: 
+ 345: // r is the host result of a op b. As in ps2_fnormal, testing r alone finds every lane that needs the double
+ 346: // path. Results with exponent 0 are flushed to +-0.
+ 347: inline __m128 ps2_vfinish(__m128 a, __m128 b, __m128 r, Ps2VecOp op)
+ 348: {
+ 349:     const __m128i expMask = _mm_set1_epi32(0x7F800000);
+ 350:     const __m128i rexp = _mm_and_si128(_mm_castps_si128(r), expMask);
+ 351:     if (_mm_movemask_epi8(_mm_cmpeq_epi32(rexp, expMask)) != 0)
+ 352:         return ps2_vslow(a, b, op);
+ 353:     const __m128i flush = _mm_and_si128(_mm_cmpeq_epi32(rexp, _mm_setzero_si128()), _mm_set1_epi32(0x7FFFFFFF));
+ 354:     return _mm_castsi128_ps(_mm_andnot_si128(flush, _mm_castps_si128(r)));
+ 355: }
+ 356: 
+ 357: inline __m128 ps2_vadd(__m128 a, __m128 b)
+ 358: {
+ 359:     return ps2_vfinish(a, b, _mm_add_ps(a, b), Ps2VecOp::Add);
+ 360: }
+ 361: 
+ 362: inline __m128 ps2_vsub(__m128 a, __m128 b)
+ 363: {
+ 364:     return ps2_vfinish(a, b, _mm_sub_ps(a, b), Ps2VecOp::Sub);
+ 365: }
+ 366: 
+ 367: inline __m128 ps2_vmul(__m128 a, __m128 b)
+ 368: {
+ 369:     return ps2_vfinish(a, b, _mm_mul_ps(a, b), Ps2VecOp::Mul);
+ 370: }
+ 371: 
+ 372: // PS2 VU (Vector Unit) operations
+ 373: #define PS2_VADD(a, b) ps2_vadd((__m128)(a), (__m128)(b))
+ 374: #define PS2_VSUB(a, b) ps2_vsub((__m128)(a), (__m128)(b))
+ 375: #define PS2_VMUL(a, b) ps2_vmul((__m128)(a), (__m128)(b))
+ 376: #define PS2_VDIV(a, b) _mm_div_ps((__m128)(a), (__m128)(b))
+ 377: #define PS2_VMULQ(a, q) _mm_mul_ps((__m128)(a), _mm_set1_ps(q))
+ 378: #define PS2_VBLEND(a, b, mask) PS2_BLENDV_PS((__m128)(a), (__m128)(b), (__m128)(mask))
+ 379: 
+ 380: // Memory access helpers - Hybrid Fast/Slow Path
+ 381: // Fast path: Direct RDRAM access (masked).
+ 382: // Slow path: Full runtime->Load/Store
+ 383: 
+ 384: static inline bool Ps2FastRangeIsContiguous(uint32_t offset, uint32_t bytes)
+ 385: {
+ 386:     return offset <= (PS2_RAM_SIZE - bytes);
+ 387: }
+ 388: 
+ 389: static inline uint8_t Ps2FastRead8(const uint8_t *rdram, uint32_t addr)
+ 390: {
+ 391:     return rdram[addr & PS2_RAM_MASK];
+ 392: }
+ 393: 
+ 394: static inline uint16_t Ps2FastRead16(const uint8_t *rdram, uint32_t addr)
+ 395: {
+ 396:     const uint32_t offset = addr & PS2_RAM_MASK;
+ 397:     if (!Ps2FastRangeIsContiguous(offset, sizeof(uint16_t)))
+ 398:     {
+ 399:         uint8_t wrapped[sizeof(uint16_t)];
+ 400:         for (uint32_t i = 0; i < sizeof(uint16_t); ++i)
+ 401:         {
+ 402:             wrapped[i] = rdram[(offset + i) & PS2_RAM_MASK];
+ 403:         }
+ 404:         uint16_t value;
+ 405:         std::memcpy(&value, wrapped, sizeof(value));
+ 406:         return value;
+ 407:     }
+ 408: 
+ 409:     uint16_t value;
+ 410:     std::memcpy(&value, rdram + offset, sizeof(value));
+ 411:     return value;
+ 412: }
+ 413: 
+ 414: static inline uint32_t Ps2FastRead32(const uint8_t *rdram, uint32_t addr)
+ 415: {
+ 416:     const uint32_t offset = addr & PS2_RAM_MASK;
+ 417:     if (!Ps2FastRangeIsContiguous(offset, sizeof(uint32_t)))
+ 418:     {
+ 419:         uint8_t wrapped[sizeof(uint32_t)];
+ 420:         for (uint32_t i = 0; i < sizeof(uint32_t); ++i)
+ 421:         {
+ 422:             wrapped[i] = rdram[(offset + i) & PS2_RAM_MASK];
+ 423:         }
+ 424:         uint32_t value;
+ 425:         std::memcpy(&value, wrapped, sizeof(value));
+ 426:         return value;
+ 427:     }
+ 428: 
+ 429:     uint32_t value;
+ 430:     std::memcpy(&value, rdram + offset, sizeof(value));
+ 431:     return value;
+ 432: }
+ 433: 
+ 434: static inline uint64_t Ps2FastRead64(const uint8_t *rdram, uint32_t addr)
+ 435: {
+ 436:     const uint32_t offset = addr & PS2_RAM_MASK;
+ 437:     if (!Ps2FastRangeIsContiguous(offset, sizeof(uint64_t)))
+ 438:     {
+ 439:         uint8_t wrapped[sizeof(uint64_t)];
+ 440:         for (uint32_t i = 0; i < sizeof(uint64_t); ++i)
+ 441:         {
+ 442:             wrapped[i] = rdram[(offset + i) & PS2_RAM_MASK];
+ 443:         }
+ 444:         uint64_t value;
+ 445:         std::memcpy(&value, wrapped, sizeof(value));
+ 446:         return value;
+ 447:     }
+ 448: 
+ 449:     uint64_t value;
+ 450:     std::memcpy(&value, rdram + offset, sizeof(value));
+ 451:     return value;
+ 452: }
+ 453: 
+ 454: static inline __m128i Ps2FastRead128(const uint8_t *rdram, uint32_t addr)
+ 455: {
+ 456:     const uint32_t offset = addr & PS2_RAM_MASK;
+ 457:     if (!Ps2FastRangeIsContiguous(offset, sizeof(__m128i)))
+ 458:     {
+ 459:         alignas(16) uint8_t wrapped[sizeof(__m128i)];
+ 460:         for (uint32_t i = 0; i < sizeof(__m128i); ++i)
+ 461:         {
+ 462:             wrapped[i] = rdram[(offset + i) & PS2_RAM_MASK];
+ 463:         }
+ 464:         __m128i value;
+ 465:         std::memcpy(&value, wrapped, sizeof(value));
+ 466:         return value;
+ 467:     }
+ 468: 
+ 469:     __m128i value;
+ 470:     std::memcpy(&value, rdram + offset, sizeof(value));
+ 471:     return value;
+ 472: }
+ 473: 
+ 474: static inline void Ps2FastWrite8(uint8_t *rdram, uint32_t addr, uint8_t value)
+ 475: {
+ 476:     rdram[addr & PS2_RAM_MASK] = value;
+ 477: }
+ 478: 
+ 479: static inline void Ps2FastWrite16(uint8_t *rdram, uint32_t addr, uint16_t value)
+ 480: {
+ 481:     const uint32_t offset = addr & PS2_RAM_MASK;
+ 482:     if (!Ps2FastRangeIsContiguous(offset, sizeof(uint16_t)))
+ 483:     {
+ 484:         uint8_t wrapped[sizeof(uint16_t)];
+ 485:         std::memcpy(wrapped, &value, sizeof(value));
+ 486:         for (uint32_t i = 0; i < sizeof(uint16_t); ++i)
+ 487:         {
+ 488:             rdram[(offset + i) & PS2_RAM_MASK] = wrapped[i];
+ 489:         }
+ 490:         return;
+ 491:     }
+ 492:     std::memcpy(rdram + offset, &value, sizeof(value));
+ 493: }
+ 494: 
+ 495: static inline void Ps2FastWrite32(uint8_t *rdram, uint32_t addr, uint32_t value)
+ 496: {
+ 497:     const uint32_t offset = addr & PS2_RAM_MASK;
+ 498:     if (!Ps2FastRangeIsContiguous(offset, sizeof(uint32_t)))
+ 499:     {
+ 500:         uint8_t wrapped[sizeof(uint32_t)];
+ 501:         std::memcpy(wrapped, &value, sizeof(value));
+ 502:         for (uint32_t i = 0; i < sizeof(uint32_t); ++i)
+ 503:         {
+ 504:             rdram[(offset + i) & PS2_RAM_MASK] = wrapped[i];
+ 505:         }
+ 506:         return;
+ 507:     }
+ 508:     std::memcpy(rdram + offset, &value, sizeof(value));
+ 509: }
+ 510: 
+ 511: static inline void Ps2FastWrite64(uint8_t *rdram, uint32_t addr, uint64_t value)
+ 512: {
+ 513:     const uint32_t offset = addr & PS2_RAM_MASK;
+ 514:     if (!Ps2FastRangeIsContiguous(offset, sizeof(uint64_t)))
+ 515:     {
+ 516:         uint8_t wrapped[sizeof(uint64_t)];
+ 517:         std::memcpy(wrapped, &value, sizeof(value));
+ 518:         for (uint32_t i = 0; i < sizeof(uint64_t); ++i)
+ 519:         {
+ 520:             rdram[(offset + i) & PS2_RAM_MASK] = wrapped[i];
+ 521:         }
+ 522:         return;
+ 523:     }
+ 524:     std::memcpy(rdram + offset, &value, sizeof(value));
+ 525: }
+ 526: 
+ 527: static inline void Ps2FastWrite128(uint8_t *rdram, uint32_t addr, __m128i value)
+ 528: {
+ 529:     const uint32_t offset = addr & PS2_RAM_MASK;
+ 530:     if (!Ps2FastRangeIsContiguous(offset, sizeof(__m128i)))
+ 531:     {
+ 532:         alignas(16) uint8_t wrapped[sizeof(__m128i)];
+ 533:         std::memcpy(wrapped, &value, sizeof(value));
+ 534:         for (uint32_t i = 0; i < sizeof(__m128i); ++i)
+ 535:         {
+ 536:             rdram[(offset + i) & PS2_RAM_MASK] = wrapped[i];
+ 537:         }
+ 538:         return;
+ 539:     }
+ 540:     std::memcpy(rdram + offset, &value, sizeof(value));
+ 541: }
+ 542: 
+ 543: #define FAST_READ8(addr) Ps2FastRead8(rdram, (uint32_t)(addr))
+ 544: #define FAST_READ16(addr) Ps2FastRead16(rdram, (uint32_t)(addr))
+ 545: #define FAST_READ32(addr) Ps2FastRead32(rdram, (uint32_t)(addr))
+ 546: #define FAST_READ64(addr) Ps2FastRead64(rdram, (uint32_t)(addr))
+ 547: #define FAST_READ128(addr) Ps2FastRead128(rdram, (uint32_t)(addr))
+ 548: 
+ 549: #define FAST_WRITE8(addr, val) Ps2FastWrite8(rdram, (uint32_t)(addr), (uint8_t)(val))
+ 550: #define FAST_WRITE16(addr, val) Ps2FastWrite16(rdram, (uint32_t)(addr), (uint16_t)(val))
+ 551: #define FAST_WRITE32(addr, val) Ps2FastWrite32(rdram, (uint32_t)(addr), (uint32_t)(val))
+ 552: #define FAST_WRITE64(addr, val) Ps2FastWrite64(rdram, (uint32_t)(addr), (uint64_t)(val))
+ 553: #define FAST_WRITE128(addr, val) Ps2FastWrite128(rdram, (uint32_t)(addr), (val))
+ 554: 
+ 555: #define READ8(addr) ([&]() -> uint8_t {                       \
+ 556:     uint32_t _addr = (uint32_t)(addr);                        \
+ 557:     return PS2Runtime::isSpecialAddress(_addr)                \
+ 558:         ? runtime->Load8(rdram, ctx, _addr)                   \
+ 559:         : FAST_READ8(_addr); }())
+ 560: 
+ 561: #define READ16(addr) ([&]() -> uint16_t {                     \
+ 562:     uint32_t _addr = (uint32_t)(addr);                        \
+ 563:     return PS2Runtime::isSpecialAddress(_addr)                \
+ 564:         ? runtime->Load16(rdram, ctx, _addr)                  \
+ 565:         : FAST_READ16(_addr); }())
+ 566: 
+ 567: #define READ32(addr) ([&]() -> uint32_t {                     \
+ 568:     uint32_t _addr = (uint32_t)(addr);                        \
+ 569:     return PS2Runtime::isSpecialAddress(_addr)                \
+ 570:         ? runtime->Load32(rdram, ctx, _addr)                  \
+ 571:         : FAST_READ32(_addr); }())
+ 572: 
+ 573: #define READ64(addr) ([&]() -> uint64_t {                     \
+ 574:     uint32_t _addr = (uint32_t)(addr);                        \
+ 575:     return PS2Runtime::isSpecialAddress(_addr)                \
+ 576:         ? runtime->Load64(rdram, ctx, _addr)                  \
+ 577:         : FAST_READ64(_addr); }())
+ 578: 
+ 579: #define READ128(addr) ([&]() -> __m128i {                     \
+ 580:     uint32_t _addr = (uint32_t)(addr);                        \
+ 581:     return PS2Runtime::isSpecialAddress(_addr)                \
+ 582:         ? runtime->Load128(rdram, ctx, _addr)                 \
+ 583:         : FAST_READ128(_addr); }())
+ 584: 
+ 585: #define WRITE8(addr, val)                                                            \
+ 586:     do                                                                               \
+ 587:     {                                                                                \
+ 588:         uint32_t _addr = (addr);                                                     \
+ 589:         if (PS2Runtime::isSpecialAddress(_addr))                                     \
+ 590:             runtime->Store8(rdram, ctx, _addr, (val));                               \
+ 591:         else                                                                         \
+ 592:         {                                                                            \
+ 593:             ps2TraceGuestWrite(rdram, _addr, 1u, (uint8_t)(val), 0u, "WRITE8", ctx); \
+ 594:             FAST_WRITE8(_addr, (val));                                               \
+ 595:         }                                                                            \
+ 596:     } while (0)
+ 597: 
+ 598: #define WRITE16(addr, val)                                                             \
+ 599:     do                                                                                 \
+ 600:     {                                                                                  \
+ 601:         uint32_t _addr = (addr);                                                       \
+ 602:         if (PS2Runtime::isSpecialAddress(_addr))                                       \
+ 603:             runtime->Store16(rdram, ctx, _addr, (val));                                \
+ 604:         else                                                                           \
+ 605:         {                                                                              \
+ 606:             ps2TraceGuestWrite(rdram, _addr, 2u, (uint16_t)(val), 0u, "WRITE16", ctx); \
+ 607:             FAST_WRITE16(_addr, (val));                                                \
+ 608:         }                                                                              \
+ 609:     } while (0)
+ 610: 
+ 611: #define WRITE32(addr, val)                                                             \
+ 612:     do                                                                                 \
+ 613:     {                                                                                  \
+ 614:         uint32_t _addr = (addr);                                                       \
+ 615:         if (PS2Runtime::isSpecialAddress(_addr))                                       \
+ 616:             runtime->Store32(rdram, ctx, _addr, (val));                                \
+ 617:         else                                                                           \
+ 618:         {                                                                              \
+ 619:             ps2TraceGuestWrite(rdram, _addr, 4u, (uint32_t)(val), 0u, "WRITE32", ctx); \
+ 620:             FAST_WRITE32(_addr, (val));                                                \
+ 621:         }                                                                              \
+ 622:     } while (0)
+ 623: 
+ 624: #define WRITE64(addr, val)                                                             \
+ 625:     do                                                                                 \
+ 626:     {                                                                                  \
+ 627:         uint32_t _addr = (addr);                                                       \
+ 628:         if (PS2Runtime::isSpecialAddress(_addr))                                       \
+ 629:             runtime->Store64(rdram, ctx, _addr, (val));                                \
+ 630:         else                                                                           \
+ 631:         {                                                                              \
+ 632:             ps2TraceGuestWrite(rdram, _addr, 8u, (uint64_t)(val), 0u, "WRITE64", ctx); \
+ 633:             FAST_WRITE64(_addr, (val));                                                \
+ 634:         }                                                                              \
+ 635:     } while (0)
+ 636: 
+ 637: #define WRITE128(addr, val)                                                          \
+ 638:     do                                                                               \
+ 639:     {                                                                                \
+ 640:         uint32_t _addr = (addr);                                                     \
+ 641:         __m128i _value = (val);                                                      \
+ 642:         if (PS2Runtime::isSpecialAddress(_addr))                                     \
+ 643:             runtime->Store128(rdram, ctx, _addr, _value);                            \
+ 644:         else                                                                         \
+ 645:         {                                                                            \
+ 646:             const uint64_t _lo = static_cast<uint64_t>(PS2_EXTRACT_EPI64_0(_value)); \
+ 647:             const uint64_t _hi = static_cast<uint64_t>(PS2_EXTRACT_EPI64_1(_value)); \
+ 648:             ps2TraceGuestWrite(rdram, _addr, 16u, _lo, _hi, "WRITE128", ctx);        \
+ 649:             FAST_WRITE128(_addr, _value);                                            \
+ 650:         }                                                                            \
+ 651:     } while (0)
+ 652: 
+ 653: // Packed Compare Greater Than (PCGT)
+ 654: #define PS2_PCGTW(a, b) _mm_cmpgt_epi32((__m128i)(a), (__m128i)(b))
+ 655: #define PS2_PCGTH(a, b) _mm_cmpgt_epi16((__m128i)(a), (__m128i)(b))
+ 656: #define PS2_PCGTB(a, b) _mm_cmpgt_epi8((__m128i)(a), (__m128i)(b))
+ 657: 
+ 658: // Packed Add with Signed Saturation Word (PADDSW)
+ 659: inline __m128i ps2_paddsw(__m128i a, __m128i b)
+ 660: {
+ 661: 
+ 662:     __m128i sum = _mm_add_epi32(a, b);
+ 663:     // Check for over/underflow. Clamp to either INT32_MIN/INT32_MAX.
+ 664:     __m128i overflow = _mm_and_si128(_mm_xor_si128(a, sum),
+ 665:                                      _mm_xor_si128(b, sum));
+ 666:     // Extract input sign.
+ 667:     overflow = _mm_srai_epi32(overflow, 31);
+ 668:     __m128i input_sign = _mm_srai_epi32(a, 31);
+ 669:     // Select saturation value based on overflow sign.
+ 670:     #if defined(__SSE4_1__)
+ 671:     __m128i sat = _mm_blendv_epi8(
+ 672:         _mm_set1_epi32(INT32_MAX),
+ 673:         _mm_set1_epi32(INT32_MIN),
+ 674:         input_sign);
+ 675:     return _mm_blendv_epi8(sum, sat, overflow);
+ 676:     #else
+ 677:     __m128i sat = _mm_or_si128(_mm_and_si128(input_sign, _mm_set1_epi32(INT32_MIN)),
+ 678:                                _mm_andnot_si128(input_sign, _mm_set1_epi32(INT32_MAX)));
+ 679:     return _mm_or_si128(_mm_and_si128(overflow, sat),
+ 680:                         _mm_andnot_si128(overflow, sum));
+ 681:     #endif
+ 682: }
+ 683: #define PS2_PADDSW(a, b) ps2_paddsw((__m128i)(a), (__m128i)(b))
+ 684: 
+ 685: // Packed Subtract with Signed Saturation Word (PSUBSW)
+ 686: inline __m128i ps2_psubsw(__m128i a, __m128i b)
+ 687: {
+ 688:     __m128i diff = _mm_sub_epi32(a, b);
+ 689:     // Check for over/underflow. Clamp to either INT32_MIN/INT32_MAX.
+ 690:     __m128i overflow = _mm_and_si128(_mm_xor_si128(a, b),
+ 691:                                      _mm_xor_si128(a, diff));
+ 692:     // Extract input sign.
+ 693:     overflow = _mm_srai_epi32(overflow, 31);
+ 694:     __m128i input_sign = _mm_srai_epi32(a, 31);
+ 695:     // Select saturation value based on overflow sign.
+ 696:     #if defined(__SSE4_1__)
+ 697:     __m128i sat = _mm_blendv_epi8(
+ 698:         _mm_set1_epi32(INT32_MAX),
+ 699:         _mm_set1_epi32(INT32_MIN),
+ 700:         input_sign);
+ 701:     return _mm_blendv_epi8(diff, sat, overflow);
+ 702:     #else
+ 703:     __m128i sat = _mm_or_si128(_mm_and_si128(input_sign, _mm_set1_epi32(INT32_MIN)),
+ 704:                                _mm_andnot_si128(input_sign, _mm_set1_epi32(INT32_MAX)));
+ 705:     return _mm_or_si128(_mm_and_si128(overflow, sat),
+ 706:                         _mm_andnot_si128(overflow, diff));
+ 707:     #endif
+ 708: 
+ 709: }
+ 710: #define PS2_PSUBSW(a, b) ps2_psubsw((__m128i)(a), (__m128i)(b))
+ 711: 
+ 712: // Packed Compare Equal (PCEQ)
+ 713: #define PS2_PCEQW(a, b) _mm_cmpeq_epi32((__m128i)(a), (__m128i)(b))
+ 714: #define PS2_PCEQH(a, b) _mm_cmpeq_epi16((__m128i)(a), (__m128i)(b))
+ 715: #define PS2_PCEQB(a, b) _mm_cmpeq_epi8((__m128i)(a), (__m128i)(b))
+ 716: 
+ 717: // Packed Absolute (PABS)
+ 718: #define PS2_PABSW(a) _mm_abs_epi32((__m128i)(a))
+ 719: #define PS2_PABSH(a) _mm_abs_epi16((__m128i)(a))
+ 720: #define PS2_PABSB(a) _mm_abs_epi8((__m128i)(a))
+ 721: 
+ 722: // Packed Pack (PPAC) - Packs larger elements into smaller ones
+ 723: inline __m128i ps2_paddu32(__m128i a, __m128i b)
+ 724: {
+ 725:     __m128i sum = _mm_add_epi32(a, b);
+ 726:     __m128i overflow = _mm_cmpgt_epi32(_mm_xor_si128(a, _mm_set1_epi32(INT32_MIN)),
+ 727:                                        _mm_xor_si128(sum, _mm_set1_epi32(INT32_MIN)));
+ 728:     return _mm_or_si128(sum, overflow); // overflow lanes become all-1s
+ 729: }
+ 730: inline __m128i ps2_psubu32(__m128i a, __m128i b)
+ 731: {
+ 732:     __m128i diff = _mm_sub_epi32(a, b);
+ 733:     // Underflow if a < b (unsigned). Clamp to 0.
+ 734:     __m128i underflow = _mm_cmpgt_epi32(_mm_xor_si128(b, _mm_set1_epi32(INT32_MIN)),
+ 735:                                         _mm_xor_si128(a, _mm_set1_epi32(INT32_MIN)));
+ 736:     return _mm_andnot_si128(underflow, diff); // underflow lanes become 0
+ 737: }
+ 738: 
+ 739: inline __m128i ps2_ppacw(__m128i rs, __m128i rt)
+ 740: {
+ 741:     // rs = [rs3 rs2 rs1 rs0], rt = [rt3 rt2 rt1 rt0]
+ 742:     return _mm_castps_si128(_mm_shuffle_ps(_mm_castsi128_ps(rt), _mm_castsi128_ps(rs), _MM_SHUFFLE(2, 0, 2, 0)));
+ 743: }
+ 744: #define PS2_PPACW(a, b) ps2_ppacw((__m128i)(a), (__m128i)(b))
+ 745: 
+ 746: inline __m128i ps2_ppach(__m128i rs, __m128i rt)
+ 747: {
+ 748:     const __m128i mask = _mm_setr_epi8(
+ 749:         0, 1, 4, 5, 8, 9, 12, 13,  // from rt: halfwords 0,2,4,6
+ 750:         0, 1, 4, 5, 8, 9, 12, 13); // from rs: halfwords 0,2,4,6
+ 751:     __m128i lo = _mm_shuffle_epi8(rt, mask);
+ 752:     __m128i hi = _mm_shuffle_epi8(rs, mask);
+ 753:     return _mm_unpacklo_epi64(lo, hi);
+ 754: }
+ 755: #define PS2_PPACH(a, b) ps2_ppach((__m128i)(a), (__m128i)(b))
+ 756: 
+ 757: inline __m128i ps2_ppacb(__m128i rs, __m128i rt)
+ 758: {
+ 759:     const __m128i mask = _mm_setr_epi8(
+ 760:         0, 2, 4, 6, 8, 10, 12, 14,  // from rt: bytes 0,2,4,6,8,10,12,14
+ 761:         0, 2, 4, 6, 8, 10, 12, 14); // from rs
+ 762:     __m128i lo = _mm_shuffle_epi8(rt, mask);
+ 763:     __m128i hi = _mm_shuffle_epi8(rs, mask);
+ 764:     return _mm_unpacklo_epi64(lo, hi);
+ 765: }
+ 766: #define PS2_PPACB(a, b) ps2_ppacb((__m128i)(a), (__m128i)(b))
+ 767: 
+ 768: // Packed Interleave (PINT)
+ 769: #define PS2_PINTH(a, b) _mm_unpacklo_epi16(_mm_shuffle_epi32((__m128i)(b), _MM_SHUFFLE(3, 2, 1, 0)), _mm_shuffle_epi32((__m128i)(a), _MM_SHUFFLE(3, 2, 1, 0)))
+ 770: #define PS2_PINTEH(a, b) _mm_unpackhi_epi16(_mm_shuffle_epi32((__m128i)(b), _MM_SHUFFLE(3, 2, 1, 0)), _mm_shuffle_epi32((__m128i)(a), _MM_SHUFFLE(3, 2, 1, 0)))
+ 771: 
+ 772: // Packed Multiply-Add (PMADD)
+ 773: #define PS2_PMADDW(a, b) _mm_add_epi32(_mm_mullo_epi32(_mm_shuffle_epi32((__m128i)(a), _MM_SHUFFLE(1, 0, 3, 2)), _mm_shuffle_epi32((__m128i)(b), _MM_SHUFFLE(1, 0, 3, 2))), _mm_mullo_epi32(_mm_shuffle_epi32((__m128i)(a), _MM_SHUFFLE(3, 2, 1, 0)), _mm_shuffle_epi32((__m128i)(b), _MM_SHUFFLE(3, 2, 1, 0))))
+ 774: 
+ 775: // Packed Variable Shifts
+ 776: #define PS2_PSLLVW(a, b) _mm_custom_sllv_epi32((__m128i)(a), (__m128i)(b))
+ 777: #define PS2_PSRLVW(a, b) _mm_custom_srlv_epi32((__m128i)(a), (__m128i)(b))
+ 778: #define PS2_PSRAVW(a, b) _mm_custom_srav_epi32((__m128i)(a), (__m128i)(b))
+ 779: 
+ 780: inline __m128i _mm_custom_sllv_epi32(__m128i a, __m128i count)
+ 781: {
+ 782:     alignas(16) int32_t a_arr[4];
+ 783:     alignas(16) int32_t count_arr[4];
+ 784:     alignas(16) int32_t result[4];
+ 785: 
+ 786:     std::memcpy(a_arr, &a, sizeof(a));
+ 787:     std::memcpy(count_arr, &count, sizeof(count));
+ 788: 
+ 789:     for (int i = 0; i < 4; i++)
+ 790:     {
+ 791:         result[i] = a_arr[i] << (count_arr[i] & 0x1F);
+ 792:     }
+ 793: 
+ 794:     __m128i out;
+ 795:     std::memcpy(&out, result, sizeof(out));
+ 796:     return out;
+ 797: }
+ 798: 
+ 799: inline __m128i _mm_custom_srlv_epi32(__m128i a, __m128i count)
+ 800: {
+ 801:     int32_t a_arr[4], count_arr[4], result[4];
+ 802:     _mm_storeu_si128((__m128i *)a_arr, a);
+ 803:     _mm_storeu_si128((__m128i *)count_arr, count);
+ 804:     for (int i = 0; i < 4; i++)
+ 805:     {
+ 806:         result[i] = (uint32_t)a_arr[i] >> (count_arr[i] & 0x1F);
+ 807:     }
+ 808:     return _mm_loadu_si128((__m128i *)result);
+ 809: }
+ 810: 
+ 811: inline __m128i _mm_custom_srav_epi32(__m128i a, __m128i count)
+ 812: {
+ 813:     int32_t a_arr[4], count_arr[4], result[4];
+ 814:     _mm_storeu_si128((__m128i *)a_arr, a);
+ 815:     _mm_storeu_si128((__m128i *)count_arr, count);
+ 816:     for (int i = 0; i < 4; i++)
+ 817:     {
+ 818:         result[i] = a_arr[i] >> (count_arr[i] & 0x1F);
+ 819:     }
+ 820:     return _mm_loadu_si128((__m128i *)result);
+ 821: }
+ 822: 
+ 823: // PMFHL function implementations
+ 824: inline __m128i ps2_u64_to_epi64_pair(uint64_t value)
+ 825: {
+ 826:     return _mm_set1_epi64x(static_cast<long long>(value));
+ 827: }
+ 828: 
+ 829: // PMFHL/PMTHL see LO and HI as 128-bit registers: pipeline 0 in bits 0-63 (lo/hi) and pipeline 1 in
+ 830: // bits 64-127 (lo1/hi1). PMFHL.LW after MULTU is how EE code reads a full 64-bit product.
+ 831: inline int16_t ps2_saturate_s16(uint32_t word)
+ 832: {
+ 833:     const int32_t value = static_cast<int32_t>(word);
+ 834:     return static_cast<int16_t>(value > 0x7FFF ? 0x7FFF : (value < -0x8000 ? -0x8000 : value));
+ 835: }
+ 836: 
+ 837: inline int64_t ps2_pmfhl_slw_lane(uint64_t hi, uint64_t lo)
+ 838: {
+ 839:     const int64_t value = static_cast<int64_t>((static_cast<uint64_t>(static_cast<uint32_t>(hi)) << 32) | static_cast<uint32_t>(lo));
+ 840:     if (value >= 0x7FFFFFFFll)
+ 841:         return 0x7FFFFFFFll;
+ 842:     if (value <= -0x80000000ll)
+ 843:         return -0x80000000ll;
+ 844:     return static_cast<int32_t>(lo);
+ 845: }
+ 846: 
+ 847: template <typename Ctx>
+ 848: inline __m128i ps2_pmfhl(const Ctx *ctx, int mode)
+ 849: {
+ 850:     const uint64_t lanes[4] = {ctx->lo, ctx->hi, ctx->lo1, ctx->hi1};
+ 851:     switch (mode)
+ 852:     {
+ 853:     case 0: // LW
+ 854:         return _mm_set_epi32(static_cast<int>(static_cast<uint32_t>(lanes[3])), static_cast<int>(static_cast<uint32_t>(lanes[2])),
+ 855:                              static_cast<int>(static_cast<uint32_t>(lanes[1])), static_cast<int>(static_cast<uint32_t>(lanes[0])));
+ 856:     case 1: // UW
+ 857:         return _mm_set_epi32(static_cast<int>(lanes[3] >> 32), static_cast<int>(lanes[2] >> 32),
+ 858:                              static_cast<int>(lanes[1] >> 32), static_cast<int>(lanes[0] >> 32));
+ 859:     case 2: // SLW
+ 860:         return _mm_set_epi64x(ps2_pmfhl_slw_lane(ctx->hi1, ctx->lo1), ps2_pmfhl_slw_lane(ctx->hi, ctx->lo));
+ 861:     case 3: // LH: halfwords 0 and 2 of LO, HI, LO1, HI1
+ 862:     {
+ 863:         uint16_t h[8];
+ 864:         for (int i = 0; i < 4; ++i)
+ 865:         {
+ 866:             h[i * 2] = static_cast<uint16_t>(lanes[i]);
+ 867:             h[i * 2 + 1] = static_cast<uint16_t>(lanes[i] >> 32);
+ 868:         }
+ 869:         return _mm_set_epi16(static_cast<short>(h[7]), static_cast<short>(h[6]), static_cast<short>(h[5]), static_cast<short>(h[4]),
+ 870:                              static_cast<short>(h[3]), static_cast<short>(h[2]), static_cast<short>(h[1]), static_cast<short>(h[0]));
+ 871:     }
+ 872:     default: // SH: every 32-bit word of LO, HI, LO1, HI1 saturated to 16 bits
+ 873:     {
+ 874:         int16_t h[8];
+ 875:         for (int i = 0; i < 4; ++i)
+ 876:         {
+ 877:             h[i * 2] = ps2_saturate_s16(static_cast<uint32_t>(lanes[i]));
+ 878:             h[i * 2 + 1] = ps2_saturate_s16(static_cast<uint32_t>(lanes[i] >> 32));
+ 879:         }
+ 880:         return _mm_set_epi16(h[7], h[6], h[5], h[4], h[3], h[2], h[1], h[0]);
+ 881:     }
+ 882:     }
+ 883: }
+ 884: 
+ 885: template <typename Ctx>
+ 886: inline void ps2_pmthl_lw(Ctx *ctx, __m128i value)
+ 887: {
+ 888:     alignas(16) uint32_t words[4];
+ 889:     _mm_store_si128(reinterpret_cast<__m128i *>(words), value);
+ 890:     ctx->lo = (ctx->lo & 0xFFFFFFFF00000000ull) | words[0];
+ 891:     ctx->hi = (ctx->hi & 0xFFFFFFFF00000000ull) | words[1];
+ 892:     ctx->lo1 = (ctx->lo1 & 0xFFFFFFFF00000000ull) | words[2];
+ 893:     ctx->hi1 = (ctx->hi1 & 0xFFFFFFFF00000000ull) | words[3];
+ 894: }
+ 895: 
+ 896: #define PS2_PMFHL_LW(ctx) ps2_pmfhl(ctx, 0)
+ 897: #define PS2_PMFHL_UW(ctx) ps2_pmfhl(ctx, 1)
+ 898: #define PS2_PMFHL_SLW(ctx) ps2_pmfhl(ctx, 2)
+ 899: #define PS2_PMFHL_LH(ctx) ps2_pmfhl(ctx, 3)
+ 900: #define PS2_PMFHL_SH(ctx) ps2_pmfhl(ctx, 4)
+ 901: #define PS2_PMTHL_LW(ctx, value) ps2_pmthl_lw(ctx, value)
+ 902: 
+ 903: // FPU (COP1) operations
+ 904: #define FPU_SET_ACC(ctx, res) (ctx->f_acc = res)
+ 905: #define FPU_ADD_S(a, b) ps2_fadd((float)(a), (float)(b))
+ 906: #define FPU_SUB_S(a, b) ps2_fsub((float)(a), (float)(b))
+ 907: #define FPU_MUL_S(a, b) ps2_fmul((float)(a), (float)(b))
+ 908: #define FPU_DIV_S(a, b) ps2_fdiv((float)(a), (float)(b))
+ 909: #define FPU_RSQRT_S(a, b) ps2_frsqrt((float)(a), (float)(b))
+ 910: #define FPU_SQRT_S(a) ps2_fsqrt((float)(a))
+ 911: #define FPU_ABS_S(a) fabsf((float)(a))
+ 912: #define FPU_MOV_S(a) ((float)(a))
+ 913: #define FPU_NEG_S(a) (-(float)(a))
+ 914: #define FPU_ROUND_L_S(a) ((int64_t)roundf((float)(a)))
+ 915: #define FPU_TRUNC_L_S(a) ((int64_t)(float)(a))
+ 916: #define FPU_CEIL_L_S(a) ((int64_t)ceilf((float)(a)))
+ 917: #define FPU_FLOOR_L_S(a) ((int64_t)floorf((float)(a)))
+ 918: #define FPU_ROUND_W_S(a) ((int32_t)nearbyintf((float)(a)))
+ 919: #define FPU_TRUNC_W_S(a) ((int32_t)(float)(a))
+ 920: #define FPU_CEIL_W_S(a) ((int32_t)ceilf((float)(a)))
+ 921: #define FPU_FLOOR_W_S(a) ((int32_t)floorf((float)(a)))
+ 922: #define FPU_CVT_S_W(a) ((float)(int32_t)(a))
+ 923: #define FPU_CVT_S_L(a) ((float)(int64_t)(a))
+ 924: #define FPU_CVT_W_S(a) ((int32_t)nearbyintf((float)(a)))
+ 925: #define FPU_CVT_L_S(a) ((int64_t)(float)(a))
+ 926: #define FPU_C_F_S(a, b) (0)
+ 927: #define FPU_C_UN_S(a, b) (isnan((float)(a)) || isnan((float)(b)))
+ 928: #define FPU_C_EQ_S(a, b) ((float)(a) == (float)(b))
+ 929: #define FPU_C_UEQ_S(a, b) ((float)(a) == (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+ 930: #define FPU_C_OLT_S(a, b) ((float)(a) < (float)(b))
+ 931: #define FPU_C_ULT_S(a, b) ((float)(a) < (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+ 932: #define FPU_C_OLE_S(a, b) ((float)(a) <= (float)(b))
+ 933: #define FPU_C_ULE_S(a, b) ((float)(a) <= (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+ 934: #define FPU_C_SF_S(a, b) (0)
+ 935: #define FPU_C_NGLE_S(a, b) (isnan((float)(a)) || isnan((float)(b)))
+ 936: #define FPU_C_SEQ_S(a, b) ((float)(a) == (float)(b))
+ 937: #define FPU_C_NGL_S(a, b) ((float)(a) == (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+ 938: #define FPU_C_LT_S(a, b) ((float)(a) < (float)(b))
+ 939: #define FPU_C_NGE_S(a, b) ((float)(a) < (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+ 940: #define FPU_C_LE_S(a, b) ((float)(a) <= (float)(b))
+ 941: #define FPU_C_NGT_S(a, b) ((float)(a) <= (float)(b) || isnan((float)(a)) || isnan((float)(b)))
+ 942: 
+ 943: // QFSRV: Quadword Funnel Shift Right Variable
+ 944: // Concatenates rs || rt (256 bits) and right-shifts by SA bits, taking lower 128 bits.
+ 945: inline __m128i ps2_qfsrv(__m128i rs, __m128i rt, uint32_t sa)
+ 946: {
+ 947:     if (sa == 0)
+ 948:         return rt;
+ 949:     if (sa >= 128)
+ 950:     {
+ 951:         if (sa >= 256)
+ 952:             return _mm_setzero_si128();
+ 953:         uint32_t shift = sa - 128;
+ 954:         if (shift == 0)
+ 955:             return rs;
+ 956:         // Shift rs right by (sa-128) bits
+ 957:         uint32_t byteShift = shift / 8;
+ 958:         uint32_t bitShift = shift % 8;
+ 959:         // Byte shift rs right
+ 960:         alignas(16) uint8_t buf[16] = {};
+ 961:         alignas(16) uint8_t src[16];
+ 962:         _mm_store_si128((__m128i *)src, rs);
+ 963:         for (uint32_t i = 0; i + byteShift < 16; i++)
+ 964:             buf[i] = src[i + byteShift];
+ 965:         __m128i result = _mm_load_si128((__m128i *)buf);
+ 966:         if (bitShift > 0)
+ 967:             result = _mm_or_si128(_mm_srli_epi64(result, bitShift),
+ 968:                                   _mm_slli_epi64(_mm_bsrli_si128(result, 8), 64 - bitShift));
+ 969:         return result;
+ 970:     }
+ 971:     // sa is 1..127: result = (rs || rt) >> sa, lower 128 bits
+ 972:     uint32_t byteShift = sa / 8;
+ 973:     uint32_t bitShift = sa % 8;
+ 974:     alignas(16) uint8_t combined[32];
+ 975:     _mm_store_si128((__m128i *)(combined), rt);      // low 128 bits
+ 976:     _mm_store_si128((__m128i *)(combined + 16), rs); // high 128 bits
+ 977:     // Shift right by byteShift bytes
+ 978:     alignas(16) uint8_t shifted[16];
+ 979:     for (uint32_t i = 0; i < 16; i++)
+ 980:         shifted[i] = (i + byteShift < 32) ? combined[i + byteShift] : 0;
+ 981:     __m128i result = _mm_load_si128((__m128i *)shifted);
+ 982:     if (bitShift > 0)
+ 983:     {
+ 984:         uint8_t extra = (byteShift + 16 < 32) ? combined[byteShift + 16] : 0;
+ 985:         __m128i hi_byte = _mm_insert_epi8(_mm_setzero_si128(), extra, 15);
+ 986:         alignas(16) uint8_t src32[32];
+ 987:         for (uint32_t i = 0; i < 32; i++)
+ 988:             src32[i] = combined[i];
+ 989:         uint64_t lo0, lo1, hi0, hi1;
+ 990:         std::memcpy(&lo0, src32, 8);
+ 991:         std::memcpy(&lo1, src32 + 8, 8);
+ 992:         std::memcpy(&hi0, src32 + 16, 8);
+ 993:         std::memcpy(&hi1, src32 + 24, 8);
+ 994:         // 256-bit right shift by sa bits
+ 995:         uint64_t r0, r1;
+ 996:         if (sa < 64)
+ 997:         {
+ 998:             r0 = (lo0 >> sa) | (lo1 << (64 - sa));
+ 999:             r1 = (lo1 >> sa) | (hi0 << (64 - sa));
+1000:         }
+1001:         else if (sa < 128)
+1002:         {
+1003:             uint32_t s = sa - 64;
+1004:             if (s == 0)
+1005:             {
+1006:                 r0 = lo1;
+1007:                 r1 = hi0;
+1008:             }
+1009:             else
+1010:             {
+1011:                 r0 = (lo1 >> s) | (hi0 << (64 - s));
+1012:                 r1 = (hi0 >> s) | (hi1 << (64 - s));
+1013:             }
+1014:         }
+1015:         else
+1016:         {
+1017:             r0 = 0;
+1018:             r1 = 0; // handled above
+1019:         }
+1020:         result = _mm_set_epi64x((long long)r1, (long long)r0);
+1021:     }
+1022:     return result;
+1023: }
+1024: #define PS2_QFSRV(rs, rt, sa) ps2_qfsrv((__m128i)(rs), (__m128i)(rt), (uint32_t)(sa))
+1025: #define PS2_PCPYLD(rs, rt) _mm_unpacklo_epi64(rt, rs)
+1026: #define PS2_PEXEH(rs) _mm_shufflelo_epi16(_mm_shufflehi_epi16(rs, _MM_SHUFFLE(2, 3, 0, 1)), _MM_SHUFFLE(2, 3, 0, 1))
+1027: #define PS2_PEXEW(rs) _mm_shuffle_epi32(rs, _MM_SHUFFLE(2, 3, 0, 1))
+1028: #define PS2_PROT3W(rs) _mm_shuffle_epi32(rs, _MM_SHUFFLE(0, 3, 2, 1))
+1029: 
+1030: // Additional VU0 operations
+1031: #define PS2_VSQRT(x) sqrtf(x)
+1032: #define PS2_VRSQRT(x) (1.0f / sqrtf(x))
+1033: 
+1034: #define GPR_U32(ctx_ptr, reg_idx) ((reg_idx == 0) ? 0U : static_cast<uint32_t>(PS2_EXTRACT_EPI32_0(ctx_ptr->r[reg_idx])))
+1035: #define GPR_S32(ctx_ptr, reg_idx) ((reg_idx == 0) ? 0 : PS2_EXTRACT_EPI32_0(ctx_ptr->r[reg_idx]))
+1036: #define GPR_U64(ctx_ptr, reg_idx) ((reg_idx == 0) ? 0ULL : static_cast<uint64_t>(PS2_EXTRACT_EPI64_0(ctx_ptr->r[reg_idx])))
+1037: #define GPR_S64(ctx_ptr, reg_idx) ((reg_idx == 0) ? 0LL : PS2_EXTRACT_EPI64_0(ctx_ptr->r[reg_idx]))
+1038: #define GPR_VEC(ctx_ptr, reg_idx) ((reg_idx == 0) ? _mm_setzero_si128() : ctx_ptr->r[reg_idx])
+1039: 
+1040: static inline void Ps2SetGprLow64(R5900Context *ctx, int reg, __m128i new_low)
+1041: {
+1042:     if (reg != 0)
+1043:     {
+1044:         ctx->r[reg] = _mm_castpd_si128(_mm_move_sd(_mm_castsi128_pd(ctx->r[reg]), _mm_castsi128_pd(new_low)));
+1045:     }
+1046: }
+1047: 
+1048: #define SET_GPR_U32(ctx_ptr, reg_idx, val)                                \
+1049:     do                                                                    \
+1050:     {                                                                     \
+1051:         if ((reg_idx) != 0)                                               \
+1052:         {                                                                 \
+1053:             __m128i _newVal = _mm_cvtsi64_si128((int64_t)(int32_t)(val)); \
+1054:                                                                           \
+1055:             Ps2SetGprLow64(ctx_ptr, reg_idx, _newVal);                    \
+1056:         }                                                                 \
+1057:     } while (0)
+1058: 
+1059: 
+1060: #define SET_GPR_ZE32(ctx_ptr, reg_idx, val)                               \
+1061:     do                                                                    \
+1062:     {                                                                     \
+1063:         if ((reg_idx) != 0)                                               \
+1064:         {                                                                 \
+1065:             __m128i _newVal = _mm_cvtsi64_si128((int64_t)(uint32_t)(val)); \
+1066:             Ps2SetGprLow64(ctx_ptr, reg_idx, _newVal);                    \
+1067:         }                                                                 \
+1068:     } while (0)
+1069: 
+1070: #define SET_GPR_S32(ctx_ptr, reg_idx, val)                                \
+1071:     do                                                                    \
+1072:     {                                                                     \
+1073:         if ((reg_idx) != 0)                                               \
+1074:         {                                                                 \
+1075:             __m128i _newVal = _mm_cvtsi64_si128((int64_t)(int32_t)(val)); \
+1076:             Ps2SetGprLow64(ctx_ptr, reg_idx, _newVal);                    \
+1077:         }                                                                 \
+1078:     } while (0)
+1079: 
+1080: #define SET_GPR_U64(ctx_ptr, reg_idx, val)                       \
+1081:     do                                                           \
+1082:     {                                                            \
+1083:         if ((reg_idx) != 0)                                      \
+1084:         {                                                        \
+1085:             __m128i _newVal = _mm_cvtsi64_si128((int64_t)(val)); \
+1086:             Ps2SetGprLow64(ctx_ptr, reg_idx, _newVal);           \
+1087:         }                                                        \
+1088:     } while (0)
+1089: 
+1090: #define SET_GPR_S64(ctx_ptr, reg_idx, val) SET_GPR_U64(ctx_ptr, reg_idx, val)
+1091: 
+1092: #define SET_GPR_VEC(ctx_ptr, reg_idx, val) \
+1093:     do                                     \
+1094:     {                                      \
+1095:         if (reg_idx != 0)                  \
+1096:             ctx_ptr->r[reg_idx] = (val);   \
+1097:     } while (0)
+1098: 
+1099: #endif // PS2_RUNTIME_MACROS_H
+
+========== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp ==========
+   1: #include "ps2recomp/code_generator.h"
+   2: #include "ps2recomp/instructions.h"
+   3: #include "ps2recomp/types.h"
+   4: 
+   5: #include <fstream>
+   6: #include <iostream>
+   7: #include <stdexcept>
+   8: #include <string>
+   9: #include <unordered_map>
+  10: #include <vector>
+  11: 
+  12: using namespace ps2recomp;
+  13: 
+  14: int main(int argc, char** argv)
+  15: {
+  16:     if (argc != 2)
+  17:     {
+  18:         std::cerr << "Usage: generate_fpu_execution_fixture <output.cpp>\n";
+  19:         return 2;
+  20:     }
+  21: 
+  22:     const struct Op
+  23:     {
+  24:         const char* name;
+  25:         uint32_t function;
+  26:     } ops[] = {
+  27:         {"generated_fpu_adda", COP1_S_ADDA},
+  28:         {"generated_fpu_suba", COP1_S_SUBA},
+  29:         {"generated_fpu_mula", COP1_S_MULA},
+  30:         {"generated_fpu_madd", COP1_S_MADD},
+  31:         {"generated_fpu_msub", COP1_S_MSUB},
+  32:         {"generated_fpu_madda", COP1_S_MADDA},
+  33:         {"generated_fpu_msuba", COP1_S_MSUBA}
+  34:     };
+  35: 
+  36:     std::vector<Symbol> symbols;
+  37:     std::vector<Section> sections;
+  38:     CodeGenerator generator(symbols, sections);
+  39: 
+  40:     std::unordered_map<uint32_t, std::string> names;
+  41:     std::vector<Function> functions;
+  42:     std::vector<std::vector<Instruction>> instructionSets;
+  43: 
+  44:     constexpr uint32_t base = 0x00100000u;
+  45:     for (size_t i = 0; i < std::size(ops); ++i)
+  46:     {
+  47:         const uint32_t address = base + static_cast<uint32_t>(i * 0x10u);
+  48: 
+  49:         Instruction inst{};
+  50:         inst.address = address;
+  51:         inst.opcode = OPCODE_COP1;
+  52:         inst.rs = COP1_S;
+  53:         inst.rt = 2;             // ft
+  54:         inst.rd = 1;             // fs
+  55:         inst.sa = 3;             // fd
+  56:         inst.function = ops[i].function;
+  57: 
+  58:         Function function{};
+  59:         function.name = ops[i].name;
+  60:         function.start = address;
+  61:         function.end = address + 4u;
+  62:         function.instructions.push_back(inst);
+  63: 
+  64:         names.emplace(address, ops[i].name);
+  65:         functions.push_back(function);
+  66:         instructionSets.push_back({inst});
+  67:     }
+  68: 
+  69:     constexpr uint32_t sequenceAddress = base + 0x70u;
+  70: 
+  71:     Instruction mula{};
+  72:     mula.address = sequenceAddress;
+  73:     mula.opcode = OPCODE_COP1;
+  74:     mula.rs = COP1_S;
+  75:     mula.rt = 2;
+  76:     mula.rd = 1;
+  77:     mula.sa = 3;
+  78:     mula.function = COP1_S_MULA;
+  79: 
+  80:     Instruction madda{};
+  81:     madda.address = sequenceAddress + 4u;
+  82:     madda.opcode = OPCODE_COP1;
+  83:     madda.rs = COP1_S;
+  84:     madda.rt = 2;
+  85:     madda.rd = 1;
+  86:     madda.sa = 3;
+  87:     madda.function = COP1_S_MADDA;
+  88: 
+  89:     Function sequence{};
+  90:     sequence.name = "generated_fpu_sequence_mula_madda";
+  91:     sequence.start = sequenceAddress;
+  92:     sequence.end = sequenceAddress + 8u;
+  93:     sequence.instructions.push_back(mula);
+  94:     sequence.instructions.push_back(madda);
+  95: 
+  96:     names.emplace(sequenceAddress, sequence.name);
+  97: 
+  98:     generator.setRenamedFunctions(names);
+  99:     generator.setEmitInstructionComments(false);
+ 100: 
+ 101:     std::ofstream out(argv[1], std::ios::binary | std::ios::trunc);
+ 102:     if (!out)
+ 103:         throw std::runtime_error("Could not create generated fixture source");
+ 104: 
+ 105:     out << "#include \"ps2_runtime.h\"\n";
+ 106:     out << "#include \"ps2_runtime_macros.h\"\n";
+ 107:     out << "#include <cstdint>\n\n";
+ 108: 
+ 109:     for (size_t i = 0; i < functions.size(); ++i)
+ 110:     {
+ 111:         const std::string emitted =
+ 112:             generator.generateFunction(functions[i], instructionSets[i], false);
+ 113: 
+ 114:         if (emitted.find("runtime->") != std::string::npos ||
+ 115:             emitted.find("runtime.") != std::string::npos)
+ 116:         {
+ 117:             throw std::runtime_error(
+ 118:                 std::string("Generated function unexpectedly accesses runtime: ") +
+ 119:                 ops[i].name);
+ 120:         }
+ 121: 
+ 122:         out << emitted << "\n\n";
+ 123:     }
+ 124: 
+ 125:     const std::string sequenceEmitted =
+ 126:         generator.generateFunction(sequence, sequence.instructions, false);
+ 127: 
+ 128:     if (sequenceEmitted.find("runtime->") != std::string::npos ||
+ 129:         sequenceEmitted.find("runtime.") != std::string::npos)
+ 130:     {
+ 131:         throw std::runtime_error(
+ 132:             "Generated sequence unexpectedly accesses runtime");
+ 133:     }
+ 134: 
+ 135:     out << sequenceEmitted << "\n\n";
+ 136: 
+ 137:     out.close();
+ 138:     if (!out)
+ 139:         throw std::runtime_error("Failed while writing generated fixture source");
+ 140: 
+ 141:     std::cout << "Generated " << functions.size()
+ 142:               << " guest-instruction functions: " << argv[1] << "\n";
+ 143:     return 0;
+ 144: }
+ 145: 
+
+========== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp ==========
+   1: #include "MiniTest.h"
+   2: #include "ps2_runtime.h"
+   3: 
+   4: #include <cstdint>
+   5: 
+   6: using GeneratedFpuFunction =
+   7:     void (*)(uint8_t*, R5900Context*, PS2Runtime*);
+   8: 
+   9: void generated_fpu_adda(uint8_t*, R5900Context*, PS2Runtime*);
+  10: void generated_fpu_suba(uint8_t*, R5900Context*, PS2Runtime*);
+  11: void generated_fpu_mula(uint8_t*, R5900Context*, PS2Runtime*);
+  12: void generated_fpu_madd(uint8_t*, R5900Context*, PS2Runtime*);
+  13: void generated_fpu_msub(uint8_t*, R5900Context*, PS2Runtime*);
+  14: void generated_fpu_madda(uint8_t*, R5900Context*, PS2Runtime*);
+  15: void generated_fpu_msuba(uint8_t*, R5900Context*, PS2Runtime*);
+  16: void generated_fpu_sequence_mula_madda(uint8_t*, R5900Context*, PS2Runtime*);
+  17: 
+  18: static R5900Context makeGeneratedFpuContext()
+  19: {
+  20:     R5900Context ctx{};
+  21:     ctx.f[1] = 2.0f;
+  22:     ctx.f[2] = 3.0f;
+  23:     ctx.f[3] = 0.0f;
+  24:     ctx.f_acc = 5.0f;
+  25:     return ctx;
+  26: }
+  27: 
+  28: void register_generated_fpu_execution_tests()
+  29: {
+  30:     MiniTest::Case("GeneratedFPUExecution", [](TestCase& tc)
+  31:     {
+  32:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+  33:             auto ctx = makeGeneratedFpuContext();
+  34:             ctx.f_acc = 9.0f;
+  35:             generated_fpu_adda(nullptr, &ctx, nullptr);
+  36:             t.Equals(ctx.f_acc, 5.0f, "ADDA.S overwrites prior accumulator");
+  37:             t.Equals(ctx.pc, 0x100004u, "ADDA.S final PC");
+  38:         });
+  39: 
+  40:         tc.Run("generated SUBA.S updates live accumulator", [](TestCase& t) {
+  41:             auto ctx = makeGeneratedFpuContext();
+  42:             generated_fpu_suba(nullptr, &ctx, nullptr);
+  43:             t.Equals(ctx.f_acc, -1.0f, "SUBA.S accumulator");
+  44:             t.Equals(ctx.pc, 0x100014u, "SUBA.S final PC");
+  45:         });
+  46: 
+  47:         tc.Run("generated MULA.S updates live accumulator", [](TestCase& t) {
+  48:             auto ctx = makeGeneratedFpuContext();
+  49:             generated_fpu_mula(nullptr, &ctx, nullptr);
+  50:             t.Equals(ctx.f_acc, 6.0f, "MULA.S accumulator");
+  51:             t.Equals(ctx.pc, 0x100024u, "MULA.S final PC");
+  52:         });
+  53: 
+  54:         tc.Run("generated MADD.S writes destination FPR", [](TestCase& t) {
+  55:             auto ctx = makeGeneratedFpuContext();
+  56:             generated_fpu_madd(nullptr, &ctx, nullptr);
+  57:             t.Equals(ctx.f[3], 11.0f, "MADD.S destination");
+  58:             t.Equals(ctx.pc, 0x100034u, "MADD.S final PC");
+  59:         });
+  60: 
+  61:         tc.Run("generated MSUB.S writes destination FPR", [](TestCase& t) {
+  62:             auto ctx = makeGeneratedFpuContext();
+  63:             generated_fpu_msub(nullptr, &ctx, nullptr);
+  64:             t.Equals(ctx.f[3], -1.0f, "MSUB.S destination");
+  65:             t.Equals(ctx.pc, 0x100044u, "MSUB.S final PC");
+  66:         });
+  67: 
+  68:         tc.Run("generated MADDA.S updates live accumulator", [](TestCase& t) {
+  69:             auto ctx = makeGeneratedFpuContext();
+  70:             generated_fpu_madda(nullptr, &ctx, nullptr);
+  71:             t.Equals(ctx.f_acc, 11.0f, "MADDA.S accumulator");
+  72:             t.Equals(ctx.pc, 0x100054u, "MADDA.S final PC");
+  73:         });
+  74: 
+  75:         tc.Run("generated MSUBA.S updates live accumulator", [](TestCase& t) {
+  76:             auto ctx = makeGeneratedFpuContext();
+  77:             generated_fpu_msuba(nullptr, &ctx, nullptr);
+  78:             t.Equals(ctx.f_acc, -1.0f, "MSUBA.S accumulator");
+  79:             t.Equals(ctx.pc, 0x100064u, "MSUBA.S final PC");
+  80:         });
+  81: 
+  82:         tc.Run("generated MULA.S then MADDA.S consumes live accumulator", [](TestCase& t) {
+  83:             auto ctx = makeGeneratedFpuContext();
+  84:             ctx.f_acc = 99.0f;
+  85:             generated_fpu_sequence_mula_madda(nullptr, &ctx, nullptr);
+  86:             t.Equals(ctx.f_acc, 12.0f, "MADDA.S consumes MULA.S accumulator");
+  87:             t.Equals(ctx.pc, 0x100078u, "two-instruction sequence final PC");
+  88:         });
+  89:     });
+  90: }
+  91: 
+  92: 
