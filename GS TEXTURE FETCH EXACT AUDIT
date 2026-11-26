@@ -1,0 +1,1099 @@
+MARK OF KRI — GS TEXTURE FETCH EXACT AUDIT
+Timestamp: 2026-11-26 04:27:53
+Source: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp
+READ ONLY — NO SOURCE MODIFICATIONS
+
+========== SampleTextureAxes ==========
+ 3073:         texUf = static_cast<float>(u) / 16.0f;
+ 3074:         texVf = static_cast<float>(v) / 16.0f;
+ 3075:     }
+ 3076:     else
+ 3077:     {
+ 3078:         const float invQ = 1.0f / fabsQ(q);
+ 3079:         texUf = s * invQ * static_cast<float>(texW);
+ 3080:         texVf = t * invQ * static_cast<float>(texH);
+ 3081:     }
+ 3082: 
+ 3083:     return SampleTextureAxes(sampler,
+ 3084:                              PrepareTextureAxis(texUf, texW, sampler.wrapU, sampler.minU, sampler.maxU, sampler.linear),
+ 3085:                              PrepareTextureAxis(texVf, texH, sampler.wrapV, sampler.minV, sampler.maxV, sampler.linear));
+ 3086: }
+ 3087: 
+ 3088: GSCpuBackend::TextureAxis GSCpuBackend::PrepareTextureAxis(float coordinate, int size, uint8_t mode, uint16_t regionMin, uint16_t regionMax, bool linear)
+ 3089: {
+ 3090:     TextureAxis axis{};
+ 3091:     if (!linear)
+ 3092:     {
+ 3093:         axis.c0 = wrapTextureCoordinate(static_cast<int>(coordinate), size, mode, regionMin, regionMax);
+ 3094:         return axis;
+ 3095:     }
+ 3096:     const float sample = coordinate - 0.5f;
+ 3097:     const int c0 = static_cast<int>(std::floor(sample));
+ 3098:     axis.frac = sample - static_cast<float>(c0);
+ 3099:     axis.c0 = wrapTextureCoordinate(c0, size, mode, regionMin, regionMax);
+ 3100:     axis.c1 = wrapTextureCoordinate(c0 + 1, size, mode, regionMin, regionMax);
+ 3101:     return axis;
+ 3102: }
+ 3103: 
+ 3104: PS2_GS_ALWAYS_INLINE uint32_t GSCpuBackend::SampleTexel(const TextureSampler &sampler, int u, int v)
+ 3105: {
+ 3106:     return ConvertTexel(sampler, sampler.fetch(*sampler.cache, m_vram, sampler.tbp0, sampler.tbw, static_cast<u32>(u), static_cast<u32>(v)));
+ 3107: }
+ 3108: 
+ 3109: PS2_GS_ALWAYS_INLINE uint32_t GSCpuBackend::ConvertTexel(const TextureSampler &sampler, uint32_t out)
+ 3110: {
+ 3111:     if (sampler.clut)
+
+ 3121:     case GS_PSM_CT16:
+ 3122:     case GS_PSM_CT16S:
+ 3123:     case GS_PSM_Z16:
+ 3124:     case GS_PSM_Z16S:
+ 3125:         return applyTexa(sampler.state->texa, static_cast<uint8_t>(sampler.psm), Rgba5551ToRgba8888(out));
+ 3126:     }
+ 3127: 
+ 3128:     return 0xFFFF00FFu;
+ 3129: }
+ 3130: 
+ 3131: uint32_t GSCpuBackend::SampleTextureAxes(const TextureSampler &sampler, const TextureAxis &u, const TextureAxis &v)
+ 3132: {
+ 3133:     if (!sampler.linear)
+ 3134:     {
+ 3135:         return SampleTexel(sampler, u.c0, v.c0);
+ 3136:     }
+ 3137: 
+ 3138:     const float fx = u.frac;
+ 3139:     const float fy = v.frac;
+ 3140:     uint32_t quad[4];
+ 3141:     sampler.fetchQuad(*sampler.cache, m_vram, sampler.tbp0, sampler.tbw, static_cast<u32>(u.c0), static_cast<u32>(u.c1),
+ 3142:                       static_cast<u32>(v.c0), static_cast<u32>(v.c1), quad);
+ 3143:     const uint32_t c00 = ConvertTexel(sampler, quad[0]);
+ 3144:     const uint32_t c10 = ConvertTexel(sampler, quad[1]);
+ 3145:     const uint32_t c01 = ConvertTexel(sampler, quad[2]);
+ 3146:     const uint32_t c11 = ConvertTexel(sampler, quad[3]);
+ 3147:     if (fx >= 0.0f && fx <= 1.0f && fy >= 0.0f && fy <= 1.0f)
+ 3148:         return lerpTexels(c00, c10, c01, c11, fx, fy);
+ 3149: 
+ 3150:     const uint8_t r = lerpChannel(static_cast<uint8_t>(c00 & 0xFFu),
+ 3151:                                   static_cast<uint8_t>(c10 & 0xFFu),
+ 3152:                                   static_cast<uint8_t>(c01 & 0xFFu),
+ 3153:                                   static_cast<uint8_t>(c11 & 0xFFu),
+ 3154:                                   fx, fy);
+ 3155:     const uint8_t g = lerpChannel(static_cast<uint8_t>((c00 >> 8) & 0xFFu),
+ 3156:                                   static_cast<uint8_t>((c10 >> 8) & 0xFFu),
+ 3157:                                   static_cast<uint8_t>((c01 >> 8) & 0xFFu),
+ 3158:                                   static_cast<uint8_t>((c11 >> 8) & 0xFFu),
+ 3159:                                   fx, fy);
+
+ 3301:                     constexpr uint32_t kDepth = decltype(depthFormat)::value;
+ 3302:                     SpanPixels span;
+ 3303:                     for (int chunkX = drawX0; chunkX <= drawX1; chunkX += SpanPixels::kMax)
+ 3304:                     {
+ 3305:                         const int count = std::min(SpanPixels::kMax, drawX1 - chunkX + 1);
+ 3306:                         uint32_t texels[SpanPixels::kMax];
+ 3307:                         for (int i = 0; i < count; ++i)
+ 3308:                         {
+ 3309:                             const int x = chunkX + i;
+ 3310:                             raster.beginSample(y, x);
+ 3311:                             texels[i] = SampleTextureAxes(sampler, columns[static_cast<size_t>(x - drawX0)], row);
+ 3312:                             raster.sampled(y, x);
+ 3313:                         }
+ 3314:                         span.count = count;
+ 3315:                         for (int i = 0; i < count; ++i)
+ 3316:                         {
+ 3317:                             const uint32_t texel = texels[i];
+ 3318:                             const TextureCombineResult color = combineTexture(tex, r, g, b, a,
+ 3319:                                                                               static_cast<uint8_t>(texel & 0xFF), static_cast<uint8_t>((texel >> 8) & 0xFF),
+ 3320:                                                                               static_cast<uint8_t>((texel >> 16) & 0xFF), static_cast<uint8_t>((texel >> 24) & 0xFF));
+ 3321:                             if constexpr (kFrame != kAnyTarget && kDepth != kAnyTarget)
+ 3322:                             {
+ 3323:                                 span.x[i] = chunkX + i;
+ 3324:                                 span.z[i] = static_cast<int>(z1);
+ 3325:                                 span.r[i] = color.r;
+ 3326:                                 span.g[i] = color.g;
+ 3327:                                 span.b[i] = color.b;
+ 3328:                                 span.a[i] = color.a;
+ 3329:                                 span.fog[i] = v1.fog;
+ 3330:                             }
+ 3331:                             else
+ 3332:                             {
+ 3333:                                 writtenPixels += WritePixelFor<kFrame, kDepth>(pipe, chunkX + i, y, z1, color.r, color.g, color.b, color.a, v1.fog) ? 1u : 0u;
+ 3334:                             }
+ 3335:                         }
+ 3336:                         if constexpr (kFrame != kAnyTarget && kDepth != kAnyTarget)
+ 3337:                             writtenPixels += WriteSpanFor<kFrame, kDepth>(pipe, y, span);
+ 3338:                     }
+ 3339:                 };
+
+ 3337:                             writtenPixels += WriteSpanFor<kFrame, kDepth>(pipe, y, span);
+ 3338:                     }
+ 3339:                 };
+ 3340:                 dispatchTargetFormats(pipe.fpsm, pipe.zpsm, writeRow);
+ 3341:                 continue;
+ 3342:             }
+ 3343: 
+ 3344:             for (int x = drawX0; x <= drawX1; ++x)
+ 3345:             {
+ 3346:                 raster.beginSample(y, x);
+ 3347:                 const uint32_t texel = SampleTextureAxes(sampler, columns[static_cast<size_t>(x - drawX0)], row);
+ 3348:                 raster.sampled(y, x);
+ 3349: 
+ 3350:                 uint8_t tr = static_cast<uint8_t>(texel & 0xFF);
+ 3351:                 uint8_t tg = static_cast<uint8_t>((texel >> 8) & 0xFF);
+ 3352:                 uint8_t tb = static_cast<uint8_t>((texel >> 16) & 0xFF);
+ 3353:                 uint8_t ta = static_cast<uint8_t>((texel >> 24) & 0xFF);
+ 3354: 
+ 3355:                 const TextureCombineResult color = combineTexture(tex, r, g, b, a, tr, tg, tb, ta);
+ 3356:                 writtenPixels += WritePixel(pipe, x, y, z1, color.r, color.g, color.b, color.a, v1.fog) ? 1u : 0u;
+ 3357:             }
+ 3358:         }
+ 3359:     }
+ 3360:     else
+ 3361:     {
+ 3362:         const PixelPipeline pipe = MakePixelPipeline(state, raster);
+ 3363:         for (int y = raster.firstRow(drawY0); y <= raster.lastRow(drawY1); ++y)
+ 3364:         {
+ 3365:             for (int x = drawX0; x <= drawX1; ++x)
+ 3366:                 writtenPixels += WritePixel(pipe, x, y, z1, r, g, b, a, v1.fog) ? 1u : 0u;
+ 3367:         }
+ 3368:     }
+ 3369:     if (raster.stats)
+ 3370:     {
+ 3371:         const uint64_t box = static_cast<uint64_t>(raster.lastRow(drawY1) - raster.firstRow(drawY0) + 1) *
+ 3372:                              static_cast<uint64_t>(drawX1 - drawX0 + 1);
+ 3373:         raster.stats->boxPixels += box;
+ 3374:         raster.stats->insidePixels += box;
+ 3375:         raster.stats->writtenPixels += writtenPixels;
+
+ 3539:                         const float invQ = 1.0f / fabsQ(iq);
+ 3540:                         texUf = is * invQ * texWf;
+ 3541:                         texVf = it * invQ * texHf;
+ 3542:                     }
+ 3543:                     axesU[i] = PrepareTextureAxis(texUf, sampler.texW, sampler.wrapU, sampler.minU, sampler.maxU, sampler.linear);
+ 3544:                     axesV[i] = PrepareTextureAxis(texVf, sampler.texH, sampler.wrapV, sampler.minV, sampler.maxV, sampler.linear);
+ 3545:                 }
+ 3546:                 for (int i = 0; i < count; ++i)
+ 3547:                 {
+ 3548:                     raster.beginSample(y, xs[i]);
+ 3549:                     texels[i] = SampleTextureAxes(sampler, axesU[i], axesV[i]);
+ 3550:                     raster.sampled(y, xs[i]);
+ 3551:                 }
+ 3552:                 auto writeChunk = [&](auto frameFormat, auto depthFormat)
+ 3553:                 {
+ 3554:                 constexpr uint32_t kFrame = decltype(frameFormat)::value;
+ 3555:                 constexpr uint32_t kDepth = decltype(depthFormat)::value;
+ 3556:                 constexpr bool staged = kFrame != kAnyTarget && kDepth != kAnyTarget;
+ 3557:                 SpanPixels span;
+ 3558:                 span.count = 0;
+ 3559:                 for (int i = 0; i < count; ++i)
+ 3560:                 {
+ 3561:                     const float w0 = w0s[i], w1 = w1s[i], w2 = w2s[i];
+ 3562:                     const double z = v0.z * w0 + v1.z * w1 + v2.z * w2;
+ 3563:                     uint8_t r, g, b, a;
+ 3564:                     if (state.prim.iip)
+ 3565:                     {
+ 3566:                         r = clampU8(static_cast<int>(v0.r * w0 + v1.r * w1 + v2.r * w2));
+ 3567:                         g = clampU8(static_cast<int>(v0.g * w0 + v1.g * w1 + v2.g * w2));
+ 3568:                         b = clampU8(static_cast<int>(v0.b * w0 + v1.b * w1 + v2.b * w2));
+ 3569:                         a = clampU8(static_cast<int>(v0.a * w0 + v1.a * w1 + v2.a * w2));
+ 3570:                     }
+ 3571:                     else
+ 3572:                     {
+ 3573:                         r = v2.r;
+ 3574:                         g = v2.g;
+ 3575:                         b = v2.b;
+ 3576:                         a = v2.a;
+ 3577:                     }
+
+========== ReadTexture( ==========
+ 2056:     if (!m_vram)
+ 2057:         return 0u;
+ 2058:     return m_readVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y);
+ 2059: }
+ 2060: 
+ 2061: uint32_t GSCpuBackend::ReadTextureVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y)
+ 2062: {
+ 2063:     if (!m_vram)
+ 2064:         return 0u;
+ 2065: 
+ 2066:     return GSMem::ReadTexture(m_texturePageCache, m_vram, psm, base, bw, x, y);
+ 2067: }
+ 2068: 
+ 2069: void GSCpuBackend::WriteVramNow(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2070: {
+ 2071:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2072:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2073:     WriteVramUnlocked(psm, base, bw, x, y, value);
+ 2074: }
+ 2075: 
+ 2076: void GSCpuBackend::WriteVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2077: {
+ 2078:     if (!m_vram)
+ 2079:         return;
+ 2080:     uint32_t livePage = 0u;
+ 2081:     if (m_texturePageCache.LivePage(livePage) &&
+ 2082:         spanHasPage(pageSpan(base, bw, psm, x, y, x, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 2083:         m_texturePageCache.Snapshot(m_vram);
+ 2084:     m_writeVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y, value);
+ 2085: }
+ 2086: 
+ 2087: void GSCpuBackend::SnapshotVramNow(std::vector<uint8_t> &out) const
+ 2088: {
+ 2089:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2090:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2091:     if (!m_vram || m_vramSize == 0u)
+ 2092:     {
+ 2093:         out.clear();
+ 2094:         return;
+
+========== cache-> ==========
+NO MATCH
+
+========== raster.cache ==========
+ 1382:     else
+ 1383:         m_workers->start(&f.job);
+ 1384: }
+ 1385: 
+ 1386: void GSCpuBackend::RasterizeInFlightBand(uint32_t index)
+ 1387: {
+ 1388:     const InFlight &f = m_inflight;
+ 1389:     RasterContext raster{};
+ 1390:     raster.rowBegin = f.bands[index].begin;
+ 1391:     raster.rowEnd = f.bands[index].end;
+ 1392:     raster.cache = &m_bandCaches[index];
+ 1393:     raster.batched = true;
+ 1394:     if (f.tracked)
+ 1395:     {
+ 1396:         raster.trackReads = true;
+ 1397:         raster.undo = &m_undoLogs[index];
+ 1398:         raster.undoPages = &f.kept;
+ 1399:     }
+ 1400:     else
+ 1401:     {
+ 1402:         raster.trace = const_cast<RasterTrace *>(&f.traces[index]);
+ 1403:     }
+ 1404:     raster.stats = f.bandStats.empty() ? nullptr : const_cast<RasterStats *>(&f.bandStats[index]);
+ 1405:     for (size_t i = 0; i < f.prims.size(); ++i)
+ 1406:     {
+ 1407:         // Most primitives miss a given band; skipping them here avoids each one's setup per band.
+ 1408:         if (f.primRows[i].end < raster.rowBegin || f.primRows[i].begin >= raster.rowEnd)
+ 1409:             continue;
+ 1410:         raster.primitive = static_cast<uint32_t>(i);
+ 1411:         const int32_t clutIndex = f.clutIndex[i];
+ 1412:         raster.clut = clutIndex >= 0 ? f.cluts[static_cast<size_t>(clutIndex)].data() : nullptr;
+ 1413:         DrawPrimitiveRows(f.prims[i], raster);
+ 1414:     }
+ 1415: }
+ 1416: 
+ 1417: void GSCpuBackend::FinishTracked()
+ 1418: {
+ 1419:     // Every primitive samples only top bytes of the pages the batch draws into with RGB24/Z24, so every
+ 1420:     // pixel comes out the same drawn in any order. What a serial draw also leaves behind is the texture
+
+ 2263:     });
+ 2264: 
+ 2265:     PrepareTexturePageCache(state);
+ 2266:     struct CopyOnMissReset
+ 2267:     {
+ 2268:         GSMem::TexturePageCache &cache;
+ 2269:         ~CopyOnMissReset() { cache.SetCopyOnMiss(false); }
+ 2270:     } copyOnMissReset{m_texturePageCache};
+ 2271: 
+ 2272:     RasterContext raster{};
+ 2273:     raster.cache = &m_texturePageCache;
+ 2274:     raster.clut = clut;
+ 2275:     RasterStats stats;
+ 2276:     if (gsStatsEnabled())
+ 2277:         raster.stats = &stats;
+ 2278:     DrawPrimitiveRows(batch, raster);
+ 2279:     if (raster.stats)
+ 2280:         AddRasterStats(stats);
+ 2281: }
+ 2282: 
+ 2283: void GSCpuBackend::DrawPrimitiveRows(const GSPrimitiveBatch &batch, const RasterContext &raster)
+ 2284: {
+ 2285:     const GSDrawState &state = batch.state;
+ 2286:     switch (state.prim.type)
+ 2287:     {
+ 2288:     case GS_PRIM_SPRITE:
+ 2289:         DrawSprite(batch, raster);
+ 2290:         break;
+ 2291:     case GS_PRIM_TRIANGLE:
+ 2292:     case GS_PRIM_TRISTRIP:
+ 2293:     case GS_PRIM_TRIFAN:
+ 2294:         DrawTriangle(batch, raster);
+ 2295:         break;
+ 2296:     case GS_PRIM_LINE:
+ 2297:     case GS_PRIM_LINESTRIP:
+ 2298:         DrawLine(batch, raster);
+ 2299:         break;
+ 2300:     case GS_PRIM_POINT:
+ 2301:     {
+
+ 3278:         columns.resize(static_cast<size_t>(drawX1 - drawX0 + 1));
+ 3279:         for (int x = drawX0; x <= drawX1; ++x)
+ 3280:         {
+ 3281:             float tx = (static_cast<float>(x - unclippedX0) + 0.5f) / spriteW;
+ 3282:             float texUf = u0f + (u1f - u0f) * tx;
+ 3283:             columns[static_cast<size_t>(x - drawX0)] =
+ 3284:                 PrepareTextureAxis(axisCoordinate(texUf, texW), texW, wrapU, minU, maxU, state.linearFilter);
+ 3285:         }
+ 3286: 
+ 3287:         const PixelPipeline pipe = MakePixelPipeline(state, raster);
+ 3288:         const TextureSampler sampler = MakeTextureSampler(state, *raster.cache, raster.clut);
+ 3289:         for (int y = raster.firstRow(drawY0); y <= raster.lastRow(drawY1); ++y)
+ 3290:         {
+ 3291:             float ty = (static_cast<float>(y - unclippedY0) + 0.5f) / spriteH;
+ 3292:             float texVf = v0f + (v1f - v0f) * ty;
+ 3293:             const TextureAxis row = PrepareTextureAxis(axisCoordinate(texVf, texH), texH, wrapV, minV, maxV, state.linearFilter);
+ 3294: 
+ 3295:             if (raster.batched)
+ 3296:             {
+ 3297:                 // As for batched triangles: a chunk is sampled, then written as one span.
+ 3298:                 auto writeRow = [&](auto frameFormat, auto depthFormat)
+ 3299:                 {
+ 3300:                     constexpr uint32_t kFrame = decltype(frameFormat)::value;
+ 3301:                     constexpr uint32_t kDepth = decltype(depthFormat)::value;
+ 3302:                     SpanPixels span;
+ 3303:                     for (int chunkX = drawX0; chunkX <= drawX1; chunkX += SpanPixels::kMax)
+ 3304:                     {
+ 3305:                         const int count = std::min(SpanPixels::kMax, drawX1 - chunkX + 1);
+ 3306:                         uint32_t texels[SpanPixels::kMax];
+ 3307:                         for (int i = 0; i < count; ++i)
+ 3308:                         {
+ 3309:                             const int x = chunkX + i;
+ 3310:                             raster.beginSample(y, x);
+ 3311:                             texels[i] = SampleTextureAxes(sampler, columns[static_cast<size_t>(x - drawX0)], row);
+ 3312:                             raster.sampled(y, x);
+ 3313:                         }
+ 3314:                         span.count = count;
+ 3315:                         for (int i = 0; i < count; ++i)
+ 3316:                         {
+
+ 3401:     int minY = static_cast<int>(std::floor(std::min({fy0, fy1, fy2})));
+ 3402:     int maxY = static_cast<int>(std::ceil(std::max({fy0, fy1, fy2})));
+ 3403: 
+ 3404:     minX = clampInt(minX, ctx.scissor.x0, ctx.scissor.x1);
+ 3405:     maxX = clampInt(maxX, ctx.scissor.x0, ctx.scissor.x1);
+ 3406:     minY = clampInt(minY, ctx.scissor.y0, ctx.scissor.y1);
+ 3407:     maxY = clampInt(maxY, ctx.scissor.y0, ctx.scissor.y1);
+ 3408:     if (raster.firstRow(minY) > raster.lastRow(maxY))
+ 3409:         return;
+ 3410:     const PixelPipeline pipe = MakePixelPipeline(state, raster);
+ 3411:     const TextureSampler sampler = state.prim.tme ? MakeTextureSampler(state, *raster.cache, raster.clut) : TextureSampler{};
+ 3412: 
+ 3413:     float denom = (fy1 - fy2) * (fx0 - fx2) + (fx2 - fx1) * (fy0 - fy2);
+ 3414:     if (std::fabs(denom) < 0.001f)
+ 3415:         return;
+ 3416: 
+ 3417:     const float winding = (denom < 0.0f) ? -1.0f : 1.0f;
+ 3418:     const float invAbsDenom = 1.0f / std::fabs(denom);
+ 3419:     constexpr float kEdgeEpsilon = 1.0e-4f;
+ 3420: 
+ 3421:     // Each weight is linear in px along a row. Solving the three edge tests in double, widened by more than
+ 3422:     // the float evaluation can be off, bounds the columns worth testing; the exact per-pixel test below still
+ 3423:     // decides coverage, so the drawn pixels are unchanged while most of the bounding box is skipped.
+ 3424:     struct EdgeBound
+ 3425:     {
+ 3426:         double a = 0.0;   // weight change per pixel
+ 3427:         double b = 0.0;   // weight at px = 0 for the current row
+ 3428:         double err = 0.0; // bound on the float evaluation error of the weight
+ 3429:     };
+ 3430:     const double scale = static_cast<double>(winding) * static_cast<double>(invAbsDenom);
+ 3431:     const double extentX = static_cast<double>(std::max(std::fabs(static_cast<double>(minX) - fx2), std::fabs(static_cast<double>(maxX) + 1.0 - fx2)));
+ 3432:     auto rowEdge = [&](double A, double B, double py) -> EdgeBound
+ 3433:     {
+ 3434:         const double C = B * (py - fy2);
+ 3435:         EdgeBound edge;
+ 3436:         edge.a = A * scale;
+ 3437:         edge.b = (C - A * fx2) * scale;
+ 3438:         edge.err = (std::fabs(A) * extentX + std::fabs(C) + 1.0) * 1.0e-6 * std::fabs(scale) + 1.0e-6;
+ 3439:         return edge;
+
+========== ReadTextureVramUnlocked ==========
+ 2004:             sourceX = sourceIndex & 0x0Fu;
+ 2005:             sourceY = sourceIndex >> 4u;
+ 2006:         }
+ 2007:         else
+ 2008:         {
+ 2009:             sourceWidth = texclut.cbw != 0u ? static_cast<uint32_t>(texclut.cbw) : 1u;
+ 2010:             sourceX = (static_cast<uint32_t>(texclut.cou) << 4u) + entry;
+ 2011:             sourceY = static_cast<uint32_t>(texclut.cov);
+ 2012:         }
+ 2013: 
+ 2014:         const uint32_t raw = ReadTextureVramUnlocked(tex0.cpsm, tex0.cbp, sourceWidth, sourceX, sourceY); 
+ 2015:         const uint32_t destination = (loadCsm1Suffix ? entry : destinationBase + entry) & (sixteenBit ? 0x1FFu : 0x0FFu);
+ 2016:         if (sixteenBit)
+ 2017:         {
+ 2018:             m_clut[destination] = static_cast<uint16_t>(raw);
+ 2019:         }
+ 2020:         else
+ 2021:         {
+ 2022:             m_clut[destination] = static_cast<uint16_t>(raw & 0xFFFFu);
+ 2023:             m_clut[destination + 256u] = static_cast<uint16_t>(raw >> 16u);
+ 2024:         }
+ 2025:     }
+ 2026: }
+ 2027: 
+ 2028: void GSCpuBackend::FlushNow()
+ 2029: {
+ 2030:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2031:     FlushPendingUnlocked(FlushReason::Idle);
+ 2032: }
+ 2033: 
+ 2034: void GSCpuBackend::TextureFlushNow()
+ 2035: {
+ 2036:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2037:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::TextureFlush);
+ 2038:     m_texturePageCache.Invalidate();
+ 2039: }
+ 2040: 
+ 2041: void GSCpuBackend::SyncNow(GSSyncReason)
+ 2042: {
+
+ 2051:     return ReadVramUnlocked(psm, base, bw, x, y);
+ 2052: }
+ 2053: 
+ 2054: uint32_t GSCpuBackend::ReadVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y) const
+ 2055: {
+ 2056:     if (!m_vram)
+ 2057:         return 0u;
+ 2058:     return m_readVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y);
+ 2059: }
+ 2060: 
+ 2061: uint32_t GSCpuBackend::ReadTextureVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y)
+ 2062: {
+ 2063:     if (!m_vram)
+ 2064:         return 0u;
+ 2065: 
+ 2066:     return GSMem::ReadTexture(m_texturePageCache, m_vram, psm, base, bw, x, y);
+ 2067: }
+ 2068: 
+ 2069: void GSCpuBackend::WriteVramNow(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2070: {
+ 2071:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2072:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2073:     WriteVramUnlocked(psm, base, bw, x, y, value);
+ 2074: }
+ 2075: 
+ 2076: void GSCpuBackend::WriteVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2077: {
+ 2078:     if (!m_vram)
+ 2079:         return;
+ 2080:     uint32_t livePage = 0u;
+ 2081:     if (m_texturePageCache.LivePage(livePage) &&
+ 2082:         spanHasPage(pageSpan(base, bw, psm, x, y, x, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 2083:         m_texturePageCache.Snapshot(m_vram);
+ 2084:     m_writeVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y, value);
+ 2085: }
+ 2086: 
+ 2087: void GSCpuBackend::SnapshotVramNow(std::vector<uint8_t> &out) const
+ 2088: {
+ 2089:     std::lock_guard<std::mutex> lock(m_mutex);
+
+========== ReadVramNow ==========
+ 1824: 
+ 1825: uint32_t GSCpuBackend::ConsumeLocalToHostBytes(uint8_t *dst, uint32_t maxBytes)
+ 1826: {
+ 1827:     WaitForQueue();
+ 1828:     return ConsumeLocalToHostBytesNow(dst, maxBytes);
+ 1829: }
+ 1830: 
+ 1831: uint32_t GSCpuBackend::ReadVram(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y) const
+ 1832: {
+ 1833:     WaitForQueue();
+ 1834:     return ReadVramNow(psm, base, bw, x, y);
+ 1835: }
+ 1836: 
+ 1837: void GSCpuBackend::WriteVram(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 1838: {
+ 1839:     if (!m_async)
+ 1840:     {
+ 1841:         WriteVramNow(psm, base, bw, x, y, value);
+ 1842:         return;
+ 1843:     }
+ 1844:     Command command;
+ 1845:     command.kind = Command::Kind::WriteVram;
+ 1846:     command.args[0] = psm;
+ 1847:     command.args[1] = base;
+ 1848:     command.args[2] = bw;
+ 1849:     command.args[3] = x;
+ 1850:     command.args[4] = y;
+ 1851:     command.args[5] = value;
+ 1852:     Enqueue(std::move(command));
+ 1853: }
+ 1854: 
+ 1855: void GSCpuBackend::SnapshotVram(std::vector<uint8_t> &out) const
+ 1856: {
+ 1857:     WaitForQueue();
+ 1858:     SnapshotVramNow(out);
+ 1859: }
+ 1860: 
+ 1861: GSTransferSnapshot GSCpuBackend::GetTransferSnapshot() const
+ 1862: {
+
+ 2037:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::TextureFlush);
+ 2038:     m_texturePageCache.Invalidate();
+ 2039: }
+ 2040: 
+ 2041: void GSCpuBackend::SyncNow(GSSyncReason)
+ 2042: {
+ 2043:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2044:     FlushPendingUnlocked(FlushReason::Readback);
+ 2045: }
+ 2046: 
+ 2047: uint32_t GSCpuBackend::ReadVramNow(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y) const
+ 2048: {
+ 2049:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2050:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2051:     return ReadVramUnlocked(psm, base, bw, x, y);
+ 2052: }
+ 2053: 
+ 2054: uint32_t GSCpuBackend::ReadVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y) const
+ 2055: {
+ 2056:     if (!m_vram)
+ 2057:         return 0u;
+ 2058:     return m_readVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y);
+ 2059: }
+ 2060: 
+ 2061: uint32_t GSCpuBackend::ReadTextureVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y)
+ 2062: {
+ 2063:     if (!m_vram)
+ 2064:         return 0u;
+ 2065: 
+ 2066:     return GSMem::ReadTexture(m_texturePageCache, m_vram, psm, base, bw, x, y);
+ 2067: }
+ 2068: 
+ 2069: void GSCpuBackend::WriteVramNow(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2070: {
+ 2071:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2072:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2073:     WriteVramUnlocked(psm, base, bw, x, y, value);
+ 2074: }
+ 2075: 
+
+========== WriteVramNow ==========
+ 1692:     case Command::Kind::UploadImage:
+ 1693:         UploadImageNow(command.data.data(), static_cast<uint32_t>(command.data.size()));
+ 1694:         break;
+ 1695:     case Command::Kind::TextureFlush:
+ 1696:         TextureFlushNow();
+ 1697:         break;
+ 1698:     case Command::Kind::ClearFramebuffer:
+ 1699:         (void)ClearFramebufferNow(command.context, command.args[0]);
+ 1700:         break;
+ 1701:     case Command::Kind::WriteVram:
+ 1702:         WriteVramNow(command.args[0], command.args[1], command.args[2], command.args[3], command.args[4], command.args[5]);
+ 1703:         break;
+ 1704:     case Command::Kind::CaptureFrame:
+ 1705:         CaptureFrameNow(command.display);
+ 1706:         break;
+ 1707:     }
+ 1708: }
+ 1709: 
+ 1710: void GSCpuBackend::Initialize(uint8_t *vram, uint32_t vramSize)
+ 1711: {
+ 1712:     WaitForQueue();
+ 1713:     InitializeNow(vram, vramSize);
+ 1714: }
+ 1715: 
+ 1716: void GSCpuBackend::Reset()
+ 1717: {
+ 1718:     WaitForQueue();
+ 1719:     ResetNow();
+ 1720: }
+ 1721: 
+ 1722: void GSCpuBackend::Submit(const GSPrimitiveBatch &batch)
+ 1723: {
+ 1724:     if (!m_async)
+ 1725:     {
+ 1726:         SubmitNow(batch);
+ 1727:         return;
+ 1728:     }
+ 1729:     if (batch.vertexCount == 0u)
+ 1730:         return;
+
+ 1831: uint32_t GSCpuBackend::ReadVram(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y) const
+ 1832: {
+ 1833:     WaitForQueue();
+ 1834:     return ReadVramNow(psm, base, bw, x, y);
+ 1835: }
+ 1836: 
+ 1837: void GSCpuBackend::WriteVram(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 1838: {
+ 1839:     if (!m_async)
+ 1840:     {
+ 1841:         WriteVramNow(psm, base, bw, x, y, value);
+ 1842:         return;
+ 1843:     }
+ 1844:     Command command;
+ 1845:     command.kind = Command::Kind::WriteVram;
+ 1846:     command.args[0] = psm;
+ 1847:     command.args[1] = base;
+ 1848:     command.args[2] = bw;
+ 1849:     command.args[3] = x;
+ 1850:     command.args[4] = y;
+ 1851:     command.args[5] = value;
+ 1852:     Enqueue(std::move(command));
+ 1853: }
+ 1854: 
+ 1855: void GSCpuBackend::SnapshotVram(std::vector<uint8_t> &out) const
+ 1856: {
+ 1857:     WaitForQueue();
+ 1858:     SnapshotVramNow(out);
+ 1859: }
+ 1860: 
+ 1861: GSTransferSnapshot GSCpuBackend::GetTransferSnapshot() const
+ 1862: {
+ 1863:     WaitForQueue();
+ 1864:     return GetTransferSnapshotNow();
+ 1865: }
+ 1866: 
+ 1867: void GSCpuBackend::InitializeNow(uint8_t *vram, uint32_t vramSize)
+ 1868: {
+ 1869:     if (vram && vramSize < GSMem::MEMORY_SIZE)
+
+ 2059: }
+ 2060: 
+ 2061: uint32_t GSCpuBackend::ReadTextureVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y)
+ 2062: {
+ 2063:     if (!m_vram)
+ 2064:         return 0u;
+ 2065: 
+ 2066:     return GSMem::ReadTexture(m_texturePageCache, m_vram, psm, base, bw, x, y);
+ 2067: }
+ 2068: 
+ 2069: void GSCpuBackend::WriteVramNow(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2070: {
+ 2071:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2072:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2073:     WriteVramUnlocked(psm, base, bw, x, y, value);
+ 2074: }
+ 2075: 
+ 2076: void GSCpuBackend::WriteVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y, uint32_t value)
+ 2077: {
+ 2078:     if (!m_vram)
+ 2079:         return;
+ 2080:     uint32_t livePage = 0u;
+ 2081:     if (m_texturePageCache.LivePage(livePage) &&
+ 2082:         spanHasPage(pageSpan(base, bw, psm, x, y, x, y), livePage / GSMem::TexturePageCache::kPageSize))
+ 2083:         m_texturePageCache.Snapshot(m_vram);
+ 2084:     m_writeVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y, value);
+ 2085: }
+ 2086: 
+ 2087: void GSCpuBackend::SnapshotVramNow(std::vector<uint8_t> &out) const
+ 2088: {
+ 2089:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2090:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2091:     if (!m_vram || m_vramSize == 0u)
+ 2092:     {
+ 2093:         out.clear();
+ 2094:         return;
+ 2095:     }
+ 2096:     out.resize(m_vramSize);
+ 2097:     std::memcpy(out.data(), m_vram, m_vramSize);
+
+========== SubmitNow ==========
+ 1674:     case Command::Kind::ClearFramebuffer:
+ 1675:         category = kTimeClear;
+ 1676:         break;
+ 1677:     default:
+ 1678:         break;
+ 1679:     }
+ 1680:     GSStatTimer timer(category);
+ 1681:     switch (command.kind)
+ 1682:     {
+ 1683:     case Command::Kind::Submit:
+ 1684:         SubmitNow(command.batch);
+ 1685:         break;
+ 1686:     case Command::Kind::LoadClut:
+ 1687:         LoadClutNow(command.tex0, command.texclut);
+ 1688:         break;
+ 1689:     case Command::Kind::BeginTransfer:
+ 1690:         BeginTransferNow(command.transfer);
+ 1691:         break;
+ 1692:     case Command::Kind::UploadImage:
+ 1693:         UploadImageNow(command.data.data(), static_cast<uint32_t>(command.data.size()));
+ 1694:         break;
+ 1695:     case Command::Kind::TextureFlush:
+ 1696:         TextureFlushNow();
+ 1697:         break;
+ 1698:     case Command::Kind::ClearFramebuffer:
+ 1699:         (void)ClearFramebufferNow(command.context, command.args[0]);
+ 1700:         break;
+ 1701:     case Command::Kind::WriteVram:
+ 1702:         WriteVramNow(command.args[0], command.args[1], command.args[2], command.args[3], command.args[4], command.args[5]);
+ 1703:         break;
+ 1704:     case Command::Kind::CaptureFrame:
+ 1705:         CaptureFrameNow(command.display);
+ 1706:         break;
+ 1707:     }
+ 1708: }
+ 1709: 
+ 1710: void GSCpuBackend::Initialize(uint8_t *vram, uint32_t vramSize)
+ 1711: {
+ 1712:     WaitForQueue();
+
+ 1716: void GSCpuBackend::Reset()
+ 1717: {
+ 1718:     WaitForQueue();
+ 1719:     ResetNow();
+ 1720: }
+ 1721: 
+ 1722: void GSCpuBackend::Submit(const GSPrimitiveBatch &batch)
+ 1723: {
+ 1724:     if (!m_async)
+ 1725:     {
+ 1726:         SubmitNow(batch);
+ 1727:         return;
+ 1728:     }
+ 1729:     if (batch.vertexCount == 0u)
+ 1730:         return;
+ 1731:     Command command;
+ 1732:     command.kind = Command::Kind::Submit;
+ 1733:     command.batch = batch;
+ 1734:     Enqueue(std::move(command));
+ 1735: }
+ 1736: 
+ 1737: void GSCpuBackend::LoadClut(const GSTex0Reg &tex0, const GSTexClutReg &texclut)
+ 1738: {
+ 1739:     if (!m_async)
+ 1740:     {
+ 1741:         LoadClutNow(tex0, texclut);
+ 1742:         return;
+ 1743:     }
+ 1744:     Command command;
+ 1745:     command.kind = Command::Kind::LoadClut;
+ 1746:     command.tex0 = tex0;
+ 1747:     command.texclut = texclut;
+ 1748:     Enqueue(std::move(command));
+ 1749: }
+ 1750: 
+ 1751: void GSCpuBackend::BeginTransfer(const GSTransferCommand &transfer)
+ 1752: {
+ 1753:     if (!m_async)
+ 1754:     {
+
+ 1893:     m_texturePageCache.Invalidate();
+ 1894:     m_transfer = {};
+ 1895:     m_transfer.direction = 3u;
+ 1896:     m_transferState = {};
+ 1897:     m_transferState.direction = 3u;
+ 1898:     m_localToHostBuffer.clear();
+ 1899:     m_localToHostReadPos = 0u;
+ 1900:     m_uploadCarryBytes = 0u;
+ 1901: }
+ 1902: 
+ 1903: void GSCpuBackend::SubmitNow(const GSPrimitiveBatch &batch)
+ 1904: {
+ 1905:     std::lock_guard<std::mutex> lock(m_mutex);
+ 1906:     if (!m_vram || batch.vertexCount == 0u)
+ 1907:         return;
+ 1908:     if (gsStatsEnabled())
+ 1909:     {
+ 1910:         gsStats().prims[batch.state.prim.type & 7u].fetch_add(1u, std::memory_order_relaxed);
+ 1911:         if (batch.state.prim.tme)
+ 1912:             gsStats().texturedPrims.fetch_add(1u, std::memory_order_relaxed);
+ 1913:     }
+ 1914:     if (RasterParticipants() > 1u)
+ 1915:         QueuePrimitive(batch);
+ 1916:     else
+ 1917:         DrawPrimitive(batch);
+ 1918: }
+ 1919: 
+ 1920: void GSCpuBackend::LoadClutNow(const GSTex0Reg &tex0, const GSTexClutReg &texclut)
+ 1921: {
+ 1922:     std::lock_guard<std::mutex> lock(m_mutex);
+ 1923:     // The load reads VRAM through the texture cache, which a batch in flight still draws and settles.
+ 1924:     WaitInFlightUnlocked();
+ 1925:     if (!m_pending.empty())
+ 1926:     {
+ 1927:         // Queued primitives captured their palettes, so the load can run now unless it reads memory they
+ 1928:         // will draw, or a stale cached page would make it read differently than after drawing them.
+ 1929:         const uint32_t sourceWidth = tex0.csm == 0u ? 1u : std::max<uint32_t>(texclut.cbw, 1u);
+ 1930:         const uint32_t maxX = tex0.csm == 0u ? 15u : (static_cast<uint32_t>(texclut.cou) << 4u) + 255u;
+ 1931:         const uint32_t maxY = tex0.csm == 0u ? 15u : texclut.cov;
+
+========== QueuePrimitive ==========
+ 1052:     std::lock_guard<std::mutex> lock(m_mutex);
+ 1053:     FlushPendingUnlocked(FlushReason::Other);
+ 1054:     m_rasterParticipants = participants;
+ 1055: }
+ 1056: 
+ 1057: uint32_t GSCpuBackend::RasterParticipants() const
+ 1058: {
+ 1059:     return m_rasterParticipants != 0u ? m_rasterParticipants : defaultRasterParticipants();
+ 1060: }
+ 1061: 
+ 1062: void GSCpuBackend::QueuePrimitive(const GSPrimitiveBatch &batch)
+ 1063: {
+ 1064:     const GSDrawState &state = batch.state;
+ 1065:     const auto &ctx = state.context;
+ 1066:     const uint32_t maxX = ctx.scissor.x1;
+ 1067:     const uint32_t maxY = ctx.scissor.y1;
+ 1068:     const uint32_t fbw = std::max<u32>(ctx.frame.fbw, 1u);
+ 1069:     const PageSpan frame = pageSpan(GSInternal::framePageBaseToBlock(ctx.frame.fbp), fbw, ctx.frame.psm, 0u, 0u, maxX, maxY);
+ 1070:     const PageSpan depth = pageSpan(GSInternal::framePageBaseToBlock(ctx.zbuf.zbp), fbw, ctx.zbuf.psm, 0u, 0u, maxX, maxY);
+ 1071:     PageSpan texture{};
+ 1072:     if (state.prim.tme)
+ 1073:     {
+ 1074:         const auto &tex = ctx.tex0;
+ 1075:         const uint32_t extentU = (ctx.clamp & 0x2u) != 0u ? 1024u : std::max<uint32_t>(state.textureWidth, 1u);
+ 1076:         const uint32_t extentV = ((ctx.clamp >> 2) & 0x2u) != 0u ? 1024u : std::max<uint32_t>(state.textureHeight, 1u);
+ 1077:         texture = pageSpan(tex.tbp0, tex.tbw, tex.psm, 0u, 0u, extentU - 1u, extentV - 1u);
+ 1078:     }
+ 1079:     // T8H/T4HL/T4HH sample only the top byte of 32-bit words, which RGB24/Z24 writes leave alone, so
+ 1080:     // such reads do not depend on the order of those writes.
+ 1081:     const bool topReader = texture.count != 0u && readsTopByteOnly(ctx.tex0.psm);
+ 1082:     const PageSpan frameTop = keepsTopByte(ctx.frame.psm) ? PageSpan{} : frame;
+ 1083:     const PageSpan depthTop = keepsTopByte(ctx.zbuf.psm) ? PageSpan{} : depth;
+ 1084:     auto readsChanged = [&](const PageSpan &written, const PageSpan &writtenTop)
+ 1085:     {
+ 1086:         return topReader ? spansOverlap(texture, writtenTop) : spansOverlap(texture, written);
+ 1087:     };
+ 1088: 
+ 1089:     // A pixel's colour and depth must not share memory, and the primitive must not sample anything its
+ 1090:     // own writes change; otherwise it is drawn alone, in order.
+
+ 1905:     std::lock_guard<std::mutex> lock(m_mutex);
+ 1906:     if (!m_vram || batch.vertexCount == 0u)
+ 1907:         return;
+ 1908:     if (gsStatsEnabled())
+ 1909:     {
+ 1910:         gsStats().prims[batch.state.prim.type & 7u].fetch_add(1u, std::memory_order_relaxed);
+ 1911:         if (batch.state.prim.tme)
+ 1912:             gsStats().texturedPrims.fetch_add(1u, std::memory_order_relaxed);
+ 1913:     }
+ 1914:     if (RasterParticipants() > 1u)
+ 1915:         QueuePrimitive(batch);
+ 1916:     else
+ 1917:         DrawPrimitive(batch);
+ 1918: }
+ 1919: 
+ 1920: void GSCpuBackend::LoadClutNow(const GSTex0Reg &tex0, const GSTexClutReg &texclut)
+ 1921: {
+ 1922:     std::lock_guard<std::mutex> lock(m_mutex);
+ 1923:     // The load reads VRAM through the texture cache, which a batch in flight still draws and settles.
+ 1924:     WaitInFlightUnlocked();
+ 1925:     if (!m_pending.empty())
+ 1926:     {
+ 1927:         // Queued primitives captured their palettes, so the load can run now unless it reads memory they
+ 1928:         // will draw, or a stale cached page would make it read differently than after drawing them.
+ 1929:         const uint32_t sourceWidth = tex0.csm == 0u ? 1u : std::max<uint32_t>(texclut.cbw, 1u);
+ 1930:         const uint32_t maxX = tex0.csm == 0u ? 15u : (static_cast<uint32_t>(texclut.cou) << 4u) + 255u;
+ 1931:         const uint32_t maxY = tex0.csm == 0u ? 15u : texclut.cov;
+ 1932:         if (anyPage(m_pendingWritePages, pageSpan(tex0.cbp, sourceWidth, tex0.cpsm, 0u, 0u, maxX, maxY)) ||
+ 1933:             !m_texturePageCache.MatchesVram(m_vram))
+ 1934:             FlushPendingUnlocked(FlushReason::Clut);
+ 1935:     }
+ 1936:     if (!m_vram || (!isFourBitIndexedPsm(tex0.psm) && !isEightBitIndexedPsm(tex0.psm)))
+ 1937:         return;
+ 1938: 
+ 1939:     switch (tex0.cld)
+ 1940:     {
+ 1941:     case 0u:
+ 1942:     case 6u:
+ 1943:     case 7u:
+
+========== FinishTracked ==========
+ 1256:         m_workers->finish();
+ 1257:     }
+ 1258:     f.active = false;
+ 1259:     for (uint32_t i = 0; i < f.bandStats.size(); ++i)
+ 1260:     {
+ 1261:         AddRasterStats(f.bandStats[i]);
+ 1262:         if (f.tracked)
+ 1263:             gsStats().undoEntries.fetch_add(m_undoLogs[i].size(), std::memory_order_relaxed);
+ 1264:     }
+ 1265:     if (f.tracked)
+ 1266:         FinishTracked();
+ 1267:     else
+ 1268:         FinishUntracked();
+ 1269: }
+ 1270: 
+ 1271: void GSCpuBackend::FlushPendingAsyncUnlocked(FlushReason reason)
+ 1272: {
+ 1273:     // One batch in flight at a time: the next one may sample what this one draws.
+ 1274:     WaitInFlightUnlocked();
+ 1275:     if (m_pending.empty())
+ 1276:         return;
+ 1277:     const bool statsEnabled = gsStatsEnabled();
+ 1278:     if (statsEnabled)
+ 1279:         gsStats().flushes[static_cast<size_t>(reason)].fetch_add(1u, std::memory_order_relaxed);
+ 1280: 
+ 1281:     bool parallel = m_pendingPixels >= kMinParallelPixels && RasterParticipants() > 1u;
+ 1282:     // A tracked batch too small to wake the workers is still drawn as a band, on this thread: drawn serially
+ 1283:     // it would get palette loads queued in between wrong (see LoadClutNow).
+ 1284:     bool inlineBand = false;
+ 1285:     uint32_t livePage = 0u;
+ 1286:     if (m_pendingTracked && m_texturePageCache.MatchesVram(m_vram))
+ 1287:     {
+ 1288:         // Bands read pages in place; the serial cache state is rebuilt afterwards from VRAM.
+ 1289:         inlineBand = !parallel;
+ 1290:         parallel = true;
+ 1291:     }
+ 1292:     else if (parallel && m_pendingTracked)
+ 1293:     {
+ 1294:         parallel = false;
+
+ 1407:         // Most primitives miss a given band; skipping them here avoids each one's setup per band.
+ 1408:         if (f.primRows[i].end < raster.rowBegin || f.primRows[i].begin >= raster.rowEnd)
+ 1409:             continue;
+ 1410:         raster.primitive = static_cast<uint32_t>(i);
+ 1411:         const int32_t clutIndex = f.clutIndex[i];
+ 1412:         raster.clut = clutIndex >= 0 ? f.cluts[static_cast<size_t>(clutIndex)].data() : nullptr;
+ 1413:         DrawPrimitiveRows(f.prims[i], raster);
+ 1414:     }
+ 1415: }
+ 1416: 
+ 1417: void GSCpuBackend::FinishTracked()
+ 1418: {
+ 1419:     // Every primitive samples only top bytes of the pages the batch draws into with RGB24/Z24, so every
+ 1420:     // pixel comes out the same drawn in any order. What a serial draw also leaves behind is the texture
+ 1421:     // cache: it copies a drawn-over page when loading it, so the page it ends on can hold words as they
+ 1422:     // were mid-batch.
+ 1423:     const InFlight &f = m_inflight;
+ 1424:     const std::vector<GSMem::TexturePageCache> &caches = m_bandCaches;
+ 1425:     const uint32_t bands = static_cast<uint32_t>(f.bands.size());
+ 1426:     const std::bitset<512> &kept = f.kept;
+ 1427:     const uint32_t cachedBefore = f.cachedBefore;
+ 1428: 
+ 1429:     // The page of the last texel read in serial order is where the cache ends.
+ 1430:     GSMem::TexturePageCache::ReadPosition lastRead{};
+ 1431:     uint32_t lastPage = UINT32_MAX;
+ 1432:     for (uint32_t i = 0; i < bands; ++i)
+ 1433:     {
+ 1434:         if (caches[i].Track().last.after(lastRead))
+ 1435:         {
+ 1436:             lastRead = caches[i].Track().last;
+ 1437:             lastPage = caches[i].Track().lastPage;
+ 1438:         }
+ 1439:     }
+ 1440:     // A palette load from VRAM between queued primitives also read through the cache (a page the batch
+ 1441:     // does not write); it ran before the batch was drawn and left the cache where it ends if nothing
+ 1442:     // after it samples.
+ 1443:     GSMem::TexturePageCache::ReadPosition clutRead{};
+ 1444:     if (f.clutReadIndex > 0u)
+ 1445:         clutRead = {static_cast<uint32_t>(f.clutReadIndex), std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), 0u, true};
+
+========== TextureFlushNow ==========
+ 1686:     case Command::Kind::LoadClut:
+ 1687:         LoadClutNow(command.tex0, command.texclut);
+ 1688:         break;
+ 1689:     case Command::Kind::BeginTransfer:
+ 1690:         BeginTransferNow(command.transfer);
+ 1691:         break;
+ 1692:     case Command::Kind::UploadImage:
+ 1693:         UploadImageNow(command.data.data(), static_cast<uint32_t>(command.data.size()));
+ 1694:         break;
+ 1695:     case Command::Kind::TextureFlush:
+ 1696:         TextureFlushNow();
+ 1697:         break;
+ 1698:     case Command::Kind::ClearFramebuffer:
+ 1699:         (void)ClearFramebufferNow(command.context, command.args[0]);
+ 1700:         break;
+ 1701:     case Command::Kind::WriteVram:
+ 1702:         WriteVramNow(command.args[0], command.args[1], command.args[2], command.args[3], command.args[4], command.args[5]);
+ 1703:         break;
+ 1704:     case Command::Kind::CaptureFrame:
+ 1705:         CaptureFrameNow(command.display);
+ 1706:         break;
+ 1707:     }
+ 1708: }
+ 1709: 
+ 1710: void GSCpuBackend::Initialize(uint8_t *vram, uint32_t vramSize)
+ 1711: {
+ 1712:     WaitForQueue();
+ 1713:     InitializeNow(vram, vramSize);
+ 1714: }
+ 1715: 
+ 1716: void GSCpuBackend::Reset()
+ 1717: {
+ 1718:     WaitForQueue();
+ 1719:     ResetNow();
+ 1720: }
+ 1721: 
+ 1722: void GSCpuBackend::Submit(const GSPrimitiveBatch &batch)
+ 1723: {
+ 1724:     if (!m_async)
+
+ 1781:     // Queued commands are already on their way and the GS thread rasterizes batches when it runs dry;
+ 1782:     // waiting is left to Sync and to the readers.
+ 1783:     if (!m_async)
+ 1784:         FlushNow();
+ 1785: }
+ 1786: 
+ 1787: void GSCpuBackend::TextureFlush()
+ 1788: {
+ 1789:     if (!m_async)
+ 1790:     {
+ 1791:         TextureFlushNow();
+ 1792:         return;
+ 1793:     }
+ 1794:     Command command;
+ 1795:     command.kind = Command::Kind::TextureFlush;
+ 1796:     Enqueue(std::move(command));
+ 1797: }
+ 1798: 
+ 1799: void GSCpuBackend::Sync(GSSyncReason reason)
+ 1800: {
+ 1801:     // Presentation shows whatever has been drawn; holding the host thread until the guest's backlog
+ 1802:     // drains would only stall the window.
+ 1803:     if (m_async && reason == GSSyncReason::Presentation)
+ 1804:         return;
+ 1805:     WaitForQueue();
+ 1806:     SyncNow(reason);
+ 1807: }
+ 1808: 
+ 1809: bool GSCpuBackend::ClearFramebuffer(const GSContext &context, uint32_t rgba)
+ 1810: {
+ 1811:     if (!m_async)
+ 1812:         return ClearFramebufferNow(context, rgba);
+ 1813:     // The result depends only on the target format, so the clear itself can run later.
+ 1814:     const uint8_t psm = context.frame.psm;
+ 1815:     const bool clears = m_vram && context.frame.fbw != 0u &&
+ 1816:                         (psm == GS_PSM_CT32 || psm == GS_PSM_CT24 || psm == GS_PSM_CT16 || psm == GS_PSM_CT16S);
+ 1817:     Command command;
+ 1818:     command.kind = Command::Kind::ClearFramebuffer;
+ 1819:     command.context = context;
+
+ 2024:         }
+ 2025:     }
+ 2026: }
+ 2027: 
+ 2028: void GSCpuBackend::FlushNow()
+ 2029: {
+ 2030:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2031:     FlushPendingUnlocked(FlushReason::Idle);
+ 2032: }
+ 2033: 
+ 2034: void GSCpuBackend::TextureFlushNow()
+ 2035: {
+ 2036:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2037:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::TextureFlush);
+ 2038:     m_texturePageCache.Invalidate();
+ 2039: }
+ 2040: 
+ 2041: void GSCpuBackend::SyncNow(GSSyncReason)
+ 2042: {
+ 2043:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2044:     FlushPendingUnlocked(FlushReason::Readback);
+ 2045: }
+ 2046: 
+ 2047: uint32_t GSCpuBackend::ReadVramNow(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y) const
+ 2048: {
+ 2049:     std::lock_guard<std::mutex> lock(m_mutex);
+ 2050:     const_cast<GSCpuBackend *>(this)->FlushPendingUnlocked(FlushReason::Readback);
+ 2051:     return ReadVramUnlocked(psm, base, bw, x, y);
+ 2052: }
+ 2053: 
+ 2054: uint32_t GSCpuBackend::ReadVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y) const
+ 2055: {
+ 2056:     if (!m_vram)
+ 2057:         return 0u;
+ 2058:     return m_readVramFuncs[psm & 0x3Fu](m_vram, base, bw, x, y);
+ 2059: }
+ 2060: 
+ 2061: uint32_t GSCpuBackend::ReadTextureVramUnlocked(uint32_t psm, uint32_t base, uint32_t bw, uint32_t x, uint32_t y)
+ 2062: {
+
+========== END AUDIT ==========
