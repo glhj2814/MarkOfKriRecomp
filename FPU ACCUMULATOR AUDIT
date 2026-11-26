@@ -1,0 +1,1838 @@
+MARK OF KRI - FPU ACCUMULATOR AUDIT
+Generated: 11/25/2026 17:03:56
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp =====
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:64
+        uint32_t result;
+        // 0: must match exactly.
+        // 1: the hardware does not round to nearest (ADD.S and MUL.S drop the low bits, the divide unit has its
+        //    own rule); rounding is not emulated, so the row differs in the last mantissa bit.
+        // 2: an ADD.S/SUB.S/MUL.S operand has exponent 0 and a non-zero mantissa. The hardware reads it as
+        //    zero; the fast path does not look for it. Not checked.
+        int known;
+    };
+
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:80
+        const float ft = floatOf(v.ft);
+        const std::string op = v.op;
+        if (op == "add")
+            return bitsOf(FPU_ADD_S(fs, ft));
+        if (op == "sub")
+            return bitsOf(FPU_SUB_S(fs, ft));
+        if (op == "mul")
+            return bitsOf(FPU_MUL_S(fs, ft));
+        if (op == "div")
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:84
+        if (op == "sub")
+            return bitsOf(FPU_SUB_S(fs, ft));
+        if (op == "mul")
+            return bitsOf(FPU_MUL_S(fs, ft));
+        if (op == "div")
+            return bitsOf(FPU_DIV_S(fs, ft));
+        if (op == "sqrt")
+            return bitsOf(FPU_SQRT_S(fs));
+        return bitsOf(FPU_RSQRT_S(fs, ft));
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:126
+        tc.Run("exponent 255 is an ordinary exponent, not Inf or NaN", [](TestCase &t)
+        {
+            const float twoPow128 = floatOf(kTwoPow128);
+            t.Equals(bitsOf(FPU_ADD_S(twoPow128, 0.0f)), kTwoPow128, "2^128 + 0 should stay 2^128");
+            t.Equals(bitsOf(FPU_MUL_S(twoPow128, 0.5f)), 0x7F000000u, "2^128 * 0.5 should be 2^127");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x7F000000u), 2.0f)), kTwoPow128, "2^127 * 2 should be 2^128, not saturated");
+            t.Equals(bitsOf(FPU_ADD_S(floatOf(0x7F000000u), floatOf(0x7F000000u))), kTwoPow128, "2^127 + 2^127 should be 2^128");
+            t.Equals(bitsOf(FPU_SUB_S(floatOf(0x7FC00000u), twoPow128)), 0x7F000000u, "1.5*2^128 - 2^128 should be 2^127");
+            t.Equals(bitsOf(FPU_DIV_S(floatOf(0x7FC00000u), 3.0f)), 0x7F000000u, "1.5*2^128 / 3 should be 2^127");
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:127
+        {
+            const float twoPow128 = floatOf(kTwoPow128);
+            t.Equals(bitsOf(FPU_ADD_S(twoPow128, 0.0f)), kTwoPow128, "2^128 + 0 should stay 2^128");
+            t.Equals(bitsOf(FPU_MUL_S(twoPow128, 0.5f)), 0x7F000000u, "2^128 * 0.5 should be 2^127");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x7F000000u), 2.0f)), kTwoPow128, "2^127 * 2 should be 2^128, not saturated");
+            t.Equals(bitsOf(FPU_ADD_S(floatOf(0x7F000000u), floatOf(0x7F000000u))), kTwoPow128, "2^127 + 2^127 should be 2^128");
+            t.Equals(bitsOf(FPU_SUB_S(floatOf(0x7FC00000u), twoPow128)), 0x7F000000u, "1.5*2^128 - 2^128 should be 2^127");
+            t.Equals(bitsOf(FPU_DIV_S(floatOf(0x7FC00000u), 3.0f)), 0x7F000000u, "1.5*2^128 / 3 should be 2^127");
+            t.Equals(bitsOf(FPU_SQRT_S(twoPow128)), 0x5F800000u, "sqrt(2^128) should be 2^64");
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:128
+            const float twoPow128 = floatOf(kTwoPow128);
+            t.Equals(bitsOf(FPU_ADD_S(twoPow128, 0.0f)), kTwoPow128, "2^128 + 0 should stay 2^128");
+            t.Equals(bitsOf(FPU_MUL_S(twoPow128, 0.5f)), 0x7F000000u, "2^128 * 0.5 should be 2^127");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x7F000000u), 2.0f)), kTwoPow128, "2^127 * 2 should be 2^128, not saturated");
+            t.Equals(bitsOf(FPU_ADD_S(floatOf(0x7F000000u), floatOf(0x7F000000u))), kTwoPow128, "2^127 + 2^127 should be 2^128");
+            t.Equals(bitsOf(FPU_SUB_S(floatOf(0x7FC00000u), twoPow128)), 0x7F000000u, "1.5*2^128 - 2^128 should be 2^127");
+            t.Equals(bitsOf(FPU_DIV_S(floatOf(0x7FC00000u), 3.0f)), 0x7F000000u, "1.5*2^128 / 3 should be 2^127");
+            t.Equals(bitsOf(FPU_SQRT_S(twoPow128)), 0x5F800000u, "sqrt(2^128) should be 2^64");
+        });
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:129
+            t.Equals(bitsOf(FPU_ADD_S(twoPow128, 0.0f)), kTwoPow128, "2^128 + 0 should stay 2^128");
+            t.Equals(bitsOf(FPU_MUL_S(twoPow128, 0.5f)), 0x7F000000u, "2^128 * 0.5 should be 2^127");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x7F000000u), 2.0f)), kTwoPow128, "2^127 * 2 should be 2^128, not saturated");
+            t.Equals(bitsOf(FPU_ADD_S(floatOf(0x7F000000u), floatOf(0x7F000000u))), kTwoPow128, "2^127 + 2^127 should be 2^128");
+            t.Equals(bitsOf(FPU_SUB_S(floatOf(0x7FC00000u), twoPow128)), 0x7F000000u, "1.5*2^128 - 2^128 should be 2^127");
+            t.Equals(bitsOf(FPU_DIV_S(floatOf(0x7FC00000u), 3.0f)), 0x7F000000u, "1.5*2^128 / 3 should be 2^127");
+            t.Equals(bitsOf(FPU_SQRT_S(twoPow128)), 0x5F800000u, "sqrt(2^128) should be 2^64");
+        });
+
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:139
+        {
+            const float maxf = floatOf(kPlusMax);
+            const float minf = floatOf(kMinusMax);
+            t.Equals(bitsOf(FPU_ADD_S(maxf, maxf)), kPlusMax, "max + max should saturate to +max");
+            t.Equals(bitsOf(FPU_ADD_S(minf, minf)), kMinusMax, "-max + -max should saturate to -max");
+            t.Equals(bitsOf(FPU_SUB_S(maxf, minf)), kPlusMax, "max - (-max) should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(maxf, 2.0f)), kPlusMax, "max * 2 should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(maxf, -2.0f)), kMinusMax, "max * -2 should saturate to -max");
+            t.Equals(bitsOf(FPU_DIV_S(maxf, 0.5f)), kPlusMax, "max / 0.5 should saturate to +max");
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:140
+            const float maxf = floatOf(kPlusMax);
+            const float minf = floatOf(kMinusMax);
+            t.Equals(bitsOf(FPU_ADD_S(maxf, maxf)), kPlusMax, "max + max should saturate to +max");
+            t.Equals(bitsOf(FPU_ADD_S(minf, minf)), kMinusMax, "-max + -max should saturate to -max");
+            t.Equals(bitsOf(FPU_SUB_S(maxf, minf)), kPlusMax, "max - (-max) should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(maxf, 2.0f)), kPlusMax, "max * 2 should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(maxf, -2.0f)), kMinusMax, "max * -2 should saturate to -max");
+            t.Equals(bitsOf(FPU_DIV_S(maxf, 0.5f)), kPlusMax, "max / 0.5 should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00800000u), 0.5f)), 0x00000000u, "2^-126 * 0.5 should flush to +0");
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:142
+            t.Equals(bitsOf(FPU_ADD_S(maxf, maxf)), kPlusMax, "max + max should saturate to +max");
+            t.Equals(bitsOf(FPU_ADD_S(minf, minf)), kMinusMax, "-max + -max should saturate to -max");
+            t.Equals(bitsOf(FPU_SUB_S(maxf, minf)), kPlusMax, "max - (-max) should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(maxf, 2.0f)), kPlusMax, "max * 2 should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(maxf, -2.0f)), kMinusMax, "max * -2 should saturate to -max");
+            t.Equals(bitsOf(FPU_DIV_S(maxf, 0.5f)), kPlusMax, "max / 0.5 should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00800000u), 0.5f)), 0x00000000u, "2^-126 * 0.5 should flush to +0");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x80800000u), 0.5f)), 0x80000000u, "-2^-126 * 0.5 should flush to -0");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00000001u), 1.0f)), 0x00000000u, "a result with exponent 0 should flush to +0");
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:143
+            t.Equals(bitsOf(FPU_ADD_S(minf, minf)), kMinusMax, "-max + -max should saturate to -max");
+            t.Equals(bitsOf(FPU_SUB_S(maxf, minf)), kPlusMax, "max - (-max) should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(maxf, 2.0f)), kPlusMax, "max * 2 should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(maxf, -2.0f)), kMinusMax, "max * -2 should saturate to -max");
+            t.Equals(bitsOf(FPU_DIV_S(maxf, 0.5f)), kPlusMax, "max / 0.5 should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00800000u), 0.5f)), 0x00000000u, "2^-126 * 0.5 should flush to +0");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x80800000u), 0.5f)), 0x80000000u, "-2^-126 * 0.5 should flush to -0");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00000001u), 1.0f)), 0x00000000u, "a result with exponent 0 should flush to +0");
+            t.Equals(bitsOf(FPU_ADD_S(1.0f, 2.0f)), bitsOf(3.0f), "ordinary addition should be unchanged");
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:145
+            t.Equals(bitsOf(FPU_MUL_S(maxf, 2.0f)), kPlusMax, "max * 2 should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(maxf, -2.0f)), kMinusMax, "max * -2 should saturate to -max");
+            t.Equals(bitsOf(FPU_DIV_S(maxf, 0.5f)), kPlusMax, "max / 0.5 should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00800000u), 0.5f)), 0x00000000u, "2^-126 * 0.5 should flush to +0");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x80800000u), 0.5f)), 0x80000000u, "-2^-126 * 0.5 should flush to -0");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00000001u), 1.0f)), 0x00000000u, "a result with exponent 0 should flush to +0");
+            t.Equals(bitsOf(FPU_ADD_S(1.0f, 2.0f)), bitsOf(3.0f), "ordinary addition should be unchanged");
+            t.Equals(bitsOf(FPU_MUL_S(1.5f, 4.0f)), bitsOf(6.0f), "ordinary multiplication should be unchanged");
+        });
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:146
+            t.Equals(bitsOf(FPU_MUL_S(maxf, -2.0f)), kMinusMax, "max * -2 should saturate to -max");
+            t.Equals(bitsOf(FPU_DIV_S(maxf, 0.5f)), kPlusMax, "max / 0.5 should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00800000u), 0.5f)), 0x00000000u, "2^-126 * 0.5 should flush to +0");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x80800000u), 0.5f)), 0x80000000u, "-2^-126 * 0.5 should flush to -0");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00000001u), 1.0f)), 0x00000000u, "a result with exponent 0 should flush to +0");
+            t.Equals(bitsOf(FPU_ADD_S(1.0f, 2.0f)), bitsOf(3.0f), "ordinary addition should be unchanged");
+            t.Equals(bitsOf(FPU_MUL_S(1.5f, 4.0f)), bitsOf(6.0f), "ordinary multiplication should be unchanged");
+        });
+
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:147
+            t.Equals(bitsOf(FPU_DIV_S(maxf, 0.5f)), kPlusMax, "max / 0.5 should saturate to +max");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00800000u), 0.5f)), 0x00000000u, "2^-126 * 0.5 should flush to +0");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x80800000u), 0.5f)), 0x80000000u, "-2^-126 * 0.5 should flush to -0");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00000001u), 1.0f)), 0x00000000u, "a result with exponent 0 should flush to +0");
+            t.Equals(bitsOf(FPU_ADD_S(1.0f, 2.0f)), bitsOf(3.0f), "ordinary addition should be unchanged");
+            t.Equals(bitsOf(FPU_MUL_S(1.5f, 4.0f)), bitsOf(6.0f), "ordinary multiplication should be unchanged");
+        });
+
+        tc.Run("FPU DIV.S by zero gives +-max with the sign of fs xor ft", [](TestCase &t)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:148
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00800000u), 0.5f)), 0x00000000u, "2^-126 * 0.5 should flush to +0");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x80800000u), 0.5f)), 0x80000000u, "-2^-126 * 0.5 should flush to -0");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00000001u), 1.0f)), 0x00000000u, "a result with exponent 0 should flush to +0");
+            t.Equals(bitsOf(FPU_ADD_S(1.0f, 2.0f)), bitsOf(3.0f), "ordinary addition should be unchanged");
+            t.Equals(bitsOf(FPU_MUL_S(1.5f, 4.0f)), bitsOf(6.0f), "ordinary multiplication should be unchanged");
+        });
+
+        tc.Run("FPU DIV.S by zero gives +-max with the sign of fs xor ft", [](TestCase &t)
+        {
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:149
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x80800000u), 0.5f)), 0x80000000u, "-2^-126 * 0.5 should flush to -0");
+            t.Equals(bitsOf(FPU_MUL_S(floatOf(0x00000001u), 1.0f)), 0x00000000u, "a result with exponent 0 should flush to +0");
+            t.Equals(bitsOf(FPU_ADD_S(1.0f, 2.0f)), bitsOf(3.0f), "ordinary addition should be unchanged");
+            t.Equals(bitsOf(FPU_MUL_S(1.5f, 4.0f)), bitsOf(6.0f), "ordinary multiplication should be unchanged");
+        });
+
+        tc.Run("FPU DIV.S by zero gives +-max with the sign of fs xor ft", [](TestCase &t)
+        {
+            t.Equals(bitsOf(FPU_DIV_S(1.0f, 0.0f)), kPlusMax, "1/+0 should be +max");
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:218
+            CodeGenerator gen({}, {});
+
+            // fd = f2, fs = f3, ft = f4 (all distinct so a wrong operand shows up)
+            const std::string div = gen.translateInstruction(makeCop1S(COP1_S_DIV, 2, 3, 4));
+            t.IsTrue(div.find("ctx->f[2] = FPU_DIV_S(ctx->f[3], ctx->f[4])") != std::string::npos,
+                     "DIV.S should write fs / ft to fd but got: " + div);
+            t.IsTrue(div.find("INFINITY") == std::string::npos, "DIV.S must not produce IEEE infinity but got: " + div);
+
+            const std::string rsqrt = gen.translateInstruction(makeCop1S(COP1_S_RSQRT, 2, 3, 4));
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_float_semantics_tests.cpp:223
+                     "DIV.S should write fs / ft to fd but got: " + div);
+            t.IsTrue(div.find("INFINITY") == std::string::npos, "DIV.S must not produce IEEE infinity but got: " + div);
+
+            const std::string rsqrt = gen.translateInstruction(makeCop1S(COP1_S_RSQRT, 2, 3, 4));
+            t.IsTrue(rsqrt.find("ctx->f[2] = FPU_RSQRT_S(ctx->f[3], ctx->f[4])") != std::string::npos,
+                     "RSQRT.S should compute fs / sqrt(ft) but got: " + rsqrt);
+        });
+    });
+}
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp =====
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:49
+        case COP1_S:
+            switch (function)
+            {
+            case COP1_S_ADD:
+                return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_SUB:
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_MUL:
+                return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:50
+            switch (function)
+            {
+            case COP1_S_ADD:
+                return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_SUB:
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_MUL:
+                return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_DIV:
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:51
+            {
+            case COP1_S_ADD:
+                return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_SUB:
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_MUL:
+                return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_DIV:
+                // The EE has no Inf/NaN: x/0 gives +-max (sign of fs xor ft), see ps2_fdiv.
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:53
+                return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_SUB:
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_MUL:
+                return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_DIV:
+                // The EE has no Inf/NaN: x/0 gives +-max (sign of fs xor ft), see ps2_fdiv.
+                return fmt::format("{{ if (ctx->f[{}] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ "
+                                   "ctx->f[{}] = FPU_DIV_S(ctx->f[{}], ctx->f[{}]); }}",
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:54
+            case COP1_S_SUB:
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_MUL:
+                return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_DIV:
+                // The EE has no Inf/NaN: x/0 gives +-max (sign of fs xor ft), see ps2_fdiv.
+                return fmt::format("{{ if (ctx->f[{}] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ "
+                                   "ctx->f[{}] = FPU_DIV_S(ctx->f[{}], ctx->f[{}]); }}",
+                                   ft, fd, fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:55
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_MUL:
+                return fmt::format("ctx->f[{}] = FPU_MUL_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_DIV:
+                // The EE has no Inf/NaN: x/0 gives +-max (sign of fs xor ft), see ps2_fdiv.
+                return fmt::format("{{ if (ctx->f[{}] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ "
+                                   "ctx->f[{}] = FPU_DIV_S(ctx->f[{}], ctx->f[{}]); }}",
+                                   ft, fd, fs, ft);
+            case COP1_S_SQRT:
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:60
+                return fmt::format("{{ if (ctx->f[{}] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ "
+                                   "ctx->f[{}] = FPU_DIV_S(ctx->f[{}], ctx->f[{}]); }}",
+                                   ft, fd, fs, ft);
+            case COP1_S_SQRT:
+                // The R5900 encodes SQRT.S as fd, ft (fs is zero), unlike MIPS-I's fd, fs.
+                return fmt::format("ctx->f[{}] = FPU_SQRT_S(ctx->f[{}]);", fd, ft);
+            case COP1_S_ABS:
+                return fmt::format("ctx->f[{}] = FPU_ABS_S(ctx->f[{}]);", fd, fs);
+            case COP1_S_MOV:
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:63
+            case COP1_S_SQRT:
+                // The R5900 encodes SQRT.S as fd, ft (fs is zero), unlike MIPS-I's fd, fs.
+                return fmt::format("ctx->f[{}] = FPU_SQRT_S(ctx->f[{}]);", fd, ft);
+            case COP1_S_ABS:
+                return fmt::format("ctx->f[{}] = FPU_ABS_S(ctx->f[{}]);", fd, fs);
+            case COP1_S_MOV:
+                return fmt::format("ctx->f[{}] = FPU_MOV_S(ctx->f[{}]);", fd, fs);
+            case COP1_S_NEG:
+                return fmt::format("ctx->f[{}] = FPU_NEG_S(ctx->f[{}]);", fd, fs);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:65
+                return fmt::format("ctx->f[{}] = FPU_SQRT_S(ctx->f[{}]);", fd, ft);
+            case COP1_S_ABS:
+                return fmt::format("ctx->f[{}] = FPU_ABS_S(ctx->f[{}]);", fd, fs);
+            case COP1_S_MOV:
+                return fmt::format("ctx->f[{}] = FPU_MOV_S(ctx->f[{}]);", fd, fs);
+            case COP1_S_NEG:
+                return fmt::format("ctx->f[{}] = FPU_NEG_S(ctx->f[{}]);", fd, fs);
+            case COP1_S_ROUND_W:
+                return fmt::format("{{ int32_t tmp = FPU_ROUND_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:67
+                return fmt::format("ctx->f[{}] = FPU_ABS_S(ctx->f[{}]);", fd, fs);
+            case COP1_S_MOV:
+                return fmt::format("ctx->f[{}] = FPU_MOV_S(ctx->f[{}]);", fd, fs);
+            case COP1_S_NEG:
+                return fmt::format("ctx->f[{}] = FPU_NEG_S(ctx->f[{}]);", fd, fs);
+            case COP1_S_ROUND_W:
+                return fmt::format("{{ int32_t tmp = FPU_ROUND_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_TRUNC_W:
+                return fmt::format("{{ int32_t tmp = FPU_TRUNC_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:69
+                return fmt::format("ctx->f[{}] = FPU_MOV_S(ctx->f[{}]);", fd, fs);
+            case COP1_S_NEG:
+                return fmt::format("ctx->f[{}] = FPU_NEG_S(ctx->f[{}]);", fd, fs);
+            case COP1_S_ROUND_W:
+                return fmt::format("{{ int32_t tmp = FPU_ROUND_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_TRUNC_W:
+                return fmt::format("{{ int32_t tmp = FPU_TRUNC_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_CEIL_W:
+                return fmt::format("{{ int32_t tmp = FPU_CEIL_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:71
+                return fmt::format("ctx->f[{}] = FPU_NEG_S(ctx->f[{}]);", fd, fs);
+            case COP1_S_ROUND_W:
+                return fmt::format("{{ int32_t tmp = FPU_ROUND_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_TRUNC_W:
+                return fmt::format("{{ int32_t tmp = FPU_TRUNC_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_CEIL_W:
+                return fmt::format("{{ int32_t tmp = FPU_CEIL_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_FLOOR_W:
+                return fmt::format("{{ int32_t tmp = FPU_FLOOR_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:73
+                return fmt::format("{{ int32_t tmp = FPU_ROUND_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_TRUNC_W:
+                return fmt::format("{{ int32_t tmp = FPU_TRUNC_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_CEIL_W:
+                return fmt::format("{{ int32_t tmp = FPU_CEIL_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_FLOOR_W:
+                return fmt::format("{{ int32_t tmp = FPU_FLOOR_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_CVT_W:
+                return fmt::format("{{ int32_t tmp = FPU_CVT_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:75
+                return fmt::format("{{ int32_t tmp = FPU_TRUNC_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_CEIL_W:
+                return fmt::format("{{ int32_t tmp = FPU_CEIL_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_FLOOR_W:
+                return fmt::format("{{ int32_t tmp = FPU_FLOOR_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_CVT_W:
+                return fmt::format("{{ int32_t tmp = FPU_CVT_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_RSQRT:
+                // RSQRT.S fd, fs, ft computes fs / sqrt(ft), not 1 / sqrt(fs).
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:77
+                return fmt::format("{{ int32_t tmp = FPU_CEIL_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_FLOOR_W:
+                return fmt::format("{{ int32_t tmp = FPU_FLOOR_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_CVT_W:
+                return fmt::format("{{ int32_t tmp = FPU_CVT_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_RSQRT:
+                // RSQRT.S fd, fs, ft computes fs / sqrt(ft), not 1 / sqrt(fs).
+                return fmt::format("ctx->f[{}] = FPU_RSQRT_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_ADDA:
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:79
+                return fmt::format("{{ int32_t tmp = FPU_FLOOR_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_CVT_W:
+                return fmt::format("{{ int32_t tmp = FPU_CVT_W_S(ctx->f[{}]); std::memcpy(&ctx->f[{}], &tmp, sizeof(tmp)); }}", fs, fd);
+            case COP1_S_RSQRT:
+                // RSQRT.S fd, fs, ft computes fs / sqrt(ft), not 1 / sqrt(fs).
+                return fmt::format("ctx->f[{}] = FPU_RSQRT_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_ADDA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_SUBA:
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:82
+            case COP1_S_RSQRT:
+                // RSQRT.S fd, fs, ft computes fs / sqrt(ft), not 1 / sqrt(fs).
+                return fmt::format("ctx->f[{}] = FPU_RSQRT_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_ADDA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_SUBA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MULA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:83
+                // RSQRT.S fd, fs, ft computes fs / sqrt(ft), not 1 / sqrt(fs).
+                return fmt::format("ctx->f[{}] = FPU_RSQRT_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_ADDA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_SUBA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MULA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MADD:
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:84
+                return fmt::format("ctx->f[{}] = FPU_RSQRT_S(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_ADDA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_SUBA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MULA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MADD:
+                return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:85
+            case COP1_S_ADDA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_SUBA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MULA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MADD:
+                return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MSUB:
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:86
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_SUBA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MULA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MADD:
+                return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MSUB:
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:87
+            case COP1_S_SUBA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MULA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MADD:
+                return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MSUB:
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MADDA:
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:88
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MULA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MADD:
+                return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MSUB:
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MADDA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:89
+            case COP1_S_MULA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MADD:
+                return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MSUB:
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MADDA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MSUBA:
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:90
+                return fmt::format("FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fs, ft);
+            case COP1_S_MADD:
+                return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MSUB:
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MADDA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MSUBA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:91
+            case COP1_S_MADD:
+                return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MSUB:
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MADDA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MSUBA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MAX:
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:92
+                return fmt::format("ctx->f[{}] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MSUB:
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MADDA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MSUBA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MAX:
+                return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:93
+            case COP1_S_MSUB:
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MADDA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MSUBA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MAX:
+                return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_MIN:
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:94
+                return fmt::format("ctx->f[{}] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}]));", fd, fs, ft);
+            case COP1_S_MADDA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MSUBA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MAX:
+                return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_MIN:
+                return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:95
+            case COP1_S_MADDA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MSUBA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MAX:
+                return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_MIN:
+                return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_C_F:
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:96
+                return fmt::format("FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MSUBA:
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MAX:
+                return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_MIN:
+                return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_C_F:
+                return fmt::format("ctx->fcr31 &= ~0x800000;");
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:98
+                return fmt::format("FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[{}], ctx->f[{}])));", fs, ft);
+            case COP1_S_MAX:
+                return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_MIN:
+                return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_C_F:
+                return fmt::format("ctx->fcr31 &= ~0x800000;");
+            case COP1_S_C_UN:
+                return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:100
+                return fmt::format("ctx->f[{}] = std::max(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_MIN:
+                return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_C_F:
+                return fmt::format("ctx->fcr31 &= ~0x800000;");
+            case COP1_S_C_UN:
+                return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_EQ:
+                return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:102
+                return fmt::format("ctx->f[{}] = std::min(ctx->f[{}], ctx->f[{}]);", fd, fs, ft);
+            case COP1_S_C_F:
+                return fmt::format("ctx->fcr31 &= ~0x800000;");
+            case COP1_S_C_UN:
+                return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_EQ:
+                return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_UEQ:
+                return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:104
+                return fmt::format("ctx->fcr31 &= ~0x800000;");
+            case COP1_S_C_UN:
+                return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_EQ:
+                return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_UEQ:
+                return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_OLT:
+                return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:106
+                return fmt::format("ctx->fcr31 = (FPU_C_UN_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_EQ:
+                return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_UEQ:
+                return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_OLT:
+                return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_ULT:
+                return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:108
+                return fmt::format("ctx->fcr31 = (FPU_C_EQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_UEQ:
+                return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_OLT:
+                return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_ULT:
+                return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_OLE:
+                return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:110
+                return fmt::format("ctx->fcr31 = (FPU_C_UEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_OLT:
+                return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_ULT:
+                return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_OLE:
+                return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_ULE:
+                return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:112
+                return fmt::format("ctx->fcr31 = (FPU_C_OLT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_ULT:
+                return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_OLE:
+                return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_ULE:
+                return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_SF:
+                return fmt::format("ctx->fcr31 &= ~0x800000;");
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:114
+                return fmt::format("ctx->fcr31 = (FPU_C_ULT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_OLE:
+                return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_ULE:
+                return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_SF:
+                return fmt::format("ctx->fcr31 &= ~0x800000;");
+            case COP1_S_C_NGLE:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:116
+                return fmt::format("ctx->fcr31 = (FPU_C_OLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_ULE:
+                return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_SF:
+                return fmt::format("ctx->fcr31 &= ~0x800000;");
+            case COP1_S_C_NGLE:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_SEQ:
+                return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:118
+                return fmt::format("ctx->fcr31 = (FPU_C_ULE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_SF:
+                return fmt::format("ctx->fcr31 &= ~0x800000;");
+            case COP1_S_C_NGLE:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_SEQ:
+                return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_NGL:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:120
+                return fmt::format("ctx->fcr31 &= ~0x800000;");
+            case COP1_S_C_NGLE:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_SEQ:
+                return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_NGL:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_LT:
+                return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:122
+                return fmt::format("ctx->fcr31 = (FPU_C_NGLE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_SEQ:
+                return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_NGL:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_LT:
+                return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_NGE:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:124
+                return fmt::format("ctx->fcr31 = (FPU_C_SEQ_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_NGL:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_LT:
+                return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_NGE:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_LE:
+                return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:126
+                return fmt::format("ctx->fcr31 = (FPU_C_NGL_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_LT:
+                return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_NGE:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_LE:
+                return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_NGT:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:128
+                return fmt::format("ctx->fcr31 = (FPU_C_LT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_NGE:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_LE:
+                return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_NGT:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            default:
+                return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.S instruction: function 0x{:X}", function));
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:130
+                return fmt::format("ctx->fcr31 = (FPU_C_NGE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_LE:
+                return fmt::format("ctx->fcr31 = (FPU_C_LE_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            case COP1_S_C_NGT:
+                return fmt::format("ctx->fcr31 = (FPU_C_NGT_S(ctx->f[{}], ctx->f[{}])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);", fs, ft);
+            default:
+                return m_codeGenerator.emitUnhandledInstruction(inst, fmt::format("Unhandled FPU.S instruction: function 0x{:X}", function));
+            }
+        case COP1_W:
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h =====
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:228
+    // MMI Function Field (bits 5-0) for OPCODE_MMI (0x1C)
+    enum MMIFunctions
+    {
+        MMI_MADD = 0x00,  // Multiply Add Word (to LO/HI)
+        MMI_MADDU = 0x01, // Multiply Add Unsigned Word (to LO/HI)
+        MMI_MSUB = 0x02,  // Multiply Subtract Word (Not listed in provided doc table, but valid MMI)
+        MMI_MSUBU = 0x03, // Multiply Subtract Unsigned Word (Not listed in provided doc table, but valid MMI)
+        MMI_PLZCW = 0x04, // Parallel Leading Zero/One Count Word
+
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:229
+    enum MMIFunctions
+    {
+        MMI_MADD = 0x00,  // Multiply Add Word (to LO/HI)
+        MMI_MADDU = 0x01, // Multiply Add Unsigned Word (to LO/HI)
+        MMI_MSUB = 0x02,  // Multiply Subtract Word (Not listed in provided doc table, but valid MMI)
+        MMI_MSUBU = 0x03, // Multiply Subtract Unsigned Word (Not listed in provided doc table, but valid MMI)
+        MMI_PLZCW = 0x04, // Parallel Leading Zero/One Count Word
+
+        MMI_MMI0 = 0x08, // Group MMI0 instructions (see MMI0Functions)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:230
+    {
+        MMI_MADD = 0x00,  // Multiply Add Word (to LO/HI)
+        MMI_MADDU = 0x01, // Multiply Add Unsigned Word (to LO/HI)
+        MMI_MSUB = 0x02,  // Multiply Subtract Word (Not listed in provided doc table, but valid MMI)
+        MMI_MSUBU = 0x03, // Multiply Subtract Unsigned Word (Not listed in provided doc table, but valid MMI)
+        MMI_PLZCW = 0x04, // Parallel Leading Zero/One Count Word
+
+        MMI_MMI0 = 0x08, // Group MMI0 instructions (see MMI0Functions)
+        MMI_MMI2 = 0x09, // Group MMI2 instructions (see MMI2Functions)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:231
+        MMI_MADD = 0x00,  // Multiply Add Word (to LO/HI)
+        MMI_MADDU = 0x01, // Multiply Add Unsigned Word (to LO/HI)
+        MMI_MSUB = 0x02,  // Multiply Subtract Word (Not listed in provided doc table, but valid MMI)
+        MMI_MSUBU = 0x03, // Multiply Subtract Unsigned Word (Not listed in provided doc table, but valid MMI)
+        MMI_PLZCW = 0x04, // Parallel Leading Zero/One Count Word
+
+        MMI_MMI0 = 0x08, // Group MMI0 instructions (see MMI0Functions)
+        MMI_MMI2 = 0x09, // Group MMI2 instructions (see MMI2Functions)
+
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:247
+        MMI_DIV1 = 0x1A,   // Divide Word using LO1/HI1
+        MMI_DIVU1 = 0x1B,  // Divide Unsigned Word using LO1/HI1
+
+        MMI_MADD1 = 0x20,  // Multiply Add Word to LO1/HI1
+        MMI_MADDU1 = 0x21, // Multiply Add Unsigned Word to LO1/HI1
+
+        MMI_MMI1 = 0x28, // Group MMI1 instructions (see MMI1Functions)
+        MMI_MMI3 = 0x29, // Group MMI3 instructions (see MMI3Functions)
+
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:248
+        MMI_DIVU1 = 0x1B,  // Divide Unsigned Word using LO1/HI1
+
+        MMI_MADD1 = 0x20,  // Multiply Add Word to LO1/HI1
+        MMI_MADDU1 = 0x21, // Multiply Add Unsigned Word to LO1/HI1
+
+        MMI_MMI1 = 0x28, // Group MMI1 instructions (see MMI1Functions)
+        MMI_MMI3 = 0x29, // Group MMI3 instructions (see MMI3Functions)
+
+        MMI_PMFHL = 0x30, // Parallel Move From HI/LO Register (see PMFHLFunctions for 'sa' field)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:323
+    // PS2-specific MMI2 Sub-Function Field (bits 0-5 within MMI_MMI2 group)
+    enum MMI2Functions
+    {
+        MMI2_PMADDW = 0x00,
+        MMI2_PSLLVW = 0x02,
+        MMI2_PSRLVW = 0x03,
+        MMI2_PMSUBW = 0x04,
+        MMI2_PMFHI = 0x08,
+        MMI2_PMFLO = 0x09,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:326
+        MMI2_PMADDW = 0x00,
+        MMI2_PSLLVW = 0x02,
+        MMI2_PSRLVW = 0x03,
+        MMI2_PMSUBW = 0x04,
+        MMI2_PMFHI = 0x08,
+        MMI2_PMFLO = 0x09,
+        MMI2_PINTH = 0x0A,
+        MMI2_PMULTW = 0x0C,
+        MMI2_PDIVW = 0x0D,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:333
+        MMI2_PMULTW = 0x0C,
+        MMI2_PDIVW = 0x0D,
+        MMI2_PCPYLD = 0x0E,
+        MMI2_PMADDH = 0x10,
+        MMI2_PHMADH = 0x11,
+        MMI2_PAND = 0x12,
+        MMI2_PXOR = 0x13,
+        MMI2_PMSUBH = 0x14,
+        MMI2_PHMSBH = 0x15,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:337
+        MMI2_PHMADH = 0x11,
+        MMI2_PAND = 0x12,
+        MMI2_PXOR = 0x13,
+        MMI2_PMSUBH = 0x14,
+        MMI2_PHMSBH = 0x15,
+        MMI2_PEXEH = 0x1A,
+        MMI2_PREVH = 0x1B,
+        MMI2_PMULTH = 0x1C,
+        MMI2_PDIVBW = 0x1D,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:350
+    // PS2-specific MMI3 Sub-Function Field (bits 0-5 within MMI_MMI3 group)
+    enum MMI3Functions
+    {
+        MMI3_PMADDUW = 0x00,
+        MMI3_PSRAVW = 0x03,
+        MMI3_PMTHI = 0x08, // Move To HI register
+        MMI3_PMTLO = 0x09, // Move To LO register
+        MMI3_PINTEH = 0x0A,
+        MMI3_PMULTUW = 0x0C,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:458
+    // COP1 Function Field (bits 5-0) for COP1_S Format (Single-Precision)
+    enum Cop1FunctionsS
+    {
+        COP1_S_ADD = 0x00,  // ADD.S
+        COP1_S_SUB = 0x01,  // SUB.S
+        COP1_S_MUL = 0x02,  // MUL.S
+        COP1_S_DIV = 0x03,  // DIV.S
+        COP1_S_SQRT = 0x04, // SQRT.S
+        COP1_S_ABS = 0x05,  // ABS.S
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:459
+    enum Cop1FunctionsS
+    {
+        COP1_S_ADD = 0x00,  // ADD.S
+        COP1_S_SUB = 0x01,  // SUB.S
+        COP1_S_MUL = 0x02,  // MUL.S
+        COP1_S_DIV = 0x03,  // DIV.S
+        COP1_S_SQRT = 0x04, // SQRT.S
+        COP1_S_ABS = 0x05,  // ABS.S
+        COP1_S_MOV = 0x06,  // MOV.S
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:460
+    {
+        COP1_S_ADD = 0x00,  // ADD.S
+        COP1_S_SUB = 0x01,  // SUB.S
+        COP1_S_MUL = 0x02,  // MUL.S
+        COP1_S_DIV = 0x03,  // DIV.S
+        COP1_S_SQRT = 0x04, // SQRT.S
+        COP1_S_ABS = 0x05,  // ABS.S
+        COP1_S_MOV = 0x06,  // MOV.S
+        COP1_S_NEG = 0x07,  // NEG.S
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:461
+        COP1_S_ADD = 0x00,  // ADD.S
+        COP1_S_SUB = 0x01,  // SUB.S
+        COP1_S_MUL = 0x02,  // MUL.S
+        COP1_S_DIV = 0x03,  // DIV.S
+        COP1_S_SQRT = 0x04, // SQRT.S
+        COP1_S_ABS = 0x05,  // ABS.S
+        COP1_S_MOV = 0x06,  // MOV.S
+        COP1_S_NEG = 0x07,  // NEG.S
+
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:462
+        COP1_S_SUB = 0x01,  // SUB.S
+        COP1_S_MUL = 0x02,  // MUL.S
+        COP1_S_DIV = 0x03,  // DIV.S
+        COP1_S_SQRT = 0x04, // SQRT.S
+        COP1_S_ABS = 0x05,  // ABS.S
+        COP1_S_MOV = 0x06,  // MOV.S
+        COP1_S_NEG = 0x07,  // NEG.S
+
+        COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:463
+        COP1_S_MUL = 0x02,  // MUL.S
+        COP1_S_DIV = 0x03,  // DIV.S
+        COP1_S_SQRT = 0x04, // SQRT.S
+        COP1_S_ABS = 0x05,  // ABS.S
+        COP1_S_MOV = 0x06,  // MOV.S
+        COP1_S_NEG = 0x07,  // NEG.S
+
+        COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:464
+        COP1_S_DIV = 0x03,  // DIV.S
+        COP1_S_SQRT = 0x04, // SQRT.S
+        COP1_S_ABS = 0x05,  // ABS.S
+        COP1_S_MOV = 0x06,  // MOV.S
+        COP1_S_NEG = 0x07,  // NEG.S
+
+        COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:465
+        COP1_S_SQRT = 0x04, // SQRT.S
+        COP1_S_ABS = 0x05,  // ABS.S
+        COP1_S_MOV = 0x06,  // MOV.S
+        COP1_S_NEG = 0x07,  // NEG.S
+
+        COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+        COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:467
+        COP1_S_MOV = 0x06,  // MOV.S
+        COP1_S_NEG = 0x07,  // NEG.S
+
+        COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+        COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+        COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:468
+        COP1_S_NEG = 0x07,  // NEG.S
+
+        COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+        COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+        COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+        COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:469
+
+        COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+        COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+        COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+        COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+        COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:470
+        COP1_S_ROUND_L = 0x08, // ROUND.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+        COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+        COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+        COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+        COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:471
+        COP1_S_TRUNC_L = 0x09, // TRUNC.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+        COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+        COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+        COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+        COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+
+        // --- Additional Arithmetic/Functions (from FPU.S table) ---
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:472
+        COP1_S_CEIL_L = 0x0A,  // CEIL.L.S  - Requires 64-bit int dest, likely unused
+        COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+        COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+        COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+        COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+
+        // --- Additional Arithmetic/Functions (from FPU.S table) ---
+        COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:473
+        COP1_S_FLOOR_L = 0x0B, // FLOOR.L.S - Requires 64-bit int dest, likely unused
+        COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+        COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+        COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+        COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+
+        // --- Additional Arithmetic/Functions (from FPU.S table) ---
+        COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+        COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:474
+        COP1_S_ROUND_W = 0x0C, // ROUND.W.S
+        COP1_S_TRUNC_W = 0x0D, // TRUNC.W.S
+        COP1_S_CEIL_W = 0x0E,  // CEIL.W.S
+        COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+
+        // --- Additional Arithmetic/Functions (from FPU.S table) ---
+        COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+        COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+        COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:477
+        COP1_S_FLOOR_W = 0x0F, // FLOOR.W.S
+
+        // --- Additional Arithmetic/Functions (from FPU.S table) ---
+        COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+        COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+        COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+        COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+        COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+        COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:478
+
+        // --- Additional Arithmetic/Functions (from FPU.S table) ---
+        COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+        COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+        COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+        COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+        COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+        COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+        COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:479
+        // --- Additional Arithmetic/Functions (from FPU.S table) ---
+        COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+        COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+        COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+        COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+        COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+        COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+        COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+        COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:480
+        COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+        COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+        COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+        COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+        COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+        COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+        COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+        COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:481
+        COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+        COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+        COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+        COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+        COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+        COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+        COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+
+        // --- Conversions (from FPU.S table) ---
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:482
+        COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+        COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+        COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+        COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+        COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+        COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+
+        // --- Conversions (from FPU.S table) ---
+        COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:483
+        COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+        COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+        COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+        COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+        COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+
+        // --- Conversions (from FPU.S table) ---
+        COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+        COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:484
+        COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+        COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+        COP1_S_MADDA = 0x1E, // MADDA.S (Multiply Add Accumulator)
+        COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+
+        // --- Conversions (from FPU.S table) ---
+        COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+        COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+        COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:487
+        COP1_S_MSUBA = 0x1F, // MSUBA.S (Multiply Subtract Accumulator)
+
+        // --- Conversions (from FPU.S table) ---
+        COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+        COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+        COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+
+        // --- Min/Max (from FPU.S table) ---
+        COP1_S_MAX = 0x28, // MAX.S
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:488
+
+        // --- Conversions (from FPU.S table) ---
+        COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+        COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+        COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+
+        // --- Min/Max (from FPU.S table) ---
+        COP1_S_MAX = 0x28, // MAX.S
+        COP1_S_MIN = 0x29, // MIN.S
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:489
+        // --- Conversions (from FPU.S table) ---
+        COP1_S_CVT_D = 0x21, // CVT.D.S - Requires double-precision FPU
+        COP1_S_CVT_W = 0x24, // CVT.W.S (Convert to Word)
+        COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+
+        // --- Min/Max (from FPU.S table) ---
+        COP1_S_MAX = 0x28, // MAX.S
+        COP1_S_MIN = 0x29, // MIN.S
+
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:492
+        COP1_S_CVT_L = 0x25, // CVT.L.S - Requires 64-bit int dest, likely unused
+
+        // --- Min/Max (from FPU.S table) ---
+        COP1_S_MAX = 0x28, // MAX.S
+        COP1_S_MIN = 0x29, // MIN.S
+
+        COP1_S_C_F = 0x30,    // C.F.S (False)
+        COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+        COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:493
+
+        // --- Min/Max (from FPU.S table) ---
+        COP1_S_MAX = 0x28, // MAX.S
+        COP1_S_MIN = 0x29, // MIN.S
+
+        COP1_S_C_F = 0x30,    // C.F.S (False)
+        COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+        COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+        COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:495
+        COP1_S_MAX = 0x28, // MAX.S
+        COP1_S_MIN = 0x29, // MIN.S
+
+        COP1_S_C_F = 0x30,    // C.F.S (False)
+        COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+        COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+        COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+        COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+        COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:496
+        COP1_S_MIN = 0x29, // MIN.S
+
+        COP1_S_C_F = 0x30,    // C.F.S (False)
+        COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+        COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+        COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+        COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+        COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+        COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:497
+
+        COP1_S_C_F = 0x30,    // C.F.S (False)
+        COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+        COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+        COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+        COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+        COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+        COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+        COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:498
+        COP1_S_C_F = 0x30,    // C.F.S (False)
+        COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+        COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+        COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+        COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+        COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+        COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+        COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+        COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:499
+        COP1_S_C_UN = 0x31,   // C.UN.S (Unordered)
+        COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+        COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+        COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+        COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+        COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+        COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+        COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+        COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:500
+        COP1_S_C_EQ = 0x32,   // C.EQ.S (Equal)
+        COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+        COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+        COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+        COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+        COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+        COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+        COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+        COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:501
+        COP1_S_C_UEQ = 0x33,  // C.UEQ.S (Unordered or Equal)
+        COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+        COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+        COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+        COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+        COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+        COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+        COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+        COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:502
+        COP1_S_C_OLT = 0x34,  // C.OLT.S (Ordered Less Than)
+        COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+        COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+        COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+        COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+        COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+        COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+        COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+        COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:503
+        COP1_S_C_ULT = 0x35,  // C.ULT.S (Unordered or Less Than)
+        COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+        COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+        COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+        COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+        COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+        COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+        COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+        COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:504
+        COP1_S_C_OLE = 0x36,  // C.OLE.S (Ordered Less Than or Equal)
+        COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+        COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+        COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+        COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+        COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+        COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+        COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+        COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:505
+        COP1_S_C_ULE = 0x37,  // C.ULE.S (Unordered or Less Than or Equal)
+        COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+        COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+        COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+        COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+        COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+        COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+        COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+        COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:506
+        COP1_S_C_SF = 0x38,   // C.SF.S (Signaling False)
+        COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+        COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+        COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+        COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+        COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+        COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+        COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+    };
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:507
+        COP1_S_C_NGLE = 0x39, // C.NGLE.S (Not Greater or Less or Equal - Unordered)
+        COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+        COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+        COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+        COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+        COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+        COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+    };
+
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:508
+        COP1_S_C_SEQ = 0x3A,  // C.SEQ.S (Signaling Equal)
+        COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+        COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+        COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+        COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+        COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+    };
+
+    // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:509
+        COP1_S_C_NGL = 0x3B,  // C.NGL.S (Not Greater or Less - Unordered or Equal)
+        COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+        COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+        COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+        COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+    };
+
+    // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+    enum Cop1FunctionsW
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:510
+        COP1_S_C_LT = 0x3C,   // C.LT.S (Signaling Less Than)
+        COP1_S_C_NGE = 0x3D,  // C.NGE.S (Not Greater or Equal - Unordered or Less Than)
+        COP1_S_C_LE = 0x3E,   // C.LE.S (Signaling Less Than or Equal)
+        COP1_S_C_NGT = 0x3F,  // C.NGT.S (Not Greater Than - Unordered or Less Than or Equal)
+    };
+
+    // COP1 Function Field (bits 5-0) for COP1_W Format (Word/Integer source)
+    enum Cop1FunctionsW
+    {
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:563
+        VU0_S1_VSUBy = 0x05,
+        VU0_S1_VSUBz = 0x06,
+        VU0_S1_VSUBw = 0x07,
+        VU0_S1_VMADDx = 0x08,
+        VU0_S1_VMADDy = 0x09,
+        VU0_S1_VMADDz = 0x0A,
+        VU0_S1_VMADDw = 0x0B,
+        VU0_S1_VMSUBx = 0x0C,
+        VU0_S1_VMSUBy = 0x0D,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:564
+        VU0_S1_VSUBz = 0x06,
+        VU0_S1_VSUBw = 0x07,
+        VU0_S1_VMADDx = 0x08,
+        VU0_S1_VMADDy = 0x09,
+        VU0_S1_VMADDz = 0x0A,
+        VU0_S1_VMADDw = 0x0B,
+        VU0_S1_VMSUBx = 0x0C,
+        VU0_S1_VMSUBy = 0x0D,
+        VU0_S1_VMSUBz = 0x0E,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:565
+        VU0_S1_VSUBw = 0x07,
+        VU0_S1_VMADDx = 0x08,
+        VU0_S1_VMADDy = 0x09,
+        VU0_S1_VMADDz = 0x0A,
+        VU0_S1_VMADDw = 0x0B,
+        VU0_S1_VMSUBx = 0x0C,
+        VU0_S1_VMSUBy = 0x0D,
+        VU0_S1_VMSUBz = 0x0E,
+        VU0_S1_VMSUBw = 0x0F,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:566
+        VU0_S1_VMADDx = 0x08,
+        VU0_S1_VMADDy = 0x09,
+        VU0_S1_VMADDz = 0x0A,
+        VU0_S1_VMADDw = 0x0B,
+        VU0_S1_VMSUBx = 0x0C,
+        VU0_S1_VMSUBy = 0x0D,
+        VU0_S1_VMSUBz = 0x0E,
+        VU0_S1_VMSUBw = 0x0F,
+        VU0_S1_VMAXx = 0x10,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:567
+        VU0_S1_VMADDy = 0x09,
+        VU0_S1_VMADDz = 0x0A,
+        VU0_S1_VMADDw = 0x0B,
+        VU0_S1_VMSUBx = 0x0C,
+        VU0_S1_VMSUBy = 0x0D,
+        VU0_S1_VMSUBz = 0x0E,
+        VU0_S1_VMSUBw = 0x0F,
+        VU0_S1_VMAXx = 0x10,
+        VU0_S1_VMAXy = 0x11,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:568
+        VU0_S1_VMADDz = 0x0A,
+        VU0_S1_VMADDw = 0x0B,
+        VU0_S1_VMSUBx = 0x0C,
+        VU0_S1_VMSUBy = 0x0D,
+        VU0_S1_VMSUBz = 0x0E,
+        VU0_S1_VMSUBw = 0x0F,
+        VU0_S1_VMAXx = 0x10,
+        VU0_S1_VMAXy = 0x11,
+        VU0_S1_VMAXz = 0x12,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:569
+        VU0_S1_VMADDw = 0x0B,
+        VU0_S1_VMSUBx = 0x0C,
+        VU0_S1_VMSUBy = 0x0D,
+        VU0_S1_VMSUBz = 0x0E,
+        VU0_S1_VMSUBw = 0x0F,
+        VU0_S1_VMAXx = 0x10,
+        VU0_S1_VMAXy = 0x11,
+        VU0_S1_VMAXz = 0x12,
+        VU0_S1_VMAXw = 0x13,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:570
+        VU0_S1_VMSUBx = 0x0C,
+        VU0_S1_VMSUBy = 0x0D,
+        VU0_S1_VMSUBz = 0x0E,
+        VU0_S1_VMSUBw = 0x0F,
+        VU0_S1_VMAXx = 0x10,
+        VU0_S1_VMAXy = 0x11,
+        VU0_S1_VMAXz = 0x12,
+        VU0_S1_VMAXw = 0x13,
+        VU0_S1_VMINIx = 0x14,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:588
+        VU0_S1_VMULi = 0x1E,
+        VU0_S1_VMINIi = 0x1F,
+        VU0_S1_VADDq = 0x20,
+        VU0_S1_VMADDq = 0x21,
+        VU0_S1_VADDi = 0x22,
+        VU0_S1_VMADDi = 0x23,
+        VU0_S1_VSUBq = 0x24,
+        VU0_S1_VMSUBq = 0x25,
+        VU0_S1_VSUBi = 0x26,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:590
+        VU0_S1_VADDq = 0x20,
+        VU0_S1_VMADDq = 0x21,
+        VU0_S1_VADDi = 0x22,
+        VU0_S1_VMADDi = 0x23,
+        VU0_S1_VSUBq = 0x24,
+        VU0_S1_VMSUBq = 0x25,
+        VU0_S1_VSUBi = 0x26,
+        VU0_S1_VMSUBi = 0x27,
+        VU0_S1_VADD = 0x28,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:592
+        VU0_S1_VADDi = 0x22,
+        VU0_S1_VMADDi = 0x23,
+        VU0_S1_VSUBq = 0x24,
+        VU0_S1_VMSUBq = 0x25,
+        VU0_S1_VSUBi = 0x26,
+        VU0_S1_VMSUBi = 0x27,
+        VU0_S1_VADD = 0x28,
+        VU0_S1_VMADD = 0x29,
+        VU0_S1_VMUL = 0x2A,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:594
+        VU0_S1_VSUBq = 0x24,
+        VU0_S1_VMSUBq = 0x25,
+        VU0_S1_VSUBi = 0x26,
+        VU0_S1_VMSUBi = 0x27,
+        VU0_S1_VADD = 0x28,
+        VU0_S1_VMADD = 0x29,
+        VU0_S1_VMUL = 0x2A,
+        VU0_S1_VMAX = 0x2B,
+        VU0_S1_VSUB = 0x2C,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:596
+        VU0_S1_VSUBi = 0x26,
+        VU0_S1_VMSUBi = 0x27,
+        VU0_S1_VADD = 0x28,
+        VU0_S1_VMADD = 0x29,
+        VU0_S1_VMUL = 0x2A,
+        VU0_S1_VMAX = 0x2B,
+        VU0_S1_VSUB = 0x2C,
+        VU0_S1_VMSUB = 0x2D,
+        VU0_S1_VOPMSUB = 0x2E,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:600
+        VU0_S1_VMUL = 0x2A,
+        VU0_S1_VMAX = 0x2B,
+        VU0_S1_VSUB = 0x2C,
+        VU0_S1_VMSUB = 0x2D,
+        VU0_S1_VOPMSUB = 0x2E,
+        VU0_S1_VMINI = 0x2F,
+        VU0_S1_VIADD = 0x30,
+        VU0_S1_VISUB = 0x31,
+        VU0_S1_VIADDI = 0x32,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:601
+        VU0_S1_VMAX = 0x2B,
+        VU0_S1_VSUB = 0x2C,
+        VU0_S1_VMSUB = 0x2D,
+        VU0_S1_VOPMSUB = 0x2E,
+        VU0_S1_VMINI = 0x2F,
+        VU0_S1_VIADD = 0x30,
+        VU0_S1_VISUB = 0x31,
+        VU0_S1_VIADDI = 0x32,
+        VU0_S1_VIAND = 0x34,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:623
+        VU0_S2_VSUBAy = 0x05,
+        VU0_S2_VSUBAz = 0x06,
+        VU0_S2_VSUBAw = 0x07,
+        VU0_S2_VMADDAx = 0x08,
+        VU0_S2_VMADDAy = 0x09,
+        VU0_S2_VMADDAz = 0x0A,
+        VU0_S2_VMADDAw = 0x0B,
+        VU0_S2_VMSUBAx = 0x0C,
+        VU0_S2_VMSUBAy = 0x0D,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:624
+        VU0_S2_VSUBAz = 0x06,
+        VU0_S2_VSUBAw = 0x07,
+        VU0_S2_VMADDAx = 0x08,
+        VU0_S2_VMADDAy = 0x09,
+        VU0_S2_VMADDAz = 0x0A,
+        VU0_S2_VMADDAw = 0x0B,
+        VU0_S2_VMSUBAx = 0x0C,
+        VU0_S2_VMSUBAy = 0x0D,
+        VU0_S2_VMSUBAz = 0x0E,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:625
+        VU0_S2_VSUBAw = 0x07,
+        VU0_S2_VMADDAx = 0x08,
+        VU0_S2_VMADDAy = 0x09,
+        VU0_S2_VMADDAz = 0x0A,
+        VU0_S2_VMADDAw = 0x0B,
+        VU0_S2_VMSUBAx = 0x0C,
+        VU0_S2_VMSUBAy = 0x0D,
+        VU0_S2_VMSUBAz = 0x0E,
+        VU0_S2_VMSUBAw = 0x0F,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:626
+        VU0_S2_VMADDAx = 0x08,
+        VU0_S2_VMADDAy = 0x09,
+        VU0_S2_VMADDAz = 0x0A,
+        VU0_S2_VMADDAw = 0x0B,
+        VU0_S2_VMSUBAx = 0x0C,
+        VU0_S2_VMSUBAy = 0x0D,
+        VU0_S2_VMSUBAz = 0x0E,
+        VU0_S2_VMSUBAw = 0x0F,
+        VU0_S2_VITOF0 = 0x10,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:627
+        VU0_S2_VMADDAy = 0x09,
+        VU0_S2_VMADDAz = 0x0A,
+        VU0_S2_VMADDAw = 0x0B,
+        VU0_S2_VMSUBAx = 0x0C,
+        VU0_S2_VMSUBAy = 0x0D,
+        VU0_S2_VMSUBAz = 0x0E,
+        VU0_S2_VMSUBAw = 0x0F,
+        VU0_S2_VITOF0 = 0x10,
+        VU0_S2_VITOF4 = 0x11,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:628
+        VU0_S2_VMADDAz = 0x0A,
+        VU0_S2_VMADDAw = 0x0B,
+        VU0_S2_VMSUBAx = 0x0C,
+        VU0_S2_VMSUBAy = 0x0D,
+        VU0_S2_VMSUBAz = 0x0E,
+        VU0_S2_VMSUBAw = 0x0F,
+        VU0_S2_VITOF0 = 0x10,
+        VU0_S2_VITOF4 = 0x11,
+        VU0_S2_VITOF12 = 0x12,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:629
+        VU0_S2_VMADDAw = 0x0B,
+        VU0_S2_VMSUBAx = 0x0C,
+        VU0_S2_VMSUBAy = 0x0D,
+        VU0_S2_VMSUBAz = 0x0E,
+        VU0_S2_VMSUBAw = 0x0F,
+        VU0_S2_VITOF0 = 0x10,
+        VU0_S2_VITOF4 = 0x11,
+        VU0_S2_VITOF12 = 0x12,
+        VU0_S2_VITOF15 = 0x13,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:630
+        VU0_S2_VMSUBAx = 0x0C,
+        VU0_S2_VMSUBAy = 0x0D,
+        VU0_S2_VMSUBAz = 0x0E,
+        VU0_S2_VMSUBAw = 0x0F,
+        VU0_S2_VITOF0 = 0x10,
+        VU0_S2_VITOF4 = 0x11,
+        VU0_S2_VITOF12 = 0x12,
+        VU0_S2_VITOF15 = 0x13,
+        VU0_S2_VFTOI0 = 0x14,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:639
+        VU0_S2_VFTOI4 = 0x15,
+        VU0_S2_VFTOI12 = 0x16,
+        VU0_S2_VFTOI15 = 0x17,
+        VU0_S2_VMULAx = 0x18,
+        VU0_S2_VMULAy = 0x19,
+        VU0_S2_VMULAz = 0x1A,
+        VU0_S2_VMULAw = 0x1B,
+        VU0_S2_VMULAq = 0x1C,
+        VU0_S2_VABS = 0x1D,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:640
+        VU0_S2_VFTOI12 = 0x16,
+        VU0_S2_VFTOI15 = 0x17,
+        VU0_S2_VMULAx = 0x18,
+        VU0_S2_VMULAy = 0x19,
+        VU0_S2_VMULAz = 0x1A,
+        VU0_S2_VMULAw = 0x1B,
+        VU0_S2_VMULAq = 0x1C,
+        VU0_S2_VABS = 0x1D,
+        VU0_S2_VMULAi = 0x1E,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:641
+        VU0_S2_VFTOI15 = 0x17,
+        VU0_S2_VMULAx = 0x18,
+        VU0_S2_VMULAy = 0x19,
+        VU0_S2_VMULAz = 0x1A,
+        VU0_S2_VMULAw = 0x1B,
+        VU0_S2_VMULAq = 0x1C,
+        VU0_S2_VABS = 0x1D,
+        VU0_S2_VMULAi = 0x1E,
+        VU0_S2_VCLIPw = 0x1F,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:642
+        VU0_S2_VMULAx = 0x18,
+        VU0_S2_VMULAy = 0x19,
+        VU0_S2_VMULAz = 0x1A,
+        VU0_S2_VMULAw = 0x1B,
+        VU0_S2_VMULAq = 0x1C,
+        VU0_S2_VABS = 0x1D,
+        VU0_S2_VMULAi = 0x1E,
+        VU0_S2_VCLIPw = 0x1F,
+        VU0_S2_VADDAq = 0x20,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:643
+        VU0_S2_VMULAy = 0x19,
+        VU0_S2_VMULAz = 0x1A,
+        VU0_S2_VMULAw = 0x1B,
+        VU0_S2_VMULAq = 0x1C,
+        VU0_S2_VABS = 0x1D,
+        VU0_S2_VMULAi = 0x1E,
+        VU0_S2_VCLIPw = 0x1F,
+        VU0_S2_VADDAq = 0x20,
+        VU0_S2_VMADDAq = 0x21,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:645
+        VU0_S2_VMULAw = 0x1B,
+        VU0_S2_VMULAq = 0x1C,
+        VU0_S2_VABS = 0x1D,
+        VU0_S2_VMULAi = 0x1E,
+        VU0_S2_VCLIPw = 0x1F,
+        VU0_S2_VADDAq = 0x20,
+        VU0_S2_VMADDAq = 0x21,
+        VU0_S2_VADDAi = 0x22,
+        VU0_S2_VMADDAi = 0x23,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:648
+        VU0_S2_VMULAi = 0x1E,
+        VU0_S2_VCLIPw = 0x1F,
+        VU0_S2_VADDAq = 0x20,
+        VU0_S2_VMADDAq = 0x21,
+        VU0_S2_VADDAi = 0x22,
+        VU0_S2_VMADDAi = 0x23,
+        VU0_S2_VSUBAq = 0x24,
+        VU0_S2_VMSUBAq = 0x25,
+        VU0_S2_VSUBAi = 0x26,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:650
+        VU0_S2_VADDAq = 0x20,
+        VU0_S2_VMADDAq = 0x21,
+        VU0_S2_VADDAi = 0x22,
+        VU0_S2_VMADDAi = 0x23,
+        VU0_S2_VSUBAq = 0x24,
+        VU0_S2_VMSUBAq = 0x25,
+        VU0_S2_VSUBAi = 0x26,
+        VU0_S2_VMSUBAi = 0x27,
+        VU0_S2_VADDA = 0x28,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:652
+        VU0_S2_VADDAi = 0x22,
+        VU0_S2_VMADDAi = 0x23,
+        VU0_S2_VSUBAq = 0x24,
+        VU0_S2_VMSUBAq = 0x25,
+        VU0_S2_VSUBAi = 0x26,
+        VU0_S2_VMSUBAi = 0x27,
+        VU0_S2_VADDA = 0x28,
+        VU0_S2_VMADDA = 0x29,
+        VU0_S2_VMULA = 0x2A,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:654
+        VU0_S2_VSUBAq = 0x24,
+        VU0_S2_VMSUBAq = 0x25,
+        VU0_S2_VSUBAi = 0x26,
+        VU0_S2_VMSUBAi = 0x27,
+        VU0_S2_VADDA = 0x28,
+        VU0_S2_VMADDA = 0x29,
+        VU0_S2_VMULA = 0x2A,
+        VU0_S2_VSUBA = 0x2C,
+        VU0_S2_VMSUBA = 0x2D,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:656
+        VU0_S2_VSUBAi = 0x26,
+        VU0_S2_VMSUBAi = 0x27,
+        VU0_S2_VADDA = 0x28,
+        VU0_S2_VMADDA = 0x29,
+        VU0_S2_VMULA = 0x2A,
+        VU0_S2_VSUBA = 0x2C,
+        VU0_S2_VMSUBA = 0x2D,
+        VU0_S2_VOPMULA = 0x2E,
+        VU0_S2_VNOP = 0x2F,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:657
+        VU0_S2_VMSUBAi = 0x27,
+        VU0_S2_VADDA = 0x28,
+        VU0_S2_VMADDA = 0x29,
+        VU0_S2_VMULA = 0x2A,
+        VU0_S2_VSUBA = 0x2C,
+        VU0_S2_VMSUBA = 0x2D,
+        VU0_S2_VOPMULA = 0x2E,
+        VU0_S2_VNOP = 0x2F,
+        VU0_S2_VMOVE = 0x30,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:659
+        VU0_S2_VMADDA = 0x29,
+        VU0_S2_VMULA = 0x2A,
+        VU0_S2_VSUBA = 0x2C,
+        VU0_S2_VMSUBA = 0x2D,
+        VU0_S2_VOPMULA = 0x2E,
+        VU0_S2_VNOP = 0x2F,
+        VU0_S2_VMOVE = 0x30,
+        VU0_S2_VMR32 = 0x31,
+        VU0_S2_VLQI = 0x34,
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:660
+        VU0_S2_VMULA = 0x2A,
+        VU0_S2_VSUBA = 0x2C,
+        VU0_S2_VMSUBA = 0x2D,
+        VU0_S2_VOPMULA = 0x2E,
+        VU0_S2_VNOP = 0x2F,
+        VU0_S2_VMOVE = 0x30,
+        VU0_S2_VMR32 = 0x31,
+        VU0_S2_VLQI = 0x34,
+        VU0_S2_VSQI = 0x35,
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h =====
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:772
+#define PS2_PINTH(a, b) _mm_unpacklo_epi16(_mm_shuffle_epi32((__m128i)(b), _MM_SHUFFLE(3, 2, 1, 0)), _mm_shuffle_epi32((__m128i)(a), _MM_SHUFFLE(3, 2, 1, 0)))
+#define PS2_PINTEH(a, b) _mm_unpackhi_epi16(_mm_shuffle_epi32((__m128i)(b), _MM_SHUFFLE(3, 2, 1, 0)), _mm_shuffle_epi32((__m128i)(a), _MM_SHUFFLE(3, 2, 1, 0)))
+
+// Packed Multiply-Add (PMADD)
+#define PS2_PMADDW(a, b) _mm_add_epi32(_mm_mullo_epi32(_mm_shuffle_epi32((__m128i)(a), _MM_SHUFFLE(1, 0, 3, 2)), _mm_shuffle_epi32((__m128i)(b), _MM_SHUFFLE(1, 0, 3, 2))), _mm_mullo_epi32(_mm_shuffle_epi32((__m128i)(a), _MM_SHUFFLE(3, 2, 1, 0)), _mm_shuffle_epi32((__m128i)(b), _MM_SHUFFLE(3, 2, 1, 0))))
+
+// Packed Variable Shifts
+#define PS2_PSLLVW(a, b) _mm_custom_sllv_epi32((__m128i)(a), (__m128i)(b))
+#define PS2_PSRLVW(a, b) _mm_custom_srlv_epi32((__m128i)(a), (__m128i)(b))
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:773
+#define PS2_PINTEH(a, b) _mm_unpackhi_epi16(_mm_shuffle_epi32((__m128i)(b), _MM_SHUFFLE(3, 2, 1, 0)), _mm_shuffle_epi32((__m128i)(a), _MM_SHUFFLE(3, 2, 1, 0)))
+
+// Packed Multiply-Add (PMADD)
+#define PS2_PMADDW(a, b) _mm_add_epi32(_mm_mullo_epi32(_mm_shuffle_epi32((__m128i)(a), _MM_SHUFFLE(1, 0, 3, 2)), _mm_shuffle_epi32((__m128i)(b), _MM_SHUFFLE(1, 0, 3, 2))), _mm_mullo_epi32(_mm_shuffle_epi32((__m128i)(a), _MM_SHUFFLE(3, 2, 1, 0)), _mm_shuffle_epi32((__m128i)(b), _MM_SHUFFLE(3, 2, 1, 0))))
+
+// Packed Variable Shifts
+#define PS2_PSLLVW(a, b) _mm_custom_sllv_epi32((__m128i)(a), (__m128i)(b))
+#define PS2_PSRLVW(a, b) _mm_custom_srlv_epi32((__m128i)(a), (__m128i)(b))
+#define PS2_PSRAVW(a, b) _mm_custom_srav_epi32((__m128i)(a), (__m128i)(b))
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:904
+#define PS2_PMTHL_LW(ctx, value) ps2_pmthl_lw(ctx, value)
+
+// FPU (COP1) operations
+#define FPU_SET_ACC(ctx, res) (ctx->f_acc = res)
+#define FPU_ADD_S(a, b) ps2_fadd((float)(a), (float)(b))
+#define FPU_SUB_S(a, b) ps2_fsub((float)(a), (float)(b))
+#define FPU_MUL_S(a, b) ps2_fmul((float)(a), (float)(b))
+#define FPU_DIV_S(a, b) ps2_fdiv((float)(a), (float)(b))
+#define FPU_RSQRT_S(a, b) ps2_frsqrt((float)(a), (float)(b))
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:905
+
+// FPU (COP1) operations
+#define FPU_SET_ACC(ctx, res) (ctx->f_acc = res)
+#define FPU_ADD_S(a, b) ps2_fadd((float)(a), (float)(b))
+#define FPU_SUB_S(a, b) ps2_fsub((float)(a), (float)(b))
+#define FPU_MUL_S(a, b) ps2_fmul((float)(a), (float)(b))
+#define FPU_DIV_S(a, b) ps2_fdiv((float)(a), (float)(b))
+#define FPU_RSQRT_S(a, b) ps2_frsqrt((float)(a), (float)(b))
+#define FPU_SQRT_S(a) ps2_fsqrt((float)(a))
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_macros.h:907
+#define FPU_SET_ACC(ctx, res) (ctx->f_acc = res)
+#define FPU_ADD_S(a, b) ps2_fadd((float)(a), (float)(b))
+#define FPU_SUB_S(a, b) ps2_fsub((float)(a), (float)(b))
+#define FPU_MUL_S(a, b) ps2_fmul((float)(a), (float)(b))
+#define FPU_DIV_S(a, b) ps2_fdiv((float)(a), (float)(b))
+#define FPU_RSQRT_S(a, b) ps2_frsqrt((float)(a), (float)(b))
+#define FPU_SQRT_S(a) ps2_fsqrt((float)(a))
+#define FPU_ABS_S(a) fabsf((float)(a))
+#define FPU_MOV_S(a) ((float)(a))
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h =====
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:80
+    float vu0_p;              // VU0 P register (EFU result)
+    float vu0_i;              // VU0 I register (integer value)
+    __m128 vu0_r;             // VU0 R register
+    __m128 vu0_acc;           // VU0 ACC accumulator register
+    uint16_t vu0_status;      // VU0 status register
+    uint32_t vu0_mac_flags;   // VU0 MAC flags
+    uint32_t vu0_clip_flags;  // VU0 clipping flags
+    uint32_t vu0_clip_flags2; // VU0 clipping flags
+    uint32_t vu0_cmsar0;      // VU0 microprogram start address
+
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:144
+
+    // FPU registers (COP1)
+    float f[32];
+    float f_acc;    // FPU accumulator
+    uint32_t fcr31; // Control/status register
+
+    R5900Context()
+    {
+        std::memset(this, 0, sizeof(*this));
