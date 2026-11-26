@@ -1,0 +1,443 @@
+MARK OF KRI — VIF1 IMPLEMENTATION / COVERAGE AUDIT
+Generated: 2026-11-26 11:29:55
+Root: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+Expected execution time: approximately 1–5 seconds
+
+========== VIF/VIF1 SOURCE INVENTORY ==========
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\gif_dma_kick_analyzer.h
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\gif_dma_kick_analyzer.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\DMA.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\DMA.h
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp
+
+========== VIF/VIF1 SYMBOL REFERENCES ==========
+
+----- VIF1 : 338 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:393: X(sceVif1PkAddGsAD)                       \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:394: X(sceVif1PkAlign)                         \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:395: X(sceVif1PkCall)                          \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:396: X(sceVif1PkCloseDirectCode)               \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:397: X(sceVif1PkCloseGifTag)                   \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:398: X(sceVif1PkCnt)                           \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:399: X(sceVif1PkEnd)                           \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:400: X(sceVif1PkInit)                          \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:401: X(sceVif1PkOpenDirectCode)                \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:402: X(sceVif1PkOpenGifTag)                    \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:403: X(sceVif1PkReset)                         \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:404: X(sceVif1PkReserve)                       \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:405: X(sceVif1PkTerminate)                     \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:356: void processVIF1Data(uint32_t srcPhysAddr, uint32_t sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:357: void processVIF1Data(const uint8_t *data, uint32_t sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:398: VIFRegisters vif1_regs;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:422: uint32_t m_vif1PendingPath2ImageQwc = 0u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:423: bool m_vif1PendingPath2DirectHl = false;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:435: std::vector<PendingTransfer> m_pendingVif1Transfers;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1404: void sceVif1PkAddGsAD(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1428: void sceVif1PkAlign(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1437: void sceVif1PkCall(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1455: void sceVif1PkCloseDirectCode(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1481: void sceVif1PkCloseGifTag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1487: void sceVif1PkCnt(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1504: void sceVif1PkEnd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1521: void sceVif1PkInit(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1527: void sceVif1PkOpenDirectCode(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1544: void sceVif1PkOpenGifTag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1549: void sceVif1PkReset(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1555: void sceVif1PkReserve(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1565: void sceVif1PkTerminate(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.h:41: void sceVif1PkAddGsAD(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.h:42: void sceVif1PkAlign(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.h:43: void sceVif1PkCall(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.h:44: void sceVif1PkCloseDirectCode(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.h:45: void sceVif1PkCloseGifTag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.h:46: void sceVif1PkCnt(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.h:47: void sceVif1PkEnd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.h:48: void sceVif1PkInit(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+... truncated; 298 additional references
+
+----- VIF : 541 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:763: VU0_FMT_VIF_STATUS = 0x5, // VIF status operations
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:227: X(sceDevVif0Reset)                        \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:393: X(sceVif1PkAddGsAD)                       \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:394: X(sceVif1PkAlign)                         \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:395: X(sceVif1PkCall)                          \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:396: X(sceVif1PkCloseDirectCode)               \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:397: X(sceVif1PkCloseGifTag)                   \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:398: X(sceVif1PkCnt)                           \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:399: X(sceVif1PkEnd)                           \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:400: X(sceVif1PkInit)                          \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:401: X(sceVif1PkOpenDirectCode)                \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:402: X(sceVif1PkOpenGifTag)                    \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:403: X(sceVif1PkReset)                         \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:404: X(sceVif1PkReserve)                       \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:405: X(sceVif1PkTerminate)                     \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:95: uint32_t vu0_fbrst;     // VIF/VU reset register
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:102: uint32_t vu0_xitop; // VU0 XITOP - input ITOP for VIF/VU sync
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:229: // PS2 VIF (VPU Interface) registers
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:230: struct VIFRegisters
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:233: uint32_t fbrst;  // VIF Force Break
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:240: uint32_t code;   // VIFcode
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:250: static_assert(sizeof(VIFRegisters) == (23u * sizeof(uint32_t)), "VIFRegisters layout changed unexpectedly");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:294: uint64_t vifWriteCount() const { return m_vifWriteCount.load(std::memory_order_relaxed); }
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:354: void processVIF0Data(uint32_t srcPhysAddr, uint32_t sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:355: void processVIF0Data(const uint8_t *data, uint32_t sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:356: void processVIF1Data(uint32_t srcPhysAddr, uint32_t sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:357: void processVIF1Data(const uint8_t *data, uint32_t sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:388: std::atomic<uint64_t> m_vifWriteCount{0};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:397: VIFRegisters vif0_regs;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:398: VIFRegisters vif1_regs;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:422: uint32_t m_vif1PendingPath2ImageQwc = 0u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:423: bool m_vif1PendingPath2DirectHl = false;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:434: std::vector<PendingTransfer> m_pendingVif0Transfers;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:435: std::vector<PendingTransfer> m_pendingVif1Transfers;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_vu1.h:30: uint32_t top;  // VIF TOP visible to XTOP
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_vu1.h:31: uint32_t itop; // VIF ITOP visible to XITOP
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1404: void sceVif1PkAddGsAD(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1428: void sceVif1PkAlign(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1437: void sceVif1PkCall(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1455: void sceVif1PkCloseDirectCode(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+... truncated; 501 additional references
+
+----- MSCAL : 50 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:332: using Vu1MscalCallback = std::function<void(uint32_t startPC, uint32_t top, uint32_t itop)>;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:333: void setVu1MscalCallback(Vu1MscalCallback cb) { m_vu1MscalCallback = std::move(cb); }
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:414: Vu1MscalCallback m_vu1MscalCallback;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:755: m_memory.setVu1MscalCallback([this](uint32_t startPC, uint32_t top, uint32_t itop)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:18: VIF_MSCAL = 0x14,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:19: VIF_MSCALF = 0x15,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:369: // BASE only updates the base register. TOPS changes on OFFSET/MSCAL.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:375: // ITOP VIFcode writes pending ITOPS; VU XITOP observes it after MSCAL/MSCNT.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:403: else if (opcode == VIF_MSCAL || opcode == VIF_MSCALF)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:419: if (m_vu1MscalCallback)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:420: m_vu1MscalCallback(startPC, runTop, runItop);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:825: tc.Run("VIF double-buffer OFFSET BASE and MSCAL update TOPS and ITOPS", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:834: struct MscalCall
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:840: std::vector<MscalCall> mscalCalls;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:841: mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:843: mscalCalls.push_back({startPC, top, itop});
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:862: const uint32_t mscalCmd = makeVifCmd(0x14u, 0u, 0x0003u);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:863: mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&mscalCmd), sizeof(mscalCmd));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:864: t.Equals(mscalCalls.size(), static_cast<size_t>(1u), "MSCAL should invoke callback once");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:865: t.Equals(mscalCalls[0].startPC, 0x18u, "MSCAL callback startPC should be IMMEDIATE*8");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:866: t.Equals(mscalCalls[0].top, 0x120u, "MSCAL callback should receive current TOPS");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:867: t.Equals(mscalCalls[0].itop, 0x44u, "MSCAL callback should receive pending ITOPS");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:868: t.Equals(mem.vif1_regs.top, 0x120u, "MSCAL should latch TOP from TOPS");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:869: t.Equals(mem.vif1_regs.itop, 0x44u, "MSCAL should latch ITOP from ITOPS");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:870: t.IsTrue((mem.vif1_regs.stat & (1u << 7)) != 0u, "MSCAL should toggle DBF");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1194: tc.Run("VIF MSCAL and MSCNT toggle DBF and keep TOPS/ITOPS coherent", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1209: mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1217: const uint32_t mscal = makeVifCmd(0x14u, 0u, 3u); // start PC = 3 * 8
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1218: mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&mscal), sizeof(mscal));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1220: t.Equals(callbackCount, 1u, "MSCAL should invoke VU1 callback exactly once");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1221: t.Equals(callbackPc, 24u, "MSCAL should pass startPC=imm*8");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1222: t.Equals(callbackTop, 4u, "MSCAL callback should receive current TOPS");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1223: t.Equals(callbackItop, 0x21u, "MSCAL callback should receive pending ITOPS");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1224: t.Equals(mem.vif1_regs.top, 4u, "MSCAL should latch TOP from TOPS");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1225: t.Equals(mem.vif1_regs.itop, 0x21u, "MSCAL should latch ITOP from ITOPS");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1226: t.IsTrue((mem.vif1_regs.stat & (1u << 7)) != 0u, "MSCAL should toggle DBF on");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1232: t.Equals(callbackCount, 1u, "MSCNT should not invoke MSCAL callback");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu1_tests.cpp:1093: tc.Run("MPG upload invalidates cached VU1 decode before MSCAL", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu1_tests.cpp:1099: fx.mem.setVu1MscalCallback([&](uint32_t startPC, uint32_t top, uint32_t itop)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu1_tests.cpp:1114: const uint32_t firstMscal = makeVifCmd(0x14u, 0u, 0u);
+... truncated; 10 additional references
+
+----- MSCNT : 20 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:334: using Vu1MscntCallback = std::function<void(uint32_t top, uint32_t itop)>;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:335: void setVu1MscntCallback(Vu1MscntCallback cb) { m_vu1MscntCallback = std::move(cb); }
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:415: Vu1MscntCallback m_vu1MscntCallback;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:773: m_memory.setVu1MscntCallback([this](uint32_t top, uint32_t itop)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:20: VIF_MSCNT = 0x17,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:375: // ITOP VIFcode writes pending ITOPS; VU XITOP observes it after MSCAL/MSCNT.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:423: else if (opcode == VIF_MSCNT)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:437: if (m_vu1MscntCallback)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:438: m_vu1MscntCallback(runTop, runItop);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:873: const uint32_t mscntCmd = makeVifCmd(0x17u, 0u, 0u);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:874: mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&mscntCmd), sizeof(mscntCmd));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:875: t.IsTrue((mem.vif1_regs.stat & (1u << 7)) == 0u, "MSCNT should toggle DBF again");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1194: tc.Run("VIF MSCAL and MSCNT toggle DBF and keep TOPS/ITOPS coherent", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1229: const uint32_t mscnt = makeVifCmd(0x17u, 0u, 0u);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1230: mem.processVIF1Data(reinterpret_cast<const uint8_t *>(&mscnt), sizeof(mscnt));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1232: t.Equals(callbackCount, 1u, "MSCNT should not invoke MSCAL callback");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1233: t.IsTrue((mem.vif1_regs.stat & (1u << 7)) == 0u, "MSCNT should toggle DBF back off");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1235: t.Equals(mem.vif1_regs.top, 6u, "MSCNT should latch TOP from current TOPS before toggling");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1236: t.Equals(mem.vif1_regs.itop, 0x21u, "MSCNT should keep latching ITOP from ITOPS");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu1_tests.cpp:916: "MSCNT-style resume should continue at the stopped TPC");
+
+----- MSCALF : 2 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:19: VIF_MSCALF = 0x15,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:403: else if (opcode == VIF_MSCAL || opcode == VIF_MSCALF)
+
+----- STMOD : 14 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:728: const char *hostMode = reinterpret_cast<const char *>(getConstMemPtr(rdram, modeAddr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:731: if (hostPath && hostMode)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:735: RUNTIME_LOG("ps2_stub fopen: path='" << hostPath << "', mode='" << hostMode << "'");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:736: FILE *fp = ::fopen(hostPath, hostMode);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:746: std::cerr << "ps2_stub fopen error: Failed to open '" << hostPath << "' with mode '" << hostMode << "'. Error: " << strerror(errno) << std::endl;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:753: << ", Mode: 0x" << modeAddr << " (host ptr valid: " << (hostMode != nullptr) << ")" << std::dec
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vfs.cpp:108: const char *hostMode(uint32_t flags)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vfs.cpp:187: FILE *stream = std::fopen(hostPath.string().c_str(), hostMode(flags));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:12: VIF_STMOD = 0x05,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:132: else if (opcode == VIF_STMOD)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:379: else if (opcode == VIF_STMOD)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:682: tc.Run("VIF STMOD offset and difference modes apply to UNPACK data", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:695: appendU32(packet, makeVifCmd(0x05u, 0u, 1u)); // STMOD offset mode
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:708: appendU32(packet, makeVifCmd(0x05u, 0u, 2u)); // STMOD difference mode
+
+----- STCYCL : 11 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ee_scheduler.h:378: void advanceGuestCycles(uint32_t cycles) noexcept;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:366: advanceGuestCycles(cycles);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:404: advanceGuestCycles(cycles);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:408: void EeScheduler::advanceGuestCycles(uint32_t cycles) noexcept
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:8: VIF_STCYCL = 0x01,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:122: else if (opcode == VIF_STCYCL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:353: else if (opcode == VIF_STCYCL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:548: // STCYCL controls write cycles for UNPACK.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:599: tc.Run("VIF STCYCL skip mode advances destination by CL when CL>=WL", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:606: appendU32(packet, makeVifCmd(0x01u, 0u, static_cast<uint16_t>((1u << 8) | 3u))); // STCYCL: WL=1, CL=3
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:750: appendU32(packet, makeVifCmd(0x01u, 0u, static_cast<uint16_t>((3u << 8) | 1u))); // STCYCL: WL=3, CL=1
+
+----- STMOD : 14 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:728: const char *hostMode = reinterpret_cast<const char *>(getConstMemPtr(rdram, modeAddr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:731: if (hostPath && hostMode)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:735: RUNTIME_LOG("ps2_stub fopen: path='" << hostPath << "', mode='" << hostMode << "'");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:736: FILE *fp = ::fopen(hostPath, hostMode);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:746: std::cerr << "ps2_stub fopen error: Failed to open '" << hostPath << "' with mode '" << hostMode << "'. Error: " << strerror(errno) << std::endl;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:753: << ", Mode: 0x" << modeAddr << " (host ptr valid: " << (hostMode != nullptr) << ")" << std::dec
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vfs.cpp:108: const char *hostMode(uint32_t flags)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vfs.cpp:187: FILE *stream = std::fopen(hostPath.string().c_str(), hostMode(flags));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:12: VIF_STMOD = 0x05,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:132: else if (opcode == VIF_STMOD)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:379: else if (opcode == VIF_STMOD)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:682: tc.Run("VIF STMOD offset and difference modes apply to UNPACK data", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:695: appendU32(packet, makeVifCmd(0x05u, 0u, 1u)); // STMOD offset mode
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:708: appendU32(packet, makeVifCmd(0x05u, 0u, 2u)); // STMOD difference mode
+
+----- STMASK : 8 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:21: VIF_STMASK = 0x20,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:147: else if (opcode == VIF_STMASK)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:441: else if (opcode == VIF_STMASK)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:480: appendU32(packet, makeVifCmd(0x20u, 0u, 0u));      // STMASK
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:498: t.Equals(mem.vif1_regs.mask, 0x89ABCDEFu, "STMASK should set VIF1 MASK register");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:646: appendU32(packet, makeVifCmd(0x20u, 0u, 0u)); // STMASK
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:743: tc.Run("VIF fill write uses STMASK and STROW when WL>CL", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:752: appendU32(packet, makeVifCmd(0x20u, 0u, 0u)); // STMASK
+
+----- STROW : 36 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\gs\gs_cpu_backend.h:184: int firstRow(int y) const
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\gs\gs_cpu_backend.h:188: int lastRow(int y) const
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:3214: if (raster.firstRow(drawY0) > raster.lastRow(drawY1))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:3289: for (int y = raster.firstRow(drawY0); y <= raster.lastRow(drawY1); ++y)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:3363: for (int y = raster.firstRow(drawY0); y <= raster.lastRow(drawY1); ++y)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:3371: const uint64_t box = static_cast<uint64_t>(raster.lastRow(drawY1) - raster.firstRow(drawY0) + 1) *
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:3408: if (raster.firstRow(minY) > raster.lastRow(maxY))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:3469: for (int y = raster.firstRow(minY); y <= raster.lastRow(maxY); ++y)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:538: const size_t dstRowBytes = static_cast<size_t>(FB_WIDTH) * 4u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:543: const size_t dstOffset = static_cast<size_t>(y) * dstRowBytes;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:22: VIF_STROW = 0x30,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:155: else if (opcode == VIF_STROW)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:451: else if (opcode == VIF_STROW)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1798: constexpr size_t kHostRow1Off = 640u * 4u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1801: std::memcpy(vram.data() + (150u * 8192u) + kHostRow1Off, &kLinearGarbageRow1, sizeof(kLinearGarbageRow1));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1821: t.Equals(static_cast<uint32_t>(latchedFrame[kHostRow1Off + 0u]), 0x44u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1823: t.Equals(static_cast<uint32_t>(latchedFrame[kHostRow1Off + 1u]), 0x55u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1825: t.Equals(static_cast<uint32_t>(latchedFrame[kHostRow1Off + 2u]), 0x66u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1827: t.Equals(static_cast<uint32_t>(latchedFrame[kHostRow1Off + 3u]), 0xFFu,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1954: constexpr uint32_t kLastRowPixel =
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1959: writeReferenceFramePSMCT32Pixel(vram, 150u, 10u, 0u, 479u, kLastRowPixel);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1973: const size_t lastRowOffset = static_cast<size_t>(479u) * 640u * 4u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1974: t.Equals(static_cast<uint32_t>(latchedFrame[lastRowOffset + 0u]), 0x12u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1976: t.Equals(static_cast<uint32_t>(latchedFrame[lastRowOffset + 1u]), 0x34u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1978: t.Equals(static_cast<uint32_t>(latchedFrame[lastRowOffset + 2u]), 0x56u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:1980: t.Equals(static_cast<uint32_t>(latchedFrame[lastRowOffset + 3u]), 0xFFu,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:483: appendU32(packet, makeVifCmd(0x30u, 0u, 0u));      // STROW
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:500: t.Equals(mem.vif1_regs.row[0], 0x11111111u, "STROW should set row[0]");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:501: t.Equals(mem.vif1_regs.row[1], 0x22222222u, "STROW should set row[1]");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:502: t.Equals(mem.vif1_regs.row[2], 0x33333333u, "STROW should set row[2]");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:503: t.Equals(mem.vif1_regs.row[3], 0x44444444u, "STROW should set row[3]");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:649: appendU32(packet, makeVifCmd(0x30u, 0u, 0u)); // STROW
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:689: appendU32(packet, makeVifCmd(0x30u, 0u, 0u)); // STROW
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:702: appendU32(packet, makeVifCmd(0x30u, 0u, 0u)); // reset STROW for difference mode
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:743: tc.Run("VIF fill write uses STMASK and STROW when WL>CL", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:755: appendU32(packet, makeVifCmd(0x30u, 0u, 0u)); // STROW
+
+----- STCOL : 9 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:23: VIF_STCOL = 0x31,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:163: else if (opcode == VIF_STCOL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:459: else if (opcode == VIF_STCOL)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:489: appendU32(packet, makeVifCmd(0x31u, 0u, 0u));      // STCOL
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:505: t.Equals(mem.vif1_regs.col[0], 0xAAAA0001u, "STCOL should set col[0]");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:506: t.Equals(mem.vif1_regs.col[1], 0xAAAA0002u, "STCOL should set col[1]");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:507: t.Equals(mem.vif1_regs.col[2], 0xAAAA0003u, "STCOL should set col[2]");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:508: t.Equals(mem.vif1_regs.col[3], 0xAAAA0004u, "STCOL should set col[3]");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:655: appendU32(packet, makeVifCmd(0x31u, 0u, 0u)); // STCOL
+
+----- ITOP : 77 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:738: VU0OPS_VXITOP = 0x08,   // Execute Interrupt on VU0
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:99: uint32_t vu0_itop;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:102: uint32_t vu0_xitop; // VU0 XITOP - input ITOP for VIF/VU sync
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:241: uint32_t itops;  // ITOP save
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:245: uint32_t itop;   // ITOP
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:332: using Vu1MscalCallback = std::function<void(uint32_t startPC, uint32_t top, uint32_t itop)>;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:334: using Vu1MscntCallback = std::function<void(uint32_t top, uint32_t itop)>;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_vu1.h:31: uint32_t itop; // VIF ITOP visible to XITOP
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_vu1.h:54: uint32_t startPC = 0, uint32_t top = 0, uint32_t itop = 0,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_vu1.h:60: uint32_t top = 0, uint32_t itop = 0, uint32_t maxCycles = 65536);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:1284: vif1_regs.itops = value & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:1296: vif1_regs.itop = value & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:243: state.itop = ctx->vu0_itop;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:274: ctx->vu0_itop = state.itop;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:755: m_memory.setVu1MscalCallback([this](uint32_t startPC, uint32_t top, uint32_t itop)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:768: m_gs, &m_memory, startPC, top, itop, 65536);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:773: m_memory.setVu1MscntCallback([this](uint32_t top, uint32_t itop)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:786: m_gs, &m_memory, top, itop, 65536);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1534: startPC, 0u, ctx->vu0_itop, 4096);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:11: VIF_ITOP = 0x04,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:127: else if (opcode == VIF_ITOP)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:129: vif0_regs.itops = imm & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:373: else if (opcode == VIF_ITOP)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:375: // ITOP VIFcode writes pending ITOPS; VU XITOP observes it after MSCAL/MSCNT.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:376: vif1_regs.itops = imm & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:408: const uint32_t runItop = vif1_regs.itops & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:410: vif1_regs.itop = runItop;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:420: m_vu1MscalCallback(startPC, runTop, runItop);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:426: const uint32_t runItop = vif1_regs.itops & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:428: vif1_regs.itop = runItop;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:438: m_vu1MscntCallback(runTop, runItop);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1590: uint32_t startPC, uint32_t top, uint32_t itop,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1600: m_state.itop = itop;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1614: uint32_t top, uint32_t itop, uint32_t maxCycles)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1617: m_state.itop = itop;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:661: case 0x69: // XITOP - move current VIF1 ITOP into VI register
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:664: m_state.vi[viT] = (int32_t)(m_state.itop & 0x3FFu);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\code_generator_tests.cpp:1104: t.IsTrue(ctc2Code.find("vu0_itop") == std::string::npos, "CTC2 register 28 must not write ITOP");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:825: tc.Run("VIF double-buffer OFFSET BASE and MSCAL update TOPS and ITOPS", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:838: uint32_t itop;
+... truncated; 37 additional references
+
+----- BASE : 890 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\ps2_recompiler.h:56: static std::string ClampFilenameLength(const std::string& baseName, const std::string& extension, std::size_t maxLength);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\ps2_recompiler.h:95: static std::string clampFilenameLength(const std::string& baseName, const std::string& extension, std::size_t maxLength);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h:150: uint32_t baseRegister;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\config_manager.cpp:197: if (tableNode.contains("base_register"))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\config_manager.cpp:199: const auto &baseRegisterValue = tableNode.at("base_register");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\config_manager.cpp:200: if (baseRegisterValue.is_string())
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\config_manager.cpp:202: table.baseRegister = std::stoul(baseRegisterValue.as_string(), nullptr, 0);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\config_manager.cpp:204: else if (baseRegisterValue.is_integer())
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\config_manager.cpp:206: table.baseRegister = static_cast<uint32_t>(baseRegisterValue.as_integer());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\config_manager.cpp:327: tableNode["base_register"] = static_cast<int64_t>(table.baseRegister);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_analyzer.cpp:250: uint32_t baseReg = 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_analyzer.cpp:264: baseReg = inst.rs;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_analyzer.cpp:273: uint32_t tableBaseReg = 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_analyzer.cpp:278: if (inst.opcode == OPCODE_SPECIAL && inst.function == SPECIAL_ADDU && inst.rd == baseReg)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_analyzer.cpp:281: tableBaseReg = inst.rs;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_analyzer.cpp:297: if (inst.rt == tableBaseReg || inst.rt == indexReg)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_analyzer.cpp:364: if (inst.opcode == OPCODE_SPECIAL && inst.function == SPECIAL_SLL && (inst.rd == tableBaseReg || inst.rd == indexReg))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_analyzer.cpp:391: // reused for the table base after it.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp:333: Dwarf_Addr baseAddr = lowPc;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp:349: baseAddr = entry.dwr_addr2;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp:358: const Dwarf_Addr start = baseAddr + entry.dwr_addr1;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp:359: const Dwarf_Addr end = baseAddr + entry.dwr_addr2;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp:1114: const uint32_t baseReg = RS(raw);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp:1115: if ((opcode != OPCODE_LW && opcode != OPCODE_LWU) || (upperAliases & (1u << baseReg)) == 0)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp:1325: // Keep following the data-slot base as well: one function
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp:1412: // A C switch compiles to `lw rt, off(base + (index << 2)); jr rt` with the
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp:1501: // Either addend may hold the table base depending on register allocation.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp:1565: // each table base, ending at the first word that cannot be a case label of
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp:2797: const int initResult = dwarf_init_b(fileDescriptor, DW_GROUPNUMBER_BASE, nullptr, nullptr, &dbg, &error);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp:138: uint32_t tableBase = 0u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp:143: tableBase = entries.front().first & ~3u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp:145: slotCount = (tableEnd - tableBase) >> 2;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp:155: ss << "extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x" << std::hex << tableBase << "u;\n";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp:165: const uint32_t slot = (address - tableBase) >> 2;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\gif_dma_kick_analyzer.cpp:169: uint32_t base = 0u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\gif_dma_kick_analyzer.cpp:170: if (!constants.read(inst.rs, base))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\gif_dma_kick_analyzer.cpp:174: hint.address = add32(base, inst.simmediate);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:202: .base();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:2449: std::string PS2Recompiler::clampFilenameLength(const std::string &baseName, const std::string &extension, std::size_t maxLength)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:2455: return baseName + extension;
+... truncated; 850 additional references
+
+----- OFST : 28 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\config_manager.cpp:361: std::ofstream file(m_configPath);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:1456: std::ofstream combinedOutput(outputPath);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:2391: std::ofstream file(path);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_log.h:156: static std::ofstream f(log_path(), std::ios::out);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:243: uint32_t ofst;   // Offset
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp:1813: void notifyMpegCdStreamDataProduced(uint32_t byteCount, bool endOfStream)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp:1817: if (endOfStream)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.h:10: void notifyMpegCdStreamDataProduced(uint32_t byteCount, bool endOfStream);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:468: std::ofstream out(path, std::ios::out | std::ios::trunc);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:1996: std::ofstream out(path, std::ios::out | std::ios::trunc);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:1290: vif1_regs.ofst = value & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:362: vif1_regs.ofst = imm & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:416: vif1_regs.tops = (vif1_regs.base + vif1_regs.ofst) & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:434: vif1_regs.tops = (vif1_regs.base + vif1_regs.ofst) & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:292: std::ofstream out(argv[1], std::ios::binary | std::ios::trunc);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:848: t.Equals(mem.vif1_regs.ofst, 0x22u, "OFFSET should update OFST");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:871: t.Equals(mem.vif1_regs.tops, 0x52u, "DBF=1 should set TOPS to BASE+OFST");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:953: std::ofstream config(configPath);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1573: std::ofstream configFile(configPath);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1624: std::ofstream configFile(configPath);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1925: std::ofstream mapFile(mapPath);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1200: mem.vif1_regs.ofst = 2u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_expansion_tests.cpp:1227: t.Equals(mem.vif1_regs.tops, 6u, "DBF=1 should make TOPS=BASE+OFST");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_io_tests.cpp:569: std::ofstream out(test.paths.mcRoot / "SAVEDATA" / "game.dat", std::ios::binary);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_io_tests.cpp:705: std::ofstream out(test.paths.cdRoot / "movie" / "mv_016.pss", std::ios::binary);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_io_tests.cpp:732: std::ofstream out(test.paths.cdRoot / "modules" / "ioprp310.img", std::ios::binary);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_io_tests.cpp:764: std::ofstream out(imagePath, std::ios::binary);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_io_tests.cpp:799: std::ofstream out(imagePath, std::ios::binary);
+
+----- TOPS : 70 references -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ee_scheduler.h:458: std::unordered_map<uint64_t, uint32_t> m_invocationStackTops;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:241: uint32_t itops;  // ITOP save
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ps2_memory.h:244: uint32_t tops;   // TOPS
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1196: const auto existing = m_invocationStackTops.find(key);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1197: if (existing != m_invocationStackTops.end())
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1207: m_invocationStackTops.emplace(key, top);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Helpers\Support.h:582: uint32_t hostPtrToPs2Addr(uint8_t *rdram, const void *hostPtr)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Helpers\Support.h:597: std::cerr << "Warning: hostPtrToPs2Addr failed - host pointer " << hostPtr << " is outside rdram range [" << static_cast<void *>(rdram) << ", " << static_cast<void *>(rdram + PS2_RAM_SIZE) << ")" << std::endl;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:487: resultAddr = hostPtrToPs2Addr(rdram, foundPtr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:513: resultAddr = hostPtrToPs2Addr(rdram, foundPtr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\LibC.cpp:540: resultAddr = hostPtrToPs2Addr(rdram, foundPtr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_audio.cpp:280: StopSound(it->snd);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_audio.cpp:292: StopSound(sounds.front().snd);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_audio.cpp:323: StopSound(t.snd);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:1284: vif1_regs.itops = value & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:1293: vif1_regs.tops = value & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:129: vif0_regs.itops = imm & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:242: vuAddr = (vuAddr + (vif0_regs.tops & 0x3FFu)) & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:360: // VIF double-buffer setup. OFFSET clears DBF and resets TOPS to BASE.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:361: // Do not rewrite BASE from the previous TOPS value.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:363: vif1_regs.tops = vif1_regs.base & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:369: // BASE only updates the base register. TOPS changes on OFFSET/MSCAL.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:375: // ITOP VIFcode writes pending ITOPS; VU XITOP observes it after MSCAL/MSCNT.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:376: vif1_regs.itops = imm & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:407: const uint32_t runTop = vif1_regs.tops & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:408: const uint32_t runItop = vif1_regs.itops & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:414: vif1_regs.tops = vif1_regs.base & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:416: vif1_regs.tops = (vif1_regs.base + vif1_regs.ofst) & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:425: const uint32_t runTop = vif1_regs.tops & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:426: const uint32_t runItop = vif1_regs.itops & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:432: vif1_regs.tops = vif1_regs.base & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:434: vif1_regs.tops = (vif1_regs.base + vif1_regs.ofst) & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:571: vuAddr = (vuAddr + (vif1_regs.tops & 0x3FFu)) & 0x3FFu;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:768: // A GIF tag that stops after the two draw environments (NLOOP 16) sends no clear.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:563: tc.Run("VIF UNPACK bit15 adds TOPS to destination address", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:569: mem.vif1_regs.tops = 4u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:585: t.Equals(untouched, 0u, "base addr without TOPS should remain untouched");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:593: t.Equals(x, 0x11111111u, "TOPS-adjusted x");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:594: t.Equals(y, 0x22222222u, "TOPS-adjusted y");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:595: t.Equals(z, 0x33333333u, "TOPS-adjusted z");
+... truncated; 30 additional references
+
+========== VIF TEST SOURCE FILES ==========
+No VIF-named test source files found.
+
+========== STATUS ==========
+READ-ONLY AUDIT
+Production source modified: NO
+Test source modified: NO
+Build executed: NO
+Tests executed: NO
+Actual execution time: 2.00 seconds
