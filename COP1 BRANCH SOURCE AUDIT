@@ -1,0 +1,1921 @@
+MARK OF KRI — COP1 BRANCH SOURCE AUDIT
+Timestamp: 2026-11-26 03:54:50
+Repository: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+READ ONLY — NO SOURCE MODIFICATIONS
+
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp :: constexpr.*base|const.*base|base\s*= =====
+--- Lines 56-62 ---
+   56:     std::vector<std::vector<Instruction>> instructionSets;
+   57: 
+   58:     constexpr uint32_t base = 0x00100000u;
+   59: 
+   60:     const struct TransferOp
+   61:     {
+   62:         const char* name;
+--- Lines 100-106 ---
+  100:     for (size_t i = 0; i < std::size(ops); ++i)
+  101:     {
+  102:         const uint32_t address = base + static_cast<uint32_t>(i * 0x10u);
+  103: 
+  104:         Instruction inst{};
+  105:         inst.address = address;
+  106:         inst.opcode = OPCODE_COP1;
+--- Lines 122-128 ---
+  122:     }
+  123: 
+  124:     constexpr uint32_t sequenceAddress = base + 0x70u;
+  125: 
+  126:     Instruction mula{};
+  127:     mula.address = sequenceAddress;
+  128:     mula.opcode = OPCODE_COP1;
+--- Lines 153-159 ---
+  153:     // CVT.S.W uses COP1.W, not COP1.S.
+  154:     {
+  155:         constexpr uint32_t address = base + 0x140u;
+  156: 
+  157:         Instruction inst{};
+  158:         inst.address = address;
+  159:         inst.opcode = OPCODE_COP1;
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp :: BranchOp|generated_fpu_bc1|COP1_S_ADD|generateFunction =====
+--- Lines 24-35 ---
+   24:         const char* name;
+   25:         uint32_t function;
+   26:     } ops[] = {
+   27:         {"generated_fpu_adda", COP1_S_ADDA},
+   28:         {"generated_fpu_suba", COP1_S_SUBA},
+   29:         {"generated_fpu_mula", COP1_S_MULA},
+   30:         {"generated_fpu_madd", COP1_S_MADD},
+   31:         {"generated_fpu_msub", COP1_S_MSUB},
+   32:         {"generated_fpu_madda", COP1_S_MADDA},
+   33:         {"generated_fpu_msuba", COP1_S_MSUBA}
+   34:     };
+   35: 
+--- Lines 34-45 ---
+   34:     };
+   35: 
+   36:     const struct Op scalarOps[] = {
+   37:         {"generated_fpu_add", COP1_S_ADD},
+   38:         {"generated_fpu_sub", COP1_S_SUB},
+   39:         {"generated_fpu_mul", COP1_S_MUL},
+   40:         {"generated_fpu_div", COP1_S_DIV},
+   41:         {"generated_fpu_sqrt", COP1_S_SQRT},
+   42:         {"generated_fpu_abs", COP1_S_ABS},
+   43:         {"generated_fpu_mov", COP1_S_MOV},
+   44:         {"generated_fpu_neg", COP1_S_NEG},
+   45:         {"generated_fpu_rsqrt", COP1_S_RSQRT},
+--- Lines 240-251 ---
+  240:         functions.push_back(function);
+  241:         instructionSets.push_back({inst});
+  242:     }
+  243:     const struct BranchOp
+  244:     {
+  245:         const char* name;
+  246:         uint32_t condition;
+  247:     } branchOps[] = {
+  248:         {"generated_fpu_bc1f", COP1_BC_BCF},
+  249:         {"generated_fpu_bc1t", COP1_BC_BCT},
+  250:         {"generated_fpu_bc1fl", COP1_BC_BCFL},
+  251:         {"generated_fpu_bc1tl", COP1_BC_BCTL}
+--- Lines 244-255 ---
+  244:     {
+  245:         const char* name;
+  246:         uint32_t condition;
+  247:     } branchOps[] = {
+  248:         {"generated_fpu_bc1f", COP1_BC_BCF},
+  249:         {"generated_fpu_bc1t", COP1_BC_BCT},
+  250:         {"generated_fpu_bc1fl", COP1_BC_BCFL},
+  251:         {"generated_fpu_bc1tl", COP1_BC_BCTL}
+  252:     };
+  253: 
+  254:     for (size_t i = 0; i < sizeof(branchOps) / sizeof(branchOps[0]); ++i)
+  255:     {
+--- Lines 245-256 ---
+  245:         const char* name;
+  246:         uint32_t condition;
+  247:     } branchOps[] = {
+  248:         {"generated_fpu_bc1f", COP1_BC_BCF},
+  249:         {"generated_fpu_bc1t", COP1_BC_BCT},
+  250:         {"generated_fpu_bc1fl", COP1_BC_BCFL},
+  251:         {"generated_fpu_bc1tl", COP1_BC_BCTL}
+  252:     };
+  253: 
+  254:     for (size_t i = 0; i < sizeof(branchOps) / sizeof(branchOps[0]); ++i)
+  255:     {
+  256:         const uint32_t address =
+--- Lines 246-257 ---
+  246:         uint32_t condition;
+  247:     } branchOps[] = {
+  248:         {"generated_fpu_bc1f", COP1_BC_BCF},
+  249:         {"generated_fpu_bc1t", COP1_BC_BCT},
+  250:         {"generated_fpu_bc1fl", COP1_BC_BCFL},
+  251:         {"generated_fpu_bc1tl", COP1_BC_BCTL}
+  252:     };
+  253: 
+  254:     for (size_t i = 0; i < sizeof(branchOps) / sizeof(branchOps[0]); ++i)
+  255:     {
+  256:         const uint32_t address =
+  257:             base + 0x400u + static_cast<uint32_t>(i * 0x10u);
+--- Lines 247-258 ---
+  247:     } branchOps[] = {
+  248:         {"generated_fpu_bc1f", COP1_BC_BCF},
+  249:         {"generated_fpu_bc1t", COP1_BC_BCT},
+  250:         {"generated_fpu_bc1fl", COP1_BC_BCFL},
+  251:         {"generated_fpu_bc1tl", COP1_BC_BCTL}
+  252:     };
+  253: 
+  254:     for (size_t i = 0; i < sizeof(branchOps) / sizeof(branchOps[0]); ++i)
+  255:     {
+  256:         const uint32_t address =
+  257:             base + 0x400u + static_cast<uint32_t>(i * 0x10u);
+  258: 
+--- Lines 248-259 ---
+  248:         {"generated_fpu_bc1f", COP1_BC_BCF},
+  249:         {"generated_fpu_bc1t", COP1_BC_BCT},
+  250:         {"generated_fpu_bc1fl", COP1_BC_BCFL},
+  251:         {"generated_fpu_bc1tl", COP1_BC_BCTL}
+  252:     };
+  253: 
+  254:     for (size_t i = 0; i < sizeof(branchOps) / sizeof(branchOps[0]); ++i)
+  255:     {
+  256:         const uint32_t address =
+  257:             base + 0x400u + static_cast<uint32_t>(i * 0x10u);
+  258: 
+  259:         Instruction branch{};
+--- Lines 251-262 ---
+  251:         {"generated_fpu_bc1tl", COP1_BC_BCTL}
+  252:     };
+  253: 
+  254:     for (size_t i = 0; i < sizeof(branchOps) / sizeof(branchOps[0]); ++i)
+  255:     {
+  256:         const uint32_t address =
+  257:             base + 0x400u + static_cast<uint32_t>(i * 0x10u);
+  258: 
+  259:         Instruction branch{};
+  260:         branch.address = address;
+  261:         branch.opcode = OPCODE_COP1;
+  262:         branch.rs = COP1_BC;
+--- Lines 260-271 ---
+  260:         branch.address = address;
+  261:         branch.opcode = OPCODE_COP1;
+  262:         branch.rs = COP1_BC;
+  263:         branch.rt = branchOps[i].condition;
+  264:         branch.simmediate = 2;
+  265:         branch.isBranch = true;
+  266:         branch.hasDelaySlot = true;
+  267: 
+  268:         Instruction delay{};
+  269:         delay.address = address + 4u;
+  270:         delay.opcode = OPCODE_COP1;
+  271:         delay.rs = COP1_S;
+--- Lines 272-283 ---
+  272:         delay.rt = 2;
+  273:         delay.rd = 1;
+  274:         delay.sa = 3;
+  275:         delay.function = COP1_S_ADD;
+  276: 
+  277:         Function function{};
+  278:         function.name = branchOps[i].name;
+  279:         function.start = address;
+  280:         function.end = address + 8u;
+  281:         function.instructions.push_back(branch);
+  282:         function.instructions.push_back(delay);
+  283: 
+--- Lines 275-286 ---
+  275:         delay.function = COP1_S_ADD;
+  276: 
+  277:         Function function{};
+  278:         function.name = branchOps[i].name;
+  279:         function.start = address;
+  280:         function.end = address + 8u;
+  281:         function.instructions.push_back(branch);
+  282:         function.instructions.push_back(delay);
+  283: 
+  284:         names.emplace(address, branchOps[i].name);
+  285:         functions.push_back(function);
+  286:         instructionSets.push_back({branch, delay});
+--- Lines 281-292 ---
+  281:         function.instructions.push_back(branch);
+  282:         function.instructions.push_back(delay);
+  283: 
+  284:         names.emplace(address, branchOps[i].name);
+  285:         functions.push_back(function);
+  286:         instructionSets.push_back({branch, delay});
+  287:     }
+  288:     // Reserved gap: base + 0x280 through base + 0x2B0.
+  289:     generator.setRenamedFunctions(names);
+  290:     generator.setEmitInstructionComments(false);
+  291: 
+  292:     std::ofstream out(argv[1], std::ios::binary | std::ios::trunc);
+--- Lines 300-311 ---
+  300:     for (size_t i = 0; i < functions.size(); ++i)
+  301:     {
+  302:         const std::string emitted =
+  303:             generator.generateFunction(functions[i], instructionSets[i], false);
+  304: 
+  305:         if (emitted.find("runtime->") != std::string::npos ||
+  306:             emitted.find("runtime.") != std::string::npos)
+  307:         {
+  308:             throw std::runtime_error(
+  309:                 std::string("Generated function unexpectedly accesses runtime: ") +
+  310:                 functions[i].name);
+  311:         }
+--- Lines 314-325 ---
+  314:     }
+  315: 
+  316:     const std::string sequenceEmitted =
+  317:         generator.generateFunction(sequence, sequence.instructions, false);
+  318: 
+  319:     if (sequenceEmitted.find("runtime->") != std::string::npos ||
+  320:         sequenceEmitted.find("runtime.") != std::string::npos)
+  321:     {
+  322:         throw std::runtime_error(
+  323:             "Generated sequence unexpectedly accesses runtime");
+  324:     }
+  325: 
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp :: Reserved gap|setRenamedFunctions|setEmitInstructionComments =====
+--- Lines 286-293 ---
+  286:         instructionSets.push_back({branch, delay});
+  287:     }
+  288:     // Reserved gap: base + 0x280 through base + 0x2B0.
+  289:     generator.setRenamedFunctions(names);
+  290:     generator.setEmitInstructionComments(false);
+  291: 
+  292:     std::ofstream out(argv[1], std::ios::binary | std::ios::trunc);
+  293:     if (!out)
+--- Lines 287-294 ---
+  287:     }
+  288:     // Reserved gap: base + 0x280 through base + 0x2B0.
+  289:     generator.setRenamedFunctions(names);
+  290:     generator.setEmitInstructionComments(false);
+  291: 
+  292:     std::ofstream out(argv[1], std::ios::binary | std::ios::trunc);
+  293:     if (!out)
+  294:         throw std::runtime_error("Could not create generated fixture source");
+--- Lines 288-295 ---
+  288:     // Reserved gap: base + 0x280 through base + 0x2B0.
+  289:     generator.setRenamedFunctions(names);
+  290:     generator.setEmitInstructionComments(false);
+  291: 
+  292:     std::ofstream out(argv[1], std::ios::binary | std::ios::trunc);
+  293:     if (!out)
+  294:         throw std::runtime_error("Could not create generated fixture source");
+  295: 
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp :: GeneratedFpuFunction|generated_fpu_bc1 =====
+--- Lines 8-18 ---
+    8: #include <string>
+    9: 
+   10: using GeneratedFpuFunction =
+   11:     void (*)(uint8_t*, R5900Context*, PS2Runtime*);
+   12: 
+   13: void generated_fpu_adda(uint8_t*, R5900Context*, PS2Runtime*);
+   14: void generated_fpu_suba(uint8_t*, R5900Context*, PS2Runtime*);
+   15: void generated_fpu_mula(uint8_t*, R5900Context*, PS2Runtime*);
+   16: void generated_fpu_madd(uint8_t*, R5900Context*, PS2Runtime*);
+   17: void generated_fpu_msub(uint8_t*, R5900Context*, PS2Runtime*);
+   18: void generated_fpu_madda(uint8_t*, R5900Context*, PS2Runtime*);
+--- Lines 52-62 ---
+   52: void generated_fpu_cfc1(uint8_t*, R5900Context*, PS2Runtime*);
+   53: void generated_fpu_ctc1(uint8_t*, R5900Context*, PS2Runtime*);
+   54: void generated_fpu_bc1f(uint8_t*, R5900Context*, PS2Runtime*);
+   55: void generated_fpu_bc1t(uint8_t*, R5900Context*, PS2Runtime*);
+   56: void generated_fpu_bc1fl(uint8_t*, R5900Context*, PS2Runtime*);
+   57: void generated_fpu_bc1tl(uint8_t*, R5900Context*, PS2Runtime*);
+   58: 
+   59: static R5900Context makeGeneratedFpuContext()
+   60: {
+   61:     R5900Context ctx{};
+   62:     ctx.f[1] = 2.0f;
+--- Lines 53-63 ---
+   53: void generated_fpu_ctc1(uint8_t*, R5900Context*, PS2Runtime*);
+   54: void generated_fpu_bc1f(uint8_t*, R5900Context*, PS2Runtime*);
+   55: void generated_fpu_bc1t(uint8_t*, R5900Context*, PS2Runtime*);
+   56: void generated_fpu_bc1fl(uint8_t*, R5900Context*, PS2Runtime*);
+   57: void generated_fpu_bc1tl(uint8_t*, R5900Context*, PS2Runtime*);
+   58: 
+   59: static R5900Context makeGeneratedFpuContext()
+   60: {
+   61:     R5900Context ctx{};
+   62:     ctx.f[1] = 2.0f;
+   63:     ctx.f[2] = 3.0f;
+--- Lines 54-64 ---
+   54: void generated_fpu_bc1f(uint8_t*, R5900Context*, PS2Runtime*);
+   55: void generated_fpu_bc1t(uint8_t*, R5900Context*, PS2Runtime*);
+   56: void generated_fpu_bc1fl(uint8_t*, R5900Context*, PS2Runtime*);
+   57: void generated_fpu_bc1tl(uint8_t*, R5900Context*, PS2Runtime*);
+   58: 
+   59: static R5900Context makeGeneratedFpuContext()
+   60: {
+   61:     R5900Context ctx{};
+   62:     ctx.f[1] = 2.0f;
+   63:     ctx.f[2] = 3.0f;
+   64:     ctx.f[3] = 0.0f;
+--- Lines 55-65 ---
+   55: void generated_fpu_bc1t(uint8_t*, R5900Context*, PS2Runtime*);
+   56: void generated_fpu_bc1fl(uint8_t*, R5900Context*, PS2Runtime*);
+   57: void generated_fpu_bc1tl(uint8_t*, R5900Context*, PS2Runtime*);
+   58: 
+   59: static R5900Context makeGeneratedFpuContext()
+   60: {
+   61:     R5900Context ctx{};
+   62:     ctx.f[1] = 2.0f;
+   63:     ctx.f[2] = 3.0f;
+   64:     ctx.f[3] = 0.0f;
+   65:     ctx.f_acc = 5.0f;
+--- Lines 127-137 ---
+  127:         struct BranchCase
+  128:         {
+  129:             GeneratedFpuFunction function;
+  130:             const char* name;
+  131:             uint32_t address;
+  132:             bool initialCondition;
+  133:             bool expectedTaken;
+  134:             bool expectedDelaySlot;
+  135:         };
+  136: 
+  137:         const BranchCase cases[] = {
+--- Lines 136-146 ---
+  136: 
+  137:         const BranchCase cases[] = {
+  138:             { generated_fpu_bc1f,  "BC1F false",  0x100400u, false, true,  true  },
+  139:             { generated_fpu_bc1f,  "BC1F true",   0x100400u, true,  false, true  },
+  140:             { generated_fpu_bc1t,  "BC1T true",   0x100410u, true,  true,  true  },
+  141:             { generated_fpu_bc1t,  "BC1T false",  0x100410u, false, false, true  },
+  142:             { generated_fpu_bc1fl, "BC1FL false", 0x100420u, false, true,  true  },
+  143:             { generated_fpu_bc1fl, "BC1FL true",  0x100420u, true,  false, false },
+  144:             { generated_fpu_bc1tl, "BC1TL true",  0x100430u, true,  true,  true  },
+  145:             { generated_fpu_bc1tl, "BC1TL false", 0x100430u, false, false, false }
+  146:         };
+--- Lines 137-147 ---
+  137:         const BranchCase cases[] = {
+  138:             { generated_fpu_bc1f,  "BC1F false",  0x100400u, false, true,  true  },
+  139:             { generated_fpu_bc1f,  "BC1F true",   0x100400u, true,  false, true  },
+  140:             { generated_fpu_bc1t,  "BC1T true",   0x100410u, true,  true,  true  },
+  141:             { generated_fpu_bc1t,  "BC1T false",  0x100410u, false, false, true  },
+  142:             { generated_fpu_bc1fl, "BC1FL false", 0x100420u, false, true,  true  },
+  143:             { generated_fpu_bc1fl, "BC1FL true",  0x100420u, true,  false, false },
+  144:             { generated_fpu_bc1tl, "BC1TL true",  0x100430u, true,  true,  true  },
+  145:             { generated_fpu_bc1tl, "BC1TL false", 0x100430u, false, false, false }
+  146:         };
+  147: 
+--- Lines 138-148 ---
+  138:             { generated_fpu_bc1f,  "BC1F false",  0x100400u, false, true,  true  },
+  139:             { generated_fpu_bc1f,  "BC1F true",   0x100400u, true,  false, true  },
+  140:             { generated_fpu_bc1t,  "BC1T true",   0x100410u, true,  true,  true  },
+  141:             { generated_fpu_bc1t,  "BC1T false",  0x100410u, false, false, true  },
+  142:             { generated_fpu_bc1fl, "BC1FL false", 0x100420u, false, true,  true  },
+  143:             { generated_fpu_bc1fl, "BC1FL true",  0x100420u, true,  false, false },
+  144:             { generated_fpu_bc1tl, "BC1TL true",  0x100430u, true,  true,  true  },
+  145:             { generated_fpu_bc1tl, "BC1TL false", 0x100430u, false, false, false }
+  146:         };
+  147: 
+  148:         constexpr uint32_t conditionBit = 0x800000u;
+--- Lines 139-149 ---
+  139:             { generated_fpu_bc1f,  "BC1F true",   0x100400u, true,  false, true  },
+  140:             { generated_fpu_bc1t,  "BC1T true",   0x100410u, true,  true,  true  },
+  141:             { generated_fpu_bc1t,  "BC1T false",  0x100410u, false, false, true  },
+  142:             { generated_fpu_bc1fl, "BC1FL false", 0x100420u, false, true,  true  },
+  143:             { generated_fpu_bc1fl, "BC1FL true",  0x100420u, true,  false, false },
+  144:             { generated_fpu_bc1tl, "BC1TL true",  0x100430u, true,  true,  true  },
+  145:             { generated_fpu_bc1tl, "BC1TL false", 0x100430u, false, false, false }
+  146:         };
+  147: 
+  148:         constexpr uint32_t conditionBit = 0x800000u;
+  149: 
+--- Lines 140-150 ---
+  140:             { generated_fpu_bc1t,  "BC1T true",   0x100410u, true,  true,  true  },
+  141:             { generated_fpu_bc1t,  "BC1T false",  0x100410u, false, false, true  },
+  142:             { generated_fpu_bc1fl, "BC1FL false", 0x100420u, false, true,  true  },
+  143:             { generated_fpu_bc1fl, "BC1FL true",  0x100420u, true,  false, false },
+  144:             { generated_fpu_bc1tl, "BC1TL true",  0x100430u, true,  true,  true  },
+  145:             { generated_fpu_bc1tl, "BC1TL false", 0x100430u, false, false, false }
+  146:         };
+  147: 
+  148:         constexpr uint32_t conditionBit = 0x800000u;
+  149: 
+  150:         for (const auto& test : cases)
+--- Lines 141-151 ---
+  141:             { generated_fpu_bc1t,  "BC1T false",  0x100410u, false, false, true  },
+  142:             { generated_fpu_bc1fl, "BC1FL false", 0x100420u, false, true,  true  },
+  143:             { generated_fpu_bc1fl, "BC1FL true",  0x100420u, true,  false, false },
+  144:             { generated_fpu_bc1tl, "BC1TL true",  0x100430u, true,  true,  true  },
+  145:             { generated_fpu_bc1tl, "BC1TL false", 0x100430u, false, false, false }
+  146:         };
+  147: 
+  148:         constexpr uint32_t conditionBit = 0x800000u;
+  149: 
+  150:         for (const auto& test : cases)
+  151:         {
+--- Lines 142-152 ---
+  142:             { generated_fpu_bc1fl, "BC1FL false", 0x100420u, false, true,  true  },
+  143:             { generated_fpu_bc1fl, "BC1FL true",  0x100420u, true,  false, false },
+  144:             { generated_fpu_bc1tl, "BC1TL true",  0x100430u, true,  true,  true  },
+  145:             { generated_fpu_bc1tl, "BC1TL false", 0x100430u, false, false, false }
+  146:         };
+  147: 
+  148:         constexpr uint32_t conditionBit = 0x800000u;
+  149: 
+  150:         for (const auto& test : cases)
+  151:         {
+  152:             R5900Context ctx{};
+--- Lines 143-153 ---
+  143:             { generated_fpu_bc1fl, "BC1FL true",  0x100420u, true,  false, false },
+  144:             { generated_fpu_bc1tl, "BC1TL true",  0x100430u, true,  true,  true  },
+  145:             { generated_fpu_bc1tl, "BC1TL false", 0x100430u, false, false, false }
+  146:         };
+  147: 
+  148:         constexpr uint32_t conditionBit = 0x800000u;
+  149: 
+  150:         for (const auto& test : cases)
+  151:         {
+  152:             R5900Context ctx{};
+  153: 
+--- Lines 182-192 ---
+  182:         PS2Runtime runtime{};
+  183: 
+  184:         auto run = [&](GeneratedFpuFunction fn, float fs, float ft, bool initialCondition) {
+  185:             std::memset(&ctx, 0, sizeof(ctx));
+  186:             ctx.f[1] = fs;
+  187:             ctx.f[2] = ft;
+  188:             ctx.fcr31 = initialCondition ? 0x800000u : 0u;
+  189:             fn(nullptr, &ctx, &runtime);
+  190:             return (ctx.fcr31 & 0x800000u) != 0;
+  191:         };
+  192: 
+--- Lines 357-367 ---
+  357: 
+  358:             struct Case {
+  359:                 GeneratedFpuFunction function;
+  360:                 const char* name;
+  361:                 uint32_t fs;
+  362:                 uint32_t ft;
+  363:                 uint32_t expected;
+  364:             };
+  365: 
+  366:             const Case cases[] = {
+  367:                 { generated_fpu_max, "MAX.S NaN fs", 0x7FC00000u, 0x3F800000u, 0x7FC00000u },
+--- Lines 388-398 ---
+  388: 
+  389:             struct Case {
+  390:                 GeneratedFpuFunction function;
+  391:                 const char* name;
+  392:                 uint32_t fs;
+  393:                 uint32_t ft;
+  394:                 uint32_t expected;
+  395:             };
+  396: 
+  397:             const Case cases[] = {
+  398:                 { generated_fpu_max, "MAX.S +0 fs, -0 ft", 0x00000000u, 0x80000000u, 0x00000000u },
+--- Lines 506-516 ---
+  506:             {
+  507:                 const char* name;
+  508:                 GeneratedFpuFunction fn;
+  509:                 bool orderedTrue;
+  510:                 bool unorderedTrue;
+  511:             };
+  512: 
+  513:             const CompareCase cases[] = {
+  514:                 {"C.F",    generated_fpu_c_f,    false, false},
+  515:                 {"C.UN",   generated_fpu_c_un,   false, true},
+  516:                 {"C.EQ",   generated_fpu_c_eq,   false, false},
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp :: tc\.Run|TestCase|makeGeneratedFpuContext =====
+--- Lines 57-66 ---
+   57: void generated_fpu_bc1tl(uint8_t*, R5900Context*, PS2Runtime*);
+   58: 
+   59: static R5900Context makeGeneratedFpuContext()
+   60: {
+   61:     R5900Context ctx{};
+   62:     ctx.f[1] = 2.0f;
+   63:     ctx.f[2] = 3.0f;
+   64:     ctx.f[3] = 0.0f;
+   65:     ctx.f_acc = 5.0f;
+   66:     return ctx;
+--- Lines 69-78 ---
+   69: void register_generated_fpu_execution_tests()
+   70: {
+   71:     MiniTest::Case("GeneratedFPUExecution", [](TestCase& tc)
+   72:     {
+   73: 
+   74:     // COP1 transfer execution coverage.
+   75:     tc.Run("generated COP1 transfers", [](TestCase& t) {
+   76:         R5900Context ctx{};
+   77:         R5900Context* ctxPtr = &ctx;
+   78:         PS2Runtime runtime{};
+--- Lines 73-82 ---
+   73: 
+   74:     // COP1 transfer execution coverage.
+   75:     tc.Run("generated COP1 transfers", [](TestCase& t) {
+   76:         R5900Context ctx{};
+   77:         R5900Context* ctxPtr = &ctx;
+   78:         PS2Runtime runtime{};
+   79: 
+   80:         // MFC1: FPR raw IEEE-754 bits -> GPR low 32 bits.
+   81:         std::memset(&ctx, 0, sizeof(ctx));
+   82:         uint32_t mfc1Bits = 0x3FC12345u;
+--- Lines 124-133 ---
+  124:     });
+  125:     // COP1 branch execution coverage, including likely-branch annulment.
+  126:     tc.Run("generated COP1 branch delay slots and condition outcomes", [](TestCase& t) {
+  127:         struct BranchCase
+  128:         {
+  129:             GeneratedFpuFunction function;
+  130:             const char* name;
+  131:             uint32_t address;
+  132:             bool initialCondition;
+  133:             bool expectedTaken;
+--- Lines 178-187 ---
+  178:     });
+  179:     // COP1.S comparison execution coverage.
+  180:     tc.Run("generated COP1.S comparisons", [](TestCase& t) {
+  181:         R5900Context ctx{};
+  182:         PS2Runtime runtime{};
+  183: 
+  184:         auto run = [&](GeneratedFpuFunction fn, float fs, float ft, bool initialCondition) {
+  185:             std::memset(&ctx, 0, sizeof(ctx));
+  186:             ctx.f[1] = fs;
+  187:             ctx.f[2] = ft;
+--- Lines 227-236 ---
+  227:     });
+  228:     {
+  229:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+  230:             auto ctx = makeGeneratedFpuContext();
+  231:             ctx.f_acc = 9.0f;
+  232:             generated_fpu_adda(nullptr, &ctx, nullptr);
+  233:             t.Equals(ctx.f_acc, 5.0f, "ADDA.S overwrites prior accumulator");
+  234:             t.Equals(ctx.pc, 0x100004u, "ADDA.S final PC");
+  235:         });
+  236: 
+--- Lines 228-237 ---
+  228:     {
+  229:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+  230:             auto ctx = makeGeneratedFpuContext();
+  231:             ctx.f_acc = 9.0f;
+  232:             generated_fpu_adda(nullptr, &ctx, nullptr);
+  233:             t.Equals(ctx.f_acc, 5.0f, "ADDA.S overwrites prior accumulator");
+  234:             t.Equals(ctx.pc, 0x100004u, "ADDA.S final PC");
+  235:         });
+  236: 
+  237:         tc.Run("generated SUBA.S updates live accumulator", [](TestCase& t) {
+--- Lines 235-244 ---
+  235:         });
+  236: 
+  237:         tc.Run("generated SUBA.S updates live accumulator", [](TestCase& t) {
+  238:             auto ctx = makeGeneratedFpuContext();
+  239:             generated_fpu_suba(nullptr, &ctx, nullptr);
+  240:             t.Equals(ctx.f_acc, -1.0f, "SUBA.S accumulator");
+  241:             t.Equals(ctx.pc, 0x100014u, "SUBA.S final PC");
+  242:         });
+  243: 
+  244:         tc.Run("generated MULA.S updates live accumulator", [](TestCase& t) {
+--- Lines 236-245 ---
+  236: 
+  237:         tc.Run("generated SUBA.S updates live accumulator", [](TestCase& t) {
+  238:             auto ctx = makeGeneratedFpuContext();
+  239:             generated_fpu_suba(nullptr, &ctx, nullptr);
+  240:             t.Equals(ctx.f_acc, -1.0f, "SUBA.S accumulator");
+  241:             t.Equals(ctx.pc, 0x100014u, "SUBA.S final PC");
+  242:         });
+  243: 
+  244:         tc.Run("generated MULA.S updates live accumulator", [](TestCase& t) {
+  245:             auto ctx = makeGeneratedFpuContext();
+--- Lines 242-251 ---
+  242:         });
+  243: 
+  244:         tc.Run("generated MULA.S updates live accumulator", [](TestCase& t) {
+  245:             auto ctx = makeGeneratedFpuContext();
+  246:             generated_fpu_mula(nullptr, &ctx, nullptr);
+  247:             t.Equals(ctx.f_acc, 6.0f, "MULA.S accumulator");
+  248:             t.Equals(ctx.pc, 0x100024u, "MULA.S final PC");
+  249:         });
+  250: 
+  251:         tc.Run("generated MADD.S writes destination FPR", [](TestCase& t) {
+--- Lines 243-252 ---
+  243: 
+  244:         tc.Run("generated MULA.S updates live accumulator", [](TestCase& t) {
+  245:             auto ctx = makeGeneratedFpuContext();
+  246:             generated_fpu_mula(nullptr, &ctx, nullptr);
+  247:             t.Equals(ctx.f_acc, 6.0f, "MULA.S accumulator");
+  248:             t.Equals(ctx.pc, 0x100024u, "MULA.S final PC");
+  249:         });
+  250: 
+  251:         tc.Run("generated MADD.S writes destination FPR", [](TestCase& t) {
+  252:             auto ctx = makeGeneratedFpuContext();
+--- Lines 249-258 ---
+  249:         });
+  250: 
+  251:         tc.Run("generated MADD.S writes destination FPR", [](TestCase& t) {
+  252:             auto ctx = makeGeneratedFpuContext();
+  253:             generated_fpu_madd(nullptr, &ctx, nullptr);
+  254:             t.Equals(ctx.f[3], 11.0f, "MADD.S destination");
+  255:             t.Equals(ctx.pc, 0x100034u, "MADD.S final PC");
+  256:         });
+  257: 
+  258:         tc.Run("generated MSUB.S writes destination FPR", [](TestCase& t) {
+--- Lines 250-259 ---
+  250: 
+  251:         tc.Run("generated MADD.S writes destination FPR", [](TestCase& t) {
+  252:             auto ctx = makeGeneratedFpuContext();
+  253:             generated_fpu_madd(nullptr, &ctx, nullptr);
+  254:             t.Equals(ctx.f[3], 11.0f, "MADD.S destination");
+  255:             t.Equals(ctx.pc, 0x100034u, "MADD.S final PC");
+  256:         });
+  257: 
+  258:         tc.Run("generated MSUB.S writes destination FPR", [](TestCase& t) {
+  259:             auto ctx = makeGeneratedFpuContext();
+--- Lines 256-265 ---
+  256:         });
+  257: 
+  258:         tc.Run("generated MSUB.S writes destination FPR", [](TestCase& t) {
+  259:             auto ctx = makeGeneratedFpuContext();
+  260:             generated_fpu_msub(nullptr, &ctx, nullptr);
+  261:             t.Equals(ctx.f[3], -1.0f, "MSUB.S destination");
+  262:             t.Equals(ctx.pc, 0x100044u, "MSUB.S final PC");
+  263:         });
+  264: 
+  265:         tc.Run("generated MADDA.S updates live accumulator", [](TestCase& t) {
+--- Lines 257-266 ---
+  257: 
+  258:         tc.Run("generated MSUB.S writes destination FPR", [](TestCase& t) {
+  259:             auto ctx = makeGeneratedFpuContext();
+  260:             generated_fpu_msub(nullptr, &ctx, nullptr);
+  261:             t.Equals(ctx.f[3], -1.0f, "MSUB.S destination");
+  262:             t.Equals(ctx.pc, 0x100044u, "MSUB.S final PC");
+  263:         });
+  264: 
+  265:         tc.Run("generated MADDA.S updates live accumulator", [](TestCase& t) {
+  266:             auto ctx = makeGeneratedFpuContext();
+--- Lines 263-272 ---
+  263:         });
+  264: 
+  265:         tc.Run("generated MADDA.S updates live accumulator", [](TestCase& t) {
+  266:             auto ctx = makeGeneratedFpuContext();
+  267:             generated_fpu_madda(nullptr, &ctx, nullptr);
+  268:             t.Equals(ctx.f_acc, 11.0f, "MADDA.S accumulator");
+  269:             t.Equals(ctx.pc, 0x100054u, "MADDA.S final PC");
+  270:         });
+  271: 
+  272:         tc.Run("generated MSUBA.S updates live accumulator", [](TestCase& t) {
+--- Lines 264-273 ---
+  264: 
+  265:         tc.Run("generated MADDA.S updates live accumulator", [](TestCase& t) {
+  266:             auto ctx = makeGeneratedFpuContext();
+  267:             generated_fpu_madda(nullptr, &ctx, nullptr);
+  268:             t.Equals(ctx.f_acc, 11.0f, "MADDA.S accumulator");
+  269:             t.Equals(ctx.pc, 0x100054u, "MADDA.S final PC");
+  270:         });
+  271: 
+  272:         tc.Run("generated MSUBA.S updates live accumulator", [](TestCase& t) {
+  273:             auto ctx = makeGeneratedFpuContext();
+--- Lines 270-279 ---
+  270:         });
+  271: 
+  272:         tc.Run("generated MSUBA.S updates live accumulator", [](TestCase& t) {
+  273:             auto ctx = makeGeneratedFpuContext();
+  274:             generated_fpu_msuba(nullptr, &ctx, nullptr);
+  275:             t.Equals(ctx.f_acc, -1.0f, "MSUBA.S accumulator");
+  276:             t.Equals(ctx.pc, 0x100064u, "MSUBA.S final PC");
+  277:         });
+  278: 
+  279:         tc.Run("generated ADD.S writes destination FPR", [](TestCase& t) {
+--- Lines 271-280 ---
+  271: 
+  272:         tc.Run("generated MSUBA.S updates live accumulator", [](TestCase& t) {
+  273:             auto ctx = makeGeneratedFpuContext();
+  274:             generated_fpu_msuba(nullptr, &ctx, nullptr);
+  275:             t.Equals(ctx.f_acc, -1.0f, "MSUBA.S accumulator");
+  276:             t.Equals(ctx.pc, 0x100064u, "MSUBA.S final PC");
+  277:         });
+  278: 
+  279:         tc.Run("generated ADD.S writes destination FPR", [](TestCase& t) {
+  280:             auto ctx = makeGeneratedFpuContext();
+--- Lines 277-286 ---
+  277:         });
+  278: 
+  279:         tc.Run("generated ADD.S writes destination FPR", [](TestCase& t) {
+  280:             auto ctx = makeGeneratedFpuContext();
+  281:             generated_fpu_add(nullptr, &ctx, nullptr);
+  282:             t.Equals(ctx.f[3], 5.0f, "ADD.S destination");
+  283:             t.Equals(ctx.pc, 0x100084u, "ADD.S final PC");
+  284:         });
+  285:         tc.Run("generated SUB.S writes destination FPR", [](TestCase& t) {
+  286:             auto ctx = makeGeneratedFpuContext();
+--- Lines 278-287 ---
+  278: 
+  279:         tc.Run("generated ADD.S writes destination FPR", [](TestCase& t) {
+  280:             auto ctx = makeGeneratedFpuContext();
+  281:             generated_fpu_add(nullptr, &ctx, nullptr);
+  282:             t.Equals(ctx.f[3], 5.0f, "ADD.S destination");
+  283:             t.Equals(ctx.pc, 0x100084u, "ADD.S final PC");
+  284:         });
+  285:         tc.Run("generated SUB.S writes destination FPR", [](TestCase& t) {
+  286:             auto ctx = makeGeneratedFpuContext();
+  287:             generated_fpu_sub(nullptr, &ctx, nullptr);
+--- Lines 283-292 ---
+  283:             t.Equals(ctx.pc, 0x100084u, "ADD.S final PC");
+  284:         });
+  285:         tc.Run("generated SUB.S writes destination FPR", [](TestCase& t) {
+  286:             auto ctx = makeGeneratedFpuContext();
+  287:             generated_fpu_sub(nullptr, &ctx, nullptr);
+  288:             t.Equals(ctx.f[3], -1.0f, "SUB.S destination");
+  289:             t.Equals(ctx.pc, 0x100094u, "SUB.S final PC");
+  290:         });
+  291:         tc.Run("generated MUL.S writes destination FPR", [](TestCase& t) {
+  292:             auto ctx = makeGeneratedFpuContext();
+--- Lines 284-293 ---
+  284:         });
+  285:         tc.Run("generated SUB.S writes destination FPR", [](TestCase& t) {
+  286:             auto ctx = makeGeneratedFpuContext();
+  287:             generated_fpu_sub(nullptr, &ctx, nullptr);
+  288:             t.Equals(ctx.f[3], -1.0f, "SUB.S destination");
+  289:             t.Equals(ctx.pc, 0x100094u, "SUB.S final PC");
+  290:         });
+  291:         tc.Run("generated MUL.S writes destination FPR", [](TestCase& t) {
+  292:             auto ctx = makeGeneratedFpuContext();
+  293:             generated_fpu_mul(nullptr, &ctx, nullptr);
+--- Lines 289-298 ---
+  289:             t.Equals(ctx.pc, 0x100094u, "SUB.S final PC");
+  290:         });
+  291:         tc.Run("generated MUL.S writes destination FPR", [](TestCase& t) {
+  292:             auto ctx = makeGeneratedFpuContext();
+  293:             generated_fpu_mul(nullptr, &ctx, nullptr);
+  294:             t.Equals(ctx.f[3], 6.0f, "MUL.S destination");
+  295:             t.Equals(ctx.pc, 0x1000A4u, "MUL.S final PC");
+  296:         });
+  297:         tc.Run("generated DIV.S writes destination FPR", [](TestCase& t) {
+  298:             auto ctx = makeGeneratedFpuContext();
+--- Lines 290-299 ---
+  290:         });
+  291:         tc.Run("generated MUL.S writes destination FPR", [](TestCase& t) {
+  292:             auto ctx = makeGeneratedFpuContext();
+  293:             generated_fpu_mul(nullptr, &ctx, nullptr);
+  294:             t.Equals(ctx.f[3], 6.0f, "MUL.S destination");
+  295:             t.Equals(ctx.pc, 0x1000A4u, "MUL.S final PC");
+  296:         });
+  297:         tc.Run("generated DIV.S writes destination FPR", [](TestCase& t) {
+  298:             auto ctx = makeGeneratedFpuContext();
+  299:             generated_fpu_div(nullptr, &ctx, nullptr);
+--- Lines 295-304 ---
+  295:             t.Equals(ctx.pc, 0x1000A4u, "MUL.S final PC");
+  296:         });
+  297:         tc.Run("generated DIV.S writes destination FPR", [](TestCase& t) {
+  298:             auto ctx = makeGeneratedFpuContext();
+  299:             generated_fpu_div(nullptr, &ctx, nullptr);
+  300:             t.Equals(ctx.f[3], 0.6666667f, "DIV.S destination");
+  301:             t.Equals(ctx.pc, 0x1000B4u, "DIV.S final PC");
+  302:         });
+  303:         tc.Run("generated SQRT.S reads ft", [](TestCase& t) {
+  304:             auto ctx = makeGeneratedFpuContext();
+--- Lines 296-305 ---
+  296:         });
+  297:         tc.Run("generated DIV.S writes destination FPR", [](TestCase& t) {
+  298:             auto ctx = makeGeneratedFpuContext();
+  299:             generated_fpu_div(nullptr, &ctx, nullptr);
+  300:             t.Equals(ctx.f[3], 0.6666667f, "DIV.S destination");
+  301:             t.Equals(ctx.pc, 0x1000B4u, "DIV.S final PC");
+  302:         });
+  303:         tc.Run("generated SQRT.S reads ft", [](TestCase& t) {
+  304:             auto ctx = makeGeneratedFpuContext();
+  305:             generated_fpu_sqrt(nullptr, &ctx, nullptr);
+--- Lines 301-310 ---
+  301:             t.Equals(ctx.pc, 0x1000B4u, "DIV.S final PC");
+  302:         });
+  303:         tc.Run("generated SQRT.S reads ft", [](TestCase& t) {
+  304:             auto ctx = makeGeneratedFpuContext();
+  305:             generated_fpu_sqrt(nullptr, &ctx, nullptr);
+  306:             t.Equals(ctx.f[3], 1.7320508f, "SQRT.S destination");
+  307:             t.Equals(ctx.pc, 0x1000C4u, "SQRT.S final PC");
+  308:         });
+  309:         tc.Run("generated ABS.S writes destination FPR", [](TestCase& t) {
+  310:             auto ctx = makeGeneratedFpuContext();
+--- Lines 302-311 ---
+  302:         });
+  303:         tc.Run("generated SQRT.S reads ft", [](TestCase& t) {
+  304:             auto ctx = makeGeneratedFpuContext();
+  305:             generated_fpu_sqrt(nullptr, &ctx, nullptr);
+  306:             t.Equals(ctx.f[3], 1.7320508f, "SQRT.S destination");
+  307:             t.Equals(ctx.pc, 0x1000C4u, "SQRT.S final PC");
+  308:         });
+  309:         tc.Run("generated ABS.S writes destination FPR", [](TestCase& t) {
+  310:             auto ctx = makeGeneratedFpuContext();
+  311:             ctx.f[1] = -2.0f;
+--- Lines 307-316 ---
+  307:             t.Equals(ctx.pc, 0x1000C4u, "SQRT.S final PC");
+  308:         });
+  309:         tc.Run("generated ABS.S writes destination FPR", [](TestCase& t) {
+  310:             auto ctx = makeGeneratedFpuContext();
+  311:             ctx.f[1] = -2.0f;
+  312:             generated_fpu_abs(nullptr, &ctx, nullptr);
+  313:             t.Equals(ctx.f[3], 2.0f, "ABS.S destination");
+  314:             t.Equals(ctx.pc, 0x1000D4u, "ABS.S final PC");
+  315:         });
+  316:         tc.Run("generated MOV.S writes destination FPR", [](TestCase& t) {
+--- Lines 308-317 ---
+  308:         });
+  309:         tc.Run("generated ABS.S writes destination FPR", [](TestCase& t) {
+  310:             auto ctx = makeGeneratedFpuContext();
+  311:             ctx.f[1] = -2.0f;
+  312:             generated_fpu_abs(nullptr, &ctx, nullptr);
+  313:             t.Equals(ctx.f[3], 2.0f, "ABS.S destination");
+  314:             t.Equals(ctx.pc, 0x1000D4u, "ABS.S final PC");
+  315:         });
+  316:         tc.Run("generated MOV.S writes destination FPR", [](TestCase& t) {
+  317:             auto ctx = makeGeneratedFpuContext();
+--- Lines 314-323 ---
+  314:             t.Equals(ctx.pc, 0x1000D4u, "ABS.S final PC");
+  315:         });
+  316:         tc.Run("generated MOV.S writes destination FPR", [](TestCase& t) {
+  317:             auto ctx = makeGeneratedFpuContext();
+  318:             generated_fpu_mov(nullptr, &ctx, nullptr);
+  319:             t.Equals(ctx.f[3], 2.0f, "MOV.S destination");
+  320:             t.Equals(ctx.pc, 0x1000E4u, "MOV.S final PC");
+  321:         });
+  322:         tc.Run("generated NEG.S writes destination FPR", [](TestCase& t) {
+  323:             auto ctx = makeGeneratedFpuContext();
+--- Lines 315-324 ---
+  315:         });
+  316:         tc.Run("generated MOV.S writes destination FPR", [](TestCase& t) {
+  317:             auto ctx = makeGeneratedFpuContext();
+  318:             generated_fpu_mov(nullptr, &ctx, nullptr);
+  319:             t.Equals(ctx.f[3], 2.0f, "MOV.S destination");
+  320:             t.Equals(ctx.pc, 0x1000E4u, "MOV.S final PC");
+  321:         });
+  322:         tc.Run("generated NEG.S writes destination FPR", [](TestCase& t) {
+  323:             auto ctx = makeGeneratedFpuContext();
+  324:             generated_fpu_neg(nullptr, &ctx, nullptr);
+--- Lines 320-329 ---
+  320:             t.Equals(ctx.pc, 0x1000E4u, "MOV.S final PC");
+  321:         });
+  322:         tc.Run("generated NEG.S writes destination FPR", [](TestCase& t) {
+  323:             auto ctx = makeGeneratedFpuContext();
+  324:             generated_fpu_neg(nullptr, &ctx, nullptr);
+  325:             t.Equals(ctx.f[3], -2.0f, "NEG.S destination");
+  326:             t.Equals(ctx.pc, 0x1000F4u, "NEG.S final PC");
+  327:         });
+  328:         tc.Run("generated RSQRT.S writes destination FPR", [](TestCase& t) {
+  329:             auto ctx = makeGeneratedFpuContext();
+--- Lines 321-330 ---
+  321:         });
+  322:         tc.Run("generated NEG.S writes destination FPR", [](TestCase& t) {
+  323:             auto ctx = makeGeneratedFpuContext();
+  324:             generated_fpu_neg(nullptr, &ctx, nullptr);
+  325:             t.Equals(ctx.f[3], -2.0f, "NEG.S destination");
+  326:             t.Equals(ctx.pc, 0x1000F4u, "NEG.S final PC");
+  327:         });
+  328:         tc.Run("generated RSQRT.S writes destination FPR", [](TestCase& t) {
+  329:             auto ctx = makeGeneratedFpuContext();
+  330:             generated_fpu_rsqrt(nullptr, &ctx, nullptr);
+--- Lines 326-335 ---
+  326:             t.Equals(ctx.pc, 0x1000F4u, "NEG.S final PC");
+  327:         });
+  328:         tc.Run("generated RSQRT.S writes destination FPR", [](TestCase& t) {
+  329:             auto ctx = makeGeneratedFpuContext();
+  330:             generated_fpu_rsqrt(nullptr, &ctx, nullptr);
+  331:             t.Equals(ctx.f[3], 1.1547005f, "RSQRT.S destination");
+  332:             t.Equals(ctx.pc, 0x100104u, "RSQRT.S final PC");
+  333:         });
+  334:         tc.Run("generated MAX.S writes destination FPR", [](TestCase& t) {
+  335:             auto ctx = makeGeneratedFpuContext();
+--- Lines 327-336 ---
+  327:         });
+  328:         tc.Run("generated RSQRT.S writes destination FPR", [](TestCase& t) {
+  329:             auto ctx = makeGeneratedFpuContext();
+  330:             generated_fpu_rsqrt(nullptr, &ctx, nullptr);
+  331:             t.Equals(ctx.f[3], 1.1547005f, "RSQRT.S destination");
+  332:             t.Equals(ctx.pc, 0x100104u, "RSQRT.S final PC");
+  333:         });
+  334:         tc.Run("generated MAX.S writes destination FPR", [](TestCase& t) {
+  335:             auto ctx = makeGeneratedFpuContext();
+  336:             generated_fpu_max(nullptr, &ctx, nullptr);
+--- Lines 332-341 ---
+  332:             t.Equals(ctx.pc, 0x100104u, "RSQRT.S final PC");
+  333:         });
+  334:         tc.Run("generated MAX.S writes destination FPR", [](TestCase& t) {
+  335:             auto ctx = makeGeneratedFpuContext();
+  336:             generated_fpu_max(nullptr, &ctx, nullptr);
+  337:             t.Equals(ctx.f[3], 3.0f, "MAX.S destination");
+  338:             t.Equals(ctx.pc, 0x100114u, "MAX.S final PC");
+  339:         });
+  340:         tc.Run("generated MIN.S writes destination FPR", [](TestCase& t) {
+  341:             auto ctx = makeGeneratedFpuContext();
+--- Lines 333-342 ---
+  333:         });
+  334:         tc.Run("generated MAX.S writes destination FPR", [](TestCase& t) {
+  335:             auto ctx = makeGeneratedFpuContext();
+  336:             generated_fpu_max(nullptr, &ctx, nullptr);
+  337:             t.Equals(ctx.f[3], 3.0f, "MAX.S destination");
+  338:             t.Equals(ctx.pc, 0x100114u, "MAX.S final PC");
+  339:         });
+  340:         tc.Run("generated MIN.S writes destination FPR", [](TestCase& t) {
+  341:             auto ctx = makeGeneratedFpuContext();
+  342:             generated_fpu_min(nullptr, &ctx, nullptr);
+--- Lines 338-347 ---
+  338:             t.Equals(ctx.pc, 0x100114u, "MAX.S final PC");
+  339:         });
+  340:         tc.Run("generated MIN.S writes destination FPR", [](TestCase& t) {
+  341:             auto ctx = makeGeneratedFpuContext();
+  342:             generated_fpu_min(nullptr, &ctx, nullptr);
+  343:             t.Equals(ctx.f[3], 2.0f, "MIN.S destination");
+  344:             t.Equals(ctx.pc, 0x100124u, "MIN.S final PC");
+  345:         });
+  346:         tc.Run("generated MAX.S and MIN.S preserve current NaN operand-order behavior", [](TestCase& t) {
+  347:             auto floatFromBits = [](uint32_t bits) {
+--- Lines 339-348 ---
+  339:         });
+  340:         tc.Run("generated MIN.S writes destination FPR", [](TestCase& t) {
+  341:             auto ctx = makeGeneratedFpuContext();
+  342:             generated_fpu_min(nullptr, &ctx, nullptr);
+  343:             t.Equals(ctx.f[3], 2.0f, "MIN.S destination");
+  344:             t.Equals(ctx.pc, 0x100124u, "MIN.S final PC");
+  345:         });
+  346:         tc.Run("generated MAX.S and MIN.S preserve current NaN operand-order behavior", [](TestCase& t) {
+  347:             auto floatFromBits = [](uint32_t bits) {
+  348:                 float value;
+--- Lines 344-353 ---
+  344:             t.Equals(ctx.pc, 0x100124u, "MIN.S final PC");
+  345:         });
+  346:         tc.Run("generated MAX.S and MIN.S preserve current NaN operand-order behavior", [](TestCase& t) {
+  347:             auto floatFromBits = [](uint32_t bits) {
+  348:                 float value;
+  349:                 std::memcpy(&value, &bits, sizeof(value));
+  350:                 return value;
+  351:             };
+  352:             auto bitsOf = [](float value) {
+  353:                 uint32_t bits;
+--- Lines 372-381 ---
+  372: 
+  373:             for (const auto& test : cases) {
+  374:                 auto ctx = makeGeneratedFpuContext();
+  375:                 ctx.f[1] = floatFromBits(test.fs);
+  376:                 ctx.f[2] = floatFromBits(test.ft);
+  377:                 test.function(nullptr, &ctx, nullptr);
+  378:                 t.Equals(bitsOf(ctx.f[3]), test.expected, test.name);
+  379:             }
+  380:         });
+  381: 
+--- Lines 380-389 ---
+  380:         });
+  381: 
+  382:         tc.Run("generated MAX.S and MIN.S preserve first-operand signed zero", [](TestCase& t) {
+  383:             auto bitsOf = [](float value) {
+  384:                 uint32_t bits;
+  385:                 std::memcpy(&bits, &value, sizeof(bits));
+  386:                 return bits;
+  387:             };
+  388: 
+  389:             struct Case {
+--- Lines 403-412 ---
+  403: 
+  404:             for (const auto& test : cases) {
+  405:                 auto ctx = makeGeneratedFpuContext();
+  406:                 std::memcpy(&ctx.f[1], &test.fs, sizeof(test.fs));
+  407:                 std::memcpy(&ctx.f[2], &test.ft, sizeof(test.ft));
+  408:                 test.function(nullptr, &ctx, nullptr);
+  409:                 t.Equals(bitsOf(ctx.f[3]), test.expected, test.name);
+  410:             }
+  411:         });
+  412:         tc.Run("generated CVT.S.W converts signed word to single", [](TestCase& t) {
+--- Lines 410-419 ---
+  410:             }
+  411:         });
+  412:         tc.Run("generated CVT.S.W converts signed word to single", [](TestCase& t) {
+  413:             struct Case {
+  414:                 int32_t input;
+  415:                 float expected;
+  416:             };
+  417: 
+  418:             const Case cases[] = {
+  419:                 { 0, 0.0f },
+--- Lines 429-438 ---
+  429: 
+  430:             for (const auto& test : cases) {
+  431:                 auto ctx = makeGeneratedFpuContext();
+  432:                 std::memcpy(&ctx.f[1], &test.input, sizeof(test.input));
+  433:                 ctx.f[3] = -999.0f;
+  434: 
+  435:                 generated_fpu_cvt_s_w(nullptr, &ctx, nullptr);
+  436: 
+  437:                 t.Equals(ctx.f[3], test.expected,
+  438:                     "CVT.S.W destination conversion");
+--- Lines 446-455 ---
+  446:             }
+  447:         });
+  448:         tc.Run("generated CVT.W.S truncates toward zero independent of FCR31 rounding mode", [](TestCase& t) {
+  449:             const float inputs[] = { 3.75f, -3.75f, 2.5f, -2.5f };
+  450:             const int32_t expected[] = { 3, -3, 2, -2 };
+  451: 
+  452:             for (uint32_t mode = 0; mode < 4; ++mode) {
+  453:                 for (size_t i = 0; i < 4; ++i) {
+  454:                     auto ctx = makeGeneratedFpuContext();
+  455:                     ctx.f[1] = inputs[i];
+--- Lines 452-461 ---
+  452:             for (uint32_t mode = 0; mode < 4; ++mode) {
+  453:                 for (size_t i = 0; i < 4; ++i) {
+  454:                     auto ctx = makeGeneratedFpuContext();
+  455:                     ctx.f[1] = inputs[i];
+  456:                     ctx.fcr31 = mode;
+  457:                     generated_fpu_cvt_w(nullptr, &ctx, nullptr);
+  458: 
+  459:                     int32_t actual = 0;
+  460:                     std::memcpy(&actual, &ctx.f[3], sizeof(actual));
+  461:                     t.Equals(actual, expected[i],
+--- Lines 465-474 ---
+  465:         });
+  466: 
+  467:         tc.Run("generated CVT.W.S saturates out-of-range EE values by source sign", [](TestCase& t) {
+  468:             struct EdgeCase {
+  469:                 uint32_t inputBits;
+  470:                 int32_t expected;
+  471:                 const char* label;
+  472:             };
+  473: 
+  474:             const EdgeCase cases[] = {
+--- Lines 488-497 ---
+  488:                     std::memcpy(&input, &edge.inputBits, sizeof(input));
+  489: 
+  490:                     auto ctx = makeGeneratedFpuContext();
+  491:                     ctx.f[1] = input;
+  492:                     ctx.fcr31 = mode;
+  493:                     generated_fpu_cvt_w(nullptr, &ctx, nullptr);
+  494: 
+  495:                     int32_t actual = 0;
+  496:                     std::memcpy(&actual, &ctx.f[3], sizeof(actual));
+  497: 
+--- Lines 502-511 ---
+  502:             }
+  503:         });
+  504:         tc.Run("generated COP1.S comparisons update FCR31 condition bit", [](TestCase& t) {
+  505:             struct CompareCase
+  506:             {
+  507:                 const char* name;
+  508:                 GeneratedFpuFunction fn;
+  509:                 bool orderedTrue;
+  510:                 bool unorderedTrue;
+  511:             };
+--- Lines 537-546 ---
+  537:                 // Ordered finite case.
+  538:                 {
+  539:                     auto ctx = makeGeneratedFpuContext();
+  540:                     ctx.f[1] = 1.0f;
+  541:                     ctx.f[2] = 2.0f;
+  542:                     ctx.fcr31 = 0;
+  543: 
+  544:                     c.fn(nullptr, &ctx, nullptr);
+  545: 
+  546:                     t.Equals(
+--- Lines 552-561 ---
+  552:                 // FALSE must clear a previously-set condition bit.
+  553:                 {
+  554:                     auto ctx = makeGeneratedFpuContext();
+  555:                     ctx.f[1] = 2.0f;
+  556:                     ctx.f[2] = 1.0f;
+  557:                     ctx.fcr31 = conditionBit;
+  558: 
+  559:                     c.fn(nullptr, &ctx, nullptr);
+  560: 
+  561:                     t.Equals(
+--- Lines 567-576 ---
+  567:                 // qNaN in fs.
+  568:                 {
+  569:                     auto ctx = makeGeneratedFpuContext();
+  570:                     ctx.f[1] = qnan;
+  571:                     ctx.f[2] = 1.0f;
+  572:                     ctx.fcr31 = 0;
+  573: 
+  574:                     c.fn(nullptr, &ctx, nullptr);
+  575: 
+  576:                     t.Equals(
+--- Lines 582-591 ---
+  582:                 // qNaN in ft.
+  583:                 {
+  584:                     auto ctx = makeGeneratedFpuContext();
+  585:                     ctx.f[1] = 1.0f;
+  586:                     ctx.f[2] = qnan;
+  587:                     ctx.fcr31 = 0;
+  588: 
+  589:                     c.fn(nullptr, &ctx, nullptr);
+  590: 
+  591:                     t.Equals(
+--- Lines 597-606 ---
+  597:                 // +0 == -0 for equality predicates.
+  598:                 {
+  599:                     auto ctx = makeGeneratedFpuContext();
+  600:                     ctx.f[1] = 0.0f;
+  601:                     ctx.f[2] = -0.0f;
+  602:                     ctx.fcr31 = 0;
+  603: 
+  604:                     c.fn(nullptr, &ctx, nullptr);
+  605: 
+  606:                     const bool expected =
+--- Lines 621-630 ---
+  621:             }
+  622:         });
+  623:         tc.Run("generated MULA.S then MADDA.S consumes live accumulator", [](TestCase& t) {
+  624:             auto ctx = makeGeneratedFpuContext();
+  625:             ctx.f_acc = 99.0f;
+  626:             generated_fpu_sequence_mula_madda(nullptr, &ctx, nullptr);
+  627:             t.Equals(ctx.f_acc, 12.0f, "MADDA.S consumes MULA.S accumulator");
+  628:             t.Equals(ctx.pc, 0x100078u, "two-instruction sequence final PC");
+  629:         });
+  630:     }
+--- Lines 622-631 ---
+  622:         });
+  623:         tc.Run("generated MULA.S then MADDA.S consumes live accumulator", [](TestCase& t) {
+  624:             auto ctx = makeGeneratedFpuContext();
+  625:             ctx.f_acc = 99.0f;
+  626:             generated_fpu_sequence_mula_madda(nullptr, &ctx, nullptr);
+  627:             t.Equals(ctx.f_acc, 12.0f, "MADDA.S consumes MULA.S accumulator");
+  628:             t.Equals(ctx.pc, 0x100078u, "two-instruction sequence final PC");
+  629:         });
+  630:     }
+  631:     });
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp :: expectedPc|expectedDelaySlot|branch_pc|in_delay_slot =====
+--- Lines 132-139 ---
+  132:             bool initialCondition;
+  133:             bool expectedTaken;
+  134:             bool expectedDelaySlot;
+  135:         };
+  136: 
+  137:         const BranchCase cases[] = {
+  138:             { generated_fpu_bc1f,  "BC1F false",  0x100400u, false, true,  true  },
+  139:             { generated_fpu_bc1f,  "BC1F true",   0x100400u, true,  false, true  },
+--- Lines 159-166 ---
+  159:             test.function(nullptr, &ctx, nullptr);
+  160: 
+  161:             const uint32_t expectedPc =
+  162:                 test.address + (test.expectedTaken ? 12u : 8u);
+  163: 
+  164:             t.Equals(ctx.pc, expectedPc,
+  165:                 std::string(test.name) + " final PC");
+  166: 
+--- Lines 162-169 ---
+  162:                 test.address + (test.expectedTaken ? 12u : 8u);
+  163: 
+  164:             t.Equals(ctx.pc, expectedPc,
+  165:                 std::string(test.name) + " final PC");
+  166: 
+  167:             t.Equals(ctx.f[3],
+  168:                 test.expectedDelaySlot ? 5.0f : -99.0f,
+  169:                 std::string(test.name) + " delay-slot execution");
+--- Lines 166-173 ---
+  166: 
+  167:             t.Equals(ctx.f[3],
+  168:                 test.expectedDelaySlot ? 5.0f : -99.0f,
+  169:                 std::string(test.name) + " delay-slot execution");
+  170: 
+  171:             t.Equals(ctx.in_delay_slot, false,
+  172:                 std::string(test.name) + " clears delay-slot state");
+  173: 
+--- Lines 169-176 ---
+  169:                 std::string(test.name) + " delay-slot execution");
+  170: 
+  171:             t.Equals(ctx.in_delay_slot, false,
+  172:                 std::string(test.name) + " clears delay-slot state");
+  173: 
+  174:             t.Equals(ctx.branch_pc,
+  175:                 test.expectedDelaySlot ? test.address : 0u,
+  176:                 std::string(test.name) + " branch PC tracking");
+--- Lines 172-179 ---
+  172:                 std::string(test.name) + " clears delay-slot state");
+  173: 
+  174:             t.Equals(ctx.branch_pc,
+  175:                 test.expectedDelaySlot ? test.address : 0u,
+  176:                 std::string(test.name) + " branch PC tracking");
+  177:         }
+  178:     });
+  179:     // COP1.S comparison execution coverage.
+--- Lines 173-180 ---
+  173: 
+  174:             t.Equals(ctx.branch_pc,
+  175:                 test.expectedDelaySlot ? test.address : 0u,
+  176:                 std::string(test.name) + " branch PC tracking");
+  177:         }
+  178:     });
+  179:     // COP1.S comparison execution coverage.
+  180:     tc.Run("generated COP1.S comparisons", [](TestCase& t) {
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h :: struct Instruction|struct Function|hasDelaySlot|simmediate =====
+--- Lines 12-24 ---
+   12: 
+   13:     // Instruction representation
+   14:     struct Instruction
+   15:     {
+   16:         uint32_t address;
+   17:         uint32_t opcode;
+   18:         uint32_t rs;         // Source register
+   19:         uint32_t rt;         // Target register
+   20:         uint32_t rd;         // Destination register
+   21:         uint32_t sa;         // Shift amount
+   22:         uint32_t function;   // Function code for R-type instructions
+   23:         uint32_t immediate;  // Immediate value for I-type instructions
+   24:         uint32_t simmediate; // Sign-extended immediate value (extended to 32 bits)
+--- Lines 22-34 ---
+   22:         uint32_t function;   // Function code for R-type instructions
+   23:         uint32_t immediate;  // Immediate value for I-type instructions
+   24:         uint32_t simmediate; // Sign-extended immediate value (extended to 32 bits)
+   25:         uint32_t target;     // Jump target for J-type instructions
+   26:         uint32_t raw;        // Raw instruction value
+   27: 
+   28:         // Instruction type flags
+   29:         bool isMMI;        // Is MMI instruction (PS2 specific)
+   30:         bool isVU;         // Is VU instruction (PS2 specific)
+   31:         bool isBranch;     // Is branch instruction
+   32:         bool isJump;       // Is jump instruction
+   33:         bool isCall;       // Is function call
+   34:         bool isReturn;     // Is return instruction
+--- Lines 33-45 ---
+   33:         bool isCall;       // Is function call
+   34:         bool isReturn;     // Is return instruction
+   35:         bool hasDelaySlot; // Has delay slot
+   36:         bool isMultimedia; // PS2-specific multimedia operations
+   37:         bool isStore;      // Is store instruction
+   38:         bool isLoad;       // Is load instruction
+   39: 
+   40:         // Additional PS2-specific fields
+   41:         uint8_t mmiType;        // 0=MMI0, 1=MMI1, 2=MMI2, 3=MMI3
+   42:         uint8_t mmiFunction;    // Function within MMI type
+   43:         uint8_t pmfhlVariation; // For PMFHL instructions
+   44:         uint8_t vuFunction;     // For VU instructions
+   45: 
+--- Lines 71-83 ---
+   71: 
+   72:         Instruction() : address(0), opcode(0), rs(0), rt(0), rd(0), sa(0), function(0),
+   73:                         immediate(0), simmediate(0), target(0), raw(0),
+   74:                         isMMI(false), isVU(false), isBranch(false), isJump(false), isCall(false),
+   75:                         isReturn(false), hasDelaySlot(false), isMultimedia(false), isStore(false), isLoad(false),
+   76:                         mmiType(0), mmiFunction(0), pmfhlVariation(0), vuFunction(0), isMmio(false), mmioAddress(0)
+   77:         {
+   78:             vectorInfo = {};
+   79:             modificationInfo = {};
+   80:         }
+   81:     };
+   82: 
+   83:     struct MemoryAccessHint
+--- Lines 73-85 ---
+   73:                         immediate(0), simmediate(0), target(0), raw(0),
+   74:                         isMMI(false), isVU(false), isBranch(false), isJump(false), isCall(false),
+   75:                         isReturn(false), hasDelaySlot(false), isMultimedia(false), isStore(false), isLoad(false),
+   76:                         mmiType(0), mmiFunction(0), pmfhlVariation(0), vuFunction(0), isMmio(false), mmioAddress(0)
+   77:         {
+   78:             vectorInfo = {};
+   79:             modificationInfo = {};
+   80:         }
+   81:     };
+   82: 
+   83:     struct MemoryAccessHint
+   84:     {
+   85:         bool hasAddress = false;
+--- Lines 88-100 ---
+   88: 
+   89:     // Function information
+   90:     struct Function
+   91:     {
+   92:         std::string name;
+   93:         uint32_t start;
+   94:         uint32_t end;
+   95:         std::vector<Instruction> instructions;
+   96:         std::vector<uint32_t> callers;
+   97:         std::vector<uint32_t> callees;
+   98:         bool isRecompiled = false;
+   99:         bool isStub = false;
+  100:         bool isSkipped = false;
+--- Lines 166-178 ---
+  166: 
+  167:     // Function call
+  168:     struct FunctionCall
+  169:     {
+  170:         uint32_t callerAddress;
+  171:         uint32_t calleeAddress;
+  172:         std::string calleeName;
+  173:     };
+  174: 
+  175:     // Recompiler configuration
+  176:     struct RecompilerConfig
+  177:     {
+  178:         std::string inputPath;
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h :: OPCODE_COP1|COP1_BC|COP1_BC_BCF|COP1_BC_BCT|COP1_BC_BCFL|COP1_BC_BCTL|COP1_S_ADD =====
+--- Lines 70-76 ---
+   70: 
+   71:         OPCODE_COP0 = 0x10, // Coprocessor 0 instructions (see Cop0Format)
+   72:         OPCODE_COP1 = 0x11, // Coprocessor 1 (FPU) instructions (see Cop1Format)
+   73:         OPCODE_COP2 = 0x12, // Coprocessor 2 (VU0 Macro) instructions (see Cop2Format)
+   74:         OPCODE_COP3 = 0x13, // Unused on PS2
+   75: 
+   76:         OPCODE_BEQL = 0x14,  // Branch on Equal Likely
+--- Lines 437-443 ---
+  437:     };
+  438: 
+  439:     // COP1 (FPU) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP1
+  440:     enum Cop1Format
+  441:     {
+  442:         COP1_MF = 0x00, // Move From FPU Register
+  443:         COP1_CF = 0x02, // Move From FPU Control Register
+--- Lines 444-450 ---
+  444:         COP1_MT = 0x04, // Move To FPU Register
+  445:         COP1_CT = 0x06, // Move To FPU Control Register
+  446:         COP1_BC = 0x08, // Branch on FPU Condition (see Cop1BranchCondition)
+  447: 
+  448:         COP1_D = 0x11, // Standard MIPS Double format; EE FPU is single-precision, (unused on PS2 FPU?)
+  449:         COP1_L = 0x15, // Long (64-bit integer) Operation (unused on PS2 FPU?)
+  450: 
+--- Lines 456-462 ---
+  456:     enum Cop1FunctionsS
+  457:     {
+  458:         COP1_S_ADD = 0x00,  // ADD.S
+  459:         COP1_S_SUB = 0x01,  // SUB.S
+  460:         COP1_S_MUL = 0x02,  // MUL.S
+  461:         COP1_S_DIV = 0x03,  // DIV.S
+  462:         COP1_S_SQRT = 0x04, // SQRT.S
+--- Lines 476-482 ---
+  476:         // --- Additional Arithmetic/Functions (from FPU.S table) ---
+  477:         COP1_S_RSQRT = 0x16, // RSQRT.S (Reciprocal Square Root)
+  478:         COP1_S_ADDA = 0x18,  // ADDA.S (Add Accumulator)
+  479:         COP1_S_SUBA = 0x19,  // SUBA.S (Subtract Accumulator)
+  480:         COP1_S_MULA = 0x1A,  // MULA.S (Multiply Accumulator)
+  481:         COP1_S_MADD = 0x1C,  // MADD.S (Multiply Add)
+  482:         COP1_S_MSUB = 0x1D,  // MSUB.S (Multiply Subtract)
+--- Lines 520-526 ---
+  520:     };
+  521: 
+  522:     // COP1 BC Condition Field ('fmt' or 'rt' field, bits 20-16) for COP1_BC Format
+  523:     enum Cop1BranchCondition
+  524:     {
+  525:         COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  526:         COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+--- Lines 523-529 ---
+  523:     enum Cop1BranchCondition
+  524:     {
+  525:         COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  526:         COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  527:         COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  528:         COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  529:     };
+--- Lines 524-530 ---
+  524:     {
+  525:         COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  526:         COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  527:         COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  528:         COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  529:     };
+  530: 
+--- Lines 525-531 ---
+  525:         COP1_BC_BCF = 0x00,  // Branch on FPU Condition False (BC1F)
+  526:         COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  527:         COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  528:         COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  529:     };
+  530: 
+  531:     // COP2 (VU0 Macro) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP2
+--- Lines 526-532 ---
+  526:         COP1_BC_BCT = 0x01,  // Branch on FPU Condition True (BC1T)
+  527:         COP1_BC_BCFL = 0x02, // Branch on FPU Condition False Likely (BC1FL)
+  528:         COP1_BC_BCTL = 0x03, // Branch on FPU Condition True Likely (BC1TL)
+  529:     };
+  530: 
+  531:     // COP2 (VU0 Macro) Format Field ('fmt' or 'rs' field, bits 25-21) for OPCODE_COP2
+  532:     enum Cop2Format
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp :: conditionExpression|COP1_BC|emitConditionalBranch|emitDelaySlot|emitFinalFallthrough|branchTarget =====
+--- Lines 65-78 ---
+   65:                 (m_branchInst.opcode == OPCODE_REGIMM &&
+   66:                  (m_branchInst.rt == REGIMM_BLTZL || m_branchInst.rt == REGIMM_BGEZL ||
+   67:                   m_branchInst.rt == REGIMM_BLTZALL || m_branchInst.rt == REGIMM_BGEZALL)) ||
+   68:                 (m_branchInst.opcode == OPCODE_COP1 && m_branchInst.rs == COP1_BC &&
+   69:                  (m_branchInst.rt == COP1_BC_BCFL || m_branchInst.rt == COP1_BC_BCTL)) ||
+   70:                 (m_branchInst.opcode == OPCODE_COP2 && m_branchInst.rs == COP2_BC &&
+   71:                  (m_branchInst.rt == COP2_BC_BCFL || m_branchInst.rt == COP2_BC_BCTL)));
+   72:     }
+   73: 
+   74:     std::vector<uint32_t> ControlFlowEmitter::resolvedLocalIndirectTargets() const
+   75:     {
+   76:         if (m_branchInst.opcode != OPCODE_SPECIAL)
+   77:         {
+   78:             return {};
+--- Lines 66-79 ---
+   66:                  (m_branchInst.rt == REGIMM_BLTZL || m_branchInst.rt == REGIMM_BGEZL ||
+   67:                   m_branchInst.rt == REGIMM_BLTZALL || m_branchInst.rt == REGIMM_BGEZALL)) ||
+   68:                 (m_branchInst.opcode == OPCODE_COP1 && m_branchInst.rs == COP1_BC &&
+   69:                  (m_branchInst.rt == COP1_BC_BCFL || m_branchInst.rt == COP1_BC_BCTL)) ||
+   70:                 (m_branchInst.opcode == OPCODE_COP2 && m_branchInst.rs == COP2_BC &&
+   71:                  (m_branchInst.rt == COP2_BC_BCFL || m_branchInst.rt == COP2_BC_BCTL)));
+   72:     }
+   73: 
+   74:     std::vector<uint32_t> ControlFlowEmitter::resolvedLocalIndirectTargets() const
+   75:     {
+   76:         if (m_branchInst.opcode != OPCODE_SPECIAL)
+   77:         {
+   78:             return {};
+   79:         }
+--- Lines 124-137 ---
+  124:         return code;
+  125:     }
+  126: 
+  127:     void ControlFlowEmitter::emitDelaySlot(std::string_view indent)
+  128:     {
+  129:         if (!hasRealDelaySlot())
+  130:         {
+  131:             return;
+  132:         }
+  133: 
+  134:         m_ss << fmt::format("{}ctx->pc = 0x{:X}u;\n", indent, delayPc());
+  135:         m_ss << fmt::format("{}ctx->in_delay_slot = true;\n", indent);
+  136:         m_ss << fmt::format("{}ctx->branch_pc = 0x{:X}u;\n", indent, branchPc());
+  137: 
+--- Lines 157-170 ---
+  157:         }
+  158: 
+  159:         m_ss << fmt::format("    if (ctx->pc == 0x{:X}u) {{\n", delayPc());
+  160:         emitDelaySlot("        ");
+  161:         m_ss << fmt::format("        ctx->pc = 0x{:X}u;\n", fallthroughPc());
+  162: 
+  163:         if (isInternalTarget(fallthroughPc()))
+  164:         {
+  165:             m_ss << fmt::format("        goto label_{:x};\n", fallthroughPc());
+  166:         }
+  167:         else
+  168:         {
+  169:             m_ss << fmt::format("        goto label_fallthrough_0x{:x};\n", branchPc());
+  170:         }
+--- Lines 327-340 ---
+  327:             m_ss << fmt::format("    SET_GPR_U32(ctx, 31, 0x{:X}u);\n", fallthroughPc());
+  328:         }
+  329: 
+  330:         emitDelaySlot("    ");
+  331: 
+  332:         const uint32_t target = buildAbsoluteJumpTarget(m_branchInst.address, m_branchInst.target);
+  333:         if (isInternalTarget(target))
+  334:         {
+  335:             emitInternalTarget(target, branchPc(), "    ");
+  336:             return;
+  337:         }
+  338: 
+  339:         m_ss << fmt::format("    ctx->pc = 0x{:X}u;\n", target);
+  340: 
+--- Lines 365-378 ---
+  365:             m_ss << fmt::format("        SET_GPR_U32(ctx, {}, 0x{:X}u);\n", rdReg, fallthroughPc());
+  366:         }
+  367: 
+  368:         emitDelaySlot("        ");
+  369:         m_ss << "        ctx->pc = jumpTarget;\n";
+  370: 
+  371:         if (!sortedInternalTargets.empty())
+  372:         {
+  373:             m_ss << "        switch (jumpTarget) {\n";
+  374:             for (uint32_t target : sortedInternalTargets)
+  375:             {
+  376:                 m_ss << fmt::format("            case 0x{:X}u: goto label_{:x};\n", target, target);
+  377:             }
+  378:             m_ss << "            default: break;\n";
+--- Lines 428-441 ---
+  428:                 return "false";
+  429:             }
+  430:         case OPCODE_COP1:
+  431:             if (m_branchInst.rs == COP1_BC)
+  432:             {
+  433:                 const uint8_t bcCond = static_cast<uint8_t>(m_branchInst.rt);
+  434:                 return (bcCond == COP1_BC_BCF || bcCond == COP1_BC_BCFL)
+  435:                            ? "!(ctx->fcr31 & 0x800000)"
+  436:                            : "(ctx->fcr31 & 0x800000)";
+  437:             }
+  438:             break;
+  439:         case OPCODE_COP2:
+  440:             if (m_branchInst.rs == COP2_BC)
+  441:             {
+--- Lines 431-444 ---
+  431:             if (m_branchInst.rs == COP1_BC)
+  432:             {
+  433:                 const uint8_t bcCond = static_cast<uint8_t>(m_branchInst.rt);
+  434:                 return (bcCond == COP1_BC_BCF || bcCond == COP1_BC_BCFL)
+  435:                            ? "!(ctx->fcr31 & 0x800000)"
+  436:                            : "(ctx->fcr31 & 0x800000)";
+  437:             }
+  438:             break;
+  439:         case OPCODE_COP2:
+  440:             if (m_branchInst.rs == COP2_BC)
+  441:             {
+  442:                 const uint8_t bcCond = static_cast<uint8_t>(m_branchInst.rt);
+  443:                 return (bcCond == COP2_BC_BCF || bcCond == COP2_BC_BCFL)
+  444:                            ? "!(ctx->vu0_status & 0x1)"
+--- Lines 452-465 ---
+  452:         return "false";
+  453:     }
+  454: 
+  455:     uint32_t ControlFlowEmitter::conditionalBranchTarget() const
+  456:     {
+  457:         const int32_t offsetBytes = static_cast<int32_t>(static_cast<int16_t>(m_branchInst.simmediate)) << 2;
+  458:         return static_cast<uint32_t>(static_cast<int64_t>(m_branchInst.address + 4u) +
+  459:                                      static_cast<int64_t>(offsetBytes));
+  460:     }
+  461: 
+  462:     void ControlFlowEmitter::emitConditionalBranch()
+  463:     {
+  464:         const uint32_t target = conditionalBranchTarget();
+  465:         const bool likely = isLikelyBranch();
+--- Lines 459-472 ---
+  459:                                      static_cast<int64_t>(offsetBytes));
+  460:     }
+  461: 
+  462:     void ControlFlowEmitter::emitConditionalBranch()
+  463:     {
+  464:         const uint32_t target = conditionalBranchTarget();
+  465:         const bool likely = isLikelyBranch();
+  466:         const std::string branchTakenVar = fmt::format("branch_taken_0x{:x}", m_branchInst.address);
+  467:         std::string unconditionalLinkCode;
+  468:         std::string conditionalLinkCode;
+  469: 
+  470:         if (m_branchInst.opcode == OPCODE_REGIMM)
+  471:         {
+  472:             if (m_branchInst.rt == REGIMM_BLTZAL || m_branchInst.rt == REGIMM_BGEZAL)
+--- Lines 461-474 ---
+  461: 
+  462:     void ControlFlowEmitter::emitConditionalBranch()
+  463:     {
+  464:         const uint32_t target = conditionalBranchTarget();
+  465:         const bool likely = isLikelyBranch();
+  466:         const std::string branchTakenVar = fmt::format("branch_taken_0x{:x}", m_branchInst.address);
+  467:         std::string unconditionalLinkCode;
+  468:         std::string conditionalLinkCode;
+  469: 
+  470:         if (m_branchInst.opcode == OPCODE_REGIMM)
+  471:         {
+  472:             if (m_branchInst.rt == REGIMM_BLTZAL || m_branchInst.rt == REGIMM_BGEZAL)
+  473:             {
+  474:                 unconditionalLinkCode = fmt::format("SET_GPR_U32(ctx, 31, 0x{:X}u);", fallthroughPc());
+--- Lines 494-507 ---
+  494:             {
+  495:                 m_ss << "            " << conditionalLinkCode << "\n";
+  496:             }
+  497:             emitDelaySlot("            ");
+  498: 
+  499:             if (isInternalTarget(target))
+  500:             {
+  501:                 emitInternalTarget(target, branchPc(), "            ");
+  502:             }
+  503:             else
+  504:             {
+  505:                 m_ss << fmt::format("            ctx->pc = 0x{:X}u;\n", target);
+  506:                 m_ss << "            return;\n";
+  507:             }
+--- Lines 514-527 ---
+  514:                 m_ss << "        if (" << branchTakenVar << ") { " << conditionalLinkCode << " }\n";
+  515:             }
+  516: 
+  517:             emitDelaySlot("        ");
+  518: 
+  519:             m_ss << "        if (" << branchTakenVar << ") {\n";
+  520:             if (isInternalTarget(target))
+  521:             {
+  522:                 emitInternalTarget(target, branchPc(), "            ");
+  523:             }
+  524:             else
+  525:             {
+  526:                 m_ss << fmt::format("            ctx->pc = 0x{:X}u;\n", target);
+  527:                 m_ss << "            return;\n";
+--- Lines 535-548 ---
+  535:     void ControlFlowEmitter::emitFallbackInstruction()
+  536:     {
+  537:         m_ss << "    " << m_gen.translateInstruction(m_branchInst) << "\n";
+  538:         emitDelaySlot("    ");
+  539:     }
+  540: 
+  541:     void ControlFlowEmitter::emitFallthroughLabelIfNeeded()
+  542:     {
+  543:         if (isInternalTarget(delayPc()) && !isInternalTarget(fallthroughPc()))
+  544:         {
+  545:             m_ss << fmt::format("label_fallthrough_0x{:x}:\n", branchPc());
+  546:         }
+  547:     }
+  548: 
+--- Lines 546-559 ---
+  546:         }
+  547:     }
+  548: 
+  549:     void ControlFlowEmitter::emitFinalFallthrough()
+  550:     {
+  551:         m_ss << fmt::format("    ctx->pc = 0x{:X}u;\n", fallthroughPc());
+  552:     }
+  553: 
+  554:     std::string ControlFlowEmitter::emit()
+  555:     {
+  556:         (void)m_function;
+  557:         emitResumeFromDelaySlotEntry();
+  558:         m_ss << fmt::format("    ctx->pc = 0x{:X}u;\n", branchPc());
+  559: 
+--- Lines 568-581 ---
+  568:         }
+  569:         else if (m_branchInst.isBranch)
+  570:         {
+  571:             emitConditionalBranch();
+  572:         }
+  573:         else
+  574:         {
+  575:             emitFallbackInstruction();
+  576:         }
+  577: 
+  578:         emitFallthroughLabelIfNeeded();
+  579:         emitFinalFallthrough();
+  580:         return m_ss.str();
+  581:     }
+--- Lines 576-582 ---
+  576:         }
+  577: 
+  578:         emitFallthroughLabelIfNeeded();
+  579:         emitFinalFallthrough();
+  580:         return m_ss.str();
+  581:     }
+  582: }
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_emitter.cpp :: lastInstructionWasControlFlow|hasDelaySlot|delay.slot|emitConditionalBranch =====
+--- Lines 103-114 ---
+  103:            << std::dec;
+  104:         ss << "\n";
+  105: 
+  106:         bool lastInstructionWasControlFlow = false;
+  107: 
+  108:         for (size_t i = 0; i < instructions.size(); ++i)
+  109:         {
+  110:             const Instruction &inst = instructions[i];
+  111:             lastInstructionWasControlFlow = inst.hasDelaySlot;
+  112: 
+  113:             if (internalTargets.contains(inst.address))
+  114:             {
+--- Lines 108-119 ---
+  108:         for (size_t i = 0; i < instructions.size(); ++i)
+  109:         {
+  110:             const Instruction &inst = instructions[i];
+  111:             lastInstructionWasControlFlow = inst.hasDelaySlot;
+  112: 
+  113:             if (internalTargets.contains(inst.address))
+  114:             {
+  115:                 constantRegisters.clear();
+  116:                 ss << "label_" << std::hex << inst.address << std::dec << ":\n";
+  117:             }
+  118: 
+  119:             if (cg.m_emitInstructionComments)
+--- Lines 129-140 ---
+  129: 
+  130:             try
+  131:             {
+  132:                 if (inst.hasDelaySlot)
+  133:                 {
+  134:                     const bool hasDecodedDelaySlot =
+  135:                         i + 1 < instructions.size() &&
+  136:                         instructions[i + 1].address == inst.address + 4u;
+  137: 
+  138:                     Instruction syntheticDelaySlot{};
+  139:                     const Instruction *delaySlot = nullptr;
+  140:                     if (hasDecodedDelaySlot)
+--- Lines 172-183 ---
+  172: 
+  173:                     if (hasDecodedDelaySlot)
+  174:                     {
+  175:                         ++i; // Skip delay slot instruction (handled inside branch logic)
+  176:                     }
+  177:                     constantRegisters.clear();
+  178:                 }
+  179:                 else
+  180:                 {
+  181:                     if (!gifDmaKickPlan.valid)
+  182:                     {
+  183:                         gifDmaKickPlan = tryBuildGifDmaKickPlan(instructions, i, constantRegisters, internalTargets);
+--- Lines 227-238 ---
+  227:         }
+  228: 
+  229:         // Fallthrough with no terminating branch: publish the next PC so the EE dispatcher does not re-enter this function.
+  230:         if (!instructions.empty() && !lastInstructionWasControlFlow)
+  231:         {
+  232:             ss << "    ctx->pc = 0x" << std::hex << function.end << "u;\n"
+  233:                << std::dec;
+  234:         }
+  235: 
+  236:         ss << "}\n";
+  237:         return ss.str();
+  238:     }
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\include\MiniTest.h :: struct TestCase|class TestCase|Equals\(|Run\( =====
+--- Lines 7-17 ---
+    7: #include <exception>
+    8: 
+    9: class TestCase;
+   10: using TestRunnerCallback = std::function<void(TestCase&)>;
+   11: using TestBeforeCallback = std::function<void()>;
+   12: 
+   13: class TestCase
+   14: {
+   15: private:
+   16:     std::map<std::string, TestRunnerCallback> m_cases;
+   17:     std::vector<std::string> m_failReason;
+--- Lines 11-21 ---
+   11: using TestBeforeCallback = std::function<void()>;
+   12: 
+   13: class TestCase
+   14: {
+   15: private:
+   16:     std::map<std::string, TestRunnerCallback> m_cases;
+   17:     std::vector<std::string> m_failReason;
+   18: 
+   19:     TestBeforeCallback m_beforeEach;
+   20:     TestBeforeCallback m_afterEach;
+   21:     TestBeforeCallback m_before;
+--- Lines 23-33 ---
+   23: 
+   24: public:
+   25:     void Run(const std::string& testName, TestRunnerCallback fn)
+   26:     {
+   27:         m_cases[testName] = fn;
+   28:     }
+   29: 
+   30:     template<typename T, typename B>
+   31:     inline void Equals(const T& a, const B& b, const std::string& message)
+   32:     {
+   33:         if (!(a == b))
+--- Lines 29-39 ---
+   29: 
+   30:     template<typename T, typename B>
+   31:     inline void Equals(const T& a, const B& b, const std::string& message)
+   32:     {
+   33:         if (!(a == b))
+   34:         {
+   35:             m_failReason.emplace_back(message);
+   36:         }
+   37:     }
+   38: 
+   39:     inline void IsTrue(bool condition, const std::string& message)
+--- Lines 121-131 ---
+  121:     }
+  122: 
+  123:     static int Run()
+  124:     {
+  125:         int failedCount = 0;
+  126:         int totalTests = 0;
+  127: 
+  128:         for (auto& c : m_cases)
+  129:         {
+  130:             const std::string& suiteName = c.first;
+  131:             const TestCaseCallback& suiteCallback = c.second;
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\CMakeLists.txt :: generate_fpu_execution_fixture|generated_fpu_execution_fixture|ps2x_fpu_execution_tests =====
+--- Lines 42-52 ---
+   42: )
+   43: 
+   44: # Build-time generator for genuine emitted FPU guest functions.
+   45: add_executable(ps2_generate_fpu_execution_fixture
+   46:     src/generate_fpu_execution_fixture.cpp
+   47: )
+   48: target_link_libraries(ps2_generate_fpu_execution_fixture PRIVATE ps2_recomp_lib)
+   49: 
+   50: set(GENERATED_FPU_EXECUTION_SOURCE
+   51:     "${CMAKE_CURRENT_BINARY_DIR}/generated_fpu_execution_fixture.cpp"
+   52: )
+--- Lines 43-53 ---
+   43: 
+   44: # Build-time generator for genuine emitted FPU guest functions.
+   45: add_executable(ps2_generate_fpu_execution_fixture
+   46:     src/generate_fpu_execution_fixture.cpp
+   47: )
+   48: target_link_libraries(ps2_generate_fpu_execution_fixture PRIVATE ps2_recomp_lib)
+   49: 
+   50: set(GENERATED_FPU_EXECUTION_SOURCE
+   51:     "${CMAKE_CURRENT_BINARY_DIR}/generated_fpu_execution_fixture.cpp"
+   52: )
+   53: 
+--- Lines 45-55 ---
+   45: add_executable(ps2_generate_fpu_execution_fixture
+   46:     src/generate_fpu_execution_fixture.cpp
+   47: )
+   48: target_link_libraries(ps2_generate_fpu_execution_fixture PRIVATE ps2_recomp_lib)
+   49: 
+   50: set(GENERATED_FPU_EXECUTION_SOURCE
+   51:     "${CMAKE_CURRENT_BINARY_DIR}/generated_fpu_execution_fixture.cpp"
+   52: )
+   53: 
+   54: add_custom_command(
+   55:     OUTPUT "${GENERATED_FPU_EXECUTION_SOURCE}"
+--- Lines 48-58 ---
+   48: target_link_libraries(ps2_generate_fpu_execution_fixture PRIVATE ps2_recomp_lib)
+   49: 
+   50: set(GENERATED_FPU_EXECUTION_SOURCE
+   51:     "${CMAKE_CURRENT_BINARY_DIR}/generated_fpu_execution_fixture.cpp"
+   52: )
+   53: 
+   54: add_custom_command(
+   55:     OUTPUT "${GENERATED_FPU_EXECUTION_SOURCE}"
+   56:     COMMAND $<TARGET_FILE:ps2_generate_fpu_execution_fixture>
+   57:             "${GENERATED_FPU_EXECUTION_SOURCE}"
+   58:     DEPENDS ps2_generate_fpu_execution_fixture
+--- Lines 53-63 ---
+   53: 
+   54: add_custom_command(
+   55:     OUTPUT "${GENERATED_FPU_EXECUTION_SOURCE}"
+   56:     COMMAND $<TARGET_FILE:ps2_generate_fpu_execution_fixture>
+   57:             "${GENERATED_FPU_EXECUTION_SOURCE}"
+   58:     DEPENDS ps2_generate_fpu_execution_fixture
+   59:     VERBATIM
+   60: )
+   61: 
+   62: set_source_files_properties(
+   63:     "${GENERATED_FPU_EXECUTION_SOURCE}"
+--- Lines 55-65 ---
+   55:     OUTPUT "${GENERATED_FPU_EXECUTION_SOURCE}"
+   56:     COMMAND $<TARGET_FILE:ps2_generate_fpu_execution_fixture>
+   57:             "${GENERATED_FPU_EXECUTION_SOURCE}"
+   58:     DEPENDS ps2_generate_fpu_execution_fixture
+   59:     VERBATIM
+   60: )
+   61: 
+   62: set_source_files_properties(
+   63:     "${GENERATED_FPU_EXECUTION_SOURCE}"
+   64:     PROPERTIES GENERATED TRUE
+   65: )
+--- Lines 135-145 ---
+  135: 
+  136: 
+  137: # Isolated generated FPU execution tests.
+  138: add_executable(ps2x_fpu_execution_tests src/fpu_execution_main.cpp)
+  139: target_sources(ps2x_fpu_execution_tests PRIVATE
+  140:     $<TARGET_OBJECTS:ps2_test_function_table>
+  141: )
+  142: target_include_directories(ps2x_fpu_execution_tests PRIVATE
+  143:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+  144:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+  145: )
+--- Lines 136-146 ---
+  136: 
+  137: # Isolated generated FPU execution tests.
+  138: add_executable(ps2x_fpu_execution_tests src/fpu_execution_main.cpp)
+  139: target_sources(ps2x_fpu_execution_tests PRIVATE
+  140:     $<TARGET_OBJECTS:ps2_test_function_table>
+  141: )
+  142: target_include_directories(ps2x_fpu_execution_tests PRIVATE
+  143:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+  144:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+  145: )
+  146: target_link_libraries(ps2x_fpu_execution_tests PRIVATE
+--- Lines 139-149 ---
+  139: target_sources(ps2x_fpu_execution_tests PRIVATE
+  140:     $<TARGET_OBJECTS:ps2_test_function_table>
+  141: )
+  142: target_include_directories(ps2x_fpu_execution_tests PRIVATE
+  143:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+  144:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+  145: )
+  146: target_link_libraries(ps2x_fpu_execution_tests PRIVATE
+  147:     ps2_test_lib ps2_recomp_lib ps2_analyzer_lib ps2_runtime
+  148: )
+  149: if(MSVC)
+--- Lines 143-153 ---
+  143:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+  144:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+  145: )
+  146: target_link_libraries(ps2x_fpu_execution_tests PRIVATE
+  147:     ps2_test_lib ps2_recomp_lib ps2_analyzer_lib ps2_runtime
+  148: )
+  149: if(MSVC)
+  150:     target_link_options(ps2x_fpu_execution_tests PRIVATE "/STACK:8388608")
+  151: endif()
+  152: if(COMMAND ps2x_stage_ffmpeg_runtime_dlls)
+  153:     ps2x_stage_ffmpeg_runtime_dlls(ps2x_fpu_execution_tests)
+--- Lines 147-157 ---
+  147:     ps2_test_lib ps2_recomp_lib ps2_analyzer_lib ps2_runtime
+  148: )
+  149: if(MSVC)
+  150:     target_link_options(ps2x_fpu_execution_tests PRIVATE "/STACK:8388608")
+  151: endif()
+  152: if(COMMAND ps2x_stage_ffmpeg_runtime_dlls)
+  153:     ps2x_stage_ffmpeg_runtime_dlls(ps2x_fpu_execution_tests)
+  154: endif()
+  155: if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  156:     EnableFastReleaseMode(ps2x_fpu_execution_tests)
+  157: endif()
+--- Lines 150-157 ---
+  150:     target_link_options(ps2x_fpu_execution_tests PRIVATE "/STACK:8388608")
+  151: endif()
+  152: if(COMMAND ps2x_stage_ffmpeg_runtime_dlls)
+  153:     ps2x_stage_ffmpeg_runtime_dlls(ps2x_fpu_execution_tests)
+  154: endif()
+  155: if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  156:     EnableFastReleaseMode(ps2x_fpu_execution_tests)
+  157: endif()
+--- Lines 153-157 ---
+  153:     ps2x_stage_ffmpeg_runtime_dlls(ps2x_fpu_execution_tests)
+  154: endif()
+  155: if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  156:     EnableFastReleaseMode(ps2x_fpu_execution_tests)
+  157: endif()
+
+===== AUTOMATED PATCH CHECKS =====
+generated_fpu_bc1f : generator occurrences=2 ; test occurrences=6
+generated_fpu_bc1t : generator occurrences=2 ; test occurrences=6
+generated_fpu_bc1fl : generator occurrences=1 ; test occurrences=3
+generated_fpu_bc1tl : generator occurrences=1 ; test occurrences=3
+Generator base literal 0x100000 present: False
+Branch fixture offset 0x400 present: True
+Branch test address 0x100400 present: True
+All four branch names in generator: True
+
+AUDIT COMPLETE — REVIEW CONTEXT BEFORE BUILDING
