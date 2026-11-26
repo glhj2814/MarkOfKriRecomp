@@ -1,0 +1,1315 @@
+MARK OF KRI — CVT.S.W PRE-EDIT INSPECTION
+Generated: 2026-11-26 01:18:53
+Mode: READ ONLY
+Baseline: 556/556
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp
+    1: #include "ps2recomp/code_generator.h"
+    2: #include "ps2recomp/instructions.h"
+    3: #include "ps2recomp/types.h"
+    4: 
+    5: #include <fstream>
+    6: #include <iostream>
+    7: #include <stdexcept>
+    8: #include <string>
+    9: #include <unordered_map>
+   10: #include <vector>
+   11: 
+   12: using namespace ps2recomp;
+   13: 
+   14: int main(int argc, char** argv)
+   15: {
+   16:     if (argc != 2)
+   17:     {
+   18:         std::cerr << "Usage: generate_fpu_execution_fixture <output.cpp>\n";
+   19:         return 2;
+   20:     }
+   21: 
+   22:     const struct Op
+   23:     {
+   24:         const char* name;
+   25:         uint32_t function;
+   26:     } ops[] = {
+   27:         {"generated_fpu_adda", COP1_S_ADDA},
+   28:         {"generated_fpu_suba", COP1_S_SUBA},
+   29:         {"generated_fpu_mula", COP1_S_MULA},
+   30:         {"generated_fpu_madd", COP1_S_MADD},
+   31:         {"generated_fpu_msub", COP1_S_MSUB},
+   32:         {"generated_fpu_madda", COP1_S_MADDA},
+   33:         {"generated_fpu_msuba", COP1_S_MSUBA}
+   34:     };
+   35: 
+   36:     const struct Op scalarOps[] = {
+   37:         {"generated_fpu_add", COP1_S_ADD},
+   38:         {"generated_fpu_sub", COP1_S_SUB},
+   39:         {"generated_fpu_mul", COP1_S_MUL},
+   40:         {"generated_fpu_div", COP1_S_DIV},
+   41:         {"generated_fpu_sqrt", COP1_S_SQRT},
+   42:         {"generated_fpu_abs", COP1_S_ABS},
+   43:         {"generated_fpu_mov", COP1_S_MOV},
+   44:         {"generated_fpu_neg", COP1_S_NEG},
+   45:         {"generated_fpu_rsqrt", COP1_S_RSQRT},
+   46:         {"generated_fpu_max", COP1_S_MAX},
+   47:         {"generated_fpu_min", COP1_S_MIN},
+   48:         {"generated_fpu_cvt_w", COP1_S_CVT_W}
+   49:     };
+   50:     std::vector<Symbol> symbols;
+   51:     std::vector<Section> sections;
+   52:     CodeGenerator generator(symbols, sections);
+   53: 
+   54:     std::unordered_map<uint32_t, std::string> names;
+   55:     std::vector<Function> functions;
+   56:     std::vector<std::vector<Instruction>> instructionSets;
+   57: 
+   58:     constexpr uint32_t base = 0x00100000u;
+   59:     for (size_t i = 0; i < std::size(ops); ++i)
+   60:     {
+   61:         const uint32_t address = base + static_cast<uint32_t>(i * 0x10u);
+   62: 
+   63:         Instruction inst{};
+   64:         inst.address = address;
+   65:         inst.opcode = OPCODE_COP1;
+   66:         inst.rs = COP1_S;
+   67:         inst.rt = 2;             // ft
+   68:         inst.rd = 1;             // fs
+   69:         inst.sa = 3;             // fd
+   70:         inst.function = ops[i].function;
+   71: 
+   72:         Function function{};
+   73:         function.name = ops[i].name;
+   74:         function.start = address;
+   75:         function.end = address + 4u;
+   76:         function.instructions.push_back(inst);
+   77: 
+   78:         names.emplace(address, ops[i].name);
+   79:         functions.push_back(function);
+   80:         instructionSets.push_back({inst});
+   81:     }
+   82: 
+   83:     constexpr uint32_t sequenceAddress = base + 0x70u;
+   84: 
+   85:     Instruction mula{};
+   86:     mula.address = sequenceAddress;
+   87:     mula.opcode = OPCODE_COP1;
+   88:     mula.rs = COP1_S;
+   89:     mula.rt = 2;
+   90:     mula.rd = 1;
+   91:     mula.sa = 3;
+   92:     mula.function = COP1_S_MULA;
+   93: 
+   94:     Instruction madda{};
+   95:     madda.address = sequenceAddress + 4u;
+   96:     madda.opcode = OPCODE_COP1;
+   97:     madda.rs = COP1_S;
+   98:     madda.rt = 2;
+   99:     madda.rd = 1;
+  100:     madda.sa = 3;
+  101:     madda.function = COP1_S_MADDA;
+  102: 
+  103:     Function sequence{};
+  104:     sequence.name = "generated_fpu_sequence_mula_madda";
+  105:     sequence.start = sequenceAddress;
+  106:     sequence.end = sequenceAddress + 8u;
+  107:     sequence.instructions.push_back(mula);
+  108:     sequence.instructions.push_back(madda);
+  109: 
+  110:     names.emplace(sequenceAddress, sequence.name);
+  111: 
+  112:     for (size_t i = 0; i < std::size(scalarOps); ++i)
+  113:     {
+  114:         const uint32_t address =
+  115:             base + 0x80u + static_cast<uint32_t>(i * 0x10u);
+  116: 
+  117:         Instruction inst{};
+  118:         inst.address = address;
+  119:         inst.opcode = OPCODE_COP1;
+  120:         inst.rs = COP1_S;
+  121:         inst.rt = 2;
+  122:         inst.rd = 1;
+  123:         inst.sa = 3;
+  124:         inst.function = scalarOps[i].function;
+  125: 
+  126:         Function function{};
+  127:         function.name = scalarOps[i].name;
+  128:         function.start = address;
+  129:         function.end = address + 4u;
+  130:         function.instructions.push_back(inst);
+  131: 
+  132:         names.emplace(address, scalarOps[i].name);
+  133:         functions.push_back(function);
+  134:         instructionSets.push_back({inst});
+  135:     }
+  136:     const Op compareOps[] = {
+  137:         {"generated_fpu_c_f",    COP1_S_C_F},
+  138:         {"generated_fpu_c_un",   COP1_S_C_UN},
+  139:         {"generated_fpu_c_eq",   COP1_S_C_EQ},
+  140:         {"generated_fpu_c_ueq",  COP1_S_C_UEQ},
+  141:         {"generated_fpu_c_olt",  COP1_S_C_OLT},
+  142:         {"generated_fpu_c_ult",  COP1_S_C_ULT},
+  143:         {"generated_fpu_c_ole",  COP1_S_C_OLE},
+  144:         {"generated_fpu_c_ule",  COP1_S_C_ULE},
+  145:         {"generated_fpu_c_sf",   COP1_S_C_SF},
+  146:         {"generated_fpu_c_ngle", COP1_S_C_NGLE},
+  147:         {"generated_fpu_c_seq",  COP1_S_C_SEQ},
+  148:         {"generated_fpu_c_ngl",  COP1_S_C_NGL},
+  149:         {"generated_fpu_c_lt",   COP1_S_C_LT},
+  150:         {"generated_fpu_c_nge",  COP1_S_C_NGE},
+  151:         {"generated_fpu_c_le",   COP1_S_C_LE},
+  152:         {"generated_fpu_c_ngt",  COP1_S_C_NGT},
+  153:     };
+  154: 
+  155:     for (size_t i = 0; i < std::size(compareOps); ++i)
+  156:     {
+  157:         const uint32_t address =
+  158:             base + 0x180u + static_cast<uint32_t>(i * 0x10u);
+  159: 
+  160:         Instruction inst{};
+  161:         inst.address = address;
+  162:         inst.opcode = OPCODE_COP1;
+  163:         inst.rs = COP1_S;
+  164:         inst.rt = 2;
+  165:         inst.rd = 1;
+  166:         inst.sa = 3;
+  167:         inst.function = compareOps[i].function;
+  168: 
+  169:         Function function{};
+  170:         function.name = compareOps[i].name;
+  171:         function.start = address;
+  172:         function.end = address + 4u;
+  173:         function.instructions.push_back(inst);
+  174: 
+  175:         names.emplace(address, compareOps[i].name);
+  176:         functions.push_back(function);
+  177:         instructionSets.push_back({inst});
+  178:     }
+  179:     generator.setRenamedFunctions(names);
+  180:     generator.setEmitInstructionComments(false);
+  181: 
+  182:     std::ofstream out(argv[1], std::ios::binary | std::ios::trunc);
+  183:     if (!out)
+  184:         throw std::runtime_error("Could not create generated fixture source");
+  185: 
+  186:     out << "#include \"ps2_runtime.h\"\n";
+  187:     out << "#include \"ps2_runtime_macros.h\"\n";
+  188:     out << "#include <cstdint>\n\n";
+  189: 
+  190:     for (size_t i = 0; i < functions.size(); ++i)
+  191:     {
+  192:         const std::string emitted =
+  193:             generator.generateFunction(functions[i], instructionSets[i], false);
+  194: 
+  195:         if (emitted.find("runtime->") != std::string::npos ||
+  196:             emitted.find("runtime.") != std::string::npos)
+  197:         {
+  198:             throw std::runtime_error(
+  199:                 std::string("Generated function unexpectedly accesses runtime: ") +
+  200:                 functions[i].name);
+  201:         }
+  202: 
+  203:         out << emitted << "\n\n";
+  204:     }
+  205: 
+  206:     const std::string sequenceEmitted =
+  207:         generator.generateFunction(sequence, sequence.instructions, false);
+  208: 
+  209:     if (sequenceEmitted.find("runtime->") != std::string::npos ||
+  210:         sequenceEmitted.find("runtime.") != std::string::npos)
+  211:     {
+  212:         throw std::runtime_error(
+  213:             "Generated sequence unexpectedly accesses runtime");
+  214:     }
+  215: 
+  216:     out << sequenceEmitted << "\n\n";
+  217: 
+  218:     out.close();
+  219:     if (!out)
+  220:         throw std::runtime_error("Failed while writing generated fixture source");
+  221: 
+  222:     std::cout << "Generated " << functions.size()
+  223:               << " guest-instruction functions: " << argv[1] << "\n";
+  224:     return 0;
+  225: }
+  226: 
+  227: 
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generated_fpu_execution_tests.cpp
+    1: #include "MiniTest.h"
+    2: #include "ps2_runtime.h"
+    3: 
+    4: #include <cstdint>
+    5: #include <cstring>
+    6: #include <limits>
+    7: #include <string>
+    8: 
+    9: using GeneratedFpuFunction =
+   10:     void (*)(uint8_t*, R5900Context*, PS2Runtime*);
+   11: 
+   12: void generated_fpu_adda(uint8_t*, R5900Context*, PS2Runtime*);
+   13: void generated_fpu_suba(uint8_t*, R5900Context*, PS2Runtime*);
+   14: void generated_fpu_mula(uint8_t*, R5900Context*, PS2Runtime*);
+   15: void generated_fpu_madd(uint8_t*, R5900Context*, PS2Runtime*);
+   16: void generated_fpu_msub(uint8_t*, R5900Context*, PS2Runtime*);
+   17: void generated_fpu_madda(uint8_t*, R5900Context*, PS2Runtime*);
+   18: void generated_fpu_msuba(uint8_t*, R5900Context*, PS2Runtime*);
+   19: void generated_fpu_add(uint8_t*, R5900Context*, PS2Runtime*);
+   20: void generated_fpu_sub(uint8_t*, R5900Context*, PS2Runtime*);
+   21: void generated_fpu_mul(uint8_t*, R5900Context*, PS2Runtime*);
+   22: void generated_fpu_div(uint8_t*, R5900Context*, PS2Runtime*);
+   23: void generated_fpu_sqrt(uint8_t*, R5900Context*, PS2Runtime*);
+   24: void generated_fpu_abs(uint8_t*, R5900Context*, PS2Runtime*);
+   25: void generated_fpu_mov(uint8_t*, R5900Context*, PS2Runtime*);
+   26: void generated_fpu_neg(uint8_t*, R5900Context*, PS2Runtime*);
+   27: void generated_fpu_rsqrt(uint8_t*, R5900Context*, PS2Runtime*);
+   28: void generated_fpu_max(uint8_t*, R5900Context*, PS2Runtime*);
+   29: void generated_fpu_min(uint8_t*, R5900Context*, PS2Runtime*);
+   30: void generated_fpu_cvt_w(uint8_t*, R5900Context*, PS2Runtime*);
+   31: void generated_fpu_sequence_mula_madda(uint8_t*, R5900Context*, PS2Runtime*);
+   32: void generated_fpu_c_f(uint8_t*, R5900Context*, PS2Runtime*);
+   33: void generated_fpu_c_un(uint8_t*, R5900Context*, PS2Runtime*);
+   34: void generated_fpu_c_eq(uint8_t*, R5900Context*, PS2Runtime*);
+   35: void generated_fpu_c_ueq(uint8_t*, R5900Context*, PS2Runtime*);
+   36: void generated_fpu_c_olt(uint8_t*, R5900Context*, PS2Runtime*);
+   37: void generated_fpu_c_ult(uint8_t*, R5900Context*, PS2Runtime*);
+   38: void generated_fpu_c_ole(uint8_t*, R5900Context*, PS2Runtime*);
+   39: void generated_fpu_c_ule(uint8_t*, R5900Context*, PS2Runtime*);
+   40: void generated_fpu_c_sf(uint8_t*, R5900Context*, PS2Runtime*);
+   41: void generated_fpu_c_ngle(uint8_t*, R5900Context*, PS2Runtime*);
+   42: void generated_fpu_c_seq(uint8_t*, R5900Context*, PS2Runtime*);
+   43: void generated_fpu_c_ngl(uint8_t*, R5900Context*, PS2Runtime*);
+   44: void generated_fpu_c_lt(uint8_t*, R5900Context*, PS2Runtime*);
+   45: void generated_fpu_c_nge(uint8_t*, R5900Context*, PS2Runtime*);
+   46: void generated_fpu_c_le(uint8_t*, R5900Context*, PS2Runtime*);
+   47: void generated_fpu_c_ngt(uint8_t*, R5900Context*, PS2Runtime*);
+   48: 
+   49: static R5900Context makeGeneratedFpuContext()
+   50: {
+   51:     R5900Context ctx{};
+   52:     ctx.f[1] = 2.0f;
+   53:     ctx.f[2] = 3.0f;
+   54:     ctx.f[3] = 0.0f;
+   55:     ctx.f_acc = 5.0f;
+   56:     return ctx;
+   57: }
+   58: 
+   59: void register_generated_fpu_execution_tests()
+   60: {
+   61:     MiniTest::Case("GeneratedFPUExecution", [](TestCase& tc)
+   62:     {
+   63: 
+   64:     // COP1.S comparison execution coverage.
+   65:     tc.Run("generated COP1.S comparisons", [](TestCase& t) {
+   66:         R5900Context ctx{};
+   67:         PS2Runtime runtime{};
+   68: 
+   69:         auto run = [&](GeneratedFpuFunction fn, float fs, float ft, bool initialCondition) {
+   70:             std::memset(&ctx, 0, sizeof(ctx));
+   71:             ctx.f[1] = fs;
+   72:             ctx.f[2] = ft;
+   73:             ctx.fcr31 = initialCondition ? 0x800000u : 0u;
+   74:             fn(nullptr, &ctx, &runtime);
+   75:             return (ctx.fcr31 & 0x800000u) != 0;
+   76:         };
+   77: 
+   78:         const float qnan = std::numeric_limits<float>::quiet_NaN();
+   79: 
+   80:         t.IsFalse(run(generated_fpu_c_f, 1.0f, 2.0f, false), "C.F false");
+   81:         t.IsFalse(run(generated_fpu_c_f, 1.0f, 2.0f, true), "C.F clears condition");
+   82:         t.IsFalse(run(generated_fpu_c_un, 1.0f, 2.0f, false), "C.UN ordered");
+   83:         t.IsTrue(run(generated_fpu_c_un, qnan, 2.0f, false), "C.UN unordered");
+   84:         t.IsTrue(run(generated_fpu_c_eq, 2.0f, 2.0f, false), "C.EQ equal");
+   85:         t.IsFalse(run(generated_fpu_c_eq, 1.0f, 2.0f, true), "C.EQ unequal");
+   86:         t.IsTrue(run(generated_fpu_c_ueq, qnan, 2.0f, false), "C.UEQ unordered");
+   87:         t.IsFalse(run(generated_fpu_c_ueq, 1.0f, 2.0f, true), "C.UEQ unequal");
+   88:         t.IsTrue(run(generated_fpu_c_olt, 1.0f, 2.0f, false), "C.OLT less");
+   89:         t.IsFalse(run(generated_fpu_c_olt, 2.0f, 1.0f, true), "C.OLT greater");
+   90:         t.IsTrue(run(generated_fpu_c_ult, qnan, 2.0f, false), "C.ULT unordered");
+   91:         t.IsFalse(run(generated_fpu_c_ult, 2.0f, 1.0f, true), "C.ULT greater");
+   92:         t.IsTrue(run(generated_fpu_c_ole, 1.0f, 2.0f, false), "C.OLE less");
+   93:         t.IsFalse(run(generated_fpu_c_ole, 2.0f, 1.0f, true), "C.OLE greater");
+   94:         t.IsTrue(run(generated_fpu_c_ule, qnan, 2.0f, false), "C.ULE unordered");
+   95:         t.IsFalse(run(generated_fpu_c_ule, 2.0f, 1.0f, true), "C.ULE greater");
+   96:         t.IsFalse(run(generated_fpu_c_sf, 1.0f, 2.0f, false), "C.SF false");
+   97:         t.IsFalse(run(generated_fpu_c_sf, 1.0f, 2.0f, true), "C.SF clears condition");
+   98:         t.IsTrue(run(generated_fpu_c_ngle, qnan, 2.0f, false), "C.NGLE unordered");
+   99:         t.IsFalse(run(generated_fpu_c_ngle, 1.0f, 2.0f, true), "C.NGLE ordered");
+  100:         t.IsTrue(run(generated_fpu_c_seq, 2.0f, 2.0f, false), "C.SEQ equal");
+  101:         t.IsFalse(run(generated_fpu_c_seq, 1.0f, 2.0f, true), "C.SEQ unequal");
+  102:         t.IsTrue(run(generated_fpu_c_ngl, qnan, 2.0f, false), "C.NGL unordered");
+  103:         t.IsFalse(run(generated_fpu_c_ngl, 1.0f, 2.0f, true), "C.NGL unequal");
+  104:         t.IsTrue(run(generated_fpu_c_lt, 1.0f, 2.0f, false), "C.LT less");
+  105:         t.IsFalse(run(generated_fpu_c_lt, 2.0f, 1.0f, true), "C.LT greater");
+  106:         t.IsTrue(run(generated_fpu_c_nge, qnan, 2.0f, false), "C.NGE unordered");
+  107:         t.IsFalse(run(generated_fpu_c_nge, 2.0f, 1.0f, true), "C.NGE greater");
+  108:         t.IsTrue(run(generated_fpu_c_le, 1.0f, 2.0f, false), "C.LE less");
+  109:         t.IsFalse(run(generated_fpu_c_le, 2.0f, 1.0f, true), "C.LE greater");
+  110:         t.IsTrue(run(generated_fpu_c_ngt, qnan, 2.0f, false), "C.NGT unordered");
+  111:         t.IsFalse(run(generated_fpu_c_ngt, 2.0f, 1.0f, true), "C.NGT greater");
+  112:     });
+  113:     {
+  114:         tc.Run("generated ADDA.S updates live accumulator", [](TestCase& t) {
+  115:             auto ctx = makeGeneratedFpuContext();
+  116:             ctx.f_acc = 9.0f;
+  117:             generated_fpu_adda(nullptr, &ctx, nullptr);
+  118:             t.Equals(ctx.f_acc, 5.0f, "ADDA.S overwrites prior accumulator");
+  119:             t.Equals(ctx.pc, 0x100004u, "ADDA.S final PC");
+  120:         });
+  121: 
+  122:         tc.Run("generated SUBA.S updates live accumulator", [](TestCase& t) {
+  123:             auto ctx = makeGeneratedFpuContext();
+  124:             generated_fpu_suba(nullptr, &ctx, nullptr);
+  125:             t.Equals(ctx.f_acc, -1.0f, "SUBA.S accumulator");
+  126:             t.Equals(ctx.pc, 0x100014u, "SUBA.S final PC");
+  127:         });
+  128: 
+  129:         tc.Run("generated MULA.S updates live accumulator", [](TestCase& t) {
+  130:             auto ctx = makeGeneratedFpuContext();
+  131:             generated_fpu_mula(nullptr, &ctx, nullptr);
+  132:             t.Equals(ctx.f_acc, 6.0f, "MULA.S accumulator");
+  133:             t.Equals(ctx.pc, 0x100024u, "MULA.S final PC");
+  134:         });
+  135: 
+  136:         tc.Run("generated MADD.S writes destination FPR", [](TestCase& t) {
+  137:             auto ctx = makeGeneratedFpuContext();
+  138:             generated_fpu_madd(nullptr, &ctx, nullptr);
+  139:             t.Equals(ctx.f[3], 11.0f, "MADD.S destination");
+  140:             t.Equals(ctx.pc, 0x100034u, "MADD.S final PC");
+  141:         });
+  142: 
+  143:         tc.Run("generated MSUB.S writes destination FPR", [](TestCase& t) {
+  144:             auto ctx = makeGeneratedFpuContext();
+  145:             generated_fpu_msub(nullptr, &ctx, nullptr);
+  146:             t.Equals(ctx.f[3], -1.0f, "MSUB.S destination");
+  147:             t.Equals(ctx.pc, 0x100044u, "MSUB.S final PC");
+  148:         });
+  149: 
+  150:         tc.Run("generated MADDA.S updates live accumulator", [](TestCase& t) {
+  151:             auto ctx = makeGeneratedFpuContext();
+  152:             generated_fpu_madda(nullptr, &ctx, nullptr);
+  153:             t.Equals(ctx.f_acc, 11.0f, "MADDA.S accumulator");
+  154:             t.Equals(ctx.pc, 0x100054u, "MADDA.S final PC");
+  155:         });
+  156: 
+  157:         tc.Run("generated MSUBA.S updates live accumulator", [](TestCase& t) {
+  158:             auto ctx = makeGeneratedFpuContext();
+  159:             generated_fpu_msuba(nullptr, &ctx, nullptr);
+  160:             t.Equals(ctx.f_acc, -1.0f, "MSUBA.S accumulator");
+  161:             t.Equals(ctx.pc, 0x100064u, "MSUBA.S final PC");
+  162:         });
+  163: 
+  164:         tc.Run("generated ADD.S writes destination FPR", [](TestCase& t) {
+  165:             auto ctx = makeGeneratedFpuContext();
+  166:             generated_fpu_add(nullptr, &ctx, nullptr);
+  167:             t.Equals(ctx.f[3], 5.0f, "ADD.S destination");
+  168:             t.Equals(ctx.pc, 0x100084u, "ADD.S final PC");
+  169:         });
+  170:         tc.Run("generated SUB.S writes destination FPR", [](TestCase& t) {
+  171:             auto ctx = makeGeneratedFpuContext();
+  172:             generated_fpu_sub(nullptr, &ctx, nullptr);
+  173:             t.Equals(ctx.f[3], -1.0f, "SUB.S destination");
+  174:             t.Equals(ctx.pc, 0x100094u, "SUB.S final PC");
+  175:         });
+  176:         tc.Run("generated MUL.S writes destination FPR", [](TestCase& t) {
+  177:             auto ctx = makeGeneratedFpuContext();
+  178:             generated_fpu_mul(nullptr, &ctx, nullptr);
+  179:             t.Equals(ctx.f[3], 6.0f, "MUL.S destination");
+  180:             t.Equals(ctx.pc, 0x1000A4u, "MUL.S final PC");
+  181:         });
+  182:         tc.Run("generated DIV.S writes destination FPR", [](TestCase& t) {
+  183:             auto ctx = makeGeneratedFpuContext();
+  184:             generated_fpu_div(nullptr, &ctx, nullptr);
+  185:             t.Equals(ctx.f[3], 0.6666667f, "DIV.S destination");
+  186:             t.Equals(ctx.pc, 0x1000B4u, "DIV.S final PC");
+  187:         });
+  188:         tc.Run("generated SQRT.S reads ft", [](TestCase& t) {
+  189:             auto ctx = makeGeneratedFpuContext();
+  190:             generated_fpu_sqrt(nullptr, &ctx, nullptr);
+  191:             t.Equals(ctx.f[3], 1.7320508f, "SQRT.S destination");
+  192:             t.Equals(ctx.pc, 0x1000C4u, "SQRT.S final PC");
+  193:         });
+  194:         tc.Run("generated ABS.S writes destination FPR", [](TestCase& t) {
+  195:             auto ctx = makeGeneratedFpuContext();
+  196:             ctx.f[1] = -2.0f;
+  197:             generated_fpu_abs(nullptr, &ctx, nullptr);
+  198:             t.Equals(ctx.f[3], 2.0f, "ABS.S destination");
+  199:             t.Equals(ctx.pc, 0x1000D4u, "ABS.S final PC");
+  200:         });
+  201:         tc.Run("generated MOV.S writes destination FPR", [](TestCase& t) {
+  202:             auto ctx = makeGeneratedFpuContext();
+  203:             generated_fpu_mov(nullptr, &ctx, nullptr);
+  204:             t.Equals(ctx.f[3], 2.0f, "MOV.S destination");
+  205:             t.Equals(ctx.pc, 0x1000E4u, "MOV.S final PC");
+  206:         });
+  207:         tc.Run("generated NEG.S writes destination FPR", [](TestCase& t) {
+  208:             auto ctx = makeGeneratedFpuContext();
+  209:             generated_fpu_neg(nullptr, &ctx, nullptr);
+  210:             t.Equals(ctx.f[3], -2.0f, "NEG.S destination");
+  211:             t.Equals(ctx.pc, 0x1000F4u, "NEG.S final PC");
+  212:         });
+  213:         tc.Run("generated RSQRT.S writes destination FPR", [](TestCase& t) {
+  214:             auto ctx = makeGeneratedFpuContext();
+  215:             generated_fpu_rsqrt(nullptr, &ctx, nullptr);
+  216:             t.Equals(ctx.f[3], 1.1547005f, "RSQRT.S destination");
+  217:             t.Equals(ctx.pc, 0x100104u, "RSQRT.S final PC");
+  218:         });
+  219:         tc.Run("generated MAX.S writes destination FPR", [](TestCase& t) {
+  220:             auto ctx = makeGeneratedFpuContext();
+  221:             generated_fpu_max(nullptr, &ctx, nullptr);
+  222:             t.Equals(ctx.f[3], 3.0f, "MAX.S destination");
+  223:             t.Equals(ctx.pc, 0x100114u, "MAX.S final PC");
+  224:         });
+  225:         tc.Run("generated MIN.S writes destination FPR", [](TestCase& t) {
+  226:             auto ctx = makeGeneratedFpuContext();
+  227:             generated_fpu_min(nullptr, &ctx, nullptr);
+  228:             t.Equals(ctx.f[3], 2.0f, "MIN.S destination");
+  229:             t.Equals(ctx.pc, 0x100124u, "MIN.S final PC");
+  230:         });
+  231:         tc.Run("generated MAX.S and MIN.S preserve current NaN operand-order behavior", [](TestCase& t) {
+  232:             auto floatFromBits = [](uint32_t bits) {
+  233:                 float value;
+  234:                 std::memcpy(&value, &bits, sizeof(value));
+  235:                 return value;
+  236:             };
+  237:             auto bitsOf = [](float value) {
+  238:                 uint32_t bits;
+  239:                 std::memcpy(&bits, &value, sizeof(bits));
+  240:                 return bits;
+  241:             };
+  242: 
+  243:             struct Case {
+  244:                 GeneratedFpuFunction function;
+  245:                 const char* name;
+  246:                 uint32_t fs;
+  247:                 uint32_t ft;
+  248:                 uint32_t expected;
+  249:             };
+  250: 
+  251:             const Case cases[] = {
+  252:                 { generated_fpu_max, "MAX.S NaN fs", 0x7FC00000u, 0x3F800000u, 0x7FC00000u },
+  253:                 { generated_fpu_max, "MAX.S NaN ft", 0x3F800000u, 0x7FC00000u, 0x3F800000u },
+  254:                 { generated_fpu_min, "MIN.S NaN fs", 0x7FC00000u, 0x3F800000u, 0x7FC00000u },
+  255:                 { generated_fpu_min, "MIN.S NaN ft", 0x3F800000u, 0x7FC00000u, 0x3F800000u }
+  256:             };
+  257: 
+  258:             for (const auto& test : cases) {
+  259:                 auto ctx = makeGeneratedFpuContext();
+  260:                 ctx.f[1] = floatFromBits(test.fs);
+  261:                 ctx.f[2] = floatFromBits(test.ft);
+  262:                 test.function(nullptr, &ctx, nullptr);
+  263:                 t.Equals(bitsOf(ctx.f[3]), test.expected, test.name);
+  264:             }
+  265:         });
+  266: 
+  267:         tc.Run("generated MAX.S and MIN.S preserve first-operand signed zero", [](TestCase& t) {
+  268:             auto bitsOf = [](float value) {
+  269:                 uint32_t bits;
+  270:                 std::memcpy(&bits, &value, sizeof(bits));
+  271:                 return bits;
+  272:             };
+  273: 
+  274:             struct Case {
+  275:                 GeneratedFpuFunction function;
+  276:                 const char* name;
+  277:                 uint32_t fs;
+  278:                 uint32_t ft;
+  279:                 uint32_t expected;
+  280:             };
+  281: 
+  282:             const Case cases[] = {
+  283:                 { generated_fpu_max, "MAX.S +0 fs, -0 ft", 0x00000000u, 0x80000000u, 0x00000000u },
+  284:                 { generated_fpu_max, "MAX.S -0 fs, +0 ft", 0x80000000u, 0x00000000u, 0x80000000u },
+  285:                 { generated_fpu_min, "MIN.S +0 fs, -0 ft", 0x00000000u, 0x80000000u, 0x00000000u },
+  286:                 { generated_fpu_min, "MIN.S -0 fs, +0 ft", 0x80000000u, 0x00000000u, 0x80000000u }
+  287:             };
+  288: 
+  289:             for (const auto& test : cases) {
+  290:                 auto ctx = makeGeneratedFpuContext();
+  291:                 std::memcpy(&ctx.f[1], &test.fs, sizeof(test.fs));
+  292:                 std::memcpy(&ctx.f[2], &test.ft, sizeof(test.ft));
+  293:                 test.function(nullptr, &ctx, nullptr);
+  294:                 t.Equals(bitsOf(ctx.f[3]), test.expected, test.name);
+  295:             }
+  296:         });
+  297:         tc.Run("generated CVT.W.S truncates toward zero independent of FCR31 rounding mode", [](TestCase& t) {
+  298:             const float inputs[] = { 3.75f, -3.75f, 2.5f, -2.5f };
+  299:             const int32_t expected[] = { 3, -3, 2, -2 };
+  300: 
+  301:             for (uint32_t mode = 0; mode < 4; ++mode) {
+  302:                 for (size_t i = 0; i < 4; ++i) {
+  303:                     auto ctx = makeGeneratedFpuContext();
+  304:                     ctx.f[1] = inputs[i];
+  305:                     ctx.fcr31 = mode;
+  306:                     generated_fpu_cvt_w(nullptr, &ctx, nullptr);
+  307: 
+  308:                     int32_t actual = 0;
+  309:                     std::memcpy(&actual, &ctx.f[3], sizeof(actual));
+  310:                     t.Equals(actual, expected[i],
+  311:                         "CVT.W.S truncation result for FCR31 mode " + std::to_string(mode));
+  312:                 }
+  313:             }
+  314:         });
+  315: 
+  316:         tc.Run("generated CVT.W.S saturates overflow and NaN according to source sign", [](TestCase& t) {
+  317:             struct EdgeCase {
+  318:                 uint32_t inputBits;
+  319:                 int32_t expected;
+  320:                 const char* label;
+  321:             };
+  322: 
+  323:             const EdgeCase cases[] = {
+  324:                 { 0x4F000000u, INT32_MAX, "positive 2^31 overflow" },
+  325:                 { 0x4EFFFFFFu, 2147483520, "largest positive in-range float" },
+  326:                 { 0xCF000000u, INT32_MIN, "negative -2^31 boundary" },
+  327:                 { 0xCF000001u, INT32_MIN, "negative overflow" },
+  328:                 { 0x7F800000u, INT32_MAX, "positive infinity" },
+  329:                 { 0xFF800000u, INT32_MIN, "negative infinity" },
+  330:                 { 0x7FC00000u, INT32_MAX, "positive quiet NaN" },
+  331:                 { 0xFFC00000u, INT32_MIN, "negative quiet NaN" }
+  332:             };
+  333: 
+  334:             for (uint32_t mode = 0; mode < 4; ++mode) {
+  335:                 for (const auto& edge : cases) {
+  336:                     float input = 0.0f;
+  337:                     std::memcpy(&input, &edge.inputBits, sizeof(input));
+  338: 
+  339:                     auto ctx = makeGeneratedFpuContext();
+  340:                     ctx.f[1] = input;
+  341:                     ctx.fcr31 = mode;
+  342:                     generated_fpu_cvt_w(nullptr, &ctx, nullptr);
+  343: 
+  344:                     int32_t actual = 0;
+  345:                     std::memcpy(&actual, &ctx.f[3], sizeof(actual));
+  346: 
+  347:                     t.Equals(actual, edge.expected,
+  348:                         std::string(edge.label) + " (FCR31 mode " +
+  349:                         std::to_string(mode) + ")");
+  350:                 }
+  351:             }
+  352:         });
+  353:         tc.Run("generated COP1.S comparisons update FCR31 condition bit", [](TestCase& t) {
+  354:             struct CompareCase
+  355:             {
+  356:                 const char* name;
+  357:                 GeneratedFpuFunction fn;
+  358:                 bool orderedTrue;
+  359:                 bool unorderedTrue;
+  360:             };
+  361: 
+  362:             const CompareCase cases[] = {
+  363:                 {"C.F",    generated_fpu_c_f,    false, false},
+  364:                 {"C.UN",   generated_fpu_c_un,   false, true},
+  365:                 {"C.EQ",   generated_fpu_c_eq,   false, false},
+  366:                 {"C.UEQ",  generated_fpu_c_ueq,  false, true},
+  367:                 {"C.OLT",  generated_fpu_c_olt,  true,  false},
+  368:                 {"C.ULT",  generated_fpu_c_ult,  true,  true},
+  369:                 {"C.OLE",  generated_fpu_c_ole,  true,  false},
+  370:                 {"C.ULE",  generated_fpu_c_ule,  true,  true},
+  371:                 {"C.SF",   generated_fpu_c_sf,   false, false},
+  372:                 {"C.NGLE", generated_fpu_c_ngle, false, true},
+  373:                 {"C.SEQ",  generated_fpu_c_seq,  false, false},
+  374:                 {"C.NGL",  generated_fpu_c_ngl,  false, true},
+  375:                 {"C.LT",   generated_fpu_c_lt,   true,  false},
+  376:                 {"C.NGE",  generated_fpu_c_nge,  true,  true},
+  377:                 {"C.LE",   generated_fpu_c_le,   true,  false},
+  378:                 {"C.NGT",  generated_fpu_c_ngt,  true,  true},
+  379:             };
+  380: 
+  381:             constexpr uint32_t conditionBit = 0x800000u;
+  382:             const float qnan = std::numeric_limits<float>::quiet_NaN();
+  383: 
+  384:             for (const auto& c : cases)
+  385:             {
+  386:                 // Ordered finite case.
+  387:                 {
+  388:                     auto ctx = makeGeneratedFpuContext();
+  389:                     ctx.f[1] = 1.0f;
+  390:                     ctx.f[2] = 2.0f;
+  391:                     ctx.fcr31 = 0;
+  392: 
+  393:                     c.fn(nullptr, &ctx, nullptr);
+  394: 
+  395:                     t.Equals(
+  396:                         c.orderedTrue ? conditionBit : 0u,
+  397:                         ctx.fcr31 & conditionBit,
+  398:                         c.name);
+  399:                 }
+  400: 
+  401:                 // FALSE must clear a previously-set condition bit.
+  402:                 {
+  403:                     auto ctx = makeGeneratedFpuContext();
+  404:                     ctx.f[1] = 2.0f;
+  405:                     ctx.f[2] = 1.0f;
+  406:                     ctx.fcr31 = conditionBit;
+  407: 
+  408:                     c.fn(nullptr, &ctx, nullptr);
+  409: 
+  410:                     t.Equals(
+  411:                         0u,
+  412:                         ctx.fcr31 & conditionBit,
+  413:                         c.name);
+  414:                 }
+  415: 
+  416:                 // qNaN in fs.
+  417:                 {
+  418:                     auto ctx = makeGeneratedFpuContext();
+  419:                     ctx.f[1] = qnan;
+  420:                     ctx.f[2] = 1.0f;
+  421:                     ctx.fcr31 = 0;
+  422: 
+  423:                     c.fn(nullptr, &ctx, nullptr);
+  424: 
+  425:                     t.Equals(
+  426:                         c.unorderedTrue ? conditionBit : 0u,
+  427:                         ctx.fcr31 & conditionBit,
+  428:                         c.name);
+  429:                 }
+  430: 
+  431:                 // qNaN in ft.
+  432:                 {
+  433:                     auto ctx = makeGeneratedFpuContext();
+  434:                     ctx.f[1] = 1.0f;
+  435:                     ctx.f[2] = qnan;
+  436:                     ctx.fcr31 = 0;
+  437: 
+  438:                     c.fn(nullptr, &ctx, nullptr);
+  439: 
+  440:                     t.Equals(
+  441:                         c.unorderedTrue ? conditionBit : 0u,
+  442:                         ctx.fcr31 & conditionBit,
+  443:                         c.name);
+  444:                 }
+  445: 
+  446:                 // +0 == -0 for equality predicates.
+  447:                 {
+  448:                     auto ctx = makeGeneratedFpuContext();
+  449:                     ctx.f[1] = 0.0f;
+  450:                     ctx.f[2] = -0.0f;
+  451:                     ctx.fcr31 = 0;
+  452: 
+  453:                     c.fn(nullptr, &ctx, nullptr);
+  454: 
+  455:                     const bool expected =
+  456:                         std::strcmp(c.name, "C.EQ") == 0 ||
+  457:                         std::strcmp(c.name, "C.UEQ") == 0 ||
+  458:                         std::strcmp(c.name, "C.SEQ") == 0 ||
+  459:                         std::strcmp(c.name, "C.NGL") == 0 ||
+  460:                         std::strcmp(c.name, "C.OLE") == 0 ||
+  461:                         std::strcmp(c.name, "C.ULE") == 0 ||
+  462:                         std::strcmp(c.name, "C.LE") == 0 ||
+  463:                         std::strcmp(c.name, "C.NGT") == 0;
+  464: 
+  465:                     t.Equals(
+  466:                         expected ? conditionBit : 0u,
+  467:                         ctx.fcr31 & conditionBit,
+  468:                         c.name);
+  469:                 }
+  470:             }
+  471:         });
+  472:         tc.Run("generated MULA.S then MADDA.S consumes live accumulator", [](TestCase& t) {
+  473:             auto ctx = makeGeneratedFpuContext();
+  474:             ctx.f_acc = 99.0f;
+  475:             generated_fpu_sequence_mula_madda(nullptr, &ctx, nullptr);
+  476:             t.Equals(ctx.f_acc, 12.0f, "MADDA.S consumes MULA.S accumulator");
+  477:             t.Equals(ctx.pc, 0x100078u, "two-instruction sequence final PC");
+  478:         });
+  479:     }
+  480:     });
+  481: }
+  482: 
+  483: 
+  484: 
+  485: 
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\generated_fpu_execution_fixture.cpp
+    1: #include "ps2_runtime.h"
+    2: #include "ps2_runtime_macros.h"
+    3: #include <cstdint>
+    4: 
+    5: // Function: generated_fpu_adda
+    6: // Address: 0x100000 - 0x100004
+    7: void generated_fpu_adda(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+    8: #ifdef PS2_FUNCTION_LOG_TRACKER
+    9:     PS_LOG_ENTRY("generated_fpu_adda");
+   10: #endif
+   11: 
+   12:     ctx->pc = 0x100000u;
+   13: 
+   14:     ctx->pc = 0x100000u;
+   15:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f[1], ctx->f[2]));
+   16:     ctx->pc = 0x100004u;
+   17: }
+   18: 
+   19: 
+   20: // Function: generated_fpu_suba
+   21: // Address: 0x100010 - 0x100014
+   22: void generated_fpu_suba(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   23: #ifdef PS2_FUNCTION_LOG_TRACKER
+   24:     PS_LOG_ENTRY("generated_fpu_suba");
+   25: #endif
+   26: 
+   27:     ctx->pc = 0x100010u;
+   28: 
+   29:     ctx->pc = 0x100010u;
+   30:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f[1], ctx->f[2]));
+   31:     ctx->pc = 0x100014u;
+   32: }
+   33: 
+   34: 
+   35: // Function: generated_fpu_mula
+   36: // Address: 0x100020 - 0x100024
+   37: void generated_fpu_mula(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   38: #ifdef PS2_FUNCTION_LOG_TRACKER
+   39:     PS_LOG_ENTRY("generated_fpu_mula");
+   40: #endif
+   41: 
+   42:     ctx->pc = 0x100020u;
+   43: 
+   44:     ctx->pc = 0x100020u;
+   45:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   46:     ctx->pc = 0x100024u;
+   47: }
+   48: 
+   49: 
+   50: // Function: generated_fpu_madd
+   51: // Address: 0x100030 - 0x100034
+   52: void generated_fpu_madd(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   53: #ifdef PS2_FUNCTION_LOG_TRACKER
+   54:     PS_LOG_ENTRY("generated_fpu_madd");
+   55: #endif
+   56: 
+   57:     ctx->pc = 0x100030u;
+   58: 
+   59:     ctx->pc = 0x100030u;
+   60:     ctx->f[3] = FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   61:     ctx->pc = 0x100034u;
+   62: }
+   63: 
+   64: 
+   65: // Function: generated_fpu_msub
+   66: // Address: 0x100040 - 0x100044
+   67: void generated_fpu_msub(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   68: #ifdef PS2_FUNCTION_LOG_TRACKER
+   69:     PS_LOG_ENTRY("generated_fpu_msub");
+   70: #endif
+   71: 
+   72:     ctx->pc = 0x100040u;
+   73: 
+   74:     ctx->pc = 0x100040u;
+   75:     ctx->f[3] = FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+   76:     ctx->pc = 0x100044u;
+   77: }
+   78: 
+   79: 
+   80: // Function: generated_fpu_madda
+   81: // Address: 0x100050 - 0x100054
+   82: void generated_fpu_madda(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   83: #ifdef PS2_FUNCTION_LOG_TRACKER
+   84:     PS_LOG_ENTRY("generated_fpu_madda");
+   85: #endif
+   86: 
+   87:     ctx->pc = 0x100050u;
+   88: 
+   89:     ctx->pc = 0x100050u;
+   90:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+   91:     ctx->pc = 0x100054u;
+   92: }
+   93: 
+   94: 
+   95: // Function: generated_fpu_msuba
+   96: // Address: 0x100060 - 0x100064
+   97: void generated_fpu_msuba(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   98: #ifdef PS2_FUNCTION_LOG_TRACKER
+   99:     PS_LOG_ENTRY("generated_fpu_msuba");
+  100: #endif
+  101: 
+  102:     ctx->pc = 0x100060u;
+  103: 
+  104:     ctx->pc = 0x100060u;
+  105:     FPU_SET_ACC(ctx, FPU_SUB_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  106:     ctx->pc = 0x100064u;
+  107: }
+  108: 
+  109: 
+  110: // Function: generated_fpu_add
+  111: // Address: 0x100080 - 0x100084
+  112: void generated_fpu_add(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  113: #ifdef PS2_FUNCTION_LOG_TRACKER
+  114:     PS_LOG_ENTRY("generated_fpu_add");
+  115: #endif
+  116: 
+  117:     ctx->pc = 0x100080u;
+  118: 
+  119:     ctx->pc = 0x100080u;
+  120:     ctx->f[3] = FPU_ADD_S(ctx->f[1], ctx->f[2]);
+  121:     ctx->pc = 0x100084u;
+  122: }
+  123: 
+  124: 
+  125: // Function: generated_fpu_sub
+  126: // Address: 0x100090 - 0x100094
+  127: void generated_fpu_sub(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  128: #ifdef PS2_FUNCTION_LOG_TRACKER
+  129:     PS_LOG_ENTRY("generated_fpu_sub");
+  130: #endif
+  131: 
+  132:     ctx->pc = 0x100090u;
+  133: 
+  134:     ctx->pc = 0x100090u;
+  135:     ctx->f[3] = FPU_SUB_S(ctx->f[1], ctx->f[2]);
+  136:     ctx->pc = 0x100094u;
+  137: }
+  138: 
+  139: 
+  140: // Function: generated_fpu_mul
+  141: // Address: 0x1000a0 - 0x1000a4
+  142: void generated_fpu_mul(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  143: #ifdef PS2_FUNCTION_LOG_TRACKER
+  144:     PS_LOG_ENTRY("generated_fpu_mul");
+  145: #endif
+  146: 
+  147:     ctx->pc = 0x1000a0u;
+  148: 
+  149:     ctx->pc = 0x1000a0u;
+  150:     ctx->f[3] = FPU_MUL_S(ctx->f[1], ctx->f[2]);
+  151:     ctx->pc = 0x1000a4u;
+  152: }
+  153: 
+  154: 
+  155: // Function: generated_fpu_div
+  156: // Address: 0x1000b0 - 0x1000b4
+  157: void generated_fpu_div(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  158: #ifdef PS2_FUNCTION_LOG_TRACKER
+  159:     PS_LOG_ENTRY("generated_fpu_div");
+  160: #endif
+  161: 
+  162:     ctx->pc = 0x1000b0u;
+  163: 
+  164:     ctx->pc = 0x1000b0u;
+  165:     { if (ctx->f[2] == 0.0f) ctx->fcr31 |= 0x100000; /* DZ flag */ ctx->f[3] = FPU_DIV_S(ctx->f[1], ctx->f[2]); }
+  166:     ctx->pc = 0x1000b4u;
+  167: }
+  168: 
+  169: 
+  170: // Function: generated_fpu_sqrt
+  171: // Address: 0x1000c0 - 0x1000c4
+  172: void generated_fpu_sqrt(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  173: #ifdef PS2_FUNCTION_LOG_TRACKER
+  174:     PS_LOG_ENTRY("generated_fpu_sqrt");
+  175: #endif
+  176: 
+  177:     ctx->pc = 0x1000c0u;
+  178: 
+  179:     ctx->pc = 0x1000c0u;
+  180:     ctx->f[3] = FPU_SQRT_S(ctx->f[2]);
+  181:     ctx->pc = 0x1000c4u;
+  182: }
+  183: 
+  184: 
+  185: // Function: generated_fpu_abs
+  186: // Address: 0x1000d0 - 0x1000d4
+  187: void generated_fpu_abs(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  188: #ifdef PS2_FUNCTION_LOG_TRACKER
+  189:     PS_LOG_ENTRY("generated_fpu_abs");
+  190: #endif
+  191: 
+  192:     ctx->pc = 0x1000d0u;
+  193: 
+  194:     ctx->pc = 0x1000d0u;
+  195:     ctx->f[3] = FPU_ABS_S(ctx->f[1]);
+  196:     ctx->pc = 0x1000d4u;
+  197: }
+  198: 
+  199: 
+  200: // Function: generated_fpu_mov
+  201: // Address: 0x1000e0 - 0x1000e4
+  202: void generated_fpu_mov(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  203: #ifdef PS2_FUNCTION_LOG_TRACKER
+  204:     PS_LOG_ENTRY("generated_fpu_mov");
+  205: #endif
+  206: 
+  207:     ctx->pc = 0x1000e0u;
+  208: 
+  209:     ctx->pc = 0x1000e0u;
+  210:     ctx->f[3] = FPU_MOV_S(ctx->f[1]);
+  211:     ctx->pc = 0x1000e4u;
+  212: }
+  213: 
+  214: 
+  215: // Function: generated_fpu_neg
+  216: // Address: 0x1000f0 - 0x1000f4
+  217: void generated_fpu_neg(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  218: #ifdef PS2_FUNCTION_LOG_TRACKER
+  219:     PS_LOG_ENTRY("generated_fpu_neg");
+  220: #endif
+  221: 
+  222:     ctx->pc = 0x1000f0u;
+  223: 
+  224:     ctx->pc = 0x1000f0u;
+  225:     ctx->f[3] = FPU_NEG_S(ctx->f[1]);
+  226:     ctx->pc = 0x1000f4u;
+  227: }
+  228: 
+  229: 
+  230: // Function: generated_fpu_rsqrt
+  231: // Address: 0x100100 - 0x100104
+  232: void generated_fpu_rsqrt(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  233: #ifdef PS2_FUNCTION_LOG_TRACKER
+  234:     PS_LOG_ENTRY("generated_fpu_rsqrt");
+  235: #endif
+  236: 
+  237:     ctx->pc = 0x100100u;
+  238: 
+  239:     ctx->pc = 0x100100u;
+  240:     ctx->f[3] = FPU_RSQRT_S(ctx->f[1], ctx->f[2]);
+  241:     ctx->pc = 0x100104u;
+  242: }
+  243: 
+  244: 
+  245: // Function: generated_fpu_max
+  246: // Address: 0x100110 - 0x100114
+  247: void generated_fpu_max(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  248: #ifdef PS2_FUNCTION_LOG_TRACKER
+  249:     PS_LOG_ENTRY("generated_fpu_max");
+  250: #endif
+  251: 
+  252:     ctx->pc = 0x100110u;
+  253: 
+  254:     ctx->pc = 0x100110u;
+  255:     ctx->f[3] = std::max(ctx->f[1], ctx->f[2]);
+  256:     ctx->pc = 0x100114u;
+  257: }
+  258: 
+  259: 
+  260: // Function: generated_fpu_min
+  261: // Address: 0x100120 - 0x100124
+  262: void generated_fpu_min(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  263: #ifdef PS2_FUNCTION_LOG_TRACKER
+  264:     PS_LOG_ENTRY("generated_fpu_min");
+  265: #endif
+  266: 
+  267:     ctx->pc = 0x100120u;
+  268: 
+  269:     ctx->pc = 0x100120u;
+  270:     ctx->f[3] = std::min(ctx->f[1], ctx->f[2]);
+  271:     ctx->pc = 0x100124u;
+  272: }
+  273: 
+  274: 
+  275: // Function: generated_fpu_cvt_w
+  276: // Address: 0x100130 - 0x100134
+  277: void generated_fpu_cvt_w(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  278: #ifdef PS2_FUNCTION_LOG_TRACKER
+  279:     PS_LOG_ENTRY("generated_fpu_cvt_w");
+  280: #endif
+  281: 
+  282:     ctx->pc = 0x100130u;
+  283: 
+  284:     ctx->pc = 0x100130u;
+  285:     { int32_t tmp = FPU_CVT_W_S(ctx->f[1]); std::memcpy(&ctx->f[3], &tmp, sizeof(tmp)); }
+  286:     ctx->pc = 0x100134u;
+  287: }
+  288: 
+  289: 
+  290: // Function: generated_fpu_sequence_mula_madda
+  291: // Address: 0x100070 - 0x100078
+  292: void generated_fpu_sequence_mula_madda(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  293: #ifdef PS2_FUNCTION_LOG_TRACKER
+  294:     PS_LOG_ENTRY("generated_fpu_sequence_mula_madda");
+  295: #endif
+  296: 
+  297:     ctx->pc = 0x100070u;
+  298: 
+  299:     ctx->pc = 0x100070u;
+  300:     FPU_SET_ACC(ctx, FPU_MUL_S(ctx->f[1], ctx->f[2]));
+  301:     ctx->pc = 0x100074u;
+  302:     FPU_SET_ACC(ctx, FPU_ADD_S(ctx->f_acc, FPU_MUL_S(ctx->f[1], ctx->f[2])));
+  303:     ctx->pc = 0x100078u;
+  304: }
+  305: 
+  306: 
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\CMakeLists.txt
+    1: cmake_minimum_required(VERSION 3.21)
+    2: 
+    3: project(ps2xTest LANGUAGES C CXX)
+    4: 
+    5: set(CMAKE_CXX_STANDARD 20)
+    6: set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    7: 
+    8: include(CTest)
+    9: if(BUILD_TESTING)
+   10:     add_subdirectory(gs_cache)
+   11: endif()
+   12: 
+   13: # Static library with test logic (no main), used by ps2xStudio
+   14: add_library(ps2_test_function_table OBJECT
+   15:     src/test_function_table.cpp
+   16: )
+   17: 
+   18: target_include_directories(ps2_test_function_table PRIVATE
+   19:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+   20:     ${CMAKE_SOURCE_DIR}/ps2xIOP/include
+   21: )
+   22: 
+   23: add_library(ps2_test_lib STATIC
+   24:     src/code_generator_tests.cpp
+   25:     src/r5900_decoder_tests.cpp
+   26:     src/elf_analyzer_tests.cpp
+   27:     src/pad_input_tests.cpp
+   28:     src/ps2_runtime_io_tests.cpp
+   29:     src/ps2_runtime_kernel_tests.cpp
+   30:     src/ps2_runtime_interrupt_tests.cpp
+   31:     src/ps2_memory_tests.cpp
+   32:     src/ps2_vu1_tests.cpp
+   33:     src/ps2_vu_tests.cpp
+   34:     src/ps2_gs_tests.cpp
+   35:     src/ps2_iop_tests.cpp
+   36:     src/ps2_sif_rpc_tests.cpp
+   37:     src/ps2_sif_dma_tests.cpp
+   38:     src/ps2_recompiler_tests.cpp
+   39:     src/ps2_runtime_expansion_tests.cpp
+   40:     src/ps2_float_semantics_tests.cpp
+   41:     src/ps2_audio_stream_tests.cpp
+   42: )
+   43: 
+   44: # Build-time generator for genuine emitted FPU guest functions.
+   45: add_executable(ps2_generate_fpu_execution_fixture
+   46:     src/generate_fpu_execution_fixture.cpp
+   47: )
+   48: target_link_libraries(ps2_generate_fpu_execution_fixture PRIVATE ps2_recomp_lib)
+   49: 
+   50: set(GENERATED_FPU_EXECUTION_SOURCE
+   51:     "${CMAKE_CURRENT_BINARY_DIR}/generated_fpu_execution_fixture.cpp"
+   52: )
+   53: 
+   54: add_custom_command(
+   55:     OUTPUT "${GENERATED_FPU_EXECUTION_SOURCE}"
+   56:     COMMAND $<TARGET_FILE:ps2_generate_fpu_execution_fixture>
+   57:             "${GENERATED_FPU_EXECUTION_SOURCE}"
+   58:     DEPENDS ps2_generate_fpu_execution_fixture
+   59:     VERBATIM
+   60: )
+   61: 
+   62: set_source_files_properties(
+   63:     "${GENERATED_FPU_EXECUTION_SOURCE}"
+   64:     PROPERTIES GENERATED TRUE
+   65: )
+   66: 
+   67: target_sources(ps2_test_lib PRIVATE
+   68:     src/generated_fpu_execution_tests.cpp
+   69:     "${GENERATED_FPU_EXECUTION_SOURCE}"
+   70: )
+   71: target_include_directories(ps2_test_lib PRIVATE
+   72:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+   73:     ${CMAKE_SOURCE_DIR}/ps2xRecomp/include
+   74:     ${CMAKE_SOURCE_DIR}/ps2xAnalyzer/include
+   75:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+   76:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/src/lib
+   77: )
+   78: 
+   79: target_link_libraries(ps2_test_lib PRIVATE
+   80:     ps2_recomp_lib
+   81:     ps2_analyzer_lib
+   82:     ps2_runtime
+   83:     ps2_iop
+   84: )
+   85: 
+   86: if(UNIX AND NOT APPLE)
+   87:     target_link_libraries(ps2_test_lib PRIVATE ${CMAKE_DL_LIBS})
+   88: endif()
+   89: 
+   90: add_executable(ps2x_tests
+   91:     src/main.cpp
+   92:     $<TARGET_OBJECTS:ps2_test_function_table>
+   93: )
+   94: 
+   95: option(PRINT_GENERATED_CODE "Print generated code in tests" OFF)
+   96: if(PRINT_GENERATED_CODE)
+   97: 
+   98:     target_compile_definitions(ps2x_tests PRIVATE PRINT_GENERATED_CODE)
+   99:     target_compile_definitions(ps2_test_lib PRIVATE PRINT_GENERATED_CODE)
+  100: endif()
+  101: 
+  102: target_include_directories(ps2x_tests PRIVATE
+  103:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+  104:     ${CMAKE_SOURCE_DIR}/ps2xRecomp/include
+  105:     ${CMAKE_SOURCE_DIR}/ps2xAnalyzer/include
+  106:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+  107: )
+  108: 
+  109: target_link_libraries(ps2x_tests PRIVATE
+  110:     ps2_test_lib
+  111:     ps2_recomp_lib
+  112:     ps2_analyzer_lib
+  113:     ps2_runtime
+  114: )
+  115: 
+  116: # VU/GS tests intentionally instantiate large interpreter state.
+  117: # Windows executables default to a much smaller stack than Linux, and
+  118: # sanitizer/debug instrumentation can push these test frames over 1 MiB.
+  119: if(MSVC)
+  120:     target_link_options(ps2x_tests PRIVATE "/STACK:8388608")
+  121: elseif(MINGW)
+  122:     target_link_options(ps2x_tests PRIVATE "--stack,8388608")
+  123: endif()
+  124: 
+  125: if(COMMAND ps2x_stage_ffmpeg_runtime_dlls)
+  126:     ps2x_stage_ffmpeg_runtime_dlls(ps2x_tests)
+  127: endif()
+  128: 
+  129: include("${CMAKE_SOURCE_DIR}/ps2xRuntime/cmake/ReleaseMode.cmake")
+  130: 
+  131: if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  132:     EnableFastReleaseMode(ps2_test_lib)
+  133:     EnableFastReleaseMode(ps2x_tests)
+  134: endif()
+  135: 
+  136: 
+  137: # Isolated generated FPU execution tests.
+  138: add_executable(ps2x_fpu_execution_tests src/fpu_execution_main.cpp)
+  139: target_sources(ps2x_fpu_execution_tests PRIVATE
+  140:     $<TARGET_OBJECTS:ps2_test_function_table>
+  141: )
+  142: target_include_directories(ps2x_fpu_execution_tests PRIVATE
+  143:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+  144:     ${CMAKE_SOURCE_DIR}/ps2xRuntime/include
+  145: )
+  146: target_link_libraries(ps2x_fpu_execution_tests PRIVATE
+  147:     ps2_test_lib ps2_recomp_lib ps2_analyzer_lib ps2_runtime
+  148: )
+  149: if(MSVC)
+  150:     target_link_options(ps2x_fpu_execution_tests PRIVATE "/STACK:8388608")
+  151: endif()
+  152: if(COMMAND ps2x_stage_ffmpeg_runtime_dlls)
+  153:     ps2x_stage_ffmpeg_runtime_dlls(ps2x_fpu_execution_tests)
+  154: endif()
+  155: if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  156:     EnableFastReleaseMode(ps2x_fpu_execution_tests)
+  157: endif()
+
+==========================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\CMakeLists.txt
+    1: cmake_minimum_required(VERSION 3.21)
+    2: 
+    3: if(NOT DEFINED CMAKE_TOOLCHAIN_FILE AND DEFINED ENV{VITASDK})
+    4:     set(PS2X_VITA_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake")
+    5:     if(EXISTS "${PS2X_VITA_TOOLCHAIN_FILE}")
+    6:         set(CMAKE_TOOLCHAIN_FILE "${PS2X_VITA_TOOLCHAIN_FILE}" CACHE PATH
+    7:             "Toolchain file used for cross-compiling" FORCE)
+    8:         message(STATUS "Using VitaSDK toolchain from VITASDK: ${CMAKE_TOOLCHAIN_FILE}")
+    9:     endif()
+   10: endif()
+   11: 
+   12: project(PS2RetroX)
+   13: 
+   14: set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+   15: 
+   16: option(PS2X_BUILD_RECOMP "Build ps2xRecomp" ON)
+   17: option(PS2X_BUILD_RUNTIME "Build ps2xRuntime" ON)
+   18: option(PS2X_BUILD_ANALYZER "Build ps2xAnalyzer" ON)
+   19: option(PS2X_BUILD_TEST "Build ps2xTest" ON)
+   20: option(PS2X_BUILD_STUDIO "Build ps2xStudio" ON)
+   21: 
+   22: if(ANDROID)
+   23:     message(STATUS "Android target detected, building runtime only")
+   24:     set(PS2X_BUILD_RECOMP OFF)
+   25:     set(PS2X_BUILD_ANALYZER OFF)
+   26:     set(PS2X_BUILD_TEST OFF)
+   27:     set(PS2X_BUILD_STUDIO OFF)
+   28: endif()
+   29: 
+   30: set(PS2X_IS_ARM_TARGET OFF)
+   31: set(PS2X_IS_AARCH64_TARGET OFF)
+   32: if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64|ARM64")
+   33:     set(PS2X_IS_ARM_TARGET ON)
+   34:     set(PS2X_IS_AARCH64_TARGET ON)
+   35: elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm|^ARM")
+   36:     set(PS2X_IS_ARM_TARGET ON)
+   37: endif()
+   38: 
+   39: if((CMAKE_C_COMPILER MATCHES "arm-vita-eabi") OR
+   40:    (CMAKE_CXX_COMPILER MATCHES "arm-vita-eabi"))
+   41:     set(PS2X_IS_ARM_TARGET ON)
+   42: endif()
+   43: 
+   44: if(PS2X_IS_ARM_TARGET)
+   45:     message(STATUS "ARM target detected, fetching sse2neon")
+   46: 
+   47:     include(FetchContent)
+   48:     FetchContent_Declare(
+   49:         sse2neon
+   50:         GIT_REPOSITORY https://github.com/DLTcollab/sse2neon.git
+   51:         GIT_TAG v1.9.1
+   52:         GIT_SHALLOW TRUE
+   53:     )
+   54:     FetchContent_MakeAvailable(sse2neon)
+   55: 
+   56:     include_directories(${sse2neon_SOURCE_DIR})
+   57:     add_compile_definitions(USE_SSE2NEON)
+   58: 
+   59:     if(PS2X_IS_AARCH64_TARGET AND APPLE)
+   60:         # macOS ARM64 already uses optimal defaults
+   61:         message(STATUS "macOS ARM64 - using default compiler flags")
+   62:     elseif(PS2X_IS_AARCH64_TARGET AND MSVC)
+   63:         # Windows ARM64 - MSVC already uses optimal defaults
+   64:         message(STATUS "Windows ARM64 (MSVC) - using default compiler flags")
+   65:     elseif(PS2X_IS_AARCH64_TARGET)
+   66:         # Linux ARM64 - add NEON flags
+   67:         message(STATUS "Non-Apple ARM64 - adding NEON compiler flags")
+   68:         add_compile_options(-march=armv8-a+fp+simd)
+   69: 
+   70:         # Try to enable crypto and CRC extensions if supported
+   71:         include(CheckCXXCompilerFlag)
+   72:         check_cxx_compiler_flag("-march=armv8-a+fp+simd+crypto+crc" COMPILER_SUPPORTS_CRYPTO_CRC)
+   73:         if(COMPILER_SUPPORTS_CRYPTO_CRC)
+   74:             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=armv8-a+fp+simd+crypto+crc")
+   75:             message(STATUS "Crypto and CRC extensions enabled")
+   76:         else()
+   77:             add_compile_options(-march=armv8-a+fp+simd)
+   78:         endif()
+   79:     endif()
+   80: endif()
+   81: 
+   82: if(PS2X_BUILD_RECOMP)
+   83:     add_subdirectory("ps2xRecomp")
+   84: endif()
+   85: 
+   86: if(PS2X_BUILD_RUNTIME)
+   87:     add_subdirectory("ps2xIOP")
+   88:     add_subdirectory("ps2xRuntime")
+   89: endif()
+   90: 
+   91: if(PS2X_BUILD_ANALYZER)
+   92:     add_subdirectory("ps2xAnalyzer")
+   93: endif()
+   94: 
+   95: if(PS2X_BUILD_TEST)
+   96:     add_subdirectory("ps2xTest")
+   97: endif()
+   98: 
+   99: if(PS2X_BUILD_STUDIO)
+  100:     add_subdirectory("ps2xStudio")
+  101: endif()
+
+==========================================================================================
+GENERATOR / FIXTURE REFERENCES
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\instructions.h:516: COP1_W_CVT_S = 0x20, // CVT.S.W (Convert Word Integer to Single Float)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp:130: case COP1_W_CVT_S:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\fpu_translator.cpp.20261125_192933.bak:138: case COP1_W_CVT_S:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\CMakeLists.txt:45: add_executable(ps2_generate_fpu_execution_fixture
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\CMakeLists.txt:46: src/generate_fpu_execution_fixture.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\CMakeLists.txt:48: target_link_libraries(ps2_generate_fpu_execution_fixture PRIVATE ps2_recomp_lib)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\CMakeLists.txt:51: "${CMAKE_CURRENT_BINARY_DIR}/generated_fpu_execution_fixture.cpp"
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\CMakeLists.txt:56: COMMAND $<TARGET_FILE:ps2_generate_fpu_execution_fixture>
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\CMakeLists.txt:58: DEPENDS ps2_generate_fpu_execution_fixture
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp:18: std::cerr << "Usage: generate_fpu_execution_fixture <output.cpp>\n";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp.20261125_193426.bak:18: std::cerr << "Usage: generate_fpu_execution_fixture <output.cpp>\n";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp.20261125_231917.bak:18: std::cerr << "Usage: generate_fpu_execution_fixture <output.cpp>\n";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp.20261125_233139.bak:18: std::cerr << "Usage: generate_fpu_execution_fixture <output.cpp>\n";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp.20261125_233353.bak:18: std::cerr << "Usage: generate_fpu_execution_fixture <output.cpp>\n";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\generate_fpu_execution_fixture.cpp.20261125_233445.bak:18: std::cerr << "Usage: generate_fpu_execution_fixture <output.cpp>\n";
+
+No files modified.
