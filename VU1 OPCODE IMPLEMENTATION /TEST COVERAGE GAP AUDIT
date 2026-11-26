@@ -1,0 +1,1744 @@
+MARK OF KRI — VU1 OPCODE IMPLEMENTATION / TEST COVERAGE GAP AUDIT
+Generated: 2026-11-26 11:18:34
+Root: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+
+========== IMPLEMENTATION OPCODE LITERALS ==========
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:99: 0x3F :: m_state.r = 0x3F800000u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:113: 0xFFu :: const uint32_t exponent = (bits >> 23) & 0xFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:116: 0x80 :: bits &= 0x80000000u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:118: 0xFFu :: else if (exponent == 0xFFu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:120: 0x80 :: bits = (bits & 0x80000000u) | 0x7F7FFFFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:120: 0x7F :: bits = (bits & 0x80000000u) | 0x7F7FFFFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:130: 0x80 :: const uint32_t sign = bits & 0x80000000u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:131: 0x7F :: const uint32_t magnitude = bits & 0x7FFFFFFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:132: 0xFFu :: const uint32_t exponent = (bits >> 23) & 0xFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:134: 0x2u :: laneFlags = sign != 0u ? 0x2u : 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:137: 0x1u :: laneFlags |= 0x1u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:141: 0x5u :: laneFlags |= 0x5u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:144: 0xFFu :: else if (exponent == 0xFFu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:146: 0x8u :: laneFlags |= 0x8u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:147: 0x7F :: bits = sign | 0x7F7FFFFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:156: 0x3F :: return m_unit == Unit::VU1 ? 0x3FFFu : 0x0FFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:156: 0x0F :: return m_unit == Unit::VU1 ? 0x3FFFu : 0x0FFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:182: 0x8u :: if (dest & 0x8u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:184: 0x4u :: if (dest & 0x4u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:186: 0x2u :: if (dest & 0x2u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:188: 0x1u :: if (dest & 0x1u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:223: 0x3Fu :: const uint8_t op = static_cast<uint8_t>(upper & 0x3Fu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:224: 0x3Cu :: const uint8_t special = op >= 0x3Cu
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:225: 0x7Cu :: ? static_cast<uint8_t>((upper & 3u) | ((upper >> 4) & 0x7Cu))
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:226: 0xFFu :: : 0xFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:250: 0x3Cu :: if (op < 0x3Cu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:252: 0x03u :: if (op <= 0x03u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:254: 0x07u :: else if (op <= 0x07u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:256: 0x0Bu :: else if (op <= 0x0Bu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:258: 0x0Fu :: else if (op <= 0x0Fu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:260: 0x18u :: else if (op >= 0x18u && op <= 0x1Bu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:260: 0x1Bu :: else if (op >= 0x18u && op <= 0x1Bu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:266: 0x1Cu :: case 0x1Cu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:269: 0x1Eu :: case 0x1Eu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:272: 0x20u :: case 0x20u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:275: 0x21u :: case 0x21u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:278: 0x22u :: case 0x22u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:281: 0x23u :: case 0x23u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:284: 0x24u :: case 0x24u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:287: 0x25u :: case 0x25u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:290: 0x26u :: case 0x26u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:293: 0x27u :: case 0x27u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:296: 0x28u :: case 0x28u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:299: 0x29u :: case 0x29u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:302: 0x2Au :: case 0x2Au:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:305: 0x2Cu :: case 0x2Cu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:308: 0x2Du :: case 0x2Du:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:311: 0x2Eu :: case 0x2Eu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:327: 0x03u :: if (special <= 0x03u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:329: 0x07u :: else if (special <= 0x07u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:331: 0x0Bu :: else if (special <= 0x0Bu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:333: 0x0Fu :: else if (special <= 0x0Fu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:335: 0x18u :: else if (special >= 0x18u && special <= 0x1Bu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:335: 0x1Bu :: else if (special >= 0x18u && special <= 0x1Bu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:341: 0x1Cu :: case 0x1Cu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:344: 0x1Eu :: case 0x1Eu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:347: 0x20u :: case 0x20u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:350: 0x21u :: case 0x21u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:353: 0x22u :: case 0x22u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:356: 0x23u :: case 0x23u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:359: 0x24u :: case 0x24u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:362: 0x25u :: case 0x25u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:365: 0x26u :: case 0x26u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:368: 0x27u :: case 0x27u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:371: 0x28u :: case 0x28u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:374: 0x29u :: case 0x29u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:377: 0x2Au :: case 0x2Au:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:380: 0x2Cu :: case 0x2Cu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:383: 0x2Du :: case 0x2Du:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:386: 0x2Eu :: case 0x2Eu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:409: 0x2u :: uint8_t flags = negative ? 0x2u : 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:411: 0x80 :: uint32_t bits = negative ? 0x80000000u : 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:414: 0x1u :: flags |= 0x1u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:419: 0x8u :: flags |= 0x8u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:420: 0x7F :: bits |= 0x7F7FFFFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:425: 0x5u :: flags |= 0x5u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:436: 0x3Fu :: const uint8_t op = static_cast<uint8_t>(upper & 0x3Fu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:437: 0x3Cu :: const uint8_t special = op >= 0x3Cu ? static_cast<uint8_t>((upper & 3u) | ((upper >> 4) & 0x7Cu)) : 0xFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:437: 0x7Cu :: const uint8_t special = op >= 0x3Cu ? static_cast<uint8_t>((upper & 3u) | ((upper >> 4) & 0x7Cu)) : 0xFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:437: 0xFFu :: const uint8_t special = op >= 0x3Cu ? static_cast<uint8_t>((upper & 3u) | ((upper >> 4) & 0x7Cu)) : 0xFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:439: 0x08u :: (op >= 0x08u && op <= 0x0Fu) ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:439: 0x0Fu :: (op >= 0x08u && op <= 0x0Fu) ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:440: 0x21u :: op == 0x21u || op == 0x23u || op == 0x25u || op == 0x27u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:440: 0x23u :: op == 0x21u || op == 0x23u || op == 0x25u || op == 0x27u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:440: 0x25u :: op == 0x21u || op == 0x23u || op == 0x25u || op == 0x27u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:440: 0x27u :: op == 0x21u || op == 0x23u || op == 0x25u || op == 0x27u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:441: 0x29u :: op == 0x29u || op == 0x2Du || op == 0x2Eu ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:441: 0x2Du :: op == 0x29u || op == 0x2Du || op == 0x2Eu ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:441: 0x2Eu :: op == 0x29u || op == 0x2Du || op == 0x2Eu ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:442: 0x08u :: (special >= 0x08u && special <= 0x0Fu) ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:442: 0x0Fu :: (special >= 0x08u && special <= 0x0Fu) ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:443: 0x21u :: special == 0x21u || special == 0x23u || special == 0x25u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:443: 0x23u :: special == 0x21u || special == 0x23u || special == 0x25u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:443: 0x25u :: special == 0x21u || special == 0x23u || special == 0x25u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:444: 0x27u :: special == 0x27u || special == 0x29u || special == 0x2Du;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:444: 0x29u :: special == 0x27u || special == 0x29u || special == 0x2Du;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:444: 0x2Du :: special == 0x27u || special == 0x29u || special == 0x2Du;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:456: 0x2Eu :: const uint8_t leftComponent = op == 0x2Eu ? crossLeft[component] : static_cast<uint8_t>(component);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:459: 0x08u :: if ((op >= 0x08u && op <= 0x0Fu) || (special >= 0x08u && special <= 0x0Fu))
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:459: 0x0Fu :: if ((op >= 0x08u && op <= 0x0Fu) || (special >= 0x08u && special <= 0x0Fu))
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:459: 0x08u :: if ((op >= 0x08u && op <= 0x0Fu) || (special >= 0x08u && special <= 0x0Fu))
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:459: 0x0Fu :: if ((op >= 0x08u && op <= 0x0Fu) || (special >= 0x08u && special <= 0x0Fu))
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:461: 0x08u :: right = normalizeOperand(m_state.vf[ft][(op >= 0x08u && op <= 0x0Fu ? op : special) & 3u]);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:461: 0x0Fu :: right = normalizeOperand(m_state.vf[ft][(op >= 0x08u && op <= 0x0Fu ? op : special) & 3u]);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:463: 0x21u :: else if (op == 0x21u || op == 0x25u || special == 0x21u || special == 0x25u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:463: 0x25u :: else if (op == 0x21u || op == 0x25u || special == 0x21u || special == 0x25u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:463: 0x21u :: else if (op == 0x21u || op == 0x25u || special == 0x21u || special == 0x25u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:463: 0x25u :: else if (op == 0x21u || op == 0x25u || special == 0x21u || special == 0x25u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:467: 0x23u :: else if (op == 0x23u || op == 0x27u || special == 0x23u || special == 0x27u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:467: 0x27u :: else if (op == 0x23u || op == 0x27u || special == 0x23u || special == 0x27u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:467: 0x23u :: else if (op == 0x23u || op == 0x27u || special == 0x23u || special == 0x27u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:467: 0x27u :: else if (op == 0x23u || op == 0x27u || special == 0x23u || special == 0x27u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:471: 0x2Eu :: else if (op == 0x2Eu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:486: 0xFu :: extraSticky |= productFlags & 0xFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:506: 0x1u :: if ((flags & 0x1u) != 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:508: 0x2u :: if ((flags & 0x2u) != 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:510: 0x4u :: if ((flags & 0x4u) != 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:512: 0x8u :: if ((flags & 0x8u) != 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:528: 0xFF :: reportReservedInstruction(true, 0xFFFFFFFFu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:575: 0xFC :: entry.status = static_cast<uint32_t>(immediate) & 0xFC0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:580: 0xFF :: reportReservedInstruction(false, 0xFFFFFFFEu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:585: 0x3Fu :: m_workingClip = ((m_workingClip << 6) | (clip & 0x3Fu)) & 0xFFFFFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:585: 0xFF :: m_workingClip = ((m_workingClip << 6) | (clip & 0x3Fu)) & 0xFFFFFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:599: 0xFF :: reportReservedInstruction(true, 0xFFFFFFFDu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:604: 0xFF :: m_workingClip = clip & 0xFFFFFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:623: 0xFF :: reportReservedInstruction(false, 0xFFFFFFFAu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:633: 0x30u :: m_fdiv.statusDi = statusDi & 0x30u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:652: 0xFF :: reportReservedInstruction(false, 0xFFFFFFF9u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:669: 0xFF :: reportReservedInstruction(false, 0xFFFFFFFCu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:696: 0xFF :: reportReservedInstruction(false, 0xFFFFFFF7u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:717: 0xFF :: reportReservedInstruction(false, 0xFFFFFFF6u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:742: 0xFF :: reportReservedInstruction(true, 0xFFFFFFF5u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:756: 0xFu :: const uint32_t current = entry.status & 0xFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:757: 0xFF :: m_state.status = (m_state.status & 0xFF0u) | current | ((current | entry.extraSticky) << 6);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:761: 0x03 :: m_state.status = (m_state.status & 0x03Fu) | (entry.status & 0xFC0u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:761: 0xFC :: m_state.status = (m_state.status & 0x03Fu) | (entry.status & 0xFC0u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:771: 0x30u :: const uint32_t currentDi = m_fdiv.statusDi & 0x30u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:772: 0xFC :: m_state.status = (m_state.status & 0xFCFu) | currentDi | (currentDi << 6);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:854: 0xFF :: reportReservedInstruction(false, 0xFFFFFFFBu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:871: 0x7F :: const uint32_t nloop = static_cast<uint32_t>(tagLo & 0x7FFFu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:872: 0x3u :: const uint32_t format = static_cast<uint32_t>((tagLo >> 58) & 0x3u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:873: 0xFu :: uint32_t nreg = static_cast<uint32_t>((tagLo >> 60) & 0xFu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:886: 0xFF :: reportReservedInstruction(false, 0xFFFFFFF8u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:893: 0xFF :: reportReservedInstruction(false, 0xFFFFFFFBu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1084: 0x3Fu :: const uint8_t op = static_cast<uint8_t>(upper & 0x3Fu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1090: 0x2Fu :: if (op <= 0x2Fu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1094: 0x1Bu :: if (op <= 0x1Bu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1096: 0x28u :: else if (op >= 0x28u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1097: 0x2Eu :: addVfRead(usage, ft, op == 0x2Eu ? 0xEu : dest);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1097: 0xEu :: addVfRead(usage, ft, op == 0x2Eu ? 0xEu : dest);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1098: 0x08u :: if (op == 0x08u || op == 0x09u || op == 0x0Au || op == 0x0Bu ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1098: 0x09u :: if (op == 0x08u || op == 0x09u || op == 0x0Au || op == 0x0Bu ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1098: 0x0Au :: if (op == 0x08u || op == 0x09u || op == 0x0Au || op == 0x0Bu ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1098: 0x0Bu :: if (op == 0x08u || op == 0x09u || op == 0x0Au || op == 0x0Bu ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1099: 0x0Cu :: op == 0x0Cu || op == 0x0Du || op == 0x0Eu || op == 0x0Fu ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1099: 0x0Du :: op == 0x0Cu || op == 0x0Du || op == 0x0Eu || op == 0x0Fu ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1099: 0x0Eu :: op == 0x0Cu || op == 0x0Du || op == 0x0Eu || op == 0x0Fu ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1099: 0x0Fu :: op == 0x0Cu || op == 0x0Du || op == 0x0Eu || op == 0x0Fu ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1100: 0x21u :: op == 0x21u || op == 0x23u || op == 0x25u || op == 0x27u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1100: 0x23u :: op == 0x21u || op == 0x23u || op == 0x25u || op == 0x27u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1100: 0x25u :: op == 0x21u || op == 0x23u || op == 0x25u || op == 0x27u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1100: 0x27u :: op == 0x21u || op == 0x23u || op == 0x25u || op == 0x27u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1101: 0x29u :: op == 0x29u || op == 0x2Du || op == 0x2Eu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1101: 0x2Du :: op == 0x29u || op == 0x2Du || op == 0x2Eu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1101: 0x2Eu :: op == 0x29u || op == 0x2Du || op == 0x2Eu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1108: 0x3Cu :: if (op >= 0x3Cu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1110: 0x7Cu :: const uint8_t special = static_cast<uint8_t>((upper & 3u) | ((upper >> 4) & 0x7Cu));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1112: 0x0Fu :: special <= 0x0Fu ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1113: 0x18u :: (special >= 0x18u && special <= 0x1Cu) ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1113: 0x1Cu :: (special >= 0x18u && special <= 0x1Cu) ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1114: 0x1Eu :: special == 0x1Eu ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1115: 0x20u :: (special >= 0x20u && special <= 0x2Au) ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1115: 0x2Au :: (special >= 0x20u && special <= 0x2Au) ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1116: 0x2Cu :: (special >= 0x2Cu && special <= 0x2Eu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1116: 0x2Eu :: (special >= 0x2Cu && special <= 0x2Eu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1120: 0x1Bu :: if (special <= 0x1Bu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1122: 0x28u :: else if ((special >= 0x28u && special <= 0x2Eu))
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1122: 0x2Eu :: else if ((special >= 0x28u && special <= 0x2Eu))
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1123: 0x2Eu :: addVfRead(usage, ft, special == 0x2Eu ? 0xEu : dest);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1123: 0xEu :: addVfRead(usage, ft, special == 0x2Eu ? 0xEu : dest);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1125: 0x08u :: if ((special >= 0x08u && special <= 0x0Fu) ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1125: 0x0Fu :: if ((special >= 0x08u && special <= 0x0Fu) ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1126: 0x21u :: special == 0x21u || special == 0x23u || special == 0x25u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1126: 0x23u :: special == 0x21u || special == 0x23u || special == 0x25u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1126: 0x25u :: special == 0x21u || special == 0x23u || special == 0x25u ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1127: 0x27u :: special == 0x27u || special == 0x29u || special == 0x2Du)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1127: 0x29u :: special == 0x27u || special == 0x29u || special == 0x2Du)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1127: 0x2Du :: special == 0x27u || special == 0x29u || special == 0x2Du)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1132: 0x10u :: else if (special >= 0x10u && special <= 0x17u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1132: 0x17u :: else if (special >= 0x10u && special <= 0x17u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1137: 0x1Du :: else if (special == 0x1Du)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1142: 0x1Fu :: else if (special == 0x1Fu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1144: 0xEu :: addVfRead(usage, fs, 0xEu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1145: 0x1u :: addVfRead(usage, ft, 0x1u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1148: 0x2Fu :: else if (special != 0x2Fu && special != 0x30u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1148: 0x30u :: else if (special != 0x2Fu && special != 0x30u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1162: 0x80 :: if (lower == 0u || lower == 0x8000033Cu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1165: 0x7Fu :: const uint8_t opHi = static_cast<uint8_t>((lower >> 25) & 0x7Fu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1185: 0x00 :: case 0x00:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1191: 0x01 :: case 0x01:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1197: 0x04 :: case 0x04:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1203: 0x05 :: case 0x05:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1209: 0x08 :: case 0x08:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1210: 0x09 :: case 0x09:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1217: 0x10 :: case 0x10:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1218: 0x12 :: case 0x12:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1219: 0x13 :: case 0x13:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1225: 0x11 :: case 0x11:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1230: 0x14 :: case 0x14:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1231: 0x16 :: case 0x16:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1232: 0x17 :: case 0x17:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1237: 0x15 :: case 0x15:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1241: 0x18 :: case 0x18:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1242: 0x1A :: case 0x1A:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1243: 0x1B :: case 0x1B:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1249: 0x1C :: case 0x1C:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1255: 0x20 :: case 0x20:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1258: 0x21 :: case 0x21:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1263: 0x24 :: case 0x24:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1267: 0x25 :: case 0x25:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1273: 0x28 :: case 0x28:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1274: 0x29 :: case 0x29:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1279: 0x2C :: case 0x2C:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1280: 0x2D :: case 0x2D:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1281: 0x2E :: case 0x2E:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1282: 0x2F :: case 0x2F:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1286: 0x40 :: case 0x40:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1293: 0x3Fu :: const uint8_t direct = static_cast<uint8_t>(lower & 0x3Fu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1294: 0x30u :: if (direct == 0x30u || direct == 0x31u || direct == 0x34u || direct == 0x35u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1294: 0x31u :: if (direct == 0x30u || direct == 0x31u || direct == 0x34u || direct == 0x35u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1294: 0x34u :: if (direct == 0x30u || direct == 0x31u || direct == 0x34u || direct == 0x35u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1294: 0x35u :: if (direct == 0x30u || direct == 0x31u || direct == 0x34u || direct == 0x35u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1304: 0x32u :: if (direct == 0x32u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1313: 0x3Cu :: if (direct < 0x3Cu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1319: 0x7Cu :: const uint8_t special = static_cast<uint8_t>((lower & 3u) | ((lower >> 4) & 0x7Cu));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1322: 0x30 :: case 0x30:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1323: 0x31 :: case 0x31:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1326: 0x31u :: addVfRead(usage, vfS, special == 0x31u ? 0xFu : dest);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1326: 0xFu :: addVfRead(usage, vfS, special == 0x31u ? 0xFu : dest);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1329: 0x34 :: case 0x34:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1330: 0x36 :: case 0x36:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1339: 0x35 :: case 0x35:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1340: 0x37 :: case 0x37:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1348: 0x38 :: case 0x38:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1354: 0x39 :: case 0x39:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1359: 0x3A :: case 0x3A:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1365: 0x3B :: case 0x3B:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1369: 0x3C :: case 0x3C:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1376: 0x3D :: case 0x3D:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1382: 0x3E :: case 0x3E:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1388: 0x3F :: case 0x3F:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1394: 0x40 :: case 0x40:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1395: 0x41 :: case 0x41:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1400: 0x42 :: case 0x42:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1401: 0x43 :: case 0x43:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1406: 0x64 :: case 0x64:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1416: 0x68 :: case 0x68:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1417: 0x69 :: case 0x69:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1422: 0x6C :: case 0x6C:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1432: 0x70 :: case 0x70:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1433: 0x71 :: case 0x71:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1434: 0x72 :: case 0x72:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1435: 0x73 :: case 0x73:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1436: 0x74 :: case 0x74:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1437: 0x75 :: case 0x75:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1438: 0x76 :: case 0x76:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1439: 0x77 :: case 0x77:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1440: 0x78 :: case 0x78:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1441: 0x79 :: case 0x79:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1442: 0x7A :: case 0x7A:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1443: 0x7C :: case 0x7C:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1444: 0x7D :: case 0x7D:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1453: 0x70 :: case 0x70:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1456: 0x71 :: case 0x71:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1457: 0x72 :: case 0x72:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1458: 0x77 :: case 0x77:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1461: 0x73 :: case 0x73:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1464: 0x74 :: case 0x74:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1465: 0x75 :: case 0x75:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1466: 0x7C :: case 0x7C:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1469: 0x76 :: case 0x76:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1470: 0x78 :: case 0x78:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1471: 0x7A :: case 0x7A:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1474: 0x79 :: case 0x79:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1477: 0x7D :: case 0x7D:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1483: 0x70u :: if (special >= 0x70u && special <= 0x73u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1483: 0x73u :: if (special >= 0x70u && special <= 0x73u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1484: 0xEu :: addVfRead(usage, vfS, 0xEu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1485: 0x74u :: else if (special == 0x74u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1486: 0xCu :: addVfRead(usage, vfS, 0xCu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1487: 0x75u :: else if (special == 0x75u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1488: 0xAu :: addVfRead(usage, vfS, 0xAu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1489: 0x76u :: else if (special == 0x76u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1490: 0xFu :: addVfRead(usage, vfS, 0xFu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1494: 0x7B :: case 0x7B:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1515: 0x80 :: decoded.iBit = (decoded.upper & 0x80000000u) != 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1516: 0x40 :: decoded.eBit = (decoded.upper & 0x40000000u) != 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1517: 0x20 :: decoded.mBit = (decoded.upper & 0x20000000u) != 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1518: 0x10 :: decoded.dBit = (decoded.upper & 0x10000000u) != 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1519: 0x08 :: decoded.tBit = (decoded.upper & 0x08000000u) != 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:75: 0x00 :: if (instr == 0x00000000 || instr == 0x8000033C) // NOP
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:75: 0x80 :: if (instr == 0x00000000 || instr == 0x8000033C) // NOP
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:78: 0x7F :: uint8_t opHi = (instr >> 25) & 0x7F;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:84: 0x00 :: case 0x00: // LQ (Load Quadword from VU data memory)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:88: 0xF :: uint8_t dest = (instr >> 21) & 0xF;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:100: 0x01 :: case 0x01: // SQ (Store Quadword to VU data memory)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:104: 0xF :: uint8_t dest = (instr >> 21) & 0xF;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:116: 0x04 :: case 0x04: // ILW (Integer Load Word from VU data memory)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:120: 0xF :: uint8_t dest = (instr >> 21) & 0xF;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:127: 0x8 :: if (dest & 0x8)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:129: 0x4 :: else if (dest & 0x4)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:131: 0x2 :: else if (dest & 0x2)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:138: 0xFF :: m_state.vi[it] = (int32_t)(int16_t)(v & 0xFFFF);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:142: 0x05 :: case 0x05: // ISW (Integer Store Word to VU data memory)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:146: 0xF :: uint8_t dest = (instr >> 21) & 0xF;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:152: 0xFF :: const uint32_t val = static_cast<uint32_t>(static_cast<uint16_t>(m_state.vi[it] & 0xFFFF));
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:158: 0x08 :: case 0x08: // IADDIU
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:162: 0x7F :: int16_t imm = (int16_t)(instr & 0x7FF) | ((instr >> 10) & 0x7800);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:162: 0x78 :: int16_t imm = (int16_t)(instr & 0x7FF) | ((instr >> 10) & 0x7800);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:167: 0x09 :: case 0x09: // ISUBIU
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:171: 0x7F :: int16_t imm = (int16_t)(instr & 0x7FF) | ((instr >> 10) & 0x7800);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:171: 0x78 :: int16_t imm = (int16_t)(instr & 0x7FF) | ((instr >> 10) & 0x7800);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:176: 0x10 :: case 0x10: // FCEQ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:178: 0xFF :: uint32_t imm24 = instr & 0xFFFFFF;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:180: 0xFF :: m_state.vi[1] = ((m_state.clip & 0xFFFFFF) == imm24) ? 1 : 0;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:183: 0x11 :: case 0x11: // FCSET
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:185: 0xFF :: queueFcset(instr & 0xFFFFFFu);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:188: 0x12 :: case 0x12: // FCAND
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:190: 0xFF :: uint32_t imm24 = instr & 0xFFFFFF;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:195: 0x13 :: case 0x13: // FCOR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:197: 0xFF :: uint32_t imm24 = instr & 0xFFFFFF;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:199: 0xFF :: m_state.vi[1] = ((m_state.clip | imm24) == 0xFFFFFF) ? 1 : 0;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:202: 0x14 :: case 0x14: // FSEQ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:205: 0x1u :: const uint16_t imm12 = static_cast<uint16_t>((((instr >> 21) & 0x1u) << 11) | (instr & 0x7FFu));
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:205: 0x7F :: const uint16_t imm12 = static_cast<uint16_t>((((instr >> 21) & 0x1u) << 11) | (instr & 0x7FFu));
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:207: 0xFF :: m_state.vi[it] = ((m_state.status & 0xFFFu) == imm12) ? 1 : 0;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:210: 0x15 :: case 0x15: // FSSET
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:212: 0x1u :: const uint16_t imm12 = static_cast<uint16_t>((((instr >> 21) & 0x1u) << 11) | (instr & 0x7FFu));
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:212: 0x7F :: const uint16_t imm12 = static_cast<uint16_t>((((instr >> 21) & 0x1u) << 11) | (instr & 0x7FFu));
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:216: 0x16 :: case 0x16: // FSAND
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:219: 0x1u :: const uint16_t imm12 = static_cast<uint16_t>((((instr >> 21) & 0x1u) << 11) | (instr & 0x7FFu));
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:219: 0x7F :: const uint16_t imm12 = static_cast<uint16_t>((((instr >> 21) & 0x1u) << 11) | (instr & 0x7FFu));
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:221: 0xFF :: m_state.vi[it] = static_cast<int32_t>((m_state.status & 0xFFFu) & imm12);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:224: 0x17 :: case 0x17: // FSOR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:227: 0x1u :: const uint16_t imm12 = static_cast<uint16_t>((((instr >> 21) & 0x1u) << 11) | (instr & 0x7FFu));
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:227: 0x7F :: const uint16_t imm12 = static_cast<uint16_t>((((instr >> 21) & 0x1u) << 11) | (instr & 0x7FFu));
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:229: 0xFF :: m_state.vi[it] = static_cast<int32_t>((m_state.status & 0xFFFu) | imm12);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:232: 0x18 :: case 0x18: // FMEQ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:237: 0xFF :: m_state.vi[it] = ((m_state.mac & 0xFFFF) == (uint32_t)(uint16_t)m_state.vi[is]) ? 1 : 0;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:240: 0x1A :: case 0x1A: // FMAND
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:248: 0x1B :: case 0x1B: // FMOR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:256: 0x1C :: case 0x1C: // FCGET
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:260: 0x0F :: m_state.vi[it] = static_cast<int32_t>(m_state.clip & 0x0FFFu);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:263: 0x20 :: case 0x20: // B (unconditional branch)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:272: 0x21 :: case 0x21: // BAL (Branch and link)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:284: 0x24 :: case 0x24: // JR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:293: 0x25 :: case 0x25: // JALR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:305: 0x28 :: case 0x28: // IBEQ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:319: 0x29 :: case 0x29: // IBNE
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:333: 0x2C :: case 0x2C: // IBLTZ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:346: 0x2D :: case 0x2D: // IBGTZ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:359: 0x2E :: case 0x2E: // IBLEZ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:372: 0x2F :: case 0x2F: // IBGEZ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:386: 0x40 :: case 0x40: // Lower1 / lower special. Bit31 set; low 6 bits select integer or special op.
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:388: 0x3Fu :: const uint8_t funct = instr & 0x3Fu;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:394: 0xF :: const uint8_t dest = (instr >> 21) & 0xF;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:398: 0x30 :: case 0x30: // IADD
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:402: 0x31 :: case 0x31: // ISUB
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:406: 0x32 :: case 0x32: // IADDI
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:408: 0x1F :: int16_t imm5 = (int16_t)((int32_t)((instr >> 6) & 0x1F) << 27 >> 27);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:413: 0x34 :: case 0x34: // IAND
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:417: 0x35 :: case 0x35: // IOR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:422: 0x3C :: case 0x3C:
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:423: 0x3D :: case 0x3D:
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:424: 0x3E :: case 0x3E:
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:425: 0x3F :: case 0x3F: // Lower1 special. Dobie decodes this as (instr & 3) | ((instr >> 4) & 0x7C).
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:425: 0x7C :: case 0x3F: // Lower1 special. Dobie decodes this as (instr & 3) | ((instr >> 4) & 0x7C).
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:427: 0x3u :: const uint8_t funct2 = (uint8_t)((instr & 0x3u) | ((instr >> 4) & 0x7Cu));
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:427: 0x7Cu :: const uint8_t funct2 = (uint8_t)((instr & 0x3u) | ((instr >> 4) & 0x7Cu));
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:430: 0x30 :: case 0x30: // MOVE
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:437: 0x31 :: case 0x31: // MR32 (rotate right by 32 bits = shift xyzw -> yzwx)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:443: 0x34 :: case 0x34: // LQI (Load Quadword, post-increment)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:457: 0x35 :: case 0x35: // SQI (Store Quadword, post-increment)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:471: 0x36 :: case 0x36: // LQD (Load Quadword, pre-decrement)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:485: 0x37 :: case 0x37: // SQD (Store Quadword, pre-decrement)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:499: 0x38 :: case 0x38: // DIV
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:501: 0x3 :: int fsf = (instr >> 21) & 0x3;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:502: 0x3 :: int ftf = (instr >> 23) & 0x3;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:509: 0x10u :: statusDi = num == 0.0f ? 0x10u : 0x20u;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:509: 0x20u :: statusDi = num == 0.0f ? 0x10u : 0x20u;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:523: 0x39 :: case 0x39: // SQRT
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:525: 0x3 :: int ftf = (instr >> 23) & 0x3;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:528: 0x10u :: val < 0.0f ? 0x10u : 0u);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:531: 0x3A :: case 0x3A: // RSQRT
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:533: 0x3 :: int fsf = (instr >> 21) & 0x3;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:534: 0x3 :: int ftf = (instr >> 23) & 0x3;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:538: 0x10u :: uint32_t statusDi = radicand < 0.0f ? 0x10u : 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:544: 0x10u :: statusDi = num == 0.0f ? 0x10u : 0x20u;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:544: 0x20u :: statusDi = num == 0.0f ? 0x10u : 0x20u;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:554: 0x3B :: case 0x3B: // WAITQ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:556: 0x3C :: case 0x3C: // MTIR (Move To Integer Register)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:560: 0x3u :: const uint32_t comp = (instr >> 21) & 0x3u;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:564: 0xFF :: m_state.vi[viT] = (int32_t)(int16_t)(fval & 0xFFFF);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:567: 0x3D :: case 0x3D: // MFIR (Move From Integer Register)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:570: 0xFF :: int32_t val = (int32_t)(int16_t)(m_state.vi[viS] & 0xFFFF);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:578: 0x3E :: case 0x3E: // ILWR - integer load word from address in VI[is]
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:585: 0x8 :: if (dest & 0x8)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:587: 0x4 :: else if (dest & 0x4)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:589: 0x2 :: else if (dest & 0x2)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:596: 0xFF :: m_state.vi[viT] = (int32_t)(int16_t)(v & 0xFFFF);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:600: 0x3F :: case 0x3F: // ISWR - integer store word to address in VI[is]
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:607: 0xFF :: static_cast<uint32_t>(static_cast<uint16_t>(m_state.vi[viT] & 0xFFFF));
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:613: 0x40 :: case 0x40: // RNEXT
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:617: 0x00 :: m_state.r = ((m_state.r << 1) ^ x ^ y) & 0x007FFFFFu;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:618: 0x3F :: m_state.r |= 0x3F800000u;
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:625: 0x41 :: case 0x41: // RGET
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:633: 0x42 :: case 0x42: // RINIT
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:638: 0x3F :: m_state.r = 0x3F800000u | (bits & 0x007FFFFFu);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:638: 0x00 :: m_state.r = 0x3F800000u | (bits & 0x007FFFFFu);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:641: 0x43 :: case 0x43: // RXOR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:646: 0x3F :: m_state.r = 0x3F800000u | ((m_state.r ^ bits) & 0x007FFFFFu);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:646: 0x00 :: m_state.r = 0x3F800000u | ((m_state.r ^ bits) & 0x007FFFFFu);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:649: 0x64 :: case 0x64: // MFP (Move From P register)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:655: 0x68 :: case 0x68: // XTOP - move current VIF1 TOP into VI register
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:658: 0x3F :: m_state.vi[viT] = (int32_t)(m_state.top & 0x3FFu);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:661: 0x69 :: case 0x69: // XITOP - move current VIF1 ITOP into VI register
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:664: 0x3F :: m_state.vi[viT] = (int32_t)(m_state.itop & 0x3FFu);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:667: 0x6C :: case 0x6C: // XGKICK - send GIF packet from VU1 data memory
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:670: 0x70 :: case 0x70: // ESADD
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:678: 0x71 :: case 0x71: // ERSADD
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:687: 0x72 :: case 0x72: // ELENG
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:695: 0x73 :: case 0x73: // ERLENG
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:704: 0x74 :: case 0x74: // EATANxy
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:711: 0x75 :: case 0x75: // EATANxz
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:718: 0x76 :: case 0x76: // ESUM
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:726: 0x77 :: case 0x77: // ERSQRT
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:740: 0x78 :: case 0x78: // ESQRT
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:747: 0x79 :: case 0x79: // ESIN
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:754: 0x7A :: case 0x7A: // ERCPR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:761: 0x7B :: case 0x7B: // WAITP
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:763: 0x7C :: case 0x7C: // EATAN
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:769: 0x7D :: case 0x7D: // EEXP
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:31: 0x3F :: uint8_t op = instr & 0x3F;
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:53: 0x00 :: case 0x00:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:54: 0x01 :: case 0x01:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:55: 0x02 :: case 0x02:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:56: 0x03 :: case 0x03: // ADDbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:64: 0x04 :: case 0x04:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:65: 0x05 :: case 0x05:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:66: 0x06 :: case 0x06:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:67: 0x07 :: case 0x07: // SUBbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:75: 0x08 :: case 0x08:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:76: 0x09 :: case 0x09:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:77: 0x0A :: case 0x0A:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:78: 0x0B :: case 0x0B: // MADDbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:86: 0x0C :: case 0x0C:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:87: 0x0D :: case 0x0D:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:88: 0x0E :: case 0x0E:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:89: 0x0F :: case 0x0F: // MSUBbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:97: 0x10 :: case 0x10:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:98: 0x11 :: case 0x11:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:99: 0x12 :: case 0x12:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:100: 0x13 :: case 0x13: // MAXbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:108: 0x14 :: case 0x14:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:109: 0x15 :: case 0x15:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:110: 0x16 :: case 0x16:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:111: 0x17 :: case 0x17: // MINIbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:119: 0x18 :: case 0x18:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:120: 0x19 :: case 0x19:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:121: 0x1A :: case 0x1A:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:122: 0x1B :: case 0x1B: // MULbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:130: 0x1C :: case 0x1C: // MULq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:135: 0x1D :: case 0x1D: // MAXi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:140: 0x1E :: case 0x1E: // MULi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:145: 0x1F :: case 0x1F: // MINIi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:150: 0x20 :: case 0x20: // ADDq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:155: 0x21 :: case 0x21: // MADDq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:160: 0x22 :: case 0x22: // ADDi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:165: 0x23 :: case 0x23: // MADDi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:170: 0x24 :: case 0x24: // SUBq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:175: 0x25 :: case 0x25: // MSUBq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:180: 0x26 :: case 0x26: // SUBi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:185: 0x27 :: case 0x27: // MSUBi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:190: 0x28 :: case 0x28: // ADD
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:195: 0x29 :: case 0x29: // MADD
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:200: 0x2A :: case 0x2A: // MUL
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:205: 0x2B :: case 0x2B: // MAX
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:210: 0x2C :: case 0x2C: // SUB
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:215: 0x2D :: case 0x2D: // MSUB
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:220: 0x2E :: case 0x2E: // OPMSUB
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:227: 0x2F :: case 0x2F: // MINI
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:233: 0x3C :: // Upper special group (low op 0x3C..0x3F).
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:233: 0x3F :: // Upper special group (low op 0x3C..0x3F).
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:235: 0x3 :: //   op = (instr & 0x3) | ((instr >> 4) & 0x7C)
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:235: 0x7C :: //   op = (instr & 0x3) | ((instr >> 4) & 0x7C)
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:237: 0x3C :: case 0x3C:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:238: 0x3D :: case 0x3D:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:239: 0x3E :: case 0x3E:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:240: 0x3F :: case 0x3F:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:242: 0x3u :: const uint8_t specialOp = static_cast<uint8_t>((instr & 0x3u) | ((instr >> 4) & 0x7Cu));
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:242: 0x7Cu :: const uint8_t specialOp = static_cast<uint8_t>((instr & 0x3u) | ((instr >> 4) & 0x7Cu));
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:247: 0x00 :: case 0x00:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:248: 0x01 :: case 0x01:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:249: 0x02 :: case 0x02:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:250: 0x03 :: case 0x03: // ADDAbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:258: 0x04 :: case 0x04:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:259: 0x05 :: case 0x05:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:260: 0x06 :: case 0x06:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:261: 0x07 :: case 0x07: // SUBAbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:269: 0x08 :: case 0x08:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:270: 0x09 :: case 0x09:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:271: 0x0A :: case 0x0A:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:272: 0x0B :: case 0x0B: // MADDAbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:280: 0x0C :: case 0x0C:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:281: 0x0D :: case 0x0D:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:282: 0x0E :: case 0x0E:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:283: 0x0F :: case 0x0F: // MSUBAbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:291: 0x10 :: case 0x10: // ITOF0
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:300: 0x11 :: case 0x11: // ITOF4
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:309: 0x12 :: case 0x12: // ITOF12
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:318: 0x13 :: case 0x13: // ITOF15
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:327: 0x14 :: case 0x14: // FTOI0
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:335: 0x15 :: case 0x15: // FTOI4
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:343: 0x16 :: case 0x16: // FTOI12
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:351: 0x17 :: case 0x17: // FTOI15
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:359: 0x18 :: case 0x18:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:360: 0x19 :: case 0x19:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:361: 0x1A :: case 0x1A:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:362: 0x1B :: case 0x1B: // MULAbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:370: 0x1C :: case 0x1C: // MULAq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:375: 0x1D :: case 0x1D: // ABS
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:380: 0x1E :: case 0x1E: // MULAi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:385: 0x1F :: case 0x1F: // CLIP
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:389: 0x7F :: const int32_t limit = (wBits & 0x7F800000u) != 0u ? static_cast<int32_t>(wBits & 0x7FFFFFFFu) : 0x007FFFFF;
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:389: 0x7F :: const int32_t limit = (wBits & 0x7F800000u) != 0u ? static_cast<int32_t>(wBits & 0x7FFFFFFFu) : 0x007FFFFF;
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:389: 0x00 :: const int32_t limit = (wBits & 0x7F800000u) != 0u ? static_cast<int32_t>(wBits & 0x7FFFFFFFu) : 0x007FFFFF;
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:402: 0x00 :: if (exceedsClipPlane(m_state.vf[fs][0], 0x00000000u))
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:403: 0x01u :: flags |= 0x01u;
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:404: 0x80 :: if (exceedsClipPlane(m_state.vf[fs][0], 0x80000000u))
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:405: 0x02u :: flags |= 0x02u;
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:406: 0x00 :: if (exceedsClipPlane(m_state.vf[fs][1], 0x00000000u))
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:407: 0x04u :: flags |= 0x04u;
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:408: 0x80 :: if (exceedsClipPlane(m_state.vf[fs][1], 0x80000000u))
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:409: 0x08u :: flags |= 0x08u;
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:410: 0x00 :: if (exceedsClipPlane(m_state.vf[fs][2], 0x00000000u))
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:411: 0x10u :: flags |= 0x10u;
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:412: 0x80 :: if (exceedsClipPlane(m_state.vf[fs][2], 0x80000000u))
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:413: 0x20u :: flags |= 0x20u;
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:417: 0x20 :: case 0x20: // ADDAq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:422: 0x21 :: case 0x21: // MADDAq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:427: 0x22 :: case 0x22: // ADDAi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:432: 0x23 :: case 0x23: // MADDAi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:437: 0x24 :: case 0x24: // SUBAq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:442: 0x25 :: case 0x25: // MSUBAq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:447: 0x26 :: case 0x26: // SUBAi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:452: 0x27 :: case 0x27: // MSUBAi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:457: 0x28 :: case 0x28: // ADDA
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:462: 0x29 :: case 0x29: // MADDA
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:467: 0x2A :: case 0x2A: // MULA
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:472: 0x2C :: case 0x2C: // SUBA
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:477: 0x2D :: case 0x2D: // MSUBA
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:482: 0x2E :: case 0x2E: // OPMULA
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:489: 0x2F :: case 0x2F:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:490: 0x30 :: case 0x30: // NOP
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:498: 0x30 :: case 0x30:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:499: 0x31 :: case 0x31:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:500: 0x32 :: case 0x32:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:501: 0x33 :: case 0x33:
+ps2xRecomp\src\lib\vu_translator.cpp:45: 0x00 :: return fmt::format("SET_GPR_U32(ctx, {}, ctx->vu0_clip_flags & 0x00FFFFFFu);", rt);
+ps2xRecomp\src\lib\vu_translator.cpp:82: 0xFF :: return fmt::format("ctx->vu0_status = static_cast<uint16_t>(GPR_U32(ctx, {}) & 0xFFFFu);", rt);
+ps2xRecomp\src\lib\vu_translator.cpp:88: 0x00 :: return fmt::format("ctx->vu0_clip_flags = GPR_U32(ctx, {}) & 0x00FFFFFFu;", rt);
+ps2xRecomp\src\lib\vu_translator.cpp:98: 0x00 :: return fmt::format("ctx->vu0_fbrst = GPR_U32(ctx, {}) & 0x00000C0Cu;", rt);
+ps2xRecomp\src\lib\vu_translator.cpp:124: 0x3F :: const uint8_t special1_func = static_cast<uint8_t>(inst.function & 0x3F);
+ps2xRecomp\src\lib\vu_translator.cpp:125: 0x3C :: if (special1_func >= 0x3C) // Special2 Table
+ps2xRecomp\src\lib\vu_translator.cpp:127: 0x1F :: const uint8_t vu_func = static_cast<uint8_t>((((inst.raw >> 6) & 0x1F) << 2) | (inst.raw & 0x3));
+ps2xRecomp\src\lib\vu_translator.cpp:127: 0x3 :: const uint8_t vu_func = static_cast<uint8_t>((((inst.raw >> 6) & 0x1F) << 2) | (inst.raw & 0x3));
+ps2xRecomp\src\lib\vu_translator.cpp:230: 0x7F :: return fmt::format("{{ __m128 res = _mm_and_ps(ctx->vu0_vf[{}], _mm_castsi128_ps(_mm_set1_epi32(0x7FFFFFFF))); "
+ps2xRecomp\src\lib\vu_translator.cpp:234: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translator.cpp:234: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translator.cpp:235: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translator.cpp:235: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translator.cpp:244: 0x1 :: (dest_mask & 0x1) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translator.cpp:245: 0x2 :: (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translator.cpp:246: 0x4 :: (dest_mask & 0x4) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translator.cpp:247: 0x8 :: (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translator.cpp:258: 0x1 :: (dest_mask & 0x1) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translator.cpp:259: 0x2 :: (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translator.cpp:260: 0x4 :: (dest_mask & 0x4) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translator.cpp:261: 0x8 :: (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translator.cpp:266: 0x3 :: uint8_t field = inst.function & 0x3;
+ps2xRecomp\src\lib\vu_translator.cpp:272: 0x80 :: "__m128 neg_ft = _mm_xor_ps(ft, _mm_castsi128_ps(_mm_set1_epi32(0x80000000))); "
+ps2xRecomp\src\lib\vu_translator.cpp:277: 0x1 :: "uint32_t flags = ((lt_mask & 0x1) << 0) | ((gt_mask & 0x1) << 1) | "
+ps2xRecomp\src\lib\vu_translator.cpp:277: 0x1 :: "uint32_t flags = ((lt_mask & 0x1) << 0) | ((gt_mask & 0x1) << 1) | "
+ps2xRecomp\src\lib\vu_translator.cpp:278: 0x2 :: "((lt_mask & 0x2) << 1) | ((gt_mask & 0x2) << 2) | "
+ps2xRecomp\src\lib\vu_translator.cpp:278: 0x2 :: "((lt_mask & 0x2) << 1) | ((gt_mask & 0x2) << 2) | "
+ps2xRecomp\src\lib\vu_translator.cpp:279: 0x4 :: "((lt_mask & 0x4) << 2) | ((gt_mask & 0x4) << 3); "
+ps2xRecomp\src\lib\vu_translator.cpp:279: 0x4 :: "((lt_mask & 0x4) << 2) | ((gt_mask & 0x4) << 3); "
+ps2xRecomp\src\lib\vu_translator.cpp:280: 0x3F :: "ctx->vu0_clip_flags = ((ctx->vu0_clip_flags << 6) | (flags & 0x3F)) & 0xFFFFFF; }}",
+ps2xRecomp\src\lib\vu_translator.cpp:280: 0xFF :: "ctx->vu0_clip_flags = ((ctx->vu0_clip_flags << 6) | (flags & 0x3F)) & 0xFFFFFF; }}",
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:17: 0x3 :: uint8_t field = inst.function & 0x3;
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:19: 0x1 :: return fmt::format("{{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, vft, shuffle_pattern, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:19: 0x2 :: return fmt::format("{{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, vft, shuffle_pattern, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:19: 0x4 :: return fmt::format("{{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, vft, shuffle_pattern, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:19: 0x8 :: return fmt::format("{{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, vft, shuffle_pattern, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:28: 0x3 :: uint8_t field = inst.function & 0x3;
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:30: 0x1 :: return fmt::format("{{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, vft, shuffle_pattern, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:30: 0x2 :: return fmt::format("{{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, vft, shuffle_pattern, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:30: 0x4 :: return fmt::format("{{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, vft, shuffle_pattern, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:30: 0x8 :: return fmt::format("{{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, vft, shuffle_pattern, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:39: 0x3 :: uint8_t field = inst.function & 0x3;
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:41: 0x1 :: return fmt::format("{{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, vft, shuffle_pattern, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:41: 0x2 :: return fmt::format("{{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, vft, shuffle_pattern, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:41: 0x4 :: return fmt::format("{{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, vft, shuffle_pattern, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:41: 0x8 :: return fmt::format("{{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, vft, shuffle_pattern, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:50: 0x1 :: return fmt::format("{{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:50: 0x2 :: return fmt::format("{{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:50: 0x4 :: return fmt::format("{{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:50: 0x8 :: return fmt::format("{{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:59: 0x1 :: return fmt::format("{{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:59: 0x2 :: return fmt::format("{{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:59: 0x4 :: return fmt::format("{{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:59: 0x8 :: return fmt::format("{{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:68: 0x1 :: return fmt::format("{{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:68: 0x2 :: return fmt::format("{{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:68: 0x4 :: return fmt::format("{{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:68: 0x8 :: return fmt::format("{{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", vfs, vft, (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, vfd, vfd);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:98: 0xFF :: return fmt::format("{{ uint32_t bits; float src = _mm_cvtss_f32(_mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(0,0,0,{}))); std::memcpy(&bits, &src, sizeof(bits)); ctx->vi[{}] = (uint16_t)(bits & 0xFFFF); }}", inst.rd, inst.rd, fsf, inst.rt);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:109: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:109: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:110: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:110: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:116: 0x3F :: return fmt::format("{{ uint32_t addr = (uint32_t)(ctx->vi[{}] << 2) & 0x3FFC; ctx->vi[{}] = static_cast<uint16_t>(READ32(addr)); }}", inst.rd, inst.rt); // VILWR.<f> vit, (vis)
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:121: 0x3F :: return fmt::format("{{ uint32_t addr = (uint32_t)(ctx->vi[{}] << 2) & 0x3FFC; WRITE32(addr, (uint32_t)ctx->vi[{}]); }}", inst.rd, inst.rt); // VISWR.<f> vit, (vis)
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:136: 0x10 :: int32_t imm5 = (inst.sa & 0x10) ? static_cast<int32_t>(inst.sa | ~0x1F) : static_cast<int32_t>(inst.sa);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:136: 0x1F :: int32_t imm5 = (inst.sa & 0x10) ? static_cast<int32_t>(inst.sa | ~0x1F) : static_cast<int32_t>(inst.sa);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:154: 0x1F :: uint16_t instr_index = static_cast<uint16_t>((inst.raw >> 6) & 0x1FF); // imm15[8:0]
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:172: 0x1F :: "    uint16_t instr_index = ctx->vi[{}] & 0x1FF; "             // Get instruction index from VI[IS], mask to 9 bits
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:204: 0x3 :: uint8_t field = inst.function & 0x3; // Extract field from function code
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:214: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:214: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:215: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:215: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:225: 0x3 :: uint8_t field = inst.function & 0x3; // Extract field from function code
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:234: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:234: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:235: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:235: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:245: 0x3 :: uint8_t field = inst.function & 0x3;
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:253: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:253: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:254: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:254: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:264: 0x3 :: uint8_t field = inst.function & 0x3;
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:272: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:272: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:273: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:273: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:288: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:288: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:289: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:289: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:303: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:303: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:304: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:304: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:318: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:318: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:319: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:319: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:333: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:333: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:334: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:334: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:347: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:347: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:348: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:348: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:361: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:361: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:362: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:362: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:375: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:375: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:376: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:376: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:389: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:389: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:390: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:390: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:407: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:407: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:408: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:408: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:421: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:421: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:422: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:422: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:435: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:435: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:436: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:436: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:451: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:451: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:452: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:452: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:466: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:466: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:467: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:467: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:480: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:480: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:481: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:481: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:494: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:494: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:495: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:495: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:509: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:509: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:510: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:510: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:524: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:524: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:525: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:525: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:534: 0x3 :: uint8_t field = inst.function & 0x3;
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:547: 0x3 :: uint8_t field = inst.function & 0x3;
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:560: 0x3 :: uint8_t field = inst.function & 0x3;
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:574: 0x3 :: uint8_t field = inst.function & 0x3;
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:588: 0x3 :: uint8_t field = inst.function & 0x3;
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:745: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:745: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:746: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:746: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:763: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:763: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:764: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:764: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:772: 0x3F :: return fmt::format("{{ uint32_t addr = ((uint32_t)(ctx->vi[{}] & 0x3FF)) << 4; "
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:776: 0x3F :: "ctx->vi[{}] = (ctx->vi[{}] + 1) & 0x3FF; }}",
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:778: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:778: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:779: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:779: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:788: 0x3F :: return fmt::format("{{ uint32_t addr = ((uint32_t)(ctx->vi[{}] & 0x3FF)) << 4; "
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:792: 0x3F :: "ctx->vi[{}] = (ctx->vi[{}] + 1) & 0x3FF; }}",
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:795: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:795: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:796: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:796: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:804: 0x3F :: return fmt::format("{{ ctx->vi[{}] = (ctx->vi[{}] - 1) & 0x3FF; "
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:805: 0x3F :: "uint32_t addr = ((uint32_t)(ctx->vi[{}] & 0x3FF)) << 4; "
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:811: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:811: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:812: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:812: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:820: 0x3F :: return fmt::format("{{ ctx->vi[{}] = (ctx->vi[{}] - 1) & 0x3FF; "
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:821: 0x3F :: "uint32_t addr = ((uint32_t)(ctx->vi[{}] & 0x3FF)) << 4; "
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:828: 0x1 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:828: 0x2 :: (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0,
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:829: 0x4 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:829: 0x8 :: (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:836: 0x1 :: return fmt::format("{{ __m128 res = ctx->vu0_r; __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, ft_reg, ft_reg);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:836: 0x2 :: return fmt::format("{{ __m128 res = ctx->vu0_r; __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, ft_reg, ft_reg);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:836: 0x4 :: return fmt::format("{{ __m128 res = ctx->vu0_r; __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, ft_reg, ft_reg);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:836: 0x8 :: return fmt::format("{{ __m128 res = ctx->vu0_r; __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}", (dest_mask & 0x1) ? -1 : 0, (dest_mask & 0x2) ? -1 : 0, (dest_mask & 0x4) ? -1 : 0, (dest_mask & 0x8) ? -1 : 0, ft_reg, ft_reg);
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:853: 0x41 :: "    uint32_t r1 = seed * 0x41C64E6D + 0x3039;\n"
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:853: 0x30 :: "    uint32_t r1 = seed * 0x41C64E6D + 0x3039;\n"
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:854: 0x41 :: "    uint32_t r2 = r1 * 0x41C64E6D + 0x3039;\n"
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:854: 0x30 :: "    uint32_t r2 = r1 * 0x41C64E6D + 0x3039;\n"
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:855: 0x41 :: "    uint32_t r3 = r2 * 0x41C64E6D + 0x3039;\n"
+ps2xRecomp\src\lib\vu_translation_helpers.cpp:855: 0x30 :: "    uint32_t r3 = r2 * 0x41C64E6D + 0x3039;\n"
+
+========== TEST OPCODE LITERALS ==========
+ps2xTest\src\ps2_vu1_tests.cpp:16: 0x00 :: constexpr uint32_t kVuUpperNop = 0x000002FFu;
+ps2xTest\src\ps2_vu1_tests.cpp:47: 0x7F :: uint64_t tag = static_cast<uint64_t>(nloop & 0x7FFFu);
+ps2xTest\src\ps2_vu1_tests.cpp:50: 0x3u :: tag |= (static_cast<uint64_t>(flg & 0x3u) << 58);
+ps2xTest\src\ps2_vu1_tests.cpp:51: 0xFu :: tag |= (static_cast<uint64_t>(nreg & 0xFu) << 60);
+ps2xTest\src\ps2_vu1_tests.cpp:57: 0x40u :: return (0x40u << 25) |
+ps2xTest\src\ps2_vu1_tests.cpp:58: 0xFu :: (static_cast<uint32_t>(dest & 0xFu) << 21) |
+ps2xTest\src\ps2_vu1_tests.cpp:59: 0x1Fu :: (static_cast<uint32_t>(it & 0x1Fu) << 16) |
+ps2xTest\src\ps2_vu1_tests.cpp:60: 0x1Fu :: (static_cast<uint32_t>(is & 0x1Fu) << 11) |
+ps2xTest\src\ps2_vu1_tests.cpp:61: 0x1Fu :: (static_cast<uint32_t>(id & 0x1Fu) << 6) |
+ps2xTest\src\ps2_vu1_tests.cpp:62: 0x7Cu :: (static_cast<uint32_t>(specialOp & 0x7Cu) << 4) |
+ps2xTest\src\ps2_vu1_tests.cpp:63: 0x3u :: static_cast<uint32_t>(specialOp & 0x3u) |
+ps2xTest\src\ps2_vu1_tests.cpp:64: 0x3Cu :: 0x3Cu;
+ps2xTest\src\ps2_vu1_tests.cpp:69: 0x40u :: return (0x40u << 25) |
+ps2xTest\src\ps2_vu1_tests.cpp:70: 0xFu :: (static_cast<uint32_t>(dest & 0xFu) << 21) |
+ps2xTest\src\ps2_vu1_tests.cpp:71: 0x1Fu :: (static_cast<uint32_t>(it & 0x1Fu) << 16) |
+ps2xTest\src\ps2_vu1_tests.cpp:72: 0x1Fu :: (static_cast<uint32_t>(is & 0x1Fu) << 11) |
+ps2xTest\src\ps2_vu1_tests.cpp:73: 0x1Fu :: (static_cast<uint32_t>(id & 0x1Fu) << 6) |
+ps2xTest\src\ps2_vu1_tests.cpp:74: 0x3Fu :: static_cast<uint32_t>(funct & 0x3Fu);
+ps2xTest\src\ps2_vu1_tests.cpp:79: 0xFu :: return (static_cast<uint32_t>(dest & 0xFu) << 21) |
+ps2xTest\src\ps2_vu1_tests.cpp:80: 0x1Fu :: (static_cast<uint32_t>(ft & 0x1Fu) << 16) |
+ps2xTest\src\ps2_vu1_tests.cpp:81: 0x1Fu :: (static_cast<uint32_t>(fs & 0x1Fu) << 11) |
+ps2xTest\src\ps2_vu1_tests.cpp:82: 0x1Fu :: (static_cast<uint32_t>(fd & 0x1Fu) << 6) |
+ps2xTest\src\ps2_vu1_tests.cpp:83: 0x3Fu :: static_cast<uint32_t>(op & 0x3Fu);
+ps2xTest\src\ps2_vu1_tests.cpp:88: 0xFu :: return (static_cast<uint32_t>(dest & 0xFu) << 21) |
+ps2xTest\src\ps2_vu1_tests.cpp:89: 0x1Fu :: (static_cast<uint32_t>(ft & 0x1Fu) << 16) |
+ps2xTest\src\ps2_vu1_tests.cpp:90: 0x1Fu :: (static_cast<uint32_t>(fs & 0x1Fu) << 11) |
+ps2xTest\src\ps2_vu1_tests.cpp:91: 0x7Cu :: (static_cast<uint32_t>(specialOp & 0x7Cu) << 4) |
+ps2xTest\src\ps2_vu1_tests.cpp:92: 0x3u :: static_cast<uint32_t>(specialOp & 0x3u) |
+ps2xTest\src\ps2_vu1_tests.cpp:93: 0x3Cu :: 0x3Cu;
+ps2xTest\src\ps2_vu1_tests.cpp:98: 0x7Fu :: return (static_cast<uint32_t>(opcode & 0x7Fu) << 25) |
+ps2xTest\src\ps2_vu1_tests.cpp:99: 0x1u :: (static_cast<uint32_t>((immediate >> 11) & 0x1u) << 21) |
+ps2xTest\src\ps2_vu1_tests.cpp:100: 0xFu :: (static_cast<uint32_t>(targetVi & 0xFu) << 16) |
+ps2xTest\src\ps2_vu1_tests.cpp:101: 0x7F :: static_cast<uint32_t>(immediate & 0x7FFu);
+ps2xTest\src\ps2_vu1_tests.cpp:106: 0x7Fu :: return (static_cast<uint32_t>(opcode & 0x7Fu) << 25) |
+ps2xTest\src\ps2_vu1_tests.cpp:107: 0xFu :: (static_cast<uint32_t>(targetVi & 0xFu) << 16) |
+ps2xTest\src\ps2_vu1_tests.cpp:108: 0xFu :: (static_cast<uint32_t>(sourceVi & 0xFu) << 11);
+ps2xTest\src\ps2_vu1_tests.cpp:113: 0xFu :: return (static_cast<uint32_t>(dest & 0xFu) << 21) |
+ps2xTest\src\ps2_vu1_tests.cpp:114: 0x1Fu :: (static_cast<uint32_t>(targetVf & 0x1Fu) << 16) |
+ps2xTest\src\ps2_vu1_tests.cpp:115: 0xFu :: (static_cast<uint32_t>(baseVi & 0xFu) << 11) |
+ps2xTest\src\ps2_vu1_tests.cpp:116: 0x7F :: (static_cast<uint32_t>(imm) & 0x7FFu);
+ps2xTest\src\ps2_vu1_tests.cpp:121: 0x01u :: return (0x01u << 25) |
+ps2xTest\src\ps2_vu1_tests.cpp:122: 0xFu :: (static_cast<uint32_t>(dest & 0xFu) << 21) |
+ps2xTest\src\ps2_vu1_tests.cpp:123: 0xFu :: (static_cast<uint32_t>(baseVi & 0xFu) << 16) |
+ps2xTest\src\ps2_vu1_tests.cpp:124: 0x1Fu :: (static_cast<uint32_t>(sourceVf & 0x1Fu) << 11) |
+ps2xTest\src\ps2_vu1_tests.cpp:125: 0x7F :: (static_cast<uint32_t>(imm) & 0x7FFu);
+ps2xTest\src\ps2_vu1_tests.cpp:130: 0x08u :: return (0x08u << 25) |
+ps2xTest\src\ps2_vu1_tests.cpp:131: 0xFu :: (static_cast<uint32_t>(it & 0xFu) << 16) |
+ps2xTest\src\ps2_vu1_tests.cpp:132: 0xFu :: (static_cast<uint32_t>(is & 0xFu) << 11) |
+ps2xTest\src\ps2_vu1_tests.cpp:133: 0x7F :: (static_cast<uint32_t>(imm) & 0x7FFu);
+ps2xTest\src\ps2_vu1_tests.cpp:138: 0x20u :: return (0x20u << 25) | (static_cast<uint32_t>(imm) & 0x7FFu);
+ps2xTest\src\ps2_vu1_tests.cpp:138: 0x7F :: return (0x20u << 25) | (static_cast<uint32_t>(imm) & 0x7FFu);
+ps2xTest\src\ps2_vu1_tests.cpp:143: 0x24u :: return (0x24u << 25) |
+ps2xTest\src\ps2_vu1_tests.cpp:144: 0xFu :: (static_cast<uint32_t>(is & 0xFu) << 11);
+ps2xTest\src\ps2_vu1_tests.cpp:149: 0x29u :: return (0x29u << 25) |
+ps2xTest\src\ps2_vu1_tests.cpp:150: 0xFu :: (static_cast<uint32_t>(it & 0xFu) << 16) |
+ps2xTest\src\ps2_vu1_tests.cpp:151: 0xFu :: (static_cast<uint32_t>(is & 0xFu) << 11) |
+ps2xTest\src\ps2_vu1_tests.cpp:152: 0x7F :: (static_cast<uint32_t>(imm) & 0x7FFu);
+ps2xTest\src\ps2_vu1_tests.cpp:157: 0x04u :: return (0x04u << 25) |
+ps2xTest\src\ps2_vu1_tests.cpp:158: 0xFu :: (static_cast<uint32_t>(dest & 0xFu) << 21) |
+ps2xTest\src\ps2_vu1_tests.cpp:159: 0xFu :: (static_cast<uint32_t>(targetVi & 0xFu) << 16) |
+ps2xTest\src\ps2_vu1_tests.cpp:160: 0xFu :: (static_cast<uint32_t>(baseVi & 0xFu) << 11) |
+ps2xTest\src\ps2_vu1_tests.cpp:161: 0x7F :: (static_cast<uint32_t>(imm) & 0x7FFu);
+ps2xTest\src\ps2_vu1_tests.cpp:166: 0x38u :: return makeVuLowerSpecial(0x38u, fs, ft, 0u, static_cast<uint8_t>(((ftf & 0x3u) << 2) | (fsf & 0x3u)));
+ps2xTest\src\ps2_vu1_tests.cpp:166: 0x3u :: return makeVuLowerSpecial(0x38u, fs, ft, 0u, static_cast<uint8_t>(((ftf & 0x3u) << 2) | (fsf & 0x3u)));
+ps2xTest\src\ps2_vu1_tests.cpp:166: 0x3u :: return makeVuLowerSpecial(0x38u, fs, ft, 0u, static_cast<uint8_t>(((ftf & 0x3u) << 2) | (fsf & 0x3u)));
+ps2xTest\src\ps2_vu1_tests.cpp:171: 0x39u :: return makeVuLowerSpecial(0x39u, 0u, ft, 0u, static_cast<uint8_t>((ftf & 0x3u) << 2));
+ps2xTest\src\ps2_vu1_tests.cpp:171: 0x3u :: return makeVuLowerSpecial(0x39u, 0u, ft, 0u, static_cast<uint8_t>((ftf & 0x3u) << 2));
+ps2xTest\src\ps2_vu1_tests.cpp:199: 0x4Au :: appendU32(packet, makeVifCmd(0x4Au, 1u, instructionAddress));
+ps2xTest\src\ps2_vu1_tests.cpp:225: 0x28u :: writeVuInstructionPair(fx.code, 0u, 0u, makeVuUpper(0x28u, 0xAu, 2u, 1u, 3u)); // ADD.xz vf3, vf1, vf2
+ps2xTest\src\ps2_vu1_tests.cpp:225: 0xAu :: writeVuInstructionPair(fx.code, 0u, 0u, makeVuUpper(0x28u, 0xAu, 2u, 1u, 3u)); // ADD.xz vf3, vf1, vf2
+ps2xTest\src\ps2_vu1_tests.cpp:261: 0x22u :: const uint32_t upperAddiWithIBit = makeVuUpper(0x22u, 0xFu, 0u, 1u, 2u) | 0x80000000u; // ADDi.xyzw vf2, vf1
+ps2xTest\src\ps2_vu1_tests.cpp:261: 0xFu :: const uint32_t upperAddiWithIBit = makeVuUpper(0x22u, 0xFu, 0u, 1u, 2u) | 0x80000000u; // ADDi.xyzw vf2, vf1
+ps2xTest\src\ps2_vu1_tests.cpp:261: 0x80 :: const uint32_t upperAddiWithIBit = makeVuUpper(0x22u, 0xFu, 0u, 1u, 2u) | 0x80000000u; // ADDi.xyzw vf2, vf1
+ps2xTest\src\ps2_vu1_tests.cpp:293: 0x10u :: makeVuUpperSpecial(0x10u, 0xFu, 2u, 1u));
+ps2xTest\src\ps2_vu1_tests.cpp:293: 0xFu :: makeVuUpperSpecial(0x10u, 0xFu, 2u, 1u));
+ps2xTest\src\ps2_vu1_tests.cpp:321: 0x3Cu :: makeVuLowerSpecial(0x3Cu, 1u,
+ps2xTest\src\ps2_vu1_tests.cpp:329: 0x00 :: const uint32_t raw[4] = {0x00001111u, 0x00002222u, 0x00003333u, 0x00004444u};
+ps2xTest\src\ps2_vu1_tests.cpp:329: 0x00 :: const uint32_t raw[4] = {0x00001111u, 0x00002222u, 0x00003333u, 0x00004444u};
+ps2xTest\src\ps2_vu1_tests.cpp:329: 0x00 :: const uint32_t raw[4] = {0x00001111u, 0x00002222u, 0x00003333u, 0x00004444u};
+ps2xTest\src\ps2_vu1_tests.cpp:329: 0x00 :: const uint32_t raw[4] = {0x00001111u, 0x00002222u, 0x00003333u, 0x00004444u};
+ps2xTest\src\ps2_vu1_tests.cpp:335: 0x11 :: t.Equals(vu1.state().vi[2], 0x1111,
+ps2xTest\src\ps2_vu1_tests.cpp:337: 0x22 :: t.Equals(vu1.state().vi[3], 0x2222,
+ps2xTest\src\ps2_vu1_tests.cpp:339: 0x33 :: t.Equals(vu1.state().vi[4], 0x3333,
+ps2xTest\src\ps2_vu1_tests.cpp:341: 0x44 :: t.Equals(vu1.state().vi[5], 0x4444,
+ps2xTest\src\ps2_vu1_tests.cpp:354: 0x5u :: writeVuInstructionPair(fx.code, 0u, makeVuLq(0x5u, 4u, 1u, 1), kVuUpperNop); // LQ.yw vf4, 1(vi1)
+ps2xTest\src\ps2_vu1_tests.cpp:355: 0xAu :: writeVuInstructionPair(fx.code, 8u, makeVuSq(0xAu, 4u, 2u, 1), kVuUpperNop); // SQ.xz vf4, 1(vi2)
+ps2xTest\src\ps2_vu1_tests.cpp:393: 0x30u :: writeVuInstructionPair(fx.code, 16u, makeVuLowerDirect(0x30u, 2u, 1u, 3u), kVuUpperNop); // IADD vi3, vi2, vi1
+ps2xTest\src\ps2_vu1_tests.cpp:411: 0x68u :: writeVuInstructionPair(fx.code, 0u, makeVuLowerSpecial(0x68u, 0u, 2u), kVuUpperNop); // XTOP vi2
+ps2xTest\src\ps2_vu1_tests.cpp:412: 0x69u :: writeVuInstructionPair(fx.code, 8u, makeVuLowerSpecial(0x69u, 0u, 3u), kVuUpperNop); // XITOP vi3
+ps2xTest\src\ps2_vu1_tests.cpp:415: 0x12 :: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0x123u, 0x2ABu, 2u);
+ps2xTest\src\ps2_vu1_tests.cpp:415: 0x2A :: vu1.execute(fx.code, PS2_VU1_CODE_SIZE, fx.data, PS2_VU1_DATA_SIZE, fx.gs, &fx.mem, 0u, 0x123u, 0x2ABu, 2u);
+ps2xTest\src\ps2_vu1_tests.cpp:417: 0x12 :: t.Equals(vu1.state().vi[2], 0x123, "XTOP should move TOP into the target VI register");
+ps2xTest\src\ps2_vu1_tests.cpp:418: 0x2A :: t.Equals(vu1.state().vi[3], 0x2AB, "XITOP should move ITOP into the target VI register");
+ps2xTest\src\ps2_vu1_tests.cpp:446: 0xFu :: makeVuSq(0xFu, 1u, 1u, 0),                 // SQ.xyzw vf1, 0(vi1)
+ps2xTest\src\ps2_vu1_tests.cpp:447: 0x28u :: makeVuUpper(0x28u, 0xFu, 3u, 2u, 1u));     // ADD.xyzw vf1, vf2, vf3
+ps2xTest\src\ps2_vu1_tests.cpp:447: 0xFu :: makeVuUpper(0x28u, 0xFu, 3u, 2u, 1u));     // ADD.xyzw vf1, vf2, vf3
+ps2xTest\src\ps2_vu1_tests.cpp:490: 0x34u :: makeVuLowerSpecial(0x34u, 1u, 1u, 0u, 0xFu),
+ps2xTest\src\ps2_vu1_tests.cpp:490: 0xFu :: makeVuLowerSpecial(0x34u, 1u, 1u, 0u, 0xFu),
+ps2xTest\src\ps2_vu1_tests.cpp:491: 0x28u :: makeVuUpper(0x28u, 0x8u, 3u, 2u, 1u));
+ps2xTest\src\ps2_vu1_tests.cpp:491: 0x8u :: makeVuUpper(0x28u, 0x8u, 3u, 2u, 1u));
+ps2xTest\src\ps2_vu1_tests.cpp:532: 0x30u :: makeVuLowerSpecial(0x30u, 1u, 2u, 0u, 0x8u),
+ps2xTest\src\ps2_vu1_tests.cpp:532: 0x8u :: makeVuLowerSpecial(0x30u, 1u, 2u, 0u, 0x8u),
+ps2xTest\src\ps2_vu1_tests.cpp:533: 0x28u :: makeVuUpper(0x28u, 0x8u, 3u, 2u, 1u));
+ps2xTest\src\ps2_vu1_tests.cpp:533: 0x8u :: makeVuUpper(0x28u, 0x8u, 3u, 2u, 1u));
+ps2xTest\src\ps2_vu1_tests.cpp:559: 0x28u :: makeVuUpper(0x28u, 0x8u, 2u, 1u, 3u));
+ps2xTest\src\ps2_vu1_tests.cpp:559: 0x8u :: makeVuUpper(0x28u, 0x8u, 2u, 1u, 3u));
+ps2xTest\src\ps2_vu1_tests.cpp:562: 0x28u :: makeVuUpper(0x28u, 0x8u, 2u, 3u, 4u));
+ps2xTest\src\ps2_vu1_tests.cpp:562: 0x8u :: makeVuUpper(0x28u, 0x8u, 2u, 3u, 4u));
+ps2xTest\src\ps2_vu1_tests.cpp:589: 0x28u :: makeVuUpperSpecial(0x28u, 0x8u, 2u, 1u)); // ADDA.x acc, vf1, vf2
+ps2xTest\src\ps2_vu1_tests.cpp:589: 0x8u :: makeVuUpperSpecial(0x28u, 0x8u, 2u, 1u)); // ADDA.x acc, vf1, vf2
+ps2xTest\src\ps2_vu1_tests.cpp:592: 0x29u :: makeVuUpper(0x29u, 0x8u, 4u, 3u, 5u)); // MADD.x vf5, vf3, vf4
+ps2xTest\src\ps2_vu1_tests.cpp:592: 0x8u :: makeVuUpper(0x29u, 0x8u, 4u, 3u, 5u)); // MADD.x vf5, vf3, vf4
+ps2xTest\src\ps2_vu1_tests.cpp:616: 0x12 :: const uint32_t source[4] = {0x1234u, 0u, 0u, 0u};
+ps2xTest\src\ps2_vu1_tests.cpp:619: 0x8u :: fx.code, 0u, makeVuIlw(0x8u, 2u, 1u, 0), kVuUpperNop);
+ps2xTest\src\ps2_vu1_tests.cpp:629: 0x12 :: t.Equals(vu1.state().vi[2], 0x1234,
+ps2xTest\src\ps2_vu1_tests.cpp:631: 0x12 :: t.Equals(vu1.state().vi[3], 0x1235,
+ps2xTest\src\ps2_vu1_tests.cpp:643: 0x3Bu :: writeVuInstructionPair(fx.code, 8u, makeVuLowerSpecial(0x3Bu, 0u), kVuUpperNop);          // WAITQ
+ps2xTest\src\ps2_vu1_tests.cpp:645: 0x3Bu :: writeVuInstructionPair(fx.code, 24u, makeVuLowerSpecial(0x3Bu, 0u), kVuUpperNop);         // WAITQ
+ps2xTest\src\ps2_vu1_tests.cpp:676: 0x3Bu :: makeVuLowerSpecial(0x3Bu, 0u),
+ps2xTest\src\ps2_vu1_tests.cpp:702: 0x3Bu :: fx.code, 8u, makeVuLowerSpecial(0x3Bu, 0u),
+ps2xTest\src\ps2_vu1_tests.cpp:711: 0x41 :: t.Equals(vu1.state().status, 0x410u,
+ps2xTest\src\ps2_vu1_tests.cpp:720: 0x82 :: t.Equals(vu1.state().status, 0x820u,
+ps2xTest\src\ps2_vu1_tests.cpp:731: 0x70u :: makeVuLowerSpecial(0x70u, 1u),
+ps2xTest\src\ps2_vu1_tests.cpp:735: 0x7Bu :: makeVuLowerSpecial(0x7Bu, 0u),
+ps2xTest\src\ps2_vu1_tests.cpp:739: 0x42u :: makeVuLowerSpecial(0x42u, 2u, 0u, 0u, 0x8u),
+ps2xTest\src\ps2_vu1_tests.cpp:739: 0x8u :: makeVuLowerSpecial(0x42u, 2u, 0u, 0u, 0x8u),
+ps2xTest\src\ps2_vu1_tests.cpp:743: 0x40u :: makeVuLowerSpecial(0x40u, 0u, 3u, 0u, 0x8u),
+ps2xTest\src\ps2_vu1_tests.cpp:743: 0x8u :: makeVuLowerSpecial(0x40u, 0u, 3u, 0u, 0x8u),
+ps2xTest\src\ps2_vu1_tests.cpp:775: 0x70u :: makeVuLowerSpecial(0x70u, 1u),
+ps2xTest\src\ps2_vu1_tests.cpp:779: 0x72u :: makeVuLowerSpecial(0x72u, 1u),
+ps2xTest\src\ps2_vu1_tests.cpp:783: 0x7Bu :: makeVuLowerSpecial(0x7Bu, 0u),
+ps2xTest\src\ps2_vu1_tests.cpp:811: 0x70u :: {0x70u, 11u}, {0x71u, 18u}, {0x72u, 18u}, {0x73u, 24u},
+ps2xTest\src\ps2_vu1_tests.cpp:811: 0x71u :: {0x70u, 11u}, {0x71u, 18u}, {0x72u, 18u}, {0x73u, 24u},
+ps2xTest\src\ps2_vu1_tests.cpp:811: 0x72u :: {0x70u, 11u}, {0x71u, 18u}, {0x72u, 18u}, {0x73u, 24u},
+ps2xTest\src\ps2_vu1_tests.cpp:811: 0x73u :: {0x70u, 11u}, {0x71u, 18u}, {0x72u, 18u}, {0x73u, 24u},
+ps2xTest\src\ps2_vu1_tests.cpp:812: 0x74u :: {0x74u, 54u}, {0x75u, 54u}, {0x76u, 12u}, {0x77u, 18u},
+ps2xTest\src\ps2_vu1_tests.cpp:812: 0x75u :: {0x74u, 54u}, {0x75u, 54u}, {0x76u, 12u}, {0x77u, 18u},
+ps2xTest\src\ps2_vu1_tests.cpp:812: 0x76u :: {0x74u, 54u}, {0x75u, 54u}, {0x76u, 12u}, {0x77u, 18u},
+ps2xTest\src\ps2_vu1_tests.cpp:812: 0x77u :: {0x74u, 54u}, {0x75u, 54u}, {0x76u, 12u}, {0x77u, 18u},
+ps2xTest\src\ps2_vu1_tests.cpp:813: 0x78u :: {0x78u, 12u}, {0x79u, 29u}, {0x7Au, 12u}, {0x7Cu, 54u},
+ps2xTest\src\ps2_vu1_tests.cpp:813: 0x79u :: {0x78u, 12u}, {0x79u, 29u}, {0x7Au, 12u}, {0x7Cu, 54u},
+ps2xTest\src\ps2_vu1_tests.cpp:813: 0x7Au :: {0x78u, 12u}, {0x79u, 29u}, {0x7Au, 12u}, {0x7Cu, 54u},
+ps2xTest\src\ps2_vu1_tests.cpp:813: 0x7Cu :: {0x78u, 12u}, {0x79u, 29u}, {0x7Au, 12u}, {0x7Cu, 54u},
+ps2xTest\src\ps2_vu1_tests.cpp:814: 0x7Du :: {0x7Du, 44u}};
+ps2xTest\src\ps2_vu1_tests.cpp:825: 0x7Bu :: makeVuLowerSpecial(0x7Bu, 0u),
+ps2xTest\src\ps2_vu1_tests.cpp:852: 0x40 :: kVuUpperNop | 0x40000000u);
+ps2xTest\src\ps2_vu1_tests.cpp:872: 0x08 :: kVuUpperNop | 0x08000000u);
+ps2xTest\src\ps2_vu1_tests.cpp:898: 0x10 :: kVuUpperNop | 0x10000000u);
+ps2xTest\src\ps2_vu1_tests.cpp:924: 0x08 :: kVuUpperNop | 0x08000000u);
+ps2xTest\src\ps2_vu1_tests.cpp:994: 0x28u :: makeVuUpper(0x28u, 0x8u, 2u, 1u, 3u));
+ps2xTest\src\ps2_vu1_tests.cpp:994: 0x8u :: makeVuUpper(0x28u, 0x8u, 2u, 1u, 3u));
+ps2xTest\src\ps2_vu1_tests.cpp:997: 0x28u :: makeVuUpper(0x28u, 0x8u, 0u, 3u, 4u));
+ps2xTest\src\ps2_vu1_tests.cpp:997: 0x8u :: makeVuUpper(0x28u, 0x8u, 0u, 3u, 4u));
+ps2xTest\src\ps2_vu1_tests.cpp:1025: 0x16u :: makeVuFlagImmediate(0x16u, 1u, 0x001u),
+ps2xTest\src\ps2_vu1_tests.cpp:1025: 0x00 :: makeVuFlagImmediate(0x16u, 1u, 0x001u),
+ps2xTest\src\ps2_vu1_tests.cpp:1041: 0x00 :: vu1.state().status = 0x001u;
+ps2xTest\src\ps2_vu1_tests.cpp:1114: 0x14u :: const uint32_t firstMscal = makeVifCmd(0x14u, 0u, 0u);
+ps2xTest\src\ps2_vu1_tests.cpp:1119: 0x14u :: const uint32_t secondMscal = makeVifCmd(0x14u, 0u, 0u);
+ps2xTest\src\ps2_vu1_tests.cpp:1167: 0xC0u :: vuData[i] = static_cast<uint8_t>(0xC0u + i);
+ps2xTest\src\ps2_vu1_tests.cpp:1170: 0x6Cu :: const uint32_t lower = makeVuLowerSpecial(0x6Cu, 1u);
+ps2xTest\src\ps2_vu1_tests.cpp:1195: 0xC0u :: if (captured[0].size() < 32u || captured[0][16u + i] != static_cast<uint8_t>(0xC0u + i))
+ps2xTest\src\ps2_vu1_tests.cpp:1223: 0xFF :: std::memset(data, 0xFF, PS2_VU1_DATA_SIZE);
+ps2xTest\src\ps2_vu1_tests.cpp:1230: 0x6Cu :: makeVuLowerSpecial(0x6Cu, 1u),
+ps2xTest\src\ps2_vu1_tests.cpp:1234: 0xFu :: makeVuSq(0xFu, 4u, 2u, 0),
+ps2xTest\src\ps2_vu1_tests.cpp:1281: 0x11 :: std::memset(data + 16u, 0x11, 16u);
+ps2xTest\src\ps2_vu1_tests.cpp:1282: 0x22 :: std::memset(data + 48u, 0x22, 16u);
+ps2xTest\src\ps2_vu1_tests.cpp:1285: 0x6Cu :: makeVuLowerSpecial(0x6Cu, 1u),
+ps2xTest\src\ps2_vu1_tests.cpp:1289: 0x6Cu :: makeVuLowerSpecial(0x6Cu, 2u),
+ps2xTest\src\ps2_vu1_tests.cpp:1305: 0x11u :: t.IsTrue(captured[0].size() >= 32u && captured[0][16u] == 0x11u,
+ps2xTest\src\ps2_vu1_tests.cpp:1307: 0x22u :: t.IsTrue(captured[1].size() >= 32u && captured[1][16u] == 0x22u,
+ps2xTest\src\ps2_vu1_tests.cpp:1338: 0x28u :: makeVuUpper(0x28u, 0xFu, 3u, 2u, 4u));
+ps2xTest\src\ps2_vu1_tests.cpp:1338: 0xFu :: makeVuUpper(0x28u, 0xFu, 3u, 2u, 4u));
+ps2xTest\src\ps2_vu1_tests.cpp:1341: 0xFu :: makeVuSq(0xFu, 4u, 2u, 0),
+ps2xTest\src\ps2_vu1_tests.cpp:1345: 0x6Cu :: makeVuLowerSpecial(0x6Cu, 1u),
+ps2xTest\src\ps2_vu1_tests.cpp:1405: 0x6Cu :: const uint32_t lower = makeVuLowerSpecial(0x6Cu, 0u);
+ps2xTest\src\ps2_vu1_tests.cpp:1416: 0x90u :: vuData[16u + i] = static_cast<uint8_t>(0x90u + i);
+ps2xTest\src\ps2_vu1_tests.cpp:1434: 0x14u :: const uint32_t mscalCmd = makeVifCmd(0x14u, 0u, 0u);
+ps2xTest\src\ps2_vu1_tests.cpp:1444: 0x90u :: if (vramOut[off + c] != static_cast<uint8_t>(0x90u + x * 4u + c))
+ps2xTest\src\ps2_vu1_tests.cpp:1477: 0x14u :: makeVuFlagImmediate(0x14u, 5u, 0x812u),
+ps2xTest\src\ps2_vu1_tests.cpp:1477: 0x81 :: makeVuFlagImmediate(0x14u, 5u, 0x812u),
+ps2xTest\src\ps2_vu1_tests.cpp:1480: 0x16u :: makeVuFlagImmediate(0x16u, 6u, 0x810u),
+ps2xTest\src\ps2_vu1_tests.cpp:1480: 0x81 :: makeVuFlagImmediate(0x16u, 6u, 0x810u),
+ps2xTest\src\ps2_vu1_tests.cpp:1483: 0x17u :: makeVuFlagImmediate(0x17u, 7u, 0x040u),
+ps2xTest\src\ps2_vu1_tests.cpp:1483: 0x04 :: makeVuFlagImmediate(0x17u, 7u, 0x040u),
+ps2xTest\src\ps2_vu1_tests.cpp:1487: 0x81 :: vu1.state().status = 0x812u;
+ps2xTest\src\ps2_vu1_tests.cpp:1494: 0x81 :: t.Equals(vu1.state().vi[6], 0x810,
+ps2xTest\src\ps2_vu1_tests.cpp:1496: 0x85 :: t.Equals(vu1.state().vi[7], 0x852,
+ps2xTest\src\ps2_vu1_tests.cpp:1508: 0x15u :: makeVuFlagImmediate(0x15u, 0u, 0xA80u),
+ps2xTest\src\ps2_vu1_tests.cpp:1508: 0xA8 :: makeVuFlagImmediate(0x15u, 0u, 0xA80u),
+ps2xTest\src\ps2_vu1_tests.cpp:1512: 0x01 :: vu1.state().status = 0x015u;
+ps2xTest\src\ps2_vu1_tests.cpp:1516: 0x01 :: t.Equals(vu1.state().status, 0x015u,
+ps2xTest\src\ps2_vu1_tests.cpp:1522: 0xA9 :: t.Equals(vu1.state().status, 0xA95u,
+ps2xTest\src\ps2_vu1_tests.cpp:1532: 0x15u :: makeVuFlagImmediate(0x15u, 0u, 0xA80u),
+ps2xTest\src\ps2_vu1_tests.cpp:1532: 0xA8 :: makeVuFlagImmediate(0x15u, 0u, 0xA80u),
+ps2xTest\src\ps2_vu1_tests.cpp:1533: 0x28u :: makeVuUpper(0x28u, 0xAu, 2u, 1u, 3u));
+ps2xTest\src\ps2_vu1_tests.cpp:1533: 0xAu :: makeVuUpper(0x28u, 0xAu, 2u, 1u, 3u));
+ps2xTest\src\ps2_vu1_tests.cpp:1547: 0x28u :: t.Equals(vu1.state().mac, 0x28u,
+ps2xTest\src\ps2_vu1_tests.cpp:1549: 0xA8 :: t.Equals(vu1.state().status, 0xA80u,
+ps2xTest\src\ps2_vu1_tests.cpp:1559: 0x28u :: makeVuUpper(0x28u, 0xAu, 2u, 1u, 3u));
+ps2xTest\src\ps2_vu1_tests.cpp:1559: 0xAu :: makeVuUpper(0x28u, 0xAu, 2u, 1u, 3u));
+ps2xTest\src\ps2_vu1_tests.cpp:1561: 0x18u :: makeVuFlagRegister(0x18u, 6u, 7u),
+ps2xTest\src\ps2_vu1_tests.cpp:1570: 0x1Au :: makeVuFlagRegister(0x1Au, 4u, 5u),
+ps2xTest\src\ps2_vu1_tests.cpp:1578: 0xFF :: vu1.state().vi[5] = 0xFFFF;
+ps2xTest\src\ps2_vu1_tests.cpp:1594: 0x28u :: t.Equals(vu1.state().mac, 0x28u,
+ps2xTest\src\ps2_vu1_tests.cpp:1596: 0xC3u :: t.Equals(vu1.state().status, 0xC3u,
+ps2xTest\src\ps2_vu1_tests.cpp:1598: 0x28 :: t.Equals(vu1.state().vi[4], 0x28,
+ps2xTest\src\ps2_vu1_tests.cpp:1609: 0x1Fu :: makeVuUpperSpecial(0x1Fu, 0u, 2u, 1u));
+ps2xTest\src\ps2_vu1_tests.cpp:1612: 0x1Cu :: makeVuFlagRegister(0x1Cu, 3u, 0u),
+ps2xTest\src\ps2_vu1_tests.cpp:1618: 0x1Cu :: makeVuFlagRegister(0x1Cu, 4u, 0u),
+ps2xTest\src\ps2_vu1_tests.cpp:1642: 0x2Au :: makeVuUpper(0x2Au, 0xFu, 2u, 1u, 3u));
+ps2xTest\src\ps2_vu1_tests.cpp:1642: 0xFu :: makeVuUpper(0x2Au, 0xFu, 2u, 1u, 3u));
+ps2xTest\src\ps2_vu1_tests.cpp:1658: 0x84 :: t.Equals(vu1.state().mac, 0x8425u,
+ps2xTest\src\ps2_vu1_tests.cpp:1660: 0x3C :: t.Equals(vu1.state().status, 0x3CFu,
+ps2xTest\src\ps2_vu1_tests.cpp:1675: 0x29u :: makeVuUpper(0x29u, 0x8u, 2u, 1u, 3u)); // MADD.x
+ps2xTest\src\ps2_vu1_tests.cpp:1675: 0x8u :: makeVuUpper(0x29u, 0x8u, 2u, 1u, 3u)); // MADD.x
+ps2xTest\src\ps2_vu1_tests.cpp:1689: 0x14 :: t.Equals(vu1.state().status, 0x140u,
+ps2xTest\src\ps2_vu1_tests.cpp:1698: 0x30u :: writeVuInstructionPair(fx.code, 0u, 0u, 0x30u);
+ps2xTest\src\ps2_vu_tests.cpp:21: 0x10 :: constexpr uint32_t kDst = 0x1000u;
+ps2xTest\src\ps2_vu_tests.cpp:22: 0x11 :: constexpr uint32_t kA = 0x1100u;
+ps2xTest\src\ps2_vu_tests.cpp:23: 0x12 :: constexpr uint32_t kB = 0x1200u;
+ps2xTest\src\ps2_vu_tests.cpp:24: 0x13 :: constexpr uint32_t kC = 0x1300u;
+ps2xTest\src\ps2_vu_tests.cpp:25: 0x14 :: constexpr uint32_t kD = 0x1400u;
+ps2xTest\src\ps2_vu_tests.cpp:26: 0x15 :: constexpr uint32_t kDst2 = 0x1500u;
+ps2xTest\src\ps2_vu_tests.cpp:27: 0x16 :: constexpr uint32_t kArr = 0x1600u;
+ps2xTest\src\ps2_vu_tests.cpp:28: 0x17 :: constexpr uint32_t kOut = 0x1700u;
+ps2xTest\src\ps2_vu_tests.cpp:29: 0x18 :: constexpr uint32_t kOut2 = 0x1800u;
+ps2xTest\src\ps2_vu_tests.cpp:30: 0x19 :: constexpr uint32_t kSp = 0x1900u;
+ps2xTest\src\ps2_vu_tests.cpp:108: 0x3F :: SET_GPR_U32(&env.ctx, 6, 0x3F800000u);
+ps2xTest\src\ps2_vu_tests.cpp:963: 0x80u :: t.Equals(getRegU32(&env.ctx, 2), 0x80u, "ClipScreen should report the sticky sign flag when x exceeds 4096");
+ps2xTest\src\ps2_vu_tests.cpp:973: 0x80u :: t.Equals(getRegU32(&env.ctx, 2), 0x80u, "ClipScreen should flag a vertex left of x=0");
+ps2xTest\src\ps2_vu_tests.cpp:982: 0x80u :: t.Equals(getRegU32(&env.ctx, 2), 0x80u, "a vertex behind the eye (w < 0) is offscreen");
+ps2xTest\src\ps2_vu_tests.cpp:986: 0x40u :: t.Equals(getRegU32(&env.ctx, 2), 0x40u, "x exactly on the 4096 edge sets the sticky zero flag");
+ps2xTest\src\ps2_vu_tests.cpp:1001: 0xC0u :: t.Equals(getRegU32(&env.ctx, 2), 0xC0u, "ClipScreen3 should OR the sticky flags of all 3 vertices (y>4096 sign, w=0 zero)");
+
+========== IMPLEMENTATION DISPATCH / DEFAULT PATHS ==========
+
+----- switch : 15 matches -----
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:264: switch (op)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:339: switch (special)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1183: switch (opHi)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1320: switch (special)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1451: switch (special)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:82: switch (opHi)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:396: switch (funct)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:428: switch (funct2)
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:51: switch (op)
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:245: switch (specialOp)
+ps2xRecomp\src\lib\vu_translator.cpp:26: switch (format)
+ps2xRecomp\src\lib\vu_translator.cpp:38: switch (rd)
+ps2xRecomp\src\lib\vu_translator.cpp:79: switch (rd)
+ps2xRecomp\src\lib\vu_translator.cpp:128: switch (vu_func)
+ps2xRecomp\src\lib\vu_translator.cpp:299: switch (special1_func)
+
+----- default: : 15 matches -----
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:320: default:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:395: default:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1288: default:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1480: default:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1503: default:
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:775: default:
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:780: default:
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:785: default:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:492: default:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:502: default:
+ps2xRecomp\src\lib\vu_translator.cpp:62: default:
+ps2xRecomp\src\lib\vu_translator.cpp:101: default:
+ps2xRecomp\src\lib\vu_translator.cpp:293: default:
+ps2xRecomp\src\lib\vu_translator.cpp:390: default:
+ps2xRecomp\src\lib\vu_translator.cpp:394: default:
+
+----- case  : 451 matches -----
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:266: case 0x1Cu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:269: case 0x1Eu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:272: case 0x20u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:275: case 0x21u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:278: case 0x22u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:281: case 0x23u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:284: case 0x24u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:287: case 0x25u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:290: case 0x26u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:293: case 0x27u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:296: case 0x28u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:299: case 0x29u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:302: case 0x2Au:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:305: case 0x2Cu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:308: case 0x2Du:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:311: case 0x2Eu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:341: case 0x1Cu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:344: case 0x1Eu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:347: case 0x20u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:350: case 0x21u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:353: case 0x22u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:356: case 0x23u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:359: case 0x24u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:362: case 0x25u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:365: case 0x26u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:368: case 0x27u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:371: case 0x28u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:374: case 0x29u:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:377: case 0x2Au:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:380: case 0x2Cu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:383: case 0x2Du:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:386: case 0x2Eu:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1185: case 0x00:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1191: case 0x01:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1197: case 0x04:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1203: case 0x05:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1209: case 0x08:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1210: case 0x09:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1217: case 0x10:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1218: case 0x12:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1219: case 0x13:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1225: case 0x11:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1230: case 0x14:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1231: case 0x16:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1232: case 0x17:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1237: case 0x15:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1241: case 0x18:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1242: case 0x1A:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1243: case 0x1B:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1249: case 0x1C:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1255: case 0x20:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1258: case 0x21:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1263: case 0x24:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1267: case 0x25:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1273: case 0x28:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1274: case 0x29:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1279: case 0x2C:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1280: case 0x2D:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1281: case 0x2E:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1282: case 0x2F:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1286: case 0x40:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1322: case 0x30:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1323: case 0x31:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1329: case 0x34:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1330: case 0x36:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1339: case 0x35:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1340: case 0x37:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1348: case 0x38:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1354: case 0x39:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1359: case 0x3A:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1365: case 0x3B:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1369: case 0x3C:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1376: case 0x3D:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1382: case 0x3E:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1388: case 0x3F:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1394: case 0x40:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1395: case 0x41:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1400: case 0x42:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1401: case 0x43:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1406: case 0x64:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1416: case 0x68:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1417: case 0x69:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1422: case 0x6C:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1432: case 0x70:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1433: case 0x71:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1434: case 0x72:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1435: case 0x73:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1436: case 0x74:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1437: case 0x75:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1438: case 0x76:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1439: case 0x77:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1440: case 0x78:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1441: case 0x79:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1442: case 0x7A:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1443: case 0x7C:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1444: case 0x7D:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1453: case 0x70:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1456: case 0x71:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1457: case 0x72:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1458: case 0x77:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1461: case 0x73:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1464: case 0x74:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1465: case 0x75:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1466: case 0x7C:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1469: case 0x76:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1470: case 0x78:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1471: case 0x7A:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1474: case 0x79:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1477: case 0x7D:
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1494: case 0x7B:
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:84: case 0x00: // LQ (Load Quadword from VU data memory)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:100: case 0x01: // SQ (Store Quadword to VU data memory)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:116: case 0x04: // ILW (Integer Load Word from VU data memory)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:142: case 0x05: // ISW (Integer Store Word to VU data memory)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:158: case 0x08: // IADDIU
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:167: case 0x09: // ISUBIU
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:176: case 0x10: // FCEQ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:183: case 0x11: // FCSET
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:188: case 0x12: // FCAND
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:195: case 0x13: // FCOR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:202: case 0x14: // FSEQ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:210: case 0x15: // FSSET
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:216: case 0x16: // FSAND
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:224: case 0x17: // FSOR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:232: case 0x18: // FMEQ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:240: case 0x1A: // FMAND
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:248: case 0x1B: // FMOR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:256: case 0x1C: // FCGET
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:263: case 0x20: // B (unconditional branch)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:272: case 0x21: // BAL (Branch and link)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:284: case 0x24: // JR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:293: case 0x25: // JALR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:305: case 0x28: // IBEQ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:319: case 0x29: // IBNE
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:333: case 0x2C: // IBLTZ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:346: case 0x2D: // IBGTZ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:359: case 0x2E: // IBLEZ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:372: case 0x2F: // IBGEZ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:386: case 0x40: // Lower1 / lower special. Bit31 set; low 6 bits select integer or special op.
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:398: case 0x30: // IADD
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:402: case 0x31: // ISUB
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:406: case 0x32: // IADDI
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:413: case 0x34: // IAND
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:417: case 0x35: // IOR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:422: case 0x3C:
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:423: case 0x3D:
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:424: case 0x3E:
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:425: case 0x3F: // Lower1 special. Dobie decodes this as (instr & 3) | ((instr >> 4) & 0x7C).
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:430: case 0x30: // MOVE
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:437: case 0x31: // MR32 (rotate right by 32 bits = shift xyzw -> yzwx)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:443: case 0x34: // LQI (Load Quadword, post-increment)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:457: case 0x35: // SQI (Store Quadword, post-increment)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:471: case 0x36: // LQD (Load Quadword, pre-decrement)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:485: case 0x37: // SQD (Store Quadword, pre-decrement)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:499: case 0x38: // DIV
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:523: case 0x39: // SQRT
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:531: case 0x3A: // RSQRT
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:554: case 0x3B: // WAITQ
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:556: case 0x3C: // MTIR (Move To Integer Register)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:567: case 0x3D: // MFIR (Move From Integer Register)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:578: case 0x3E: // ILWR - integer load word from address in VI[is]
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:600: case 0x3F: // ISWR - integer store word to address in VI[is]
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:613: case 0x40: // RNEXT
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:625: case 0x41: // RGET
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:633: case 0x42: // RINIT
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:641: case 0x43: // RXOR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:649: case 0x64: // MFP (Move From P register)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:655: case 0x68: // XTOP - move current VIF1 TOP into VI register
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:661: case 0x69: // XITOP - move current VIF1 ITOP into VI register
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:667: case 0x6C: // XGKICK - send GIF packet from VU1 data memory
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:670: case 0x70: // ESADD
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:678: case 0x71: // ERSADD
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:687: case 0x72: // ELENG
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:695: case 0x73: // ERLENG
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:704: case 0x74: // EATANxy
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:711: case 0x75: // EATANxz
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:718: case 0x76: // ESUM
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:726: case 0x77: // ERSQRT
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:740: case 0x78: // ESQRT
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:747: case 0x79: // ESIN
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:754: case 0x7A: // ERCPR
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:761: case 0x7B: // WAITP
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:763: case 0x7C: // EATAN
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:769: case 0x7D: // EEXP
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:53: case 0x00:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:54: case 0x01:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:55: case 0x02:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:56: case 0x03: // ADDbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:64: case 0x04:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:65: case 0x05:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:66: case 0x06:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:67: case 0x07: // SUBbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:75: case 0x08:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:76: case 0x09:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:77: case 0x0A:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:78: case 0x0B: // MADDbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:86: case 0x0C:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:87: case 0x0D:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:88: case 0x0E:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:89: case 0x0F: // MSUBbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:97: case 0x10:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:98: case 0x11:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:99: case 0x12:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:100: case 0x13: // MAXbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:108: case 0x14:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:109: case 0x15:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:110: case 0x16:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:111: case 0x17: // MINIbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:119: case 0x18:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:120: case 0x19:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:121: case 0x1A:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:122: case 0x1B: // MULbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:130: case 0x1C: // MULq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:135: case 0x1D: // MAXi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:140: case 0x1E: // MULi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:145: case 0x1F: // MINIi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:150: case 0x20: // ADDq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:155: case 0x21: // MADDq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:160: case 0x22: // ADDi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:165: case 0x23: // MADDi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:170: case 0x24: // SUBq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:175: case 0x25: // MSUBq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:180: case 0x26: // SUBi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:185: case 0x27: // MSUBi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:190: case 0x28: // ADD
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:195: case 0x29: // MADD
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:200: case 0x2A: // MUL
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:205: case 0x2B: // MAX
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:210: case 0x2C: // SUB
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:215: case 0x2D: // MSUB
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:220: case 0x2E: // OPMSUB
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:227: case 0x2F: // MINI
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:237: case 0x3C:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:238: case 0x3D:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:239: case 0x3E:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:240: case 0x3F:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:247: case 0x00:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:248: case 0x01:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:249: case 0x02:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:250: case 0x03: // ADDAbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:258: case 0x04:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:259: case 0x05:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:260: case 0x06:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:261: case 0x07: // SUBAbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:269: case 0x08:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:270: case 0x09:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:271: case 0x0A:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:272: case 0x0B: // MADDAbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:280: case 0x0C:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:281: case 0x0D:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:282: case 0x0E:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:283: case 0x0F: // MSUBAbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:291: case 0x10: // ITOF0
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:300: case 0x11: // ITOF4
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:309: case 0x12: // ITOF12
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:318: case 0x13: // ITOF15
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:327: case 0x14: // FTOI0
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:335: case 0x15: // FTOI4
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:343: case 0x16: // FTOI12
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:351: case 0x17: // FTOI15
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:359: case 0x18:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:360: case 0x19:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:361: case 0x1A:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:362: case 0x1B: // MULAbc
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:370: case 0x1C: // MULAq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:375: case 0x1D: // ABS
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:380: case 0x1E: // MULAi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:385: case 0x1F: // CLIP
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:417: case 0x20: // ADDAq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:422: case 0x21: // MADDAq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:427: case 0x22: // ADDAi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:432: case 0x23: // MADDAi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:437: case 0x24: // SUBAq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:442: case 0x25: // MSUBAq
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:447: case 0x26: // SUBAi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:452: case 0x27: // MSUBAi
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:457: case 0x28: // ADDA
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:462: case 0x29: // MADDA
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:467: case 0x2A: // MULA
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:472: case 0x2C: // SUBA
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:477: case 0x2D: // MSUBA
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:482: case 0x2E: // OPMULA
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:489: case 0x2F:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:490: case 0x30: // NOP
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:498: case 0x30:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:499: case 0x31:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:500: case 0x32:
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:501: case 0x33:
+ps2xRecomp\src\lib\vu_translator.cpp:28: case COP2_QMFC2:
+ps2xRecomp\src\lib\vu_translator.cpp:30: case COP2_CFC2:
+ps2xRecomp\src\lib\vu_translator.cpp:40: case VU0_CR_STATUS:
+ps2xRecomp\src\lib\vu_translator.cpp:42: case VU0_CR_MAC:
+ps2xRecomp\src\lib\vu_translator.cpp:44: case VU0_CR_CLIP:
+ps2xRecomp\src\lib\vu_translator.cpp:46: case VU0_CR_R:
+ps2xRecomp\src\lib\vu_translator.cpp:48: case VU0_CR_I:
+ps2xRecomp\src\lib\vu_translator.cpp:50: case VU0_CR_Q:
+ps2xRecomp\src\lib\vu_translator.cpp:52: case VU0_CR_TPC:
+ps2xRecomp\src\lib\vu_translator.cpp:54: case VU0_CR_CMSAR0:
+ps2xRecomp\src\lib\vu_translator.cpp:56: case VU0_CR_FBRST:
+ps2xRecomp\src\lib\vu_translator.cpp:58: case VU0_CR_VPU_STAT:
+ps2xRecomp\src\lib\vu_translator.cpp:60: case VU0_CR_CMSAR1:
+ps2xRecomp\src\lib\vu_translator.cpp:66: case COP2_QMTC2:
+ps2xRecomp\src\lib\vu_translator.cpp:68: case COP2_CTC2:
+ps2xRecomp\src\lib\vu_translator.cpp:81: case VU0_CR_STATUS:
+ps2xRecomp\src\lib\vu_translator.cpp:83: case VU0_CR_MAC:
+ps2xRecomp\src\lib\vu_translator.cpp:84: case VU0_CR_TPC:
+ps2xRecomp\src\lib\vu_translator.cpp:85: case VU0_CR_VPU_STAT:
+ps2xRecomp\src\lib\vu_translator.cpp:87: case VU0_CR_CLIP:
+ps2xRecomp\src\lib\vu_translator.cpp:89: case VU0_CR_R:
+ps2xRecomp\src\lib\vu_translator.cpp:91: case VU0_CR_I:
+ps2xRecomp\src\lib\vu_translator.cpp:93: case VU0_CR_Q:
+ps2xRecomp\src\lib\vu_translator.cpp:95: case VU0_CR_CMSAR0:
+ps2xRecomp\src\lib\vu_translator.cpp:97: case VU0_CR_FBRST:
+ps2xRecomp\src\lib\vu_translator.cpp:99: case VU0_CR_CMSAR1:
+ps2xRecomp\src\lib\vu_translator.cpp:105: case COP2_BC:
+ps2xRecomp\src\lib\vu_translator.cpp:107: case COP2_CO:
+ps2xRecomp\src\lib\vu_translator.cpp:108: case COP2_CO + 1:
+ps2xRecomp\src\lib\vu_translator.cpp:109: case COP2_CO + 2:
+ps2xRecomp\src\lib\vu_translator.cpp:110: case COP2_CO + 3:
+ps2xRecomp\src\lib\vu_translator.cpp:111: case COP2_CO + 4:
+ps2xRecomp\src\lib\vu_translator.cpp:112: case COP2_CO + 5:
+ps2xRecomp\src\lib\vu_translator.cpp:113: case COP2_CO + 6:
+ps2xRecomp\src\lib\vu_translator.cpp:114: case COP2_CO + 7:
+ps2xRecomp\src\lib\vu_translator.cpp:115: case COP2_CO + 8:
+ps2xRecomp\src\lib\vu_translator.cpp:116: case COP2_CO + 9:
+ps2xRecomp\src\lib\vu_translator.cpp:117: case COP2_CO + 10:
+ps2xRecomp\src\lib\vu_translator.cpp:118: case COP2_CO + 11:
+ps2xRecomp\src\lib\vu_translator.cpp:119: case COP2_CO + 12:
+ps2xRecomp\src\lib\vu_translator.cpp:120: case COP2_CO + 13:
+ps2xRecomp\src\lib\vu_translator.cpp:121: case COP2_CO + 14:
+ps2xRecomp\src\lib\vu_translator.cpp:122: case COP2_CO + 15:
+ps2xRecomp\src\lib\vu_translator.cpp:130: case VU0_S2_VADDAx:
+ps2xRecomp\src\lib\vu_translator.cpp:131: case VU0_S2_VADDAy:
+ps2xRecomp\src\lib\vu_translator.cpp:132: case VU0_S2_VADDAz:
+ps2xRecomp\src\lib\vu_translator.cpp:133: case VU0_S2_VADDAw:
+ps2xRecomp\src\lib\vu_translator.cpp:135: case VU0_S2_VSUBAx:
+ps2xRecomp\src\lib\vu_translator.cpp:136: case VU0_S2_VSUBAy:
+ps2xRecomp\src\lib\vu_translator.cpp:137: case VU0_S2_VSUBAz:
+ps2xRecomp\src\lib\vu_translator.cpp:138: case VU0_S2_VSUBAw:
+ps2xRecomp\src\lib\vu_translator.cpp:140: case VU0_S2_VMADDAx:
+ps2xRecomp\src\lib\vu_translator.cpp:141: case VU0_S2_VMADDAy:
+ps2xRecomp\src\lib\vu_translator.cpp:142: case VU0_S2_VMADDAz:
+ps2xRecomp\src\lib\vu_translator.cpp:143: case VU0_S2_VMADDAw:
+ps2xRecomp\src\lib\vu_translator.cpp:145: case VU0_S2_VMSUBAx:
+ps2xRecomp\src\lib\vu_translator.cpp:146: case VU0_S2_VMSUBAy:
+ps2xRecomp\src\lib\vu_translator.cpp:147: case VU0_S2_VMSUBAz:
+ps2xRecomp\src\lib\vu_translator.cpp:148: case VU0_S2_VMSUBAw:
+ps2xRecomp\src\lib\vu_translator.cpp:150: case VU0_S2_VMULAx:
+ps2xRecomp\src\lib\vu_translator.cpp:151: case VU0_S2_VMULAy:
+ps2xRecomp\src\lib\vu_translator.cpp:152: case VU0_S2_VMULAz:
+ps2xRecomp\src\lib\vu_translator.cpp:153: case VU0_S2_VMULAw:
+ps2xRecomp\src\lib\vu_translator.cpp:155: case VU0_S2_VADDA:
+ps2xRecomp\src\lib\vu_translator.cpp:157: case VU0_S2_VADDAq:
+ps2xRecomp\src\lib\vu_translator.cpp:159: case VU0_S2_VADDAi:
+ps2xRecomp\src\lib\vu_translator.cpp:161: case VU0_S2_VMADDA:
+ps2xRecomp\src\lib\vu_translator.cpp:163: case VU0_S2_VMADDAq:
+ps2xRecomp\src\lib\vu_translator.cpp:165: case VU0_S2_VMADDAi:
+ps2xRecomp\src\lib\vu_translator.cpp:167: case VU0_S2_VSUBA:
+ps2xRecomp\src\lib\vu_translator.cpp:169: case VU0_S2_VSUBAq:
+ps2xRecomp\src\lib\vu_translator.cpp:171: case VU0_S2_VSUBAi:
+ps2xRecomp\src\lib\vu_translator.cpp:173: case VU0_S2_VMSUBA:
+ps2xRecomp\src\lib\vu_translator.cpp:175: case VU0_S2_VMSUBAq:
+ps2xRecomp\src\lib\vu_translator.cpp:177: case VU0_S2_VMSUBAi:
+ps2xRecomp\src\lib\vu_translator.cpp:179: case VU0_S2_VMULA:
+ps2xRecomp\src\lib\vu_translator.cpp:181: case VU0_S2_VMULAq:
+ps2xRecomp\src\lib\vu_translator.cpp:183: case VU0_S2_VMULAi:
+ps2xRecomp\src\lib\vu_translator.cpp:185: case VU0_S2_VOPMULA:
+ps2xRecomp\src\lib\vu_translator.cpp:187: case VU0_S2_VITOF0:
+ps2xRecomp\src\lib\vu_translator.cpp:189: case VU0_S2_VITOF4:
+ps2xRecomp\src\lib\vu_translator.cpp:191: case VU0_S2_VITOF12:
+ps2xRecomp\src\lib\vu_translator.cpp:193: case VU0_S2_VITOF15:
+ps2xRecomp\src\lib\vu_translator.cpp:195: case VU0_S2_VFTOI0:
+ps2xRecomp\src\lib\vu_translator.cpp:197: case VU0_S2_VFTOI4:
+ps2xRecomp\src\lib\vu_translator.cpp:199: case VU0_S2_VFTOI12:
+ps2xRecomp\src\lib\vu_translator.cpp:201: case VU0_S2_VFTOI15:
+ps2xRecomp\src\lib\vu_translator.cpp:203: case VU0_S2_VLQI:
+ps2xRecomp\src\lib\vu_translator.cpp:205: case VU0_S2_VSQI:
+ps2xRecomp\src\lib\vu_translator.cpp:207: case VU0_S2_VLQD:
+ps2xRecomp\src\lib\vu_translator.cpp:209: case VU0_S2_VSQD:
+ps2xRecomp\src\lib\vu_translator.cpp:211: case VU0_S2_VDIV:
+ps2xRecomp\src\lib\vu_translator.cpp:213: case VU0_S2_VSQRT:
+ps2xRecomp\src\lib\vu_translator.cpp:215: case VU0_S2_VRSQRT:
+ps2xRecomp\src\lib\vu_translator.cpp:217: case VU0_S2_VWAITQ:
+ps2xRecomp\src\lib\vu_translator.cpp:219: case VU0_S2_VMTIR:
+ps2xRecomp\src\lib\vu_translator.cpp:221: case VU0_S2_VMFIR:
+ps2xRecomp\src\lib\vu_translator.cpp:223: case VU0_S2_VILWR:
+ps2xRecomp\src\lib\vu_translator.cpp:225: case VU0_S2_VISWR:
+ps2xRecomp\src\lib\vu_translator.cpp:227: case VU0_S2_VABS:
+ps2xRecomp\src\lib\vu_translator.cpp:238: case VU0_S2_VMOVE:
+ps2xRecomp\src\lib\vu_translator.cpp:250: case VU0_S2_VMR32:
+ps2xRecomp\src\lib\vu_translator.cpp:264: case VU0_S2_VCLIPw:
+ps2xRecomp\src\lib\vu_translator.cpp:283: case VU0_S2_VNOP:
+ps2xRecomp\src\lib\vu_translator.cpp:285: case VU0_S2_VRNEXT:
+ps2xRecomp\src\lib\vu_translator.cpp:287: case VU0_S2_VRGET:
+ps2xRecomp\src\lib\vu_translator.cpp:289: case VU0_S2_VRINIT:
+ps2xRecomp\src\lib\vu_translator.cpp:291: case VU0_S2_VRXOR:
+ps2xRecomp\src\lib\vu_translator.cpp:301: case VU0_S1_VADDx:
+ps2xRecomp\src\lib\vu_translator.cpp:302: case VU0_S1_VADDy:
+ps2xRecomp\src\lib\vu_translator.cpp:303: case VU0_S1_VADDz:
+ps2xRecomp\src\lib\vu_translator.cpp:304: case VU0_S1_VADDw:
+ps2xRecomp\src\lib\vu_translator.cpp:306: case VU0_S1_VSUBx:
+ps2xRecomp\src\lib\vu_translator.cpp:307: case VU0_S1_VSUBy:
+ps2xRecomp\src\lib\vu_translator.cpp:308: case VU0_S1_VSUBz:
+ps2xRecomp\src\lib\vu_translator.cpp:309: case VU0_S1_VSUBw:
+ps2xRecomp\src\lib\vu_translator.cpp:311: case VU0_S1_VMULx:
+ps2xRecomp\src\lib\vu_translator.cpp:312: case VU0_S1_VMULy:
+ps2xRecomp\src\lib\vu_translator.cpp:313: case VU0_S1_VMULz:
+ps2xRecomp\src\lib\vu_translator.cpp:314: case VU0_S1_VMULw:
+ps2xRecomp\src\lib\vu_translator.cpp:316: case VU0_S1_VADD:
+ps2xRecomp\src\lib\vu_translator.cpp:318: case VU0_S1_VSUB:
+ps2xRecomp\src\lib\vu_translator.cpp:320: case VU0_S1_VMUL:
+ps2xRecomp\src\lib\vu_translator.cpp:322: case VU0_S1_VIADD:
+ps2xRecomp\src\lib\vu_translator.cpp:324: case VU0_S1_VISUB:
+ps2xRecomp\src\lib\vu_translator.cpp:326: case VU0_S1_VIADDI:
+ps2xRecomp\src\lib\vu_translator.cpp:328: case VU0_S1_VIAND:
+ps2xRecomp\src\lib\vu_translator.cpp:330: case VU0_S1_VIOR:
+ps2xRecomp\src\lib\vu_translator.cpp:332: case VU0_S1_VCALLMS:
+ps2xRecomp\src\lib\vu_translator.cpp:334: case VU0_S1_VCALLMSR:
+ps2xRecomp\src\lib\vu_translator.cpp:336: case VU0_S1_VADDq:
+ps2xRecomp\src\lib\vu_translator.cpp:338: case VU0_S1_VSUBq:
+ps2xRecomp\src\lib\vu_translator.cpp:340: case VU0_S1_VMULq:
+ps2xRecomp\src\lib\vu_translator.cpp:342: case VU0_S1_VADDi:
+ps2xRecomp\src\lib\vu_translator.cpp:344: case VU0_S1_VSUBi:
+ps2xRecomp\src\lib\vu_translator.cpp:346: case VU0_S1_VMULi:
+ps2xRecomp\src\lib\vu_translator.cpp:348: case VU0_S1_VMADDx:
+ps2xRecomp\src\lib\vu_translator.cpp:349: case VU0_S1_VMADDy:
+ps2xRecomp\src\lib\vu_translator.cpp:350: case VU0_S1_VMADDz:
+ps2xRecomp\src\lib\vu_translator.cpp:351: case VU0_S1_VMADDw:
+ps2xRecomp\src\lib\vu_translator.cpp:353: case VU0_S1_VMSUBx:
+ps2xRecomp\src\lib\vu_translator.cpp:354: case VU0_S1_VMSUBy:
+ps2xRecomp\src\lib\vu_translator.cpp:355: case VU0_S1_VMSUBz:
+ps2xRecomp\src\lib\vu_translator.cpp:356: case VU0_S1_VMSUBw:
+ps2xRecomp\src\lib\vu_translator.cpp:358: case VU0_S1_VMAXx:
+ps2xRecomp\src\lib\vu_translator.cpp:359: case VU0_S1_VMAXy:
+ps2xRecomp\src\lib\vu_translator.cpp:360: case VU0_S1_VMAXz:
+ps2xRecomp\src\lib\vu_translator.cpp:361: case VU0_S1_VMAXw:
+ps2xRecomp\src\lib\vu_translator.cpp:363: case VU0_S1_VMINIx:
+ps2xRecomp\src\lib\vu_translator.cpp:364: case VU0_S1_VMINIy:
+ps2xRecomp\src\lib\vu_translator.cpp:365: case VU0_S1_VMINIz:
+ps2xRecomp\src\lib\vu_translator.cpp:366: case VU0_S1_VMINIw:
+ps2xRecomp\src\lib\vu_translator.cpp:368: case VU0_S1_VMAXi:
+ps2xRecomp\src\lib\vu_translator.cpp:370: case VU0_S1_VMINIi:
+ps2xRecomp\src\lib\vu_translator.cpp:372: case VU0_S1_VMADD:
+ps2xRecomp\src\lib\vu_translator.cpp:374: case VU0_S1_VMADDq:
+ps2xRecomp\src\lib\vu_translator.cpp:376: case VU0_S1_VMADDi:
+ps2xRecomp\src\lib\vu_translator.cpp:378: case VU0_S1_VMAX:
+ps2xRecomp\src\lib\vu_translator.cpp:380: case VU0_S1_VOPMSUB:
+ps2xRecomp\src\lib\vu_translator.cpp:382: case VU0_S1_VMINI:
+ps2xRecomp\src\lib\vu_translator.cpp:384: case VU0_S1_VMSUB:
+ps2xRecomp\src\lib\vu_translator.cpp:386: case VU0_S1_VMSUBq:
+ps2xRecomp\src\lib\vu_translator.cpp:388: case VU0_S1_VMSUBi:
+
+----- executeLower : 0 matches -----
+
+----- executeUpper : 0 matches -----
+
+----- decode : 94 matches -----
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:989: uint64_t VU1Interpreter::calculatePairReadyCycle(const DecodedInstructionPair &decoded) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:993: &decoded.upperUsage,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:994: &decoded.lowerUsage};
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1020: if (decoded.lowerUsage.pipeline == PipelineFdiv && m_fdiv.valid)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1022: if (decoded.lowerUsage.pipeline == PipelineEfu)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1024: if (decoded.lowerUsage.waitQ && m_fdiv.valid)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1026: if (decoded.lowerUsage.waitP)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1032: if (decoded.lowerUsage.pipeline == PipelineXgkick && m_xgkick.active)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1037: void VU1Interpreter::markPairWrites(const DecodedInstructionPair &decoded)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1039: const VfAccess lowerWrite = decoded.lowerUsage.vfWrite;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1041: decoded.suppressedLowerVf != lowerWrite.reg)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1043: const uint32_t latency = decoded.lowerUsage.vfLatency != 0u
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1044: ? decoded.lowerUsage.vfLatency
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1045: : decoded.lowerUsage.latency;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1053: const VfAccess upperWrite = decoded.upperUsage.vfWrite;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1056: const uint32_t latency = decoded.upperUsage.vfLatency != 0u
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1057: ? decoded.upperUsage.vfLatency
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1058: : decoded.upperUsage.latency;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1068: if ((decoded.lowerUsage.viWrite & (1u << reg)) != 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1069: m_viReady[reg] = m_cycle + (decoded.lowerUsage.viLatency != 0u ? decoded.lowerUsage.viLatency : decoded.lowerUsage.latency);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1073: if ((decoded.upperUsage.accWrite & laneForComponent(component)) != 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1078: VU1Interpreter::InstructionUsage VU1Interpreter::decodeUpperUsage(uint32_t upper) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1159: VU1Interpreter::InstructionUsage VU1Interpreter::decodeLowerUsage(uint32_t lower) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1510: VU1Interpreter::DecodedInstructionPair VU1Interpreter::decodeInstructionPair(const uint8_t *vuCode, uint32_t pc) const
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1512: DecodedInstructionPair decoded;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1513: std::memcpy(&decoded.lower, vuCode + pc, sizeof(decoded.lower));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1514: std::memcpy(&decoded.upper, vuCode + pc + sizeof(decoded.lower), sizeof(decoded.upper));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1515: decoded.iBit = (decoded.upper & 0x80000000u) != 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1516: decoded.eBit = (decoded.upper & 0x40000000u) != 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1517: decoded.mBit = (decoded.upper & 0x20000000u) != 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1518: decoded.dBit = (decoded.upper & 0x10000000u) != 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1519: decoded.tBit = (decoded.upper & 0x08000000u) != 0u;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1520: decoded.upperUsage = decodeUpperUsage(decoded.upper);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1521: if (!decoded.iBit)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1522: decoded.lowerUsage = decodeLowerUsage(decoded.lower);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1524: const uint8_t upperWriteReg = decoded.upperUsage.vfWrite.reg;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1525: if (upperWriteReg != 0u && (vfReadLanes(decoded.lowerUsage, upperWriteReg) != 0u || decoded.lowerUsage.vfWrite.reg == upperWriteReg))
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1527: decoded.upperVfShadowReg = upperWriteReg;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1528: if (decoded.lowerUsage.vfWrite.reg == upperWriteReg)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1529: decoded.suppressedLowerVf = upperWriteReg;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1531: return decoded;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1534: void VU1Interpreter::rebuildDecodedCodeCache(const uint8_t *vuCode, uint32_t codeSize,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1537: const uint32_t pairCount = std::min<uint32_t>(codeSize / 8u, kMaxDecodedPairs);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1539: m_decodedCodeCache[i] = decodeInstructionPair(vuCode, i * 8u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1545: m_decodedCodeCacheValid = true;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1548: VU1Interpreter::DecodedInstructionPair VU1Interpreter::getDecodedInstructionPairForPc(
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1552: return decodeInstructionPair(vuCode, pc);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1558: return decodeInstructionPair(vuCode, pc);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1561: if (!m_decodedCodeCacheValid ||
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1567: rebuildDecodedCodeCache(vuCode, codeSize, memory, generation);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1570: if (pairIndex >= kMaxDecodedPairs)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1571: return decodeInstructionPair(vuCode, pc);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1572: return m_decodedCodeCache[pairIndex];
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1642: const DecodedInstructionPair decoded = getDecodedInstructionPairForPc(vuCode, codeSize, memory, m_state.pc);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1643: if (decoded.upperUsage.reserved || decoded.lowerUsage.reserved)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1645: reportReservedInstruction(decoded.upperUsage.reserved, decoded.upperUsage.reserved ? decoded.upper : decoded.lower);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1649: uint64_t readyCycle = calculatePairReadyCycle(decoded);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1658: readyCycle = calculatePairReadyCycle(decoded);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1667: if ((decoded.lowerUsage.viWrite & (1u << reg)) != 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1675: const VfAccess upperWrite = decoded.upperUsage.vfWrite;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1676: const VfAccess lowerWrite = decoded.lowerUsage.vfWrite;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1678: const bool hasLowerWrite = lowerWrite.reg != 0u && decoded.suppressedLowerVf != lowerWrite.reg;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1690: if (decoded.upperUsage.accWrite != 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1693: if (decoded.iBit)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1695: execUpper(decoded.upper);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1697: std::memcpy(&immediate, &decoded.lower, sizeof(immediate));
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1700: else if (decoded.upperVfShadowReg != 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1705: m_state.vf[decoded.upperVfShadowReg],
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1707: execUpper(decoded.upper);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1709: m_state.vf[decoded.upperVfShadowReg],
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1711: std::memcpy(m_state.vf[decoded.upperVfShadowReg],
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1714: execLower(decoded.lower, vuData, dataSize, gs, memory, decoded.upper);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1715: std::memcpy(m_state.vf[decoded.upperVfShadowReg],
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1721: execUpper(decoded.upper);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1722: execLower(decoded.lower, vuData, dataSize, gs, memory, decoded.upper);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1732: decoded.upperUsage.vfLatency != 0u
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1733: ? decoded.upperUsage.vfLatency
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1734: : decoded.upperUsage.latency;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1741: const uint32_t latency = decoded.lowerUsage.vfLatency != 0u
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1742: ? decoded.lowerUsage.vfLatency
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1743: : decoded.lowerUsage.latency;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1746: if (decoded.upperUsage.accWrite != 0u)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1752: queueAccWrite(decoded.upperUsage.accWrite, newAcc,
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1760: decoded.lowerUsage.viLatency != 0u
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1761: ? decoded.lowerUsage.viLatency
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1762: : decoded.lowerUsage.latency;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1766: markPairWrites(decoded);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1767: if (writtenVi != 0u && decoded.lowerUsage.delaysNextBranchRead)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1794: const bool dHalt = decoded.dBit && m_state.dBitEnabled;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1795: const bool tHalt = decoded.tBit && m_state.tBitEnabled;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1797: const bool haltBranch = haltBit && decoded.lowerUsage.pipeline == PipelineBranch;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1813: else if (decoded.eBit)
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:425: case 0x3F: // Lower1 special. Dobie decodes this as (instr & 3) | ((instr >> 4) & 0x7C).
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:234: // Like lower1 special, the real selector is not just bits 5:0.  Dobie decodes:
+
+----- unsupported : 0 matches -----
+
+----- reserved : 30 matches -----
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:528: reportReservedInstruction(true, 0xFFFFFFFFu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:580: reportReservedInstruction(false, 0xFFFFFFFEu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:599: reportReservedInstruction(true, 0xFFFFFFFDu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:623: reportReservedInstruction(false, 0xFFFFFFFAu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:652: reportReservedInstruction(false, 0xFFFFFFF9u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:669: reportReservedInstruction(false, 0xFFFFFFFCu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:696: reportReservedInstruction(false, 0xFFFFFFF7u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:717: reportReservedInstruction(false, 0xFFFFFFF6u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:742: reportReservedInstruction(true, 0xFFFFFFF5u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:854: reportReservedInstruction(false, 0xFFFFFFFBu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:886: reportReservedInstruction(false, 0xFFFFFFF8u);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:893: reportReservedInstruction(false, 0xFFFFFFFBu);
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1150: usage.reserved = true;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1155: usage.reserved = true;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1289: usage.reserved = true;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1315: usage.reserved = true;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1409: usage.reserved = true;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1425: usage.reserved = true;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1447: usage.reserved = true;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1497: usage.reserved = true;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1504: usage.reserved = true;
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1575: void VU1Interpreter::reportReservedInstruction(bool upper, uint32_t instruction)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1579: << " reserved " << (upper ? "upper" : "lower")
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1643: if (decoded.upperUsage.reserved || decoded.lowerUsage.reserved)
+ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1645: reportReservedInstruction(decoded.upperUsage.reserved, decoded.upperUsage.reserved ? decoded.upper : decoded.lower);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:776: reportReservedInstruction(false, instr);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:781: reportReservedInstruction(false, instr);
+ps2xRuntime\src\lib\vu\ps2_vu1_lower.cpp:786: reportReservedInstruction(false, instr);
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:493: reportReservedInstruction(true, instr);
+ps2xRuntime\src\lib\vu\ps2_vu1_upper.cpp:503: reportReservedInstruction(true, instr);
+
+----- unimplemented : 2 matches -----
+ps2xRecomp\src\lib\vu_translator.cpp:63: return fmt::format("// Unimplemented CFC2 VU control register: {}", rd);
+ps2xRecomp\src\lib\vu_translator.cpp:102: return fmt::format("// Unimplemented CTC2 VU control register: {}", rd);
+
+----- TODO : 0 matches -----
+
+========== TEST CASE INVENTORY ==========
+
+----- ps2xTest\src\ps2_vu1_tests.cpp -----
+220:         tc.Run("upper ADD applies the destination mask", [](TestCase &t)
+253:         tc.Run("LOI commits the lower immediate after the upper instruction", [](TestCase &t)
+286:         tc.Run("ITOF converts the raw signed integer bits without float normalization", [](TestCase &t)
+312:         tc.Run("MTIR decodes fsf as a component selector", [](TestCase &t)
+345:         tc.Run("LQ and SQ use VI qword addressing and destination masks", [](TestCase &t)
+386:         tc.Run("integer lower ops keep VI0 hardwired to zero", [](TestCase &t)
+406:         tc.Run("XTOP and XITOP expose VIF TOP values to VI registers", [](TestCase &t)
+421:         tc.Run("lower branch commits after one delay-slot instruction", [](TestCase &t)
+439:         tc.Run("lower side sees old VF value when upper writes the same register", [](TestCase &t)
+480:         tc.Run("upper suppresses only the colliding lower VF write", [](TestCase &t)
+525:         tc.Run("upper and lower both read the pre-pair VF state", [](TestCase &t)
+552:         tc.Run("FMAC dependency stalls only the lanes that are read", [](TestCase &t)
+582:         tc.Run("ACC forwarding feeds the next upper instruction without a dependency stall", [](TestCase &t)
+611:         tc.Run("ILW result becomes visible after four cycles before IALU consumes it", [](TestCase &t)
+637:         tc.Run("DIV and SQRT update the Q register from selected vector components", [](TestCase &t)
+661:         tc.Run("FDIV resource serializes back-to-back scalar operations", [](TestCase &t)
+693:         tc.Run("FDIV commits current and sticky divide-invalid status", [](TestCase &t)
+724:         tc.Run("EFU WAITP and RNG execute with architectural latency and state", [](TestCase &t)
+768:         tc.Run("EFU resource observes throughput separately from P visibility", [](TestCase &t)
+800:         tc.Run("all EFU opcodes produce P at their architectural latency", [](TestCase &t)
+845:         tc.Run("E and enabled D/T stop with their architectural delay rules", [](TestCase &t)
+942:         tc.Run("conditional branch sees the previous VI value for one instruction", [](TestCase &t)
+1018:         tc.Run("flag checks are visible to an immediately following branch", [](TestCase &t)
+1056:         tc.Run("JR shares the one-instruction VI branch visibility rule", [](TestCase &t)
+1093:         tc.Run("MPG upload invalidates cached VU1 decode before MSCAL", [](TestCase &t)
+1124:         tc.Run("direct VU1 code writes invalidate cached decode", [](TestCase &t)
+1139:         tc.Run("XGKICK sends a VU memory GIF packet through PATH1", [](TestCase &t)
+1205:         tc.Run("XGKICK observes stores committed before a future PATH1 qword", [](TestCase &t)
+1259:         tc.Run("a second XGKICK stalls until the active PATH1 transfer completes", [](TestCase &t)
+1314:         tc.Run("synthetic Code Veronica text packet preserves black-frame PATH1 data", [](TestCase &t)
+1375:         tc.Run("MSCAL can start a VU1 XGKICK program and update GS VRAM", [](TestCase &t)
+1454:         tc.Run("standalone VU1 code honors the nullable PS2Memory API", [](TestCase &t)
+1471:         tc.Run("VU1 status-immediate ops decode IMM12 and their target VI", [](TestCase &t)
+1502:         tc.Run("VU1 FSSET enters the four-cycle flag pipeline", [](TestCase &t)
+1526:         tc.Run("VU1 has one flag pipeline and FSSET wins a same-pair conflict", [](TestCase &t)
+1553:         tc.Run("VU1 FMAC flags respect destination lanes and become visible after four cycles", [](TestCase &t)
+1602:         tc.Run("VU1 CLIP and FCGET share the four-cycle flag timeline", [](TestCase &t)
+1636:         tc.Run("VU1 FMAC normalizes overflow and underflow before writing results", [](TestCase &t)
+1668:         tc.Run("FMAC product contributes Z/S/U/O sticky flags", [](TestCase &t)
+1693:         tc.Run("reserved opcodes stop before executing or corrupting state", [](TestCase &t)
+
+----- ps2xTest\src\ps2_vu_tests.cpp -----
+84:         tc.Run("MulVector_componentwise", [](TestCase &t)
+100:         tc.Run("ScaleVector_zero_scale_ignores_a2", [](TestCase &t)
+116:         tc.Run("ScaleVectorXYZ_scales_xyz", [](TestCase &t)
+130:         tc.Run("ScaleVectorXYZ_w_passthrough", [](TestCase &t)
+143:         tc.Run("ClampVector_low", [](TestCase &t)
+157:         tc.Run("ClampVector_high", [](TestCase &t)
+171:         tc.Run("DivVector_reciprocal", [](TestCase &t)
+186:         tc.Run("DivVector_divzero_zero", [](TestCase &t)
+201:         tc.Run("DivVectorXYZ_w_passthrough", [](TestCase &t)
+214:         tc.Run("InterVector_lerp", [](TestCase &t)
+230:         tc.Run("InterVectorXYZ_w_from_a", [](TestCase &t)
+245:         tc.Run("TransMatrix_adds_translation", [](TestCase &t)
+265:         tc.Run("TransMatrix_rows_unchanged", [](TestCase &t)
+286:         tc.Run("MulMatrix_identity_left", [](TestCase &t)
+315:         tc.Run("MulMatrix_pushes_arg2_rows_through_arg1_like_libvu0", [](TestCase &t)
+362:         tc.Run("MulMatrix_product_applies_second_operand_first", [](TestCase &t)
+391:         tc.Run("Normalize_and_InnerProduct_ignore_w", [](TestCase &t)
+410:         tc.Run("RotMatrix_Z_matches_RotMatrixZ", [](TestCase &t)
+445:         tc.Run("RotMatrix_X_matches_RotMatrixX", [](TestCase &t)
+480:         tc.Run("RotMatrix_Y_matches_RotMatrixY", [](TestCase &t)
+515:         tc.Run("RotMatrix_multi_axis_order", [](TestCase &t)
+565:         tc.Run("InversMatrix_transposes_rotation", [](TestCase &t)
+582:         tc.Run("InversMatrix_negRt_translation", [](TestCase &t)
+605:         tc.Run("InversMatrix_roundtrip_identity", [](TestCase &t)
+647:         tc.Run("InversMatrix_roundtrip_rigid", [](TestCase &t)
+695:         tc.Run("CameraMatrix_orthonormal_basis", [](TestCase &t)
+721:         tc.Run("CameraMatrix_nonorigin_eye_maps_to_origin", [](TestCase &t)
+749:         tc.Run("NormalLightMatrix_neg_normalized", [](TestCase &t)
+765:         tc.Run("NormalLightMatrix_transposed", [](TestCase &t)
+787:         tc.Run("NormalLightMatrix_ignores_light_w", [](TestCase &t)
+807:         tc.Run("LightColorMatrix_verbatim_rows", [](TestCase &t)
+826:         tc.Run("RotTransPers_apply_persp_ftoi4", [](TestCase &t)
+844:         tc.Run("RotTransPers_ftoi0_zw_when_mode_nonzero", [](TestCase &t)
+862:         tc.Run("RotTransPers_persp_wzero_zero", [](TestCase &t)
+880:         tc.Run("RotTransPers_nonidentity_matrix_apply", [](TestCase &t)
+913:         tc.Run("RotTransPersN_iterates", [](TestCase &t)
+934:         tc.Run("ecossin_cos_sin", [](TestCase &t)
+948:         tc.Run("ClipScreen_inside_zero", [](TestCase &t)
+957:         tc.Run("ClipScreen_offscreen_nonzero", [](TestCase &t)
+966:         tc.Run("ClipScreen_negx_nonzero", [](TestCase &t)
+976:         tc.Run("ClipScreen_w_and_edges", [](TestCase &t)
+989:         tc.Run("ClipScreen3_ors_three", [](TestCase &t)
+1004:         tc.Run("ClipAll_all_out_returns_1", [](TestCase &t)
+1023:         tc.Run("ClipAll_one_in_returns_0", [](TestCase &t)
+1042:         tc.Run("ClipAll_w_scaling_homogeneous", [](TestCase &t)
+1065:         tc.Run("ClipAll_w_outside_far_bound_returns_1", [](TestCase &t)
+1084:         tc.Run("ViewScreenMatrix_zscale", [](TestCase &t)
+1105:         tc.Run("ViewScreenMatrix_denom_zero", [](TestCase &t)
+1127:         tc.Run("DropShadow_directional_mode", [](TestCase &t)
+1143:         tc.Run("DropShadow_point_mode", [](TestCase &t)
+
+========== STATUS ==========
+READ-ONLY AUDIT
+Production source modified: NO
+Backups created: NO
+Build/tests executed: NO
+Purpose: identify concrete VU1 opcode coverage gaps before any implementation change
