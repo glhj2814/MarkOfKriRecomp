@@ -1,0 +1,1910 @@
+MARK OF KRI — UNIFIED FUNCTION REGISTRATION INTEGRATION AUDIT
+Generated: 2026-11-26 20:17:38
+Repository: D:\Games\MarkOfKriRecomp
+Mode: READ-ONLY
+
+===============================================================================================
+1. EXISTING RUNTIME REGISTRATION TABLE
+
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\runner\register_functions.cpp
+    1: #include "ps2_runtime.h"
+    2: #include "runtime/ps2_memory.h"
+    3: 
+    4: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x00000000u;
+    5: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x01000000u;
+    6: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = (g_ps2RecompiledFunctionTableEnd - g_ps2RecompiledFunctionTableBase) >> 2;
+    7: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[g_ps2RecompiledFunctionTableSlotCount] = {};
+
+RUNTIME TABLE DECLARATIONS
+311: using RecompiledFunction = void (*)(uint8_t *, R5900Context *, PS2Runtime *);
+337: bool replaceFunction(uint32_t address, RecompiledFunction func);
+339: bool registerFunction(uint32_t address, RecompiledFunction func);
+340: RecompiledFunction lookupFunction(uint32_t address);
+552: extern const uint32_t g_ps2RecompiledFunctionTableBase;
+553: extern const uint32_t g_ps2RecompiledFunctionTableEnd;
+554: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount;
+555: extern PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[];
+
+===============================================================================================
+2. GENERATED FUNCTION AND REGISTRATION INVENTORY
+Function source count: 11
+Registration source count: 7
+
+FUNCTION SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+    1: #include <stdexcept>
+    2: #include "ps2_runtime_macros.h"
+    3: #include "ps2_runtime.h"
+    4: #include <ps2_recompiled_functions.h>
+    5: #include <ps2_recompiled_stubs.h>
+    6: 
+    7: #include "ps2_syscalls.h"
+    8: #include "ps2_stubs.h"
+    9: 
+   10: #ifdef PS2_FUNCTION_LOG_TRACKER
+   11: #include "ps2_log.h"
+   12: #endif
+   13: 
+   14: // Function: resetGrabMode__6Camera
+   15: // Address: 0x1159b8 - 0x1159c4
+   16: void resetGrabMode__6Camera(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   17: #ifdef PS2_FUNCTION_LOG_TRACKER
+   18:     PS_LOG_ENTRY("resetGrabMode__6Camera");
+   19: #endif
+   20: 
+   21:     ctx->pc = 0x1159b8u;
+   22: 
+   23:     // 0x1159b8: 0xac8003bc  sw zero,0x3bc(a0)
+   24:     ctx->pc = 0x1159b8u;
+   25:     WRITE32(ADD32(GPR_U32(ctx, 4), 956), GPR_U32(ctx, 0));
+   26:     // 0x1159bc: 0x3e00008  jr ra
+   27:     ctx->pc = 0x1159BCu;
+   28:     {
+   29:         const uint32_t jumpTarget = GPR_U32(ctx, 31);
+   30:         ctx->pc = 0x1159C0u;
+   31:         ctx->in_delay_slot = true;
+   32:         ctx->branch_pc = 0x1159BCu;
+   33:         // 0x1159c0: 0x24020001  addiu v0,zero,1 (Delay Slot)
+   34:         SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+   35:         ctx->in_delay_slot = false;
+Address literals:
+  L15: // Address: 0x1159b8 - 0x1159c4
+  L21: ctx->pc = 0x1159b8u;
+  L23: // 0x1159b8: 0xac8003bc  sw zero,0x3bc(a0)
+  L24: ctx->pc = 0x1159b8u;
+  L26: // 0x1159bc: 0x3e00008  jr ra
+  L27: ctx->pc = 0x1159BCu;
+  L30: ctx->pc = 0x1159C0u;
+  L32: ctx->branch_pc = 0x1159BCu;
+  L33: // 0x1159c0: 0x24020001  addiu v0,zero,1 (Delay Slot)
+  L38: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x1159BCu, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L45: ctx->pc = 0x1159C4u;
+  L54: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1159b8u;
+  L55: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1159bcu;
+  L62: g_ps2RecompiledFunctionTable[0] = resetGrabMode__6Camera; // 0x1159b8
+
+FUNCTION SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_getAttackZoneRange.cpp
+    1: #include <stdexcept>
+    2: #include "ps2_runtime_macros.h"
+    3: #include "ps2_runtime.h"
+    4: #include <ps2_recompiled_functions.h>
+    5: #include <ps2_recompiled_stubs.h>
+    6: 
+    7: #include "ps2_syscalls.h"
+    8: #include "ps2_stubs.h"
+    9: 
+   10: #ifdef PS2_FUNCTION_LOG_TRACKER
+   11: #include "ps2_log.h"
+   12: #endif
+   13: 
+   14: // Function: getAttackZoneRange__9NpcMasterP3NpcPfT2
+   15: // Address: 0x1d20c8 - 0x1d2100
+   16: void getAttackZoneRange__9NpcMasterP3NpcPfT2(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   17: #ifdef PS2_FUNCTION_LOG_TRACKER
+   18:     PS_LOG_ENTRY("getAttackZoneRange__9NpcMasterP3NpcPfT2");
+   19: #endif
+   20: 
+   21:     ctx->pc = 0x1d20c8u;
+   22: 
+   23:     // 0x1d20c8: 0x8ca30014  lw          $v1, 0x14($a1)
+   24:     ctx->pc = 0x1d20c8u;
+   25:     SET_GPR_S32(ctx, 3, (int32_t)READ32(ADD32(GPR_U32(ctx, 5), 20)));
+   26:     // 0x1d20cc: 0x24020047  addiu       $v0, $zero, 0x47
+   27:     ctx->pc = 0x1d20ccu;
+   28:     SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 71));
+   29:     // 0x1d20d0: 0x54620007  bnel        $v1, $v0, . + 4 + (0x7 << 2)
+   30:     ctx->pc = 0x1D20D0u;
+   31:     {
+   32:         const bool branch_taken_0x1d20d0 = (GPR_U64(ctx, 3) != GPR_U64(ctx, 2));
+   33:         if (branch_taken_0x1d20d0) {
+   34:             ctx->pc = 0x1D20D4u;
+   35:             ctx->in_delay_slot = true;
+Address literals:
+  L15: // Address: 0x1d20c8 - 0x1d2100
+  L21: ctx->pc = 0x1d20c8u;
+  L23: // 0x1d20c8: 0x8ca30014  lw          $v1, 0x14($a1)
+  L24: ctx->pc = 0x1d20c8u;
+  L26: // 0x1d20cc: 0x24020047  addiu       $v0, $zero, 0x47
+  L27: ctx->pc = 0x1d20ccu;
+  L29: // 0x1d20d0: 0x54620007  bnel        $v1, $v0, . + 4 + (0x7 << 2)
+  L30: ctx->pc = 0x1D20D0u;
+  L32: const bool branch_taken_0x1d20d0 = (GPR_U64(ctx, 3) != GPR_U64(ctx, 2));
+  L33: if (branch_taken_0x1d20d0) {
+  L34: ctx->pc = 0x1D20D4u;
+  L36: ctx->branch_pc = 0x1D20D0u;
+  L37: // 0x1d20d4: 0xc4a026e4  lwc1        $f0, 0x26E4($a1) (Delay Slot)
+  L40: ctx->pc = 0x1D20F0u;
+  L44: ctx->pc = 0x1D20D8u;
+  L45: // 0x1d20d8: 0x3c014130  lui         $at, 0x4130
+  L46: ctx->pc = 0x1d20d8u;
+  L48: // 0x1d20dc: 0x44810000  mtc1        $at, $f0
+  L49: ctx->pc = 0x1d20dcu;
+  L51: // 0x1d20e0: 0x0  nop
+  L52: ctx->pc = 0x1d20e0u;
+  L54: // 0x1d20e4: 0xe4e00000  swc1        $f0, 0x0($a3)
+  L55: ctx->pc = 0x1d20e4u;
+  L57: // 0x1d20e8: 0x3e00008  jr          $ra
+  L58: ctx->pc = 0x1D20E8u;
+  L61: ctx->pc = 0x1D20ECu;
+  L63: ctx->branch_pc = 0x1D20E8u;
+  L64: // 0x1d20ec: 0xe4c00000  swc1        $f0, 0x0($a2) (Delay Slot)
+  L69: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x1D20E8u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L76: ctx->pc = 0x1D20F0u;
+  L78: // 0x1d20f0: 0xe4c00000  swc1        $f0, 0x0($a2)
+  L79: ctx->pc = 0x1d20f0u;
+  L81: // 0x1d20f4: 0xc4a126e8  lwc1        $f1, 0x26E8($a1)
+  L82: ctx->pc = 0x1d20f4u;
+  L84: // 0x1d20f8: 0x3e00008  jr          $ra
+  L85: ctx->pc = 0x1D20F8u;
+  L88: ctx->pc = 0x1D20FCu;
+  L90: ctx->branch_pc = 0x1D20F8u;
+  L91: // 0x1d20fc: 0xe4e10000  swc1        $f1, 0x0($a3) (Delay Slot)
+  L96: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x1D20F8u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L103: ctx->pc = 0x1D2100u;
+
+FUNCTION SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset__FP6Mscobj.cpp
+    1: #include <stdexcept>
+    2: #include "ps2_runtime_macros.h"
+    3: #include "ps2_runtime.h"
+    4: #include <ps2_recompiled_functions.h>
+    5: #include <ps2_recompiled_stubs.h>
+    6: 
+    7: #include "ps2_syscalls.h"
+    8: #include "ps2_stubs.h"
+    9: 
+   10: #ifdef PS2_FUNCTION_LOG_TRACKER
+   11: #include "ps2_log.h"
+   12: #endif
+   13: 
+   14: // Function: doorReset__FP6Mscobj
+   15: // Address: 0x1f0078 - 0x1f00b8
+   16: void doorReset__FP6Mscobj(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   17: #ifdef PS2_FUNCTION_LOG_TRACKER
+   18:     PS_LOG_ENTRY("doorReset__FP6Mscobj");
+   19: #endif
+   20: 
+   21:     ctx->pc = 0x1f0078u;
+   22: 
+   23:     // 0x1f0078: 0x24030002  addiu       $v1, $zero, 0x2
+   24:     ctx->pc = 0x1f0078u;
+   25:     SET_GPR_S32(ctx, 3, (int32_t)ADD32(GPR_U32(ctx, 0), 2));
+   26:     // 0x1f007c: 0x8c850014  lw          $a1, 0x14($a0)
+   27:     ctx->pc = 0x1f007cu;
+   28:     SET_GPR_S32(ctx, 5, (int32_t)READ32(ADD32(GPR_U32(ctx, 4), 20)));
+   29:     // 0x1f0080: 0x302d  daddu       $a2, $zero, $zero
+   30:     ctx->pc = 0x1f0080u;
+   31:     SET_GPR_U64(ctx, 6, (uint64_t)GPR_U64(ctx, 0) + (uint64_t)GPR_U64(ctx, 0));
+   32:     // 0x1f0084: 0x24020320  addiu       $v0, $zero, 0x320
+   33:     ctx->pc = 0x1f0084u;
+   34:     SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 800));
+   35:     // 0x1f0088: 0x10a20004  beq         $a1, $v0, . + 4 + (0x4 << 2)
+Address literals:
+  L15: // Address: 0x1f0078 - 0x1f00b8
+  L21: ctx->pc = 0x1f0078u;
+  L23: // 0x1f0078: 0x24030002  addiu       $v1, $zero, 0x2
+  L24: ctx->pc = 0x1f0078u;
+  L26: // 0x1f007c: 0x8c850014  lw          $a1, 0x14($a0)
+  L27: ctx->pc = 0x1f007cu;
+  L29: // 0x1f0080: 0x302d  daddu       $a2, $zero, $zero
+  L30: ctx->pc = 0x1f0080u;
+  L32: // 0x1f0084: 0x24020320  addiu       $v0, $zero, 0x320
+  L33: ctx->pc = 0x1f0084u;
+  L35: // 0x1f0088: 0x10a20004  beq         $a1, $v0, . + 4 + (0x4 << 2)
+  L36: ctx->pc = 0x1F0088u;
+  L38: const bool branch_taken_0x1f0088 = (GPR_U64(ctx, 5) == GPR_U64(ctx, 2));
+  L39: ctx->pc = 0x1F008Cu;
+  L41: ctx->branch_pc = 0x1F0088u;
+  L42: // 0x1f008c: 0xa0830c50  sb          $v1, 0xC50($a0) (Delay Slot)
+  L45: if (branch_taken_0x1f0088) {
+  L46: ctx->pc = 0x1F009Cu;
+  L50: ctx->pc = 0x1F0090u;
+  L51: // 0x1f0090: 0x24020323  addiu       $v0, $zero, 0x323
+  L52: ctx->pc = 0x1f0090u;
+  L54: // 0x1f0094: 0x14a20002  bne         $a1, $v0, . + 4 + (0x2 << 2)
+  L55: ctx->pc = 0x1F0094u;
+  L57: const bool branch_taken_0x1f0094 = (GPR_U64(ctx, 5) != GPR_U64(ctx, 2));
+  L58: if (branch_taken_0x1f0094) {
+  L59: ctx->pc = 0x1F00A0u;
+  L63: ctx->pc = 0x1F009Cu;
+  L65: // 0x1f009c: 0x24060001  addiu       $a2, $zero, 0x1
+  L66: ctx->pc = 0x1f009cu;
+  L69: // 0x1f00a0: 0x10c00003  beqz        $a2, . + 4 + (0x3 << 2)
+  L70: ctx->pc = 0x1F00A0u;
+  L72: const bool branch_taken_0x1f00a0 = (GPR_U64(ctx, 6) == GPR_U64(ctx, 0));
+  L73: if (branch_taken_0x1f00a0) {
+  L74: ctx->pc = 0x1F00B0u;
+  L78: ctx->pc = 0x1F00A8u;
+  L79: // 0x1f00a8: 0xac800c6c  sw          $zero, 0xC6C($a0)
+  L80: ctx->pc = 0x1f00a8u;
+  L82: // 0x1f00ac: 0xac800c70  sw          $zero, 0xC70($a0)
+  L83: ctx->pc = 0x1f00acu;
+  L86: // 0x1f00b0: 0x3e00008  jr          $ra
+  L87: ctx->pc = 0x1F00B0u;
+  L90: ctx->pc = 0x1F00B4u;
+  L92: ctx->branch_pc = 0x1F00B0u;
+  L93: // 0x1f00b4: 0x24020001  addiu       $v0, $zero, 0x1 (Delay Slot)
+  L98: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x1F00B0u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L105: ctx->pc = 0x1F00B8u;
+
+FUNCTION SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_Init__10gsBackdropi.cpp
+    1: #include <stdexcept>
+    2: #include "ps2_runtime_macros.h"
+    3: #include "ps2_runtime.h"
+    4: #include <ps2_recompiled_functions.h>
+    5: #include <ps2_recompiled_stubs.h>
+    6: 
+    7: #include "ps2_syscalls.h"
+    8: #include "ps2_stubs.h"
+    9: 
+   10: #ifdef PS2_FUNCTION_LOG_TRACKER
+   11: #include "ps2_log.h"
+   12: #endif
+   13: 
+   14: // Function: Init__10gsBackdropi
+   15: // Address: 0x2dc180 - 0x2dc1d0
+   16: void Init__10gsBackdropi(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   17: #ifdef PS2_FUNCTION_LOG_TRACKER
+   18:     PS_LOG_ENTRY("Init__10gsBackdropi");
+   19: #endif
+   20: 
+   21:     ctx->pc = 0x2dc180u;
+   22: 
+   23:     // 0x2dc180: 0xac800000  sw          $zero, 0x0($a0)
+   24:     ctx->pc = 0x2dc180u;
+   25:     WRITE32(ADD32(GPR_U32(ctx, 4), 0), GPR_U32(ctx, 0));
+   26:     // 0x2dc184: 0x24060049  addiu       $a2, $zero, 0x49
+   27:     ctx->pc = 0x2dc184u;
+   28:     SET_GPR_S32(ctx, 6, (int32_t)ADD32(GPR_U32(ctx, 0), 73));
+   29:     // 0x2dc188: 0xac800004  sw          $zero, 0x4($a0)
+   30:     ctx->pc = 0x2dc188u;
+   31:     WRITE32(ADD32(GPR_U32(ctx, 4), 4), GPR_U32(ctx, 0));
+   32:     // 0x2dc18c: 0xac800008  sw          $zero, 0x8($a0)
+   33:     ctx->pc = 0x2dc18cu;
+   34:     WRITE32(ADD32(GPR_U32(ctx, 4), 8), GPR_U32(ctx, 0));
+   35:     // 0x2dc190: 0xdc820000  ld          $v0, 0x0($a0)
+Address literals:
+  L15: // Address: 0x2dc180 - 0x2dc1d0
+  L21: ctx->pc = 0x2dc180u;
+  L23: // 0x2dc180: 0xac800000  sw          $zero, 0x0($a0)
+  L24: ctx->pc = 0x2dc180u;
+  L26: // 0x2dc184: 0x24060049  addiu       $a2, $zero, 0x49
+  L27: ctx->pc = 0x2dc184u;
+  L29: // 0x2dc188: 0xac800004  sw          $zero, 0x4($a0)
+  L30: ctx->pc = 0x2dc188u;
+  L32: // 0x2dc18c: 0xac800008  sw          $zero, 0x8($a0)
+  L33: ctx->pc = 0x2dc18cu;
+  L35: // 0x2dc190: 0xdc820000  ld          $v0, 0x0($a0)
+  L36: ctx->pc = 0x2dc190u;
+  L38: // 0x2dc194: 0xdc830008  ld          $v1, 0x8($a0)
+  L39: ctx->pc = 0x2dc194u;
+  L41: // 0x2dc198: 0xac850050  sw          $a1, 0x50($a0)
+  L42: ctx->pc = 0x2dc198u;
+  L44: // 0x2dc19c: 0xfc820010  sd          $v0, 0x10($a0)
+  L45: ctx->pc = 0x2dc19cu;
+  L47: // 0x2dc1a0: 0xfc830018  sd          $v1, 0x18($a0)
+  L48: ctx->pc = 0x2dc1a0u;
+  L50: // 0x2dc1a4: 0xfc860030  sd          $a2, 0x30($a0)
+  L51: ctx->pc = 0x2dc1a4u;
+  L53: // 0x2dc1a8: 0xac800024  sw          $zero, 0x24($a0)
+  L54: ctx->pc = 0x2dc1a8u;
+  L56: // 0x2dc1ac: 0xa0800020  sb          $zero, 0x20($a0)
+  L57: ctx->pc = 0x2dc1acu;
+  L59: // 0x2dc1b0: 0xa0800021  sb          $zero, 0x21($a0)
+  L60: ctx->pc = 0x2dc1b0u;
+  L62: // 0x2dc1b4: 0xac800028  sw          $zero, 0x28($a0)
+  L63: ctx->pc = 0x2dc1b4u;
+  L65: // 0x2dc1b8: 0xa0800040  sb          $zero, 0x40($a0)
+  L66: ctx->pc = 0x2dc1b8u;
+  L68: // 0x2dc1bc: 0xa0800041  sb          $zero, 0x41($a0)
+  L69: ctx->pc = 0x2dc1bcu;
+  L71: // 0x2dc1c0: 0xa0800042  sb          $zero, 0x42($a0)
+  L72: ctx->pc = 0x2dc1c0u;
+  L74: // 0x2dc1c4: 0xac800044  sw          $zero, 0x44($a0)
+  L75: ctx->pc = 0x2dc1c4u;
+  L77: // 0x2dc1c8: 0x3e00008  jr          $ra
+  L78: ctx->pc = 0x2DC1C8u;
+  L81: ctx->pc = 0x2DC1CCu;
+  L83: ctx->branch_pc = 0x2DC1C8u;
+  L84: // 0x2dc1cc: 0xac800048  sw          $zero, 0x48($a0) (Delay Slot)
+  L89: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x2DC1C8u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L96: ctx->pc = 0x2DC1D0u;
+
+FUNCTION SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load__7envGridPv.cpp
+    1: #include <stdexcept>
+    2: #include "ps2_runtime_macros.h"
+    3: #include "ps2_runtime.h"
+    4: #include <ps2_recompiled_functions.h>
+    5: #include <ps2_recompiled_stubs.h>
+    6: 
+    7: #include "ps2_syscalls.h"
+    8: #include "ps2_stubs.h"
+    9: 
+   10: #ifdef PS2_FUNCTION_LOG_TRACKER
+   11: #include "ps2_log.h"
+   12: #endif
+   13: 
+   14: // Function: Load__7envGridPv
+   15: // Address: 0x3208a0 - 0x3208d0
+   16: void Load__7envGridPv(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   17: #ifdef PS2_FUNCTION_LOG_TRACKER
+   18:     PS_LOG_ENTRY("Load__7envGridPv");
+   19: #endif
+   20: 
+   21:     ctx->pc = 0x3208a0u;
+   22: 
+   23:     // 0x3208a0: 0x10a00009  beqz        $a1, . + 4 + (0x9 << 2)
+   24:     ctx->pc = 0x3208A0u;
+   25:     {
+   26:         const bool branch_taken_0x3208a0 = (GPR_U64(ctx, 5) == GPR_U64(ctx, 0));
+   27:         if (branch_taken_0x3208a0) {
+   28:             ctx->pc = 0x3208C8u;
+   29:             goto label_3208c8;
+   30:         }
+   31:     }
+   32:     ctx->pc = 0x3208A8u;
+   33:     // 0x3208a8: 0x68a20007  ldl         $v0, 0x7($a1)
+   34:     ctx->pc = 0x3208a8u;
+   35:     { uint32_t addr = ADD32(GPR_U32(ctx, 5), 7); uint32_t aligned_addr = addr & ~7u; uint32_t offset = addr & 7u; uint64_t mem = READ64(aligned_addr); uint32_t shift = (7u - offset) << 3; uint64_t keepMask = (shift == 0) ? 0ull : ((1ull << shift) - 1ull); SET_GPR_U64(ctx, 2, (GPR_U64(ctx, 2) & keepMask) | (mem << shift)); }
+Address literals:
+  L15: // Address: 0x3208a0 - 0x3208d0
+  L21: ctx->pc = 0x3208a0u;
+  L23: // 0x3208a0: 0x10a00009  beqz        $a1, . + 4 + (0x9 << 2)
+  L24: ctx->pc = 0x3208A0u;
+  L26: const bool branch_taken_0x3208a0 = (GPR_U64(ctx, 5) == GPR_U64(ctx, 0));
+  L27: if (branch_taken_0x3208a0) {
+  L28: ctx->pc = 0x3208C8u;
+  L32: ctx->pc = 0x3208A8u;
+  L33: // 0x3208a8: 0x68a20007  ldl         $v0, 0x7($a1)
+  L34: ctx->pc = 0x3208a8u;
+  L36: // 0x3208ac: 0x6ca20000  ldr         $v0, 0x0($a1)
+  L37: ctx->pc = 0x3208acu;
+  L38: { uint32_t addr = ADD32(GPR_U32(ctx, 5), 0); uint32_t aligned_addr = addr & ~7u; uint32_t offset = addr & 7u; uint64_t mem = READ64(aligned_addr); uint32_t shift = offset << 3; uint64_t keepMask = (offset == 0) ? 0ull : (0xFFFFFFFFFFFFFFFFull << ((8u - offset) << 3)); SET_GPR_U64(ctx, 2, (GPR_U64(ctx, 2) & keepMask) | (mem >> shift)); }
+  L39: // 0x3208b0: 0x68a3000f  ldl         $v1, 0xF($a1)
+  L40: ctx->pc = 0x3208b0u;
+  L42: // 0x3208b4: 0x6ca30008  ldr         $v1, 0x8($a1)
+  L43: ctx->pc = 0x3208b4u;
+  L44: { uint32_t addr = ADD32(GPR_U32(ctx, 5), 8); uint32_t aligned_addr = addr & ~7u; uint32_t offset = addr & 7u; uint64_t mem = READ64(aligned_addr); uint32_t shift = offset << 3; uint64_t keepMask = (offset == 0) ? 0ull : (0xFFFFFFFFFFFFFFFFull << ((8u - offset) << 3)); SET_GPR_U64(ctx, 3, (GPR_U64(ctx, 3) & keepMask) | (mem >> shift)); }
+  L45: // 0x3208b8: 0xb082001f  sdl         $v0, 0x1F($a0)
+  L46: ctx->pc = 0x3208b8u;
+  L47: { uint32_t addr = ADD32(GPR_U32(ctx, 4), 31); uint32_t aligned_addr = addr & ~7u; uint32_t offset = addr & 7u; uint32_t shift = (7u - offset) << 3; uint64_t mask = 0xFFFFFFFFFFFFFFFFull >> shift; uint64_t old_data = READ64(aligned_addr); uint64_t val = GPR_U64(ctx, 2); uint64_t new_data = (old_data & ~mask) | ((val >> shift) & mask); WRITE64(aligned_addr, new_data); }
+  L48: // 0x3208bc: 0xb4820018  sdr         $v0, 0x18($a0)
+  L49: ctx->pc = 0x3208bcu;
+  L50: { uint32_t addr = ADD32(GPR_U32(ctx, 4), 24); uint32_t aligned_addr = addr & ~7u; uint32_t offset = addr & 7u; uint32_t shift = offset << 3; uint64_t mask = 0xFFFFFFFFFFFFFFFFull << shift; uint64_t old_data = READ64(aligned_addr); uint64_t val = GPR_U64(ctx, 2); uint64_t new_data = (old_data & ~mask) | ((val << shift) & mask); WRITE64(aligned_addr, new_data); }
+  L51: // 0x3208c0: 0xb0830027  sdl         $v1, 0x27($a0)
+  L52: ctx->pc = 0x3208c0u;
+  L53: { uint32_t addr = ADD32(GPR_U32(ctx, 4), 39); uint32_t aligned_addr = addr & ~7u; uint32_t offset = addr & 7u; uint32_t shift = (7u - offset) << 3; uint64_t mask = 0xFFFFFFFFFFFFFFFFull >> shift; uint64_t old_data = READ64(aligned_addr); uint64_t val = GPR_U64(ctx, 3); uint64_t new_data = (old_data & ~mask) | ((val >> shift) & mask); WRITE64(aligned_addr, new_data); }
+  L54: // 0x3208c4: 0xb4830020  sdr         $v1, 0x20($a0)
+  L55: ctx->pc = 0x3208c4u;
+  L56: { uint32_t addr = ADD32(GPR_U32(ctx, 4), 32); uint32_t aligned_addr = addr & ~7u; uint32_t offset = addr & 7u; uint32_t shift = offset << 3; uint64_t mask = 0xFFFFFFFFFFFFFFFFull << shift; uint64_t old_data = READ64(aligned_addr); uint64_t val = GPR_U64(ctx, 3); uint64_t new_data = (old_data & ~mask) | ((val << shift) & mask); WRITE64(aligned_addr, new_data); }
+  L58: // 0x3208c8: 0x3e00008  jr          $ra
+  L59: ctx->pc = 0x3208C8u;
+  L62: ctx->pc = 0x3208CCu;
+  L64: ctx->branch_pc = 0x3208C8u;
+  L65: // 0x3208cc: 0x24020001  addiu       $v0, $zero, 0x1 (Delay Slot)
+  L70: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x3208C8u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L77: ctx->pc = 0x3208D0u;
+
+FUNCTION SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_addSpirit__6PlayerP9ObjHandle.cpp
+    1: #include <stdexcept>
+    2: #include "ps2_runtime_macros.h"
+    3: #include "ps2_runtime.h"
+    4: #include <ps2_recompiled_functions.h>
+    5: #include <ps2_recompiled_stubs.h>
+    6: 
+    7: #include "ps2_syscalls.h"
+    8: #include "ps2_stubs.h"
+    9: 
+   10: #ifdef PS2_FUNCTION_LOG_TRACKER
+   11: #include "ps2_log.h"
+   12: #endif
+   13: 
+   14: // Function: addSpirit__6PlayerP9ObjHandle
+   15: // Address: 0x21acd0 - 0x21ad00
+   16: void addSpirit__6PlayerP9ObjHandle(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   17: #ifdef PS2_FUNCTION_LOG_TRACKER
+   18:     PS_LOG_ENTRY("addSpirit__6PlayerP9ObjHandle");
+   19: #endif
+   20: 
+   21:     ctx->pc = 0x21acd0u;
+   22: 
+   23:     // 0x21acd0: 0x90831c30  lbu         $v1, 0x1C30($a0)
+   24:     ctx->pc = 0x21acd0u;
+   25:     SET_GPR_ZE32(ctx, 3, (uint8_t)READ8(ADD32(GPR_U32(ctx, 4), 7216)));
+   26:     // 0x21acd4: 0x306600ff  andi        $a2, $v1, 0xFF
+   27:     ctx->pc = 0x21acd4u;
+   28:     SET_GPR_U64(ctx, 6, GPR_U64(ctx, 3) & (uint64_t)(uint16_t)255);
+   29:     // 0x21acd8: 0x2cc20004  sltiu       $v0, $a2, 0x4
+   30:     ctx->pc = 0x21acd8u;
+   31:     SET_GPR_U64(ctx, 2, ((uint64_t)GPR_U64(ctx, 6) < (uint64_t)(int64_t)(int32_t)4) ? 1 : 0);
+   32:     // 0x21acdc: 0x14400003  bnez        $v0, . + 4 + (0x3 << 2)
+   33:     ctx->pc = 0x21ACDCu;
+   34:     {
+   35:         const bool branch_taken_0x21acdc = (GPR_U64(ctx, 2) != GPR_U64(ctx, 0));
+Address literals:
+  L15: // Address: 0x21acd0 - 0x21ad00
+  L21: ctx->pc = 0x21acd0u;
+  L23: // 0x21acd0: 0x90831c30  lbu         $v1, 0x1C30($a0)
+  L24: ctx->pc = 0x21acd0u;
+  L26: // 0x21acd4: 0x306600ff  andi        $a2, $v1, 0xFF
+  L27: ctx->pc = 0x21acd4u;
+  L29: // 0x21acd8: 0x2cc20004  sltiu       $v0, $a2, 0x4
+  L30: ctx->pc = 0x21acd8u;
+  L32: // 0x21acdc: 0x14400003  bnez        $v0, . + 4 + (0x3 << 2)
+  L33: ctx->pc = 0x21ACDCu;
+  L35: const bool branch_taken_0x21acdc = (GPR_U64(ctx, 2) != GPR_U64(ctx, 0));
+  L36: ctx->pc = 0x21ACE0u;
+  L38: ctx->branch_pc = 0x21ACDCu;
+  L39: // 0x21ace0: 0x24630001  addiu       $v1, $v1, 0x1 (Delay Slot)
+  L42: if (branch_taken_0x21acdc) {
+  L43: ctx->pc = 0x21ACECu;
+  L47: ctx->pc = 0x21ACE4u;
+  L48: // 0x21ace4: 0x3e00008  jr          $ra
+  L49: ctx->pc = 0x21ACE4u;
+  L52: ctx->pc = 0x21ACE8u;
+  L54: ctx->branch_pc = 0x21ACE4u;
+  L55: // 0x21ace8: 0x102d  daddu       $v0, $zero, $zero (Delay Slot)
+  L60: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x21ACE4u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L67: ctx->pc = 0x21ACECu;
+  L69: // 0x21acec: 0x61080  sll         $v0, $a2, 2
+  L70: ctx->pc = 0x21acecu;
+  L72: // 0x21acf0: 0x821021  addu        $v0, $a0, $v0
+  L73: ctx->pc = 0x21acf0u;
+  L75: // 0x21acf4: 0xa0831c30  sb          $v1, 0x1C30($a0)
+  L76: ctx->pc = 0x21acf4u;
+  L78: // 0x21acf8: 0xac451c38  sw          $a1, 0x1C38($v0)
+  L79: ctx->pc = 0x21acf8u;
+  L81: // 0x21acfc: 0x3e00008  jr          $ra
+  L82: ctx->pc = 0x21ACFCu;
+  L85: ctx->pc = 0x21AD00u;
+  L87: ctx->branch_pc = 0x21ACFCu;
+  L88: // 0x21ad00: 0x24020001  addiu       $v0, $zero, 0x1 (Delay Slot)
+  L93: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x21ACFCu, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L100: ctx->pc = 0x21AD04u;
+
+FUNCTION SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_GetVoDataSizeInMacroBlocks__8movVoBuf.cpp
+    1: #include <stdexcept>
+    2: #include "ps2_runtime_macros.h"
+    3: #include "ps2_runtime.h"
+    4: #include <ps2_recompiled_functions.h>
+    5: #include <ps2_recompiled_stubs.h>
+    6: 
+    7: #include "ps2_syscalls.h"
+    8: #include "ps2_stubs.h"
+    9: 
+   10: #ifdef PS2_FUNCTION_LOG_TRACKER
+   11: #include "ps2_log.h"
+   12: #endif
+   13: 
+   14: // Function: GetVoDataSizeInMacroBlocks__8movVoBuf
+   15: // Address: 0x34da50 - 0x34da80
+   16: void GetVoDataSizeInMacroBlocks__8movVoBuf(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   17: #ifdef PS2_FUNCTION_LOG_TRACKER
+   18:     PS_LOG_ENTRY("GetVoDataSizeInMacroBlocks__8movVoBuf");
+   19: #endif
+   20: 
+   21:     ctx->pc = 0x34da50u;
+   22: 
+   23:     // 0x34da50: 0x8c870018  lw          $a3, 0x18($a0)
+   24:     ctx->pc = 0x34da50u;
+   25:     SET_GPR_S32(ctx, 7, (int32_t)READ32(ADD32(GPR_U32(ctx, 4), 24)));
+   26:     // 0x34da54: 0x2406ffff  addiu       $a2, $zero, -0x1
+   27:     ctx->pc = 0x34da54u;
+   28:     SET_GPR_S32(ctx, 6, (int32_t)ADD32(GPR_U32(ctx, 0), 4294967295));
+   29:     // 0x34da58: 0x8c850014  lw          $a1, 0x14($a0)
+   30:     ctx->pc = 0x34da58u;
+   31:     SET_GPR_S32(ctx, 5, (int32_t)READ32(ADD32(GPR_U32(ctx, 4), 20)));
+   32:     // 0x34da5c: 0xc7202a  slt         $a0, $a2, $a3
+   33:     ctx->pc = 0x34da5cu;
+   34:     SET_GPR_U64(ctx, 4, ((int64_t)GPR_S64(ctx, 6) < (int64_t)GPR_S64(ctx, 7)) ? 1 : 0);
+   35:     // 0x34da60: 0x24e3000f  addiu       $v1, $a3, 0xF
+Address literals:
+  L15: // Address: 0x34da50 - 0x34da80
+  L21: ctx->pc = 0x34da50u;
+  L23: // 0x34da50: 0x8c870018  lw          $a3, 0x18($a0)
+  L24: ctx->pc = 0x34da50u;
+  L26: // 0x34da54: 0x2406ffff  addiu       $a2, $zero, -0x1
+  L27: ctx->pc = 0x34da54u;
+  L29: // 0x34da58: 0x8c850014  lw          $a1, 0x14($a0)
+  L30: ctx->pc = 0x34da58u;
+  L32: // 0x34da5c: 0xc7202a  slt         $a0, $a2, $a3
+  L33: ctx->pc = 0x34da5cu;
+  L35: // 0x34da60: 0x24e3000f  addiu       $v1, $a3, 0xF
+  L36: ctx->pc = 0x34da60u;
+  L38: // 0x34da64: 0x24a2000f  addiu       $v0, $a1, 0xF
+  L39: ctx->pc = 0x34da64u;
+  L41: // 0x34da68: 0xc5302a  slt         $a2, $a2, $a1
+  L42: ctx->pc = 0x34da68u;
+  L44: // 0x34da6c: 0xa6100b  movn        $v0, $a1, $a2
+  L45: ctx->pc = 0x34da6cu;
+  L47: // 0x34da70: 0xe4180b  movn        $v1, $a3, $a0
+  L48: ctx->pc = 0x34da70u;
+  L50: // 0x34da74: 0x21103  sra         $v0, $v0, 4
+  L51: ctx->pc = 0x34da74u;
+  L53: // 0x34da78: 0x31903  sra         $v1, $v1, 4
+  L54: ctx->pc = 0x34da78u;
+  L56: // 0x34da7c: 0x3e00008  jr          $ra
+  L57: ctx->pc = 0x34DA7Cu;
+  L60: ctx->pc = 0x34DA80u;
+  L62: ctx->branch_pc = 0x34DA7Cu;
+  L63: // 0x34da80: 0x431018  mult        $v0, $v0, $v1 (Delay Slot)
+  L68: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x34DA7Cu, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L75: ctx->pc = 0x34DA84u;
+
+FUNCTION SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_SetViewArea__14DisplayEnvInfoUiUi.cpp
+    1: #include <stdexcept>
+    2: #include "ps2_runtime_macros.h"
+    3: #include "ps2_runtime.h"
+    4: #include <ps2_recompiled_functions.h>
+    5: #include <ps2_recompiled_stubs.h>
+    6: 
+    7: #include "ps2_syscalls.h"
+    8: #include "ps2_stubs.h"
+    9: 
+   10: #ifdef PS2_FUNCTION_LOG_TRACKER
+   11: #include "ps2_log.h"
+   12: #endif
+   13: 
+   14: // Function: SetViewArea__14DisplayEnvInfoUiUi
+   15: // Address: 0x2bdcb8 - 0x2bdce0
+   16: void SetViewArea__14DisplayEnvInfoUiUi(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   17: #ifdef PS2_FUNCTION_LOG_TRACKER
+   18:     PS_LOG_ENTRY("SetViewArea__14DisplayEnvInfoUiUi");
+   19: #endif
+   20: 
+   21:     ctx->pc = 0x2bdcb8u;
+   22: 
+   23:     // 0x2bdcb8: 0x84820004  lh          $v0, 0x4($a0)
+   24:     ctx->pc = 0x2bdcb8u;
+   25:     SET_GPR_S32(ctx, 2, (int16_t)READ16(ADD32(GPR_U32(ctx, 4), 4)));
+   26:     // 0x2bdcbc: 0x61842  srl         $v1, $a2, 1
+   27:     ctx->pc = 0x2bdcbcu;
+   28:     SET_GPR_S32(ctx, 3, (int32_t)SRL32(GPR_U32(ctx, 6), 1));
+   29:     // 0x2bdcc0: 0xac800020  sw          $zero, 0x20($a0)
+   30:     ctx->pc = 0x2bdcc0u;
+   31:     WRITE32(ADD32(GPR_U32(ctx, 4), 32), GPR_U32(ctx, 0));
+   32:     // 0x2bdcc4: 0x38420001  xori        $v0, $v0, 0x1
+   33:     ctx->pc = 0x2bdcc4u;
+   34:     SET_GPR_U64(ctx, 2, GPR_U64(ctx, 2) ^ (uint64_t)(uint16_t)1);
+   35:     // 0x2bdcc8: 0xac85002c  sw          $a1, 0x2C($a0)
+Address literals:
+  L15: // Address: 0x2bdcb8 - 0x2bdce0
+  L21: ctx->pc = 0x2bdcb8u;
+  L23: // 0x2bdcb8: 0x84820004  lh          $v0, 0x4($a0)
+  L24: ctx->pc = 0x2bdcb8u;
+  L26: // 0x2bdcbc: 0x61842  srl         $v1, $a2, 1
+  L27: ctx->pc = 0x2bdcbcu;
+  L29: // 0x2bdcc0: 0xac800020  sw          $zero, 0x20($a0)
+  L30: ctx->pc = 0x2bdcc0u;
+  L32: // 0x2bdcc4: 0x38420001  xori        $v0, $v0, 0x1
+  L33: ctx->pc = 0x2bdcc4u;
+  L35: // 0x2bdcc8: 0xac85002c  sw          $a1, 0x2C($a0)
+  L36: ctx->pc = 0x2bdcc8u;
+  L38: // 0x2bdccc: 0xc2180b  movn        $v1, $a2, $v0
+  L39: ctx->pc = 0x2bdcccu;
+  L41: // 0x2bdcd0: 0xac850008  sw          $a1, 0x8($a0)
+  L42: ctx->pc = 0x2bdcd0u;
+  L44: // 0x2bdcd4: 0xac830028  sw          $v1, 0x28($a0)
+  L45: ctx->pc = 0x2bdcd4u;
+  L47: // 0x2bdcd8: 0xac83000c  sw          $v1, 0xC($a0)
+  L48: ctx->pc = 0x2bdcd8u;
+  L50: // 0x2bdcdc: 0x3e00008  jr          $ra
+  L51: ctx->pc = 0x2BDCDCu;
+  L54: ctx->pc = 0x2BDCE0u;
+  L56: ctx->branch_pc = 0x2BDCDCu;
+  L57: // 0x2bdce0: 0xac800024  sw          $zero, 0x24($a0) (Delay Slot)
+  L62: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x2BDCDCu, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L69: ctx->pc = 0x2BDCE4u;
+
+FUNCTION SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_allowLockMode__6Camerab.cpp
+    1: #include <stdexcept>
+    2: #include "ps2_runtime_macros.h"
+    3: #include "ps2_runtime.h"
+    4: #include <ps2_recompiled_functions.h>
+    5: #include <ps2_recompiled_stubs.h>
+    6: 
+    7: #include "ps2_syscalls.h"
+    8: #include "ps2_stubs.h"
+    9: 
+   10: #ifdef PS2_FUNCTION_LOG_TRACKER
+   11: #include "ps2_log.h"
+   12: #endif
+   13: 
+   14: // Function: allowLockMode__6Camerab
+   15: // Address: 0x1161a0 - 0x1161b8
+   16: void allowLockMode__6Camerab(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   17: #ifdef PS2_FUNCTION_LOG_TRACKER
+   18:     PS_LOG_ENTRY("allowLockMode__6Camerab");
+   19: #endif
+   20: 
+   21:     ctx->pc = 0x1161a0u;
+   22: 
+   23:     // 0x1161a0: 0x10a00003  beqz        $a1, . + 4 + (0x3 << 2)
+   24:     ctx->pc = 0x1161A0u;
+   25:     {
+   26:         const bool branch_taken_0x1161a0 = (GPR_U64(ctx, 5) == GPR_U64(ctx, 0));
+   27:         ctx->pc = 0x1161A4u;
+   28:         ctx->in_delay_slot = true;
+   29:         ctx->branch_pc = 0x1161A0u;
+   30:         // 0x1161a4: 0x24020001  addiu       $v0, $zero, 0x1 (Delay Slot)
+   31:         SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+   32:         ctx->in_delay_slot = false;
+   33:         if (branch_taken_0x1161a0) {
+   34:             ctx->pc = 0x1161B0u;
+   35:             goto label_1161b0;
+Address literals:
+  L15: // Address: 0x1161a0 - 0x1161b8
+  L21: ctx->pc = 0x1161a0u;
+  L23: // 0x1161a0: 0x10a00003  beqz        $a1, . + 4 + (0x3 << 2)
+  L24: ctx->pc = 0x1161A0u;
+  L26: const bool branch_taken_0x1161a0 = (GPR_U64(ctx, 5) == GPR_U64(ctx, 0));
+  L27: ctx->pc = 0x1161A4u;
+  L29: ctx->branch_pc = 0x1161A0u;
+  L30: // 0x1161a4: 0x24020001  addiu       $v0, $zero, 0x1 (Delay Slot)
+  L33: if (branch_taken_0x1161a0) {
+  L34: ctx->pc = 0x1161B0u;
+  L38: ctx->pc = 0x1161A8u;
+  L39: // 0x1161a8: 0x3e00008  jr          $ra
+  L40: ctx->pc = 0x1161A8u;
+  L43: ctx->pc = 0x1161ACu;
+  L45: ctx->branch_pc = 0x1161A8u;
+  L46: // 0x1161ac: 0xa08204d0  sb          $v0, 0x4D0($a0) (Delay Slot)
+  L51: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x1161A8u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L58: ctx->pc = 0x1161B0u;
+  L60: // 0x1161b0: 0x3e00008  jr          $ra
+  L61: ctx->pc = 0x1161B0u;
+  L64: ctx->pc = 0x1161B4u;
+  L66: ctx->branch_pc = 0x1161B0u;
+  L67: // 0x1161b4: 0xa08004d0  sb          $zero, 0x4D0($a0) (Delay Slot)
+  L72: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x1161B0u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L79: ctx->pc = 0x1161B8u;
+
+FUNCTION SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_anmcmd_exitHeader__Fv.cpp
+    1: #include <stdexcept>
+    2: #include "ps2_runtime_macros.h"
+    3: #include "ps2_runtime.h"
+    4: #include <ps2_recompiled_functions.h>
+    5: #include <ps2_recompiled_stubs.h>
+    6: 
+    7: #include "ps2_syscalls.h"
+    8: #include "ps2_stubs.h"
+    9: 
+   10: #ifdef PS2_FUNCTION_LOG_TRACKER
+   11: #include "ps2_log.h"
+   12: #endif
+   13: 
+   14: // Function: anmcmd_exitHeader__Fv
+   15: // Address: 0x19c8c0 - 0x19c8e0
+   16: void anmcmd_exitHeader__Fv(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   17: #ifdef PS2_FUNCTION_LOG_TRACKER
+   18:     PS_LOG_ENTRY("anmcmd_exitHeader__Fv");
+   19: #endif
+   20: 
+   21:     ctx->pc = 0x19c8c0u;
+   22: 
+   23:     // 0x19c8c0: 0x24020004  addiu       $v0, $zero, 0x4
+   24:     ctx->pc = 0x19c8c0u;
+   25:     SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 4));
+   26:     // 0x19c8c4: 0x2403000a  addiu       $v1, $zero, 0xA
+   27:     ctx->pc = 0x19c8c4u;
+   28:     SET_GPR_S32(ctx, 3, (int32_t)ADD32(GPR_U32(ctx, 0), 10));
+   29:     // 0x19c8c8: 0xaf82c370  sw          $v0, -0x3C90($gp)
+   30:     ctx->pc = 0x19c8c8u;
+   31:     WRITE32(ADD32(GPR_U32(ctx, 28), 4294951792), GPR_U32(ctx, 2));
+   32:     // 0x19c8cc: 0x24020001  addiu       $v0, $zero, 0x1
+   33:     ctx->pc = 0x19c8ccu;
+   34:     SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+   35:     // 0x19c8d0: 0xaf83c374  sw          $v1, -0x3C8C($gp)
+Address literals:
+  L15: // Address: 0x19c8c0 - 0x19c8e0
+  L21: ctx->pc = 0x19c8c0u;
+  L23: // 0x19c8c0: 0x24020004  addiu       $v0, $zero, 0x4
+  L24: ctx->pc = 0x19c8c0u;
+  L26: // 0x19c8c4: 0x2403000a  addiu       $v1, $zero, 0xA
+  L27: ctx->pc = 0x19c8c4u;
+  L29: // 0x19c8c8: 0xaf82c370  sw          $v0, -0x3C90($gp)
+  L30: ctx->pc = 0x19c8c8u;
+  L32: // 0x19c8cc: 0x24020001  addiu       $v0, $zero, 0x1
+  L33: ctx->pc = 0x19c8ccu;
+  L35: // 0x19c8d0: 0xaf83c374  sw          $v1, -0x3C8C($gp)
+  L36: ctx->pc = 0x19c8d0u;
+  L38: // 0x19c8d4: 0xaf80c36c  sw          $zero, -0x3C94($gp)
+  L39: ctx->pc = 0x19c8d4u;
+  L41: // 0x19c8d8: 0x3e00008  jr          $ra
+  L42: ctx->pc = 0x19C8D8u;
+  L45: ctx->pc = 0x19C8DCu;
+  L47: ctx->branch_pc = 0x19C8D8u;
+  L48: // 0x19c8dc: 0xaf80c378  sw          $zero, -0x3C88($gp) (Delay Slot)
+  L53: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x19C8D8u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L60: ctx->pc = 0x19C8E0u;
+
+FUNCTION SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_Update__9Shimmer2Df.cpp
+    1: #include <stdexcept>
+    2: #include "ps2_runtime_macros.h"
+    3: #include "ps2_runtime.h"
+    4: #include <ps2_recompiled_functions.h>
+    5: #include <ps2_recompiled_stubs.h>
+    6: 
+    7: #include "ps2_syscalls.h"
+    8: #include "ps2_stubs.h"
+    9: 
+   10: #ifdef PS2_FUNCTION_LOG_TRACKER
+   11: #include "ps2_log.h"
+   12: #endif
+   13: 
+   14: // Function: Update__9Shimmer2Df
+   15: // Address: 0x2d6850 - 0x2d6878
+   16: void Update__9Shimmer2Df(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+   17: #ifdef PS2_FUNCTION_LOG_TRACKER
+   18:     PS_LOG_ENTRY("Update__9Shimmer2Df");
+   19: #endif
+   20: 
+   21:     ctx->pc = 0x2d6850u;
+   22: 
+   23:     // 0x2d6850: 0x44800000  mtc1        $zero, $f0
+   24:     ctx->pc = 0x2d6850u;
+   25:     { uint32_t bits = GPR_U32(ctx, 0); std::memcpy(&ctx->f[0], &bits, sizeof(bits)); }
+   26:     // 0x2d6854: 0x0  nop
+   27:     ctx->pc = 0x2d6854u;
+   28:     // NOP
+   29:     // 0x2d6858: 0x460c0034  c.lt.s      $f0, $f12
+   30:     ctx->pc = 0x2d6858u;
+   31:     ctx->fcr31 = (FPU_C_OLT_S(ctx->f[0], ctx->f[12])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+   32:     // 0x2d685c: 0x0  nop
+   33:     ctx->pc = 0x2d685cu;
+   34:     // NOP
+   35:     // 0x2d6860: 0x45000003  bc1f        . + 4 + (0x3 << 2)
+Address literals:
+  L15: // Address: 0x2d6850 - 0x2d6878
+  L21: ctx->pc = 0x2d6850u;
+  L23: // 0x2d6850: 0x44800000  mtc1        $zero, $f0
+  L24: ctx->pc = 0x2d6850u;
+  L26: // 0x2d6854: 0x0  nop
+  L27: ctx->pc = 0x2d6854u;
+  L29: // 0x2d6858: 0x460c0034  c.lt.s      $f0, $f12
+  L30: ctx->pc = 0x2d6858u;
+  L31: ctx->fcr31 = (FPU_C_OLT_S(ctx->f[0], ctx->f[12])) ? (ctx->fcr31 | 0x800000) : (ctx->fcr31 & ~0x800000);
+  L32: // 0x2d685c: 0x0  nop
+  L33: ctx->pc = 0x2d685cu;
+  L35: // 0x2d6860: 0x45000003  bc1f        . + 4 + (0x3 << 2)
+  L36: ctx->pc = 0x2D6860u;
+  L38: const bool branch_taken_0x2d6860 = (!(ctx->fcr31 & 0x800000));
+  L39: if (branch_taken_0x2d6860) {
+  L40: ctx->pc = 0x2D6870u;
+  L44: ctx->pc = 0x2D6868u;
+  L45: // 0x2d6868: 0x3e00008  jr          $ra
+  L46: ctx->pc = 0x2D6868u;
+  L49: ctx->pc = 0x2D686Cu;
+  L51: ctx->branch_pc = 0x2D6868u;
+  L52: // 0x2d686c: 0xe48c0024  swc1        $f12, 0x24($a0) (Delay Slot)
+  L57: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x2D6868u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L64: ctx->pc = 0x2D6870u;
+  L66: // 0x2d6870: 0x3e00008  jr          $ra
+  L67: ctx->pc = 0x2D6870u;
+  L70: ctx->pc = 0x2D6874u;
+  L72: ctx->branch_pc = 0x2D6870u;
+  L73: // 0x2d6874: 0xe4800024  swc1        $f0, 0x24($a0) (Delay Slot)
+  L78: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x2D6870u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+  L85: ctx->pc = 0x2D6878u;
+
+===============================================================================================
+3. REGISTRATION TABLE DEFINITIONS / INITIALIZERS
+
+REGISTRATION: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp
+  Base: 0x001D20C8
+  End: 0x001D20CC
+  Declared slots: 1
+  Initializer entries parsed: 1
+  SLOT 0 -> getAttackZoneRange__9NpcMasterP3NpcPfT2 @ 0x001D20C8
+  Defines shared global table symbols: YES
+
+REGISTRATION: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp
+  Base: 0x001F0078
+  End: 0x001F007C
+  Declared slots: 1
+  Initializer entries parsed: 1
+  SLOT 0 -> doorReset__FP6Mscobj @ 0x001F0078
+  Defines shared global table symbols: YES
+
+REGISTRATION: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp
+  Base: 0x002DC180
+  End: 0x002DC184
+  Declared slots: 1
+  Initializer entries parsed: 1
+  SLOT 0 -> Init__10gsBackdropi @ 0x002DC180
+  Defines shared global table symbols: YES
+
+REGISTRATION: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp
+  Base: 0x00000000
+  End: 0x00000000
+  Declared slots: 0
+  Initializer entries parsed: 0
+  Defines shared global table symbols: YES
+
+REGISTRATION: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp
+  Base: 0x0021ACD0
+  End: 0x0034DA54
+  Declared slots: 314209
+  Initializer entries parsed: 3
+  SLOT 0 -> addSpirit__6PlayerP9ObjHandle @ 0x0021ACD0
+  SLOT 166906 -> SetViewArea__14DisplayEnvInfoUiUi @ 0x002BDCB8
+  SLOT 314208 -> GetVoDataSizeInMacroBlocks__8movVoBuf @ 0x0034DA50
+  Defines shared global table symbols: YES
+
+REGISTRATION: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp
+  Base: 0x001161A0
+  End: 0x0019C8C4
+  Declared slots: 137673
+  Initializer entries parsed: 2
+  SLOT 0 -> allowLockMode__6Camerab @ 0x001161A0
+  SLOT 137672 -> anmcmd_exitHeader__Fv @ 0x0019C8C0
+  Defines shared global table symbols: YES
+
+REGISTRATION: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp
+  Base: 0x002D6850
+  End: 0x002D6854
+  Declared slots: 1
+  Initializer entries parsed: 1
+  SLOT 0 -> Update__9Shimmer2Df @ 0x002D6850
+  Defines shared global table symbols: YES
+
+===============================================================================================
+4. GLOBAL SYMBOL COLLISION ANALYSIS
+
+g_ps2RecompiledFunctionTableBase definitions: 7
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp:7 extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1d20c8u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp:7 extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1f0078u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp:7 extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x2dc180u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp:7 extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x0u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:7 extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x21acd0u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:7 extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1161a0u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp:7 extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x2d6850u;
+  COLLISION RISK: MULTIPLE DEFINITIONS
+
+g_ps2RecompiledFunctionTableEnd definitions: 7
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp:8 extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1d20ccu;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp:8 extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1f007cu;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp:8 extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x2dc184u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp:8 extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x0u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:8 extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x34da54u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:8 extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x19c8c4u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp:8 extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x2d6854u;
+  COLLISION RISK: MULTIPLE DEFINITIONS
+
+g_ps2RecompiledFunctionTableSlotCount definitions: 7
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp:9 extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp:9 extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp:9 extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp:9 extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 0u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:9 extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 314209u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:9 extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 137673u;
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp:9 extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+  COLLISION RISK: MULTIPLE DEFINITIONS
+
+g_ps2RecompiledFunctionTable definitions: 7
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp:10 PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp:10 PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp:10 PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp:10 PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:10 PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[314209u] = {};
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:10 PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[137673u] = {};
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp:10 PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+  COLLISION RISK: MULTIPLE DEFINITIONS
+
+Duplicate registered guest addresses: 0
+Duplicate registered function names: 0
+
+===============================================================================================
+5. FUNCTION DEFINITION / DECLARATION CROSS-CHECK
+
+getAttackZoneRange__9NpcMasterP3NpcPfT2 @ 0x001D20C8
+  Generated source definitions: 1
+    MARK_OF_KRI_getAttackZoneRange.cpp:16
+  Header references: 0
+
+doorReset__FP6Mscobj @ 0x001F0078
+  Generated source definitions: 1
+    MARK_OF_KRI_doorReset__FP6Mscobj.cpp:16
+  Header references: 0
+
+Init__10gsBackdropi @ 0x002DC180
+  Generated source definitions: 1
+    MARK_OF_KRI_Init__10gsBackdropi.cpp:16
+  Header references: 0
+
+addSpirit__6PlayerP9ObjHandle @ 0x0021ACD0
+  Generated source definitions: 1
+    MARK_OF_KRI_addSpirit__6PlayerP9ObjHandle.cpp:16
+  Header references: 0
+
+SetViewArea__14DisplayEnvInfoUiUi @ 0x002BDCB8
+  Generated source definitions: 1
+    MARK_OF_KRI_SetViewArea__14DisplayEnvInfoUiUi.cpp:16
+  Header references: 0
+
+GetVoDataSizeInMacroBlocks__8movVoBuf @ 0x0034DA50
+  Generated source definitions: 1
+    MARK_OF_KRI_GetVoDataSizeInMacroBlocks__8movVoBuf.cpp:16
+  Header references: 0
+
+allowLockMode__6Camerab @ 0x001161A0
+  Generated source definitions: 1
+    MARK_OF_KRI_allowLockMode__6Camerab.cpp:16
+  Header references: 0
+
+anmcmd_exitHeader__Fv @ 0x0019C8C0
+  Generated source definitions: 1
+    MARK_OF_KRI_anmcmd_exitHeader__Fv.cpp:16
+  Header references: 0
+
+Update__9Shimmer2Df @ 0x002D6850
+  Generated source definitions: 1
+    MARK_OF_KRI_Update__9Shimmer2Df.cpp:16
+  Header references: 0
+
+===============================================================================================
+6. RUNNER CMAKE SOURCE AND REGISTRATION LINKAGE
+
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\CMakeLists.txt
+    1: cmake_minimum_required(VERSION 3.20)
+    2: 
+    3: project(PS2Runtime VERSION 0.1.0 LANGUAGES CXX)
+    4: 
+    5: set(CMAKE_CXX_STANDARD 20)
+    6: set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    7: 
+    8: option(PS2X_ENABLE_RUNNER_UNITY_BUILD "Build ps2EntryRunner with CMake unity build" ON)
+    9: set(PS2X_RUNNER_UNITY_BUILD_BATCH_SIZE 32 CACHE STRING "Unity build batch size for ps2EntryRunner")
+   10: option(PS2X_ENABLE_RUNNER_PCH "Precompile the heavy runtime headers for ps2EntryRunner" ON)
+   11: option(PS2X_ENABLE_SCCACHE "Use sccache as compiler launcher when available" ON)
+   12: 
+   13: option(PS2X_ENABLE_RUNTIME_LOGS "Enable PS2 runtime logs" ON)
+   14: option(PS2X_ENABLE_AGRESSIVE_LOGS "Enable very verbose/agressive PS2 runtime logs" ON)
+   15: option(PS2X_ENABLE_IOP_RPC_TRACE "Log unhandled IOP/SIF RPC trace suggestions" ON)
+   16: option(PS2X_STRICT_RETURN_DIAGNOSTICS "Route generated JR $ra returns through runtime branch diagnostics" OFF)
+   17: option(PS2X_SHOW_WINDOWS_CONSOLE "Show a console window for ps2EntryRunner on Windows release builds" ON)
+   18: option(PS2X_ENABLE_DEBUG_UI "Build the desktop runtime debug UI" ON)
+   19: 
+   20: if(PS2X_ENABLE_SCCACHE)
+   21:     find_program(PS2X_SCCACHE_PROGRAM sccache)
+   22: 
+   23:     if(PS2X_SCCACHE_PROGRAM)
+   24:         if(CMAKE_C_COMPILER)
+   25:             set(CMAKE_C_COMPILER_LAUNCHER "${PS2X_SCCACHE_PROGRAM}")
+   26:         endif()
+   27: 
+   28:         set(CMAKE_CXX_COMPILER_LAUNCHER "${PS2X_SCCACHE_PROGRAM}")
+   29:         message(STATUS "Using sccache: ${PS2X_SCCACHE_PROGRAM}")
+   30:     else()
+   31:         message(STATUS "sccache not found; continuing without compiler launcher")
+   32:     endif()
+   33: endif()
+   34: 
+   35: include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/ReleaseMode.cmake")
+   36: 
+   37: set(PS2X_IS_VITA OFF)
+   38: 
+   39: if((CMAKE_C_COMPILER MATCHES "arm-vita-eabi") OR
+   40:     (CMAKE_CXX_COMPILER MATCHES "arm-vita-eabi"))
+   41:     set(PS2X_IS_VITA ON)
+   42: endif()
+   43: 
+   44: set(PS2X_IS_ANDROID OFF)
+   45: 
+   46: if(ANDROID)
+   47:     set(PS2X_IS_ANDROID ON)
+   48: endif()
+   49: 
+   50: option(PS2X_VITA_CREATE_PACKAGE "Create Vita eboot/vpk targets" ON)
+   51: set(PS2X_VITA_APP_NAME "PS2 Retro X" CACHE STRING "Display name for the Vita bubble")
+   52: set(PS2X_VITA_TITLEID "RANJ00001" CACHE STRING "9-character Vita title id")
+   53: set(PS2X_VITA_VERSION "01.00" CACHE STRING "Vita app version")
+   54: set(PS2X_DEFAULT_BOOT_ELF "" CACHE STRING "Guest ELF path passed directly to main() when argv is unavailable")
+   55: 
+   56: if(PS2X_IS_VITA)
+   57:     if(NOT DEFINED ENV{VITASDK})
+   58:         message(FATAL_ERROR "VITASDK is not defined. Configure inside the VitaSDK environment or pass the Vita toolchain file.")
+   59:     endif()
+   60: 
+   61:     set(PS2X_VITASDK "$ENV{VITASDK}")
+   62: 
+   63:     if(NOT EXISTS "${PS2X_VITASDK}/share/vita.cmake")
+   64:         message(FATAL_ERROR "Could not find vita.cmake under ${PS2X_VITASDK}/share.")
+   65:     endif()
+   66: 
+   67:     include("${PS2X_VITASDK}/share/vita.cmake" REQUIRED)
+   68: else()
+   69:     include(FetchContent)
+   70:     set(FETCHCONTENT_QUIET FALSE)
+   71:     set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+   72:     set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
+   73: 
+   74:     if(PS2X_IS_ANDROID)
+   75:         set(PLATFORM "Android" CACHE STRING "" FORCE)
+   76:     endif()
+   77: 
+   78:     FetchContent_Declare(
+   79:         raylib
+   80:         GIT_REPOSITORY "https://github.com/raysan5/raylib.git"
+   81:         GIT_TAG "5.5" # we will migrate to 4.2.0 later, trust me it will be better
+   82:         GIT_PROGRESS TRUE
+   83:     )
+   84:     FetchContent_MakeAvailable(raylib)
+   85: 
+   86:     if(PS2X_ENABLE_DEBUG_UI AND NOT PS2X_IS_ANDROID)
+   87:         FetchContent_Declare(
+   88:             imgui
+   89:             GIT_REPOSITORY https://github.com/ocornut/imgui.git
+   90:             GIT_TAG "v1.92.7-docking"
+   91:             GIT_SHALLOW TRUE
+   92:         )
+   93:         FetchContent_GetProperties(imgui)
+   94: 
+   95:         if(NOT imgui_POPULATED)
+   96:             FetchContent_Populate(imgui)
+   97:         endif()
+   98: 
+   99:         set(PS2X_IMGUI_SOURCE_DIR "${imgui_SOURCE_DIR}")
+  100: 
+  101:         add_library(imgui STATIC
+  102:             "${PS2X_IMGUI_SOURCE_DIR}/imgui.cpp"
+  103:             "${PS2X_IMGUI_SOURCE_DIR}/imgui_draw.cpp"
+  104:             "${PS2X_IMGUI_SOURCE_DIR}/imgui_tables.cpp"
+  105:             "${PS2X_IMGUI_SOURCE_DIR}/imgui_widgets.cpp"
+  106:             "${PS2X_IMGUI_SOURCE_DIR}/imgui_demo.cpp"
+  107:         )
+  108:         target_include_directories(imgui PUBLIC "${PS2X_IMGUI_SOURCE_DIR}")
+  109: 
+  110:         FetchContent_Declare(
+  111:             rlImGui
+  112:             GIT_REPOSITORY https://github.com/raylib-extras/rlImGui.git
+  113:             GIT_TAG "Raylib_5_5"
+  114:             GIT_SHALLOW TRUE
+  115:         )
+  116:         FetchContent_GetProperties(rlImGui)
+  117: 
+  118:         if(NOT rlimgui_POPULATED)
+  119:             FetchContent_Populate(rlImGui)
+  120:         endif()
+  121: 
+  122:         set(PS2X_RLIMGUI_SOURCE_DIR "${rlimgui_SOURCE_DIR}")
+  123: 
+  124:         add_library(rlImGui STATIC
+  125:             "${PS2X_RLIMGUI_SOURCE_DIR}/rlImGui.cpp"
+  126:         )
+  127:         target_include_directories(rlImGui PUBLIC "${PS2X_RLIMGUI_SOURCE_DIR}")
+  128:         target_link_libraries(rlImGui PUBLIC raylib imgui)
+  129:     endif()
+  130: endif()
+  131: 
+  132: add_library(ps2_host_backend INTERFACE)
+  133: 
+  134: set(PS2X_DEFAULT_BOOT_ELF_DEFINE "")
+  135: 
+  136: if(PS2X_DEFAULT_BOOT_ELF)
+  137:     set(PS2X_DEFAULT_BOOT_ELF_DEFINE "${PS2X_DEFAULT_BOOT_ELF}")
+  138:     string(REPLACE "\\" "\\\\" PS2X_DEFAULT_BOOT_ELF_DEFINE "${PS2X_DEFAULT_BOOT_ELF_DEFINE}")
+  139:     string(REPLACE "\"" "\\\"" PS2X_DEFAULT_BOOT_ELF_DEFINE "${PS2X_DEFAULT_BOOT_ELF_DEFINE}")
+  140: endif()
+  141: 
+  142: if(PS2X_IS_VITA)
+  143:     set(PS2X_VITA_PREFIX "${PS2X_VITASDK}/arm-vita-eabi")
+  144:     set(PS2X_VITA_EXTRA_INCLUDE_DIRS "" CACHE STRING "Extra include directories for Vita host dependencies")
+  145:     set(PS2X_VITA_LIBRARY_DIR "${PS2X_VITA_PREFIX}/lib")
+  146:     set(PS2X_VITA_REQUIRED_LIBRARY_NAMES
+  147:         raylib
+  148:         SDL2
+  149:         OpenSLES
+  150:         taihen_stub
+  151:         SceAppMgr_stub
+  152:         SceCtrl_stub
+  153:         SceGxm_stub
+  154:         SceCommonDialog_stub
+  155:         SceLibKernel_stub
+  156:         SceAudio_stub
+  157:         SceTouch_stub
+  158:         SceHid_stub
+  159:         SceMotion_stub
+  160:         SceSysmodule_stub
+  161:         SceIofilemgr_stub
+  162:         SceNetCtl_stub
+  163:         SceNet_stub
+  164:         SceDisplay_stub
+  165:         SceAppUtil_stub
+  166:         SceAudioIn_stub
+  167:         ScePower_stub
+  168:         SceProcessmgr_stub
+  169:         SceIme_stub
+  170:         libIMGEGL_stub_weak
+  171:         libgpu_es4_ext_stub_weak
+  172:         libGLESv2_stub_weak
+  173:         libGL_stub_weak
+  174:         libGLESv1_CM_stub_weak
+  175:     )
+  176: 
+  177:     set(PS2X_VITA_INCLUDE_DIRS
+  178:         "${PS2X_VITA_PREFIX}/include"
+  179:     )
+  180: 
+  181:     foreach(PS2X_VITA_OPTIONAL_INCLUDE_DIR IN ITEMS
+  182:         "${PS2X_VITA_PREFIX}/include/raylib"
+  183:         "${PS2X_VITA_PREFIX}/include/SDL2")
+  184:         if(EXISTS "${PS2X_VITA_OPTIONAL_INCLUDE_DIR}")
+  185:             list(APPEND PS2X_VITA_INCLUDE_DIRS "${PS2X_VITA_OPTIONAL_INCLUDE_DIR}")
+  186:         endif()
+  187:     endforeach()
+  188: 
+  189:     if(PS2X_VITA_EXTRA_INCLUDE_DIRS)
+  190:         list(APPEND PS2X_VITA_INCLUDE_DIRS ${PS2X_VITA_EXTRA_INCLUDE_DIRS})
+  191:     endif()
+  192: 
+  193:     if(NOT EXISTS "${PS2X_VITA_PREFIX}/include/SDL2/SDL.h")
+  194:         message(FATAL_ERROR
+  195:             "Missing SDL2 headers under ${PS2X_VITA_PREFIX}/include/SDL2. "
+  196:             "Quenom/raylib-5.5-vita requires SDL2 with PVR support installed into VitaSDK.")
+  197:     endif()
+  198: 
+  199:     if(NOT EXISTS "${PS2X_VITA_LIBRARY_DIR}")
+  200:         message(FATAL_ERROR "Missing Vita library directory: ${PS2X_VITA_LIBRARY_DIR}")
+  201:     endif()
+  202: 
+  203:     function(ps2x_find_vita_library out_var library_name)
+  204:         string(MAKE_C_IDENTIFIER "${library_name}" library_id)
+  205:         set(cache_var "PS2X_VITA_LIB_${library_id}")
+  206: 
+  207:         find_library(${cache_var}
+  208:             NAMES "${library_name}" "${library_name}.a" "lib${library_name}.a"
+  209:             PATHS "${PS2X_VITA_LIBRARY_DIR}"
+  210:             NO_DEFAULT_PATH
+  211:         )
+  212: 
+  213:         if(NOT ${cache_var})
+  214:             message(FATAL_ERROR
+  215:                 "Could not find Vita library '${library_name}' under ${PS2X_VITA_LIBRARY_DIR}. "
+  216:                 "Install Quenom/raylib-5.5-vita and its SDL2/PVR dependencies into VitaSDK first.")
+  217:         endif()
+  218: 
+  219:         set(${out_var} "${${cache_var}}" PARENT_SCOPE)
+  220:     endfunction()
+  221: 
+  222:     set(PS2X_VITA_RESOLVED_LIBRARIES "")
+  223: 
+  224:     foreach(PS2X_VITA_LIBRARY_NAME IN LISTS PS2X_VITA_REQUIRED_LIBRARY_NAMES)
+  225:         ps2x_find_vita_library(PS2X_VITA_LIBRARY_PATH "${PS2X_VITA_LIBRARY_NAME}")
+  226:         list(APPEND PS2X_VITA_RESOLVED_LIBRARIES "${PS2X_VITA_LIBRARY_PATH}")
+  227:     endforeach()
+  228: 
+  229:     target_compile_definitions(ps2_host_backend INTERFACE PLATFORM_VITA)
+  230:     target_include_directories(ps2_host_backend INTERFACE ${PS2X_VITA_INCLUDE_DIRS})
+  231:     target_link_libraries(ps2_host_backend INTERFACE
+  232:         ${PS2X_VITA_RESOLVED_LIBRARIES}
+  233:         m
+  234:         c
+  235:         pthread
+  236:     )
+  237: else()
+  238:     target_link_libraries(ps2_host_backend INTERFACE raylib)
+  239: 
+  240:     if(PS2X_IS_ANDROID)
+  241:         target_link_libraries(ps2_host_backend INTERFACE log android)
+  242:     endif()
+  243: endif()
+  244: 
+  245: if(PS2X_IS_ANDROID)
+  246:     set(PS2X_ENABLE_FFMPEG_DEFAULT OFF)
+  247: else()
+  248:     set(PS2X_ENABLE_FFMPEG_DEFAULT ON)
+  249: endif()
+  250: 
+  251: option(PS2X_ENABLE_FFMPEG "Enable FFmpeg-backed MPEG video decoding" ${PS2X_ENABLE_FFMPEG_DEFAULT})
+  252: 
+  253: if(NOT PS2X_ENABLE_FFMPEG)
+  254:     message(STATUS "FFmpeg disabled; MPEG video decode falls back to stub frames")
+  255:     add_library(ffmpeg INTERFACE)
+  256: elseif(WIN32)
+  257:     include(ExternalProject)
+  258: 
+  259:     set(FFMPEG_PREBUILT_TAG "n7.1-241205")
+  260:     set(FFMPEG_PREBUILT_URL
+  261:         "https://github.com/System233/ffmpeg-msvc-prebuilt/releases/download/${FFMPEG_PREBUILT_TAG}/ffmpeg-${FFMPEG_PREBUILT_TAG}-lgpl-amd64-shared.zip")
+  262: 
+  263:     set(FFMPEG_PREFIX_DIR "${CMAKE_BINARY_DIR}/ThirdParty/ffmpeg-prefix")
+  264:     set(FFMPEG_SOURCE_DIR "${FFMPEG_PREFIX_DIR}/src/ffmpeg_external")
+  265:     set(FFMPEG_INCLUDE_DIR "${FFMPEG_SOURCE_DIR}/include")
+  266:     set(FFMPEG_LIB_DIR "${FFMPEG_SOURCE_DIR}/bin")
+  267:     set(FFMPEG_BIN_DIR "${FFMPEG_SOURCE_DIR}/bin")
+  268: 
+  269:     ExternalProject_Add(ffmpeg_external
+  270:         URL "${FFMPEG_PREBUILT_URL}"
+  271:         DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+  272:         PREFIX "${FFMPEG_PREFIX_DIR}"
+  273:         CONFIGURE_COMMAND ""
+  274:         BUILD_COMMAND ""
+  275:         INSTALL_COMMAND ""
+  276:         BUILD_BYPRODUCTS
+  277:         "${FFMPEG_LIB_DIR}/avcodec.lib"
+  278:         "${FFMPEG_LIB_DIR}/avformat.lib"
+  279:         "${FFMPEG_LIB_DIR}/avutil.lib"
+  280:         "${FFMPEG_LIB_DIR}/swresample.lib"
+  281:         "${FFMPEG_LIB_DIR}/swscale.lib"
+  282:     )
+  283: 
+  284:     # Link against the import libraries shipped with the Windows DLLs.
+  285:     add_library(ffmpeg_avcodec STATIC IMPORTED GLOBAL)
+  286:     set_target_properties(ffmpeg_avcodec PROPERTIES
+  287:         IMPORTED_LOCATION "${FFMPEG_LIB_DIR}/avcodec.lib"
+  288:         INTERFACE_INCLUDE_DIRECTORIES "${FFMPEG_INCLUDE_DIR}"
+  289:     )
+  290:     add_dependencies(ffmpeg_avcodec ffmpeg_external)
+  291: 
+  292:     add_library(ffmpeg_avformat STATIC IMPORTED GLOBAL)
+  293:     set_target_properties(ffmpeg_avformat PROPERTIES
+  294:         IMPORTED_LOCATION "${FFMPEG_LIB_DIR}/avformat.lib"
+  295:         INTERFACE_INCLUDE_DIRECTORIES "${FFMPEG_INCLUDE_DIR}"
+  296:     )
+  297:     add_dependencies(ffmpeg_avformat ffmpeg_external)
+  298: 
+  299:     add_library(ffmpeg_avutil STATIC IMPORTED GLOBAL)
+  300:     set_target_properties(ffmpeg_avutil PROPERTIES
+  301:         IMPORTED_LOCATION "${FFMPEG_LIB_DIR}/avutil.lib"
+  302:         INTERFACE_INCLUDE_DIRECTORIES "${FFMPEG_INCLUDE_DIR}"
+  303:     )
+  304:     add_dependencies(ffmpeg_avutil ffmpeg_external)
+  305: 
+  306:     add_library(ffmpeg_swresample STATIC IMPORTED GLOBAL)
+  307:     set_target_properties(ffmpeg_swresample PROPERTIES
+  308:         IMPORTED_LOCATION "${FFMPEG_LIB_DIR}/swresample.lib"
+  309:         INTERFACE_INCLUDE_DIRECTORIES "${FFMPEG_INCLUDE_DIR}"
+  310:     )
+  311:     add_dependencies(ffmpeg_swresample ffmpeg_external)
+  312: 
+  313:     add_library(ffmpeg_swscale STATIC IMPORTED GLOBAL)
+  314:     set_target_properties(ffmpeg_swscale PROPERTIES
+  315:         IMPORTED_LOCATION "${FFMPEG_LIB_DIR}/swscale.lib"
+  316:         INTERFACE_INCLUDE_DIRECTORIES "${FFMPEG_INCLUDE_DIR}"
+  317:     )
+  318:     add_dependencies(ffmpeg_swscale ffmpeg_external)
+  319: 
+  320:     add_library(ffmpeg INTERFACE)
+  321:     target_link_libraries(ffmpeg INTERFACE
+  322:         ffmpeg_avcodec
+  323:         ffmpeg_avformat
+  324:         ffmpeg_avutil
+  325:         ffmpeg_swresample
+  326:         ffmpeg_swscale
+  327:         bcrypt
+  328:         secur32
+  329:         ws2_32
+  330:         user32
+  331:         advapi32
+  332:         ole32
+  333:         shell32
+  334:     )
+  335: 
+  336:     set(PS2X_FFMPEG_BIN_DIR "${FFMPEG_BIN_DIR}" CACHE INTERNAL "Directory containing FFmpeg runtime DLLs")
+  337:     set(PS2X_COPY_FFMPEG_DLLS_SCRIPT
+  338:         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CopyFfmpegDlls.cmake"
+  339:         CACHE INTERNAL
+  340:         "Script used to stage FFmpeg runtime DLLs beside executables")
+  341: else()
+  342:     find_package(PkgConfig REQUIRED)
+  343:     pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET GLOBAL
+  344:         libavcodec
+  345:         libavformat
+  346:         libavutil
+  347:         libswresample
+  348:         libswscale
+  349:     )
+  350: 
+  351:     add_library(ffmpeg INTERFACE)
+  352:     target_link_libraries(ffmpeg INTERFACE PkgConfig::FFMPEG)
+  353: endif()
+  354: 
+  355: function(ps2x_stage_ffmpeg_runtime_dlls target_name)
+  356:     if(NOT WIN32)
+  357:         return()
+  358:     endif()
+  359: 
+  360:     if(NOT PS2X_FFMPEG_BIN_DIR OR NOT PS2X_COPY_FFMPEG_DLLS_SCRIPT)
+  361:         return()
+  362:     endif()
+  363: 
+  364:     if(TARGET ffmpeg_external)
+  365:         add_dependencies(${target_name} ffmpeg_external)
+  366:     endif()
+  367: 
+  368:     add_custom_command(
+  369:         TARGET ${target_name} POST_BUILD
+  370:         COMMAND "${CMAKE_COMMAND}"
+  371:         "-Dsource_dir=${PS2X_FFMPEG_BIN_DIR}"
+  372:         "-Ddest_dir=$<TARGET_FILE_DIR:${target_name}>"
+  373:         -P "${PS2X_COPY_FFMPEG_DLLS_SCRIPT}"
+  374:         VERBATIM
+  375:     )
+  376: endfunction()
+  377: 
+  378: add_library(ps2_runtime STATIC
+  379:     src/lib/game_overrides.cpp
+  380:     src/lib/gs/ps2_gif_arbiter.cpp
+  381:     src/lib/ps2_audio.cpp
+  382:     src/lib/ps2_audio_vag.cpp
+  383:     src/lib/ps2_audio_stream.cpp
+  384:     src/lib/gs/ps2_gs_memory.cpp
+  385:     src/lib/gs/gs_frontend.cpp
+  386:     src/lib/gs/gs_cpu_backend.cpp
+  387:     src/lib/ps2_iop_host.cpp
+  388:     src/lib/ps2_memory.cpp
+  389:     src/lib/ps2_ipu.cpp
+  390:     src/lib/ps2_pad.cpp
+  391:     src/lib/ps2_rom_device.cpp
+  392:     src/lib/ps2_vfs.cpp
+  393:     src/lib/ps2_runtime.cpp
+  394:     src/lib/ps2_vif1_interpreter.cpp
+  395:     src/lib/vu/ps2_vu1_core.cpp
+  396:     src/lib/vu/ps2_vu1_upper.cpp
+  397:     src/lib/vu/ps2_vu1_lower.cpp
+  398:     src/lib/games_database.cpp
+  399: )
+  400: 
+  401: if(PS2X_ENABLE_RUNTIME_LOGS)
+  402:     target_compile_definitions(ps2_runtime PUBLIC
+  403:         PS2_RUNTIME_LOGS=1
+  404:     )
+  405: endif()
+  406: 
+  407: if(PS2X_ENABLE_AGRESSIVE_LOGS)
+  408:     target_compile_definitions(ps2_runtime PUBLIC
+  409:         AGRESSIVE_LOGS=1
+  410:         PS2_FUNCTION_LOG_TRACKER=1
+  411:     )
+  412: endif()
+  413: 
+  414: if(PS2X_ENABLE_IOP_RPC_TRACE)
+  415:     target_compile_definitions(ps2_runtime PUBLIC
+  416:         PS2X_ENABLE_IOP_RPC_TRACE=1
+  417:     )
+  418: else()
+  419:     target_compile_definitions(ps2_runtime PUBLIC
+  420:         PS2X_ENABLE_IOP_RPC_TRACE=0
+  421:     )
+  422: endif()
+  423: 
+  424: if(PS2X_STRICT_RETURN_DIAGNOSTICS)
+  425:     target_compile_definitions(ps2_runtime PUBLIC
+  426:         PS2X_STRICT_RETURN_DIAGNOSTICS=1
+  427:     )
+  428: endif()
+  429: 
+  430: target_compile_definitions(ps2_runtime PRIVATE
+  431:     PS2X_HAS_FFMPEG=$<BOOL:${PS2X_ENABLE_FFMPEG}>
+  432: )
+  433: 
+  434: file(GLOB_RECURSE KERNEL_SRC_FILES CONFIGURE_DEPENDS
+  435:     "${CMAKE_CURRENT_SOURCE_DIR}/src/lib/Kernel/*.cpp"
+  436: )
+  437: 
+  438: target_sources(ps2_runtime PRIVATE
+  439:     ${KERNEL_SRC_FILES}
+  440: )
+  441: 
+  442: file(GLOB RUNNER_SRC_FILES CONFIGURE_DEPENDS
+  443:     "${CMAKE_CURRENT_SOURCE_DIR}/src/runner/*.cpp"
+  444: )
+  445: 
+  446: set(RUNNER_MAIN_CPP "${CMAKE_CURRENT_SOURCE_DIR}/src/runner/main.cpp")
+  447: set(ROOT_MAIN_CPP "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+  448: 
+  449: if(EXISTS "${RUNNER_MAIN_CPP}")
+  450:     list(APPEND RUNNER_SRC_FILES "${RUNNER_MAIN_CPP}")
+  451: elseif(EXISTS "${ROOT_MAIN_CPP}")
+  452:     list(APPEND RUNNER_SRC_FILES "${ROOT_MAIN_CPP}")
+  453: endif()
+  454: 
+  455: if(PS2X_IS_ANDROID)
+  456:     add_library(ps2EntryRunner SHARED
+  457:         ${RUNNER_SRC_FILES}
+  458:     )
+  459: 
+  460:     target_link_options(ps2EntryRunner PRIVATE "-Wl,--undefined=ANativeActivity_onCreate")
+  461: else()
+  462:     add_executable(ps2EntryRunner
+  463:         ${RUNNER_SRC_FILES}
+  464:     )
+  465: endif()
+  466: 
+  467: if(PS2X_ENABLE_RUNNER_UNITY_BUILD)
+  468:     set_target_properties(ps2EntryRunner PROPERTIES
+  469:         UNITY_BUILD ON
+  470:         UNITY_BUILD_BATCH_SIZE "${PS2X_RUNNER_UNITY_BUILD_BATCH_SIZE}"
+  471:     )
+  472: endif()
+  473: 
+  474: if(PS2X_ENABLE_RUNNER_PCH)
+  475:     set(PS2X_RUNNER_PCH_HEADERS
+  476:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_runtime_macros.h"
+  477:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_runtime.h"
+  478:     )
+  479: 
+  480:     foreach(PS2X_RUNNER_GENERATED_HEADER IN ITEMS
+  481:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_recompiled_functions.h"
+  482:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_recompiled_stubs.h")
+  483:         if(EXISTS "${PS2X_RUNNER_GENERATED_HEADER}")
+  484:             list(APPEND PS2X_RUNNER_PCH_HEADERS "${PS2X_RUNNER_GENERATED_HEADER}")
+  485:         endif()
+  486:     endforeach()
+  487: 
+  488:     list(APPEND PS2X_RUNNER_PCH_HEADERS
+  489:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_syscalls.h"
+  490:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_stubs.h"
+  491:     )
+  492: 
+  493:     target_precompile_headers(ps2EntryRunner PRIVATE ${PS2X_RUNNER_PCH_HEADERS})
+  494: endif()
+  495: 
+  496: if(PS2X_DEFAULT_BOOT_ELF_DEFINE)
+  497:     target_compile_definitions(ps2EntryRunner PRIVATE
+  498:         PS2X_DEFAULT_BOOT_ELF="${PS2X_DEFAULT_BOOT_ELF_DEFINE}"
+  499:     )
+  500: endif()
+  501: 
+  502: if(MSVC)
+  503:     target_compile_options(ps2EntryRunner PRIVATE /FS)
+  504: endif()
+  505: 
+  506: target_include_directories(ps2_runtime PUBLIC
+  507:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+  508:     ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/Kernel
+  509: )
+  510: 
+  511: target_link_libraries(ps2_runtime PUBLIC ps2_host_backend ffmpeg ps2_iop)
+  512: target_link_libraries(ps2EntryRunner
+  513:     PRIVATE
+  514:     ps2_runtime
+  515: )
+  516: 
+  517: if(PS2X_ENABLE_DEBUG_UI AND NOT PS2X_IS_VITA AND NOT PS2X_IS_ANDROID)
+  518:     target_sources(ps2EntryRunner PRIVATE
+  519:         src/lib/ps2_debug_panel.cpp
+  520:     )
+  521:     target_link_libraries(ps2EntryRunner PRIVATE rlImGui imgui)
+  522:     target_compile_definitions(ps2EntryRunner PRIVATE PS2X_ENABLE_DEBUG_UI=1)
+  523: endif()
+  524: 
+  525: ps2x_stage_ffmpeg_runtime_dlls(ps2EntryRunner)
+  526: 
+  527: if(PS2X_IS_VITA)
+  528:     set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1") 
+  529:     set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d ATTRIBUTE2=12")
+  530: 
+  531:     if(PS2X_VITA_CREATE_PACKAGE)
+  532:         set(PS2X_VITA_VPK_FILES "")
+  533: 
+  534:         foreach(PS2X_VITA_MODULE IN ITEMS
+  535:             libgpu_es4_ext.suprx
+  536:             libIMGEGL.suprx
+  537:             libGLESv2.suprx
+  538:             libpvrPSP2_WSEGL.suprx
+  539:             libGL.suprx)
+  540:             set(PS2X_VITA_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vita/module/${PS2X_VITA_MODULE}")
+  541: 
+  542:             if(EXISTS "${PS2X_VITA_MODULE_PATH}")
+  543:                 list(APPEND PS2X_VITA_VPK_FILES FILE "${PS2X_VITA_MODULE_PATH}" "module/${PS2X_VITA_MODULE}")
+  544:             else()
+  545:                 message(WARNING
+  546:                     "Missing ${PS2X_VITA_MODULE_PATH}; the vpk will rely on ur0:data/external/ for it")
+  547:             endif()
+  548:         endforeach()
+  549: 
+  550:         vita_create_self(eboot.bin ps2EntryRunner UNSAFE)
+  551:         vita_create_vpk(ps2EntryRunner.vpk ${PS2X_VITA_TITLEID} eboot.bin
+  552:             VERSION ${PS2X_VITA_VERSION}
+  553:             NAME ${PS2X_VITA_APP_NAME}
+  554:             ${PS2X_VITA_VPK_FILES}
+  555:         )
+  556:     endif()
+  557: endif()
+  558: 
+  559: if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  560:     EnableFastReleaseMode(ps2_runtime)
+  561:     EnableFastReleaseMode(ps2EntryRunner)
+  562: 
+  563:     if(WIN32 AND NOT PS2X_SHOW_WINDOWS_CONSOLE)
+  564:         if(MSVC)
+  565:             target_link_options(ps2EntryRunner PRIVATE
+  566:                 $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>:/SUBSYSTEM:WINDOWS>
+  567:                 $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>:/ENTRY:mainCRTStartup>
+  568:             )
+  569:         elseif(MINGW)
+  570:             target_link_options(ps2EntryRunner PRIVATE
+  571:                 $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>:-mwindows>
+  572:             )
+  573:         endif()
+  574:     endif()
+  575: endif()
+  576: 
+  577: # Work around WinAPI vs raylib symbol clash for CloseWindow on x64
+  578: if(MSVC)
+  579:     target_link_options(ps2EntryRunner PRIVATE "/FORCE:MULTIPLE")
+  580: endif()
+  581: 
+  582: # Vita: Work around for GCC 10's LTO plugin
+  583: if(PS2X_IS_VITA)
+  584:     target_link_options(ps2EntryRunner PRIVATE "-Wl,--allow-multiple-definition")
+  585:     target_sources(ps2EntryRunner PRIVATE src/lib/ps2_vita_runtime.cpp)
+  586:     set_source_files_properties(src/lib/ps2_vita_runtime.cpp PROPERTIES
+  587:         SKIP_UNITY_BUILD_INCLUSION TRUE
+  588:         COMPILE_OPTIONS "-fno-lto"
+  589:     )
+  590: endif()
+  591: 
+  592: if(PS2X_IS_ANDROID)
+  593:     target_sources(ps2EntryRunner PRIVATE src/lib/ps2_android_runtime.cpp)
+  594: endif()
+  595: 
+  596: install(TARGETS ps2_runtime ps2EntryRunner
+  597:     RUNTIME DESTINATION bin
+  598:     LIBRARY DESTINATION lib
+  599:     ARCHIVE DESTINATION lib
+  600: )
+  601: 
+  602: if(WIN32 AND PS2X_ENABLE_FFMPEG)
+  603:     install(DIRECTORY "${FFMPEG_BIN_DIR}/"
+  604:         DESTINATION bin
+  605:         FILES_MATCHING
+  606:         PATTERN "*.dll"
+  607:     )
+  608: endif()
+  609: 
+  610: install(DIRECTORY include/
+  611:     DESTINATION include
+  612: )
+
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\main.cpp
+    1: #include "ps2_runtime.h"
+    2: #include "games_database.h"
+    3: #if defined(PS2X_ENABLE_DEBUG_UI) && !defined(PLATFORM_VITA)
+    4: #include "ps2_debug_panel.h"
+    5: #endif
+    6: 
+    7: #ifdef _DEBUG
+    8: #include "ps2_log.h"
+    9: #endif
+   10: 
+   11: #include <iostream>
+   12: #include <string>
+   13: #include <filesystem>
+   14: #include <exception>
+   15: #include <algorithm>
+   16: #include <cstdlib>
+   17: 
+   18: #if defined(__ANDROID__)
+   19: #include <android/log.h>
+   20: #include <unistd.h>
+   21: #include <thread>
+   22: #include <cstdio>
+   23: #include <cstring>
+   24: #endif
+   25: 
+   26: namespace
+   27: {
+   28: #if defined(__ANDROID__)
+   29:     int g_logcatPipeFds[2]{-1, -1};
+   30:     std::thread g_logcatThread;
+   31: 
+   32:     void stopLogcatRedirect()
+   33:     {
+   34:         std::fflush(stdout);
+   35:         std::fflush(stderr);
+   36:         close(STDOUT_FILENO);
+   37:         close(STDERR_FILENO);
+   38:         if (g_logcatPipeFds[1] >= 0)
+   39:         {
+   40:             close(g_logcatPipeFds[1]);
+   41:             g_logcatPipeFds[1] = -1;
+   42:         }
+   43:         if (g_logcatThread.joinable())
+   44:         {
+   45:             g_logcatThread.join();
+   46:         }
+   47:     }
+   48: 
+   49:     void redirectStdioToLogcat()
+   50:     {
+   51:         if (pipe(g_logcatPipeFds) != 0)
+   52:         {
+   53:             return;
+   54:         }
+   55: 
+   56:         setvbuf(stdout, nullptr, _IOLBF, 0);
+   57:         setvbuf(stderr, nullptr, _IONBF, 0);
+   58:         dup2(g_logcatPipeFds[1], STDOUT_FILENO);
+   59:         dup2(g_logcatPipeFds[1], STDERR_FILENO);
+   60: 
+   61:         g_logcatThread = std::thread([]()
+   62:                                      {
+   63:                                          FILE *reader = fdopen(g_logcatPipeFds[0], "r");
+   64:                                          if (!reader)
+   65:                                          {
+   66:                                              return;
+   67:                                          }
+   68:                                          char line[1024];
+   69:                                          while (fgets(line, sizeof(line), reader))
+   70:                                          {
+   71:                                              size_t len = std::strlen(line);
+   72:                                              if (len > 0 && line[len - 1] == '\n')
+   73:                                              {
+   74:                                                  line[len - 1] = '\0';
+   75:                                              }
+   76:                                              __android_log_write(ANDROID_LOG_INFO, "ps2x", line);
+   77:                                          }
+   78:                                          fclose(reader);
+   79:                                          g_logcatPipeFds[0] = -1;
+   80:                                      });
+   81:         if (std::atexit(stopLogcatRedirect) != 0)
+   82:         {
+   83:             close(STDOUT_FILENO);
+   84:             close(STDERR_FILENO);
+   85:             close(g_logcatPipeFds[1]);
+   86:             g_logcatPipeFds[1] = -1;
+   87:             if (g_logcatThread.joinable())
+   88:             {
+   89:                 g_logcatThread.join();
+   90:             }
+   91:         }
+   92:     }
+   93: #endif
+   94: 
+   95:     void setupTerminateLogger() // to help on release build crashs
+   96:     {
+   97:         std::set_terminate([]()
+   98:                            {
+   99:                                std::cerr << "[terminate] unhandled exception" << std::endl;
+  100:                                const std::exception_ptr ep = std::current_exception();
+  101:                                if (ep)
+  102:                                {
+  103:                                    try
+  104:                                    {
+  105:                                        std::rethrow_exception(ep);
+  106:                                    }
+  107:                                    catch (const std::system_error &e)
+  108:                                    {
+  109:                                        std::cerr << "[terminate] std::system_error code=" << e.code().value()
+  110:                                                  << " category=" << e.code().category().name()
+  111:                                                  << " message=" << e.what() << std::endl;
+  112:                                    }
+  113:                                    catch (const std::exception &e)
+  114:                                    {
+  115:                                        std::cerr << "[terminate] std::exception: " << e.what() << std::endl;
+  116:                                    }
+  117:                                    catch (...)
+  118:                                    {
+  119:                                        std::cerr << "[terminate] non-std exception" << std::endl;
+  120:                                    }
+  121:                                }
+  122:                                std::abort(); });
+  123:     }
+  124: 
+  125:     std::string normalizeGameId(const std::string &folderName)
+  126:     {
+  127:         std::string result = folderName;
+  128: 
+  129:         size_t underscore = result.find('_');
+  130:         if (underscore != std::string::npos)
+  131:             result[underscore] = '-';
+  132: 
+  133:         size_t dot = result.find('.');
+  134:         if (dot != std::string::npos)
+  135:             result.erase(dot, 1);
+  136: 
+  137:         std::ranges::transform(result, result.begin(), [](unsigned char character)
+  138:                                { return static_cast<char>(std::toupper(character)); });
+  139: 
+  140:         return result;
+  141:     }
+  142: 
+  143:     std::filesystem::path getExecutablePath(int argc, char *argv[])
+  144:     {
+  145:         if (argc >= 2 && argv[1] && argv[1][0] != '\0')
+  146:         {
+  147:             std::cout << "Using argv boot path" << std::endl;
+  148:             return std::filesystem::path(argv[1]);
+  149:         }
+  150: #if defined(PS2X_DEFAULT_BOOT_ELF)
+  151:         std::cout << "Using default boot file" << std::endl;
+  152:         const std::filesystem::path configuredPath = std::filesystem::path(PS2X_DEFAULT_BOOT_ELF);
+  153: #if defined(PLATFORM_VITA)
+  154:         return configuredPath;
+  155: #endif
+  156:         if (configuredPath.is_absolute())
+  157:         {
+  158:             return configuredPath;
+  159:         }
+  160:         return (std::filesystem::current_path() / configuredPath).lexically_normal();
+  161: #else
+  162:         throw std::runtime_error("Unable to determine executable path. Pass the guest ELF as argv[1] or define PS2X_DEFAULT_BOOT_ELF.");
+  163: #endif
+  164:     }
+  165: }
+  166: 
+  167: int main(int argc, char *argv[])
+  168: {
+  169: #if defined(__ANDROID__)
+  170:     redirectStdioToLogcat();
+  171: #endif
+  172:     setupTerminateLogger();
+  173: 
+  174:     try
+  175:     {
+  176:         std::filesystem::path pathObj = getExecutablePath(argc, argv);
+  177: 
+  178:         std::string filePathStr = pathObj.string();
+  179:         std::string elfName = pathObj.filename().string();
+  180:         std::string normalizedId = normalizeGameId(elfName);
+  181: 
+  182:         std::string windowTitle = "PS2-Recomp | ";
+  183:         const char *gameName = getGameName(normalizedId);
+  184: 
+  185: #if !defined(PLATFORM_VITA)
+  186:         if (gameName)
+  187:         {
+  188:             windowTitle += std::string(gameName) + " | " + elfName;
+  189:         }
+  190:         else
+  191: #endif
+  192:         {
+  193:             windowTitle += elfName;
+  194:         }
+  195: 
+  196:         PS2Runtime runtime;
+  197: #if defined(PS2X_ENABLE_DEBUG_UI) && !defined(PLATFORM_VITA)
+  198:         // This hook is to prevent leak rlimgui deps to recompiler etc
+  199:         PS2DebugPanel debugPanel;
+  200:         runtime.setDebugUiCallbacks(
+  201:             [](PS2Runtime &rt, void *userData)
+  202:             {
+  203:                 (void)rt;
+  204:                 static_cast<PS2DebugPanel *>(userData)->initialize();
+  205:             },
+  206:             [](PS2Runtime &rt, void *userData)
+  207:             {
+  208:                 static_cast<PS2DebugPanel *>(userData)->draw(rt);
+  209:             },
+  210:             [](PS2Runtime &rt, void *userData)
+  211:             {
+  212:                 (void)rt;
+  213:                 static_cast<PS2DebugPanel *>(userData)->shutdown();
+  214:             },
+  215:             &debugPanel);
+  216: #endif
+  217:         if (!runtime.initialize(windowTitle.c_str()))
+  218:         {
+  219:             std::cerr << "Failed to initialize PS2 runtime" << std::endl;
+  220:             return 1;
+  221:         }
+  222: 
+  223:         if (!runtime.loadELF(filePathStr))
+  224:         {
+  225:             std::cerr << "Failed to load ELF file: " << filePathStr << std::endl;
+  226:             return 1;
+  227:         }
+  228: 
+  229:         runtime.run();
+  230: 
+  231: #ifdef _DEBUG
+  232:         ps2_log::print_saved_location();
+  233: #endif
+  234:         std::cout.flush();
+  235:         std::cerr.flush();
+  236:         std::_Exit(0);
+  237:     }
+  238:     catch (const std::exception &e)
+  239:     {
+  240:         std::cerr << "[main] fatal exception: " << e.what() << std::endl;
+  241:     }
+  242:     catch (...)
+  243:     {
+  244:         std::cerr << "[main] fatal exception: unknown" << std::endl;
+  245:     }
+  246: 
+  247:     std::cout.flush();
+  248:     std::cerr.flush();
+  249:     std::_Exit(1);
+  250: }
+
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\runner\register_functions.cpp
+    1: #include "ps2_runtime.h"
+    2: #include "runtime/ps2_memory.h"
+    3: 
+    4: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x00000000u;
+    5: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x01000000u;
+    6: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = (g_ps2RecompiledFunctionTableEnd - g_ps2RecompiledFunctionTableBase) >> 2;
+    7: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[g_ps2RecompiledFunctionTableSlotCount] = {};
+
+===============================================================================================
+7. GENERATED FILE CMAKE LINKAGE
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_resetGrabMode_001159B8.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt:17: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt:38: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt:70: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_getAttackZoneRange.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\harness\CMakeLists.txt:10: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/attack_zone_range_execution/MARK_OF_KRI_getAttackZoneRange.cpp"
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_doorReset__FP6Mscobj.cpp
+  D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt:54: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/doorReset_codegen_20261125_133621/MARK_OF_KRI_doorReset__FP6Mscobj.cpp"
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_Init__10gsBackdropi.cpp
+  D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt:77: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/initBackdrop_codegen_20261125_134800/MARK_OF_KRI_Init__10gsBackdropi.cpp"
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_Load__7envGridPv.cpp
+  D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt:108: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/Load_envGrid_codegen_20261125_153935/MARK_OF_KRI_Load__7envGridPv.cpp"
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_addSpirit__6PlayerP9ObjHandle.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\multifunction_execution_isolated\CMakeLists.txt:8: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/multifunction/MARK_OF_KRI_addSpirit__6PlayerP9ObjHandle.cpp"
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_GetVoDataSizeInMacroBlocks__8movVoBuf.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\multifunction_execution_isolated\CMakeLists.txt:10: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/multifunction/MARK_OF_KRI_GetVoDataSizeInMacroBlocks__8movVoBuf.cpp"
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_SetViewArea__14DisplayEnvInfoUiUi.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\multifunction_execution_isolated\CMakeLists.txt:9: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/multifunction/MARK_OF_KRI_SetViewArea__14DisplayEnvInfoUiUi.cpp"
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_allowLockMode__6Camerab.cpp
+  D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt:21: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/next_two_function_codegen_20261125_125200/MARK_OF_KRI_allowLockMode__6Camerab.cpp"
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_anmcmd_exitHeader__Fv.cpp
+  D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt:22: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/next_two_function_codegen_20261125_125200/MARK_OF_KRI_anmcmd_exitHeader__Fv.cpp"
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_Update__9Shimmer2Df.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\CMakeLists.txt:10: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/shimmer_codegen_execution/MARK_OF_KRI_Update__9Shimmer2Df.cpp"
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp
+  No CMake filename reference found.
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_doorReset_REGISTRATION.cpp
+  No CMake filename reference found.
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp
+  No CMake filename reference found.
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp
+  No CMake filename reference found.
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp
+  No CMake filename reference found.
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp
+  No CMake filename reference found.
+
+CMAKE REFERENCES FOR: MARK_OF_KRI_SHIMMER_REGISTRATION.cpp
+  No CMake filename reference found.
+
+===============================================================================================
+8. UNIFIED TABLE FEASIBILITY
+
+AUDIT ERROR: Error formatting a string: Format specifier was invalid..
+at <ScriptBlock>, <No file>: line 389
+
+===============================================================================================
+COMPLETION
+Elapsed: 1.87 seconds
+Estimated runtime: 5-20 seconds
+Report: D:\Downloads\MarkOfKri_Audits\UNIFIED_REGISTRATION_INTEGRATION_20261126_201738.log
