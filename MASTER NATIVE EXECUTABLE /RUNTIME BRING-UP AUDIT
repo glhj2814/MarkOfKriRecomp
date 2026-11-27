@@ -1,0 +1,1236 @@
+MARK OF KRI — MASTER NATIVE EXECUTABLE / RUNTIME BRING-UP AUDIT
+Generated                         11/26/2026 20:07:29
+Mode                              READ-ONLY
+Repository                        D:\Games\MarkOfKriRecomp
+PS2Recomp                         D:\Games\MarkOfKriRecomp\external\PS2Recomp
+Original ELF                      D:\Games\MarkOfKriRecomp\original\SCUS_971.40
+Native workspace                  D:\Games\MarkOfKriRecomp\native
+Estimated runtime                30-90 seconds
+Repository                                       PASS
+PS2Recomp tree                                   PASS
+Original ELF                                     PASS
+Native workspace                                 PASS
+
+==============================================================================
+PHASE 1 — ORIGINAL GAME ELF INTEGRITY
+==============================================================================
+SCUS_971.40 size                                 5442946 bytes
+SCUS_971.40 SHA256                               10EB2236A43DC07DAF32CB2E9372C902811019FA898A9B3D2F59BD4B577FCB58
+Known original SHA256                            PASS
+ELF magic                                        ELF
+ELF class                                        ELF32
+ELF encoding                                     Little-endian
+ELF machine                                      MIPS
+ELF identity gate                                FAIL
+
+==============================================================================
+PHASE 2 — PS2RECOMP TOOLCHAIN
+==============================================================================
+ps2_analyzer.exe                                 FOUND — D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xAnalyzer\ps2_analyzer.exe
+ps2_recomp.exe                                   FOUND — D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xRecomp\ps2_recomp.exe
+ps2EntryRunner.exe                               FOUND — D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xRuntime\ps2EntryRunner.exe
+ps2x_tests.exe                                   FOUND — D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xTest\ps2x_tests.exe
+ps2x_fpu_execution_tests.exe                     FOUND — D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xTest\ps2x_fpu_execution_tests.exe
+Required toolchain count                         5/5
+
+==============================================================================
+PHASE 3 — PROJECT-OWNED NATIVE SOURCE INVENTORY
+==============================================================================
+Native .cpp files                                586
+Native headers                                   390
+Native CMake files                               214
+Project-owned .cpp                               41
+Project-owned MARK_OF_KRI .cpp                   7
+
+==============================================================================
+PHASE 4 — MARK OF KRI FUNCTION / CODEGEN MAPPING
+==============================================================================
+MARK_OF_KRI_doorReset                            1 project-owned source references
+    D:\Games\MarkOfKriRecomp\native\tests\recomp\doorReset_codegen_20261125_133621\src\doorReset_codegen.cpp
+MARK_OF_KRI_InitBackdrop                         1 project-owned source references
+    D:\Games\MarkOfKriRecomp\native\tests\recomp\initBackdrop_codegen_20261125_134800\src\initBackdrop_codegen.cpp
+MARK_OF_KRI_Load_envGrid                         1 project-owned source references
+    D:\Games\MarkOfKriRecomp\native\tests\recomp\Load_envGrid_execution_20261125_153935\src\Load_envGrid_codegen.cpp
+MARK_OF_KRI_addSpirit                            NOT FOUND
+MARK_OF_KRI_GetVoDataSizeInMacroBlocks           NOT FOUND
+MARK_OF_KRI_SetViewArea                          NOT FOUND
+MARK_OF_KRI_allowLockMode                        NOT FOUND
+MARK_OF_KRI_anmcmd_exitHeader                    NOT FOUND
+MARK_OF_KRI_Update                               1 project-owned source references
+    D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp
+Known-function coverage                          4/9
+Unique MARK_OF_KRI symbols                       12
+  MARK_OF_KRI_ATTACK_ZONE_REGISTRATION
+  MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION
+  MARK_OF_KRI_doorReset__FP6Mscobj
+  MARK_OF_KRI_doorReset_REGISTRATION
+  MARK_OF_KRI_getAttackZoneRange
+  MARK_OF_KRI_Init__10gsBackdropi
+  MARK_OF_KRI_InitBackdrop_REGISTRATION
+  MARK_OF_KRI_Load__7envGridPv
+  MARK_OF_KRI_Load_envGrid_REGISTRATION
+  MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION
+  MARK_OF_KRI_SHIMMER_REGISTRATION
+  MARK_OF_KRI_Update__9Shimmer2Df
+
+==============================================================================
+PHASE 5 — CODEGEN TARGET / SOURCE RELATIONSHIP
+==============================================================================
+Codegen/execution related files                  319
+Project Mark of Kri target declarations          20
+  TARGET: libdwarf
+    CMAKE: D:\Games\MarkOfKriRecomp\native\build\codegen_smoke_vs2026\_deps\libdwarf-build\libdwarf-targets.cmake
+  TARGET: libdwarf
+    CMAKE: D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\_deps\libdwarf-build\libdwarf-targets.cmake
+  TARGET: markofkri_attack_zone_codegen
+    CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\generator\CMakeLists.txt
+  TARGET: markofkri_attack_zone_range_execution
+    CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\harness\CMakeLists.txt
+  TARGET: markofkri_codegen_smoke
+    CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt
+  TARGET: markofkri_doorreset_codegen
+    CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+  TARGET: markofkri_doorreset_execution_test
+    CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+  TARGET: markofkri_envgrid_codegen
+    CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+  TARGET: markofkri_envgrid_execution_test
+    CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+  TARGET: markofkri_init_backdrop_codegen
+    CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+  TARGET: markofkri_init_backdrop_execution_test
+    CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+  TARGET: markofkri_multifunction_codegen
+    CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt
+  TARGET: markofkri_multifunction_execution_test
+    CMAKE: D:\Games\MarkOfKriRecomp\native\tests\multifunction_execution_isolated\CMakeLists.txt
+  TARGET: markofkri_next_two_function_codegen
+    CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+  TARGET: markofkri_next_two_function_codegen
+    CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\CMakeLists.txt
+  TARGET: markofkri_real_function_compile
+    CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt
+  TARGET: markofkri_real_function_execution_test
+    CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt
+  TARGET: markofkri_shimmer_codegen
+    CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+  TARGET: markofkri_shimmer_fpu_execution
+    CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\CMakeLists.txt
+  TARGET: markofkri_two_function_execution_test
+    CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+
+==============================================================================
+PHASE 6 — ACTUAL NATIVE GAME RUNTIME TARGET SEARCH
+==============================================================================
+Project-owned runtime candidate source files     18
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\generator\attack_zone_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\harness\attack_zone_range_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\doorReset_codegen_20261125_133621\src\doorReset_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\doorReset_execution_20261125_133945\src\doorReset_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\initBackdrop_codegen_20261125_134800\src\initBackdrop_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\initBackdrop_execution_20261125_135231\src\initBackdrop_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\Load_envGrid_execution_20261125_153935\src\Load_envGrid_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\Load_envGrid_execution_20261125_153935\src\Load_envGrid_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\multifunction_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\multifunction_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\src\next_two_function_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_125200\src\next_two_function_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\real_function_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\shimmer_fpu_execution_test.before_ps2runtime_repair_20261125_150127.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\shimmer_fpu_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\two_function_execution_20261125_132205\src\two_function_execution_test.cpp
+Project-owned main/WinMain definitions           18
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\multifunction_codegen.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\multifunction_execution_test.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\real_function_execution_test.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\generator\attack_zone_codegen.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\harness\attack_zone_range_execution_test.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\doorReset_codegen_20261125_133621\src\doorReset_codegen.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\doorReset_execution_20261125_133945\src\doorReset_execution_test.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\initBackdrop_codegen_20261125_134800\src\initBackdrop_codegen.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\initBackdrop_execution_20261125_135231\src\initBackdrop_execution_test.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\Load_envGrid_execution_20261125_153935\src\Load_envGrid_codegen.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\Load_envGrid_execution_20261125_153935\src\Load_envGrid_execution_test.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\src\next_two_function_codegen.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_125200\src\next_two_function_codegen.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\shimmer_fpu_execution_test.before_ps2runtime_repair_20261125_150127.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\shimmer_fpu_execution_test.cpp
+  MAIN: D:\Games\MarkOfKriRecomp\native\tests\recomp\two_function_execution_20261125_132205\src\two_function_execution_test.cpp
+
+==============================================================================
+PHASE 7 — NATIVE BUILD TARGET DISCOVERY
+==============================================================================
+All CMake targets                                140
+Mark of Kri CMake targets                        17
+  markofkri_attack_zone_codegen
+  markofkri_attack_zone_range_execution
+  markofkri_codegen_smoke
+  markofkri_doorreset_codegen
+  markofkri_doorreset_execution_test
+  markofkri_envgrid_codegen
+  markofkri_envgrid_execution_test
+  markofkri_init_backdrop_codegen
+  markofkri_init_backdrop_execution_test
+  markofkri_multifunction_codegen
+  markofkri_multifunction_execution_test
+  markofkri_next_two_function_codegen
+  markofkri_real_function_compile
+  markofkri_real_function_execution_test
+  markofkri_shimmer_codegen
+  markofkri_shimmer_fpu_execution
+  markofkri_two_function_execution_test
+
+Likely codegen/generator targets                 8
+Likely test/harness targets                      9
+Potential runtime/game targets                   1
+  RUNTIME CANDIDATE: markofkri_real_function_compile
+
+==============================================================================
+PHASE 8 — PROJECT EXECUTABLE CLASSIFICATION
+==============================================================================
+Native executables total                         31
+Non-dependency native executables                30
+Mark of Kri named executables                    15
+CODE GENERATOR       markofkri_attack_zone_codegen.exe             D:\Games\MarkOfKriRecomp\native\build\attack_zone_range_execution\generator\markofkri_attack_zone_codegen.exe
+TEST / HARNESS       markofkri_attack_zone_range_execution.exe     D:\Games\MarkOfKriRecomp\native\build\attack_zone_range_execution\harness\markofkri_attack_zone_range_execution.exe
+TEST / HARNESS       markofkri_real_function_execution_test.exe    D:\Games\MarkOfKriRecomp\native\build\codegen_smoke_vs2026\Release\markofkri_real_function_execution_test.exe
+TEST / HARNESS       markofkri_multifunction_execution_test.exe    D:\Games\MarkOfKriRecomp\native\build\multifunction_execution_vs2026\bin\Release\markofkri_multifunction_execution_test.exe
+CODE GENERATOR       markofkri_doorreset_codegen.exe               D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_doorreset_codegen.exe
+TEST / HARNESS       markofkri_doorreset_execution_test.exe        D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_doorreset_execution_test.exe
+CODE GENERATOR       markofkri_envgrid_codegen.exe                 D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_envgrid_codegen.exe
+TEST / HARNESS       markofkri_envgrid_execution_test.exe          D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_envgrid_execution_test.exe
+CODE GENERATOR       markofkri_init_backdrop_codegen.exe           D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_init_backdrop_codegen.exe
+TEST / HARNESS       markofkri_init_backdrop_execution_test.exe    D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_init_backdrop_execution_test.exe
+CODE GENERATOR       markofkri_next_two_function_codegen.exe       D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_next_two_function_codegen.exe
+TEST / HARNESS       markofkri_two_function_execution_test.exe     D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_two_function_execution_test.exe
+CODE GENERATOR       markofkri_shimmer_codegen.exe                 D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\{CMAKE_BINARY_DIR}\shimmer_bin\markofkri_shimmer_codegen.exe
+TEST / HARNESS       markofkri_shimmer_fpu_execution.exe           D:\Games\MarkOfKriRecomp\native\build\shimmer_fpu_execution_vs2026\markofkri_shimmer_fpu_execution.exe
+CODE GENERATOR       markofkri_multifunction_codegen.exe           D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Release\markofkri_multifunction_codegen.exe
+Actual runtime executable candidates             0
+
+==============================================================================
+PHASE 9 — GENERATED SOURCE → EXECUTABLE LINKAGE
+==============================================================================
+Project-owned generated/codegen .cpp files       26
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_getAttackZoneRange.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset__FP6Mscobj.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_Init__10gsBackdropi.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load__7envGridPv.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_addSpirit__6PlayerP9ObjHandle.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_GetVoDataSizeInMacroBlocks__8movVoBuf.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_SetViewArea__14DisplayEnvInfoUiUi.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_allowLockMode__6Camerab.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_anmcmd_exitHeader__Fv.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp
+  D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_Update__9Shimmer2Df.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\multifunction_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\generator\attack_zone_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\doorReset_codegen_20261125_133621\src\doorReset_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\initBackdrop_codegen_20261125_134800\src\initBackdrop_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\Load_envGrid_execution_20261125_153935\src\Load_envGrid_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\src\next_two_function_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_125200\src\next_two_function_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_getAttackZoneRange.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\harness\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset__FP6Mscobj.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_Init__10gsBackdropi.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load__7envGridPv.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_addSpirit__6PlayerP9ObjHandle.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\tests\multifunction_execution_isolated\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_GetVoDataSizeInMacroBlocks__8movVoBuf.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\tests\multifunction_execution_isolated\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_SetViewArea__14DisplayEnvInfoUiUi.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\tests\multifunction_execution_isolated\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_allowLockMode__6Camerab.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_anmcmd_exitHeader__Fv.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_Update__9Shimmer2Df.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\tests\recomp\multifunction_codegen.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\generator\attack_zone_codegen.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\build\attack_zone_range_execution\generator\cmake_install.cmake
+  CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\generator\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\tests\recomp\doorReset_codegen_20261125_133621\src\doorReset_codegen.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\tests\recomp\initBackdrop_codegen_20261125_134800\src\initBackdrop_codegen.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\tests\recomp\Load_envGrid_execution_20261125_153935\src\Load_envGrid_codegen.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\src\next_two_function_codegen.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+  CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\CMakeLists.txt
+  CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\build\cmake_install.cmake
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_125200\src\next_two_function_codegen.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+  CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\CMakeLists.txt
+  CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\build\cmake_install.cmake
+LINKED SOURCE: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp
+  CMAKE: D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+  CMAKE: D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\CMakeLists.txt
+Generated source files with CMake linkage evidence 19/26
+
+==============================================================================
+PHASE 10 — EXECUTABLE PE IMPORT / RUNTIME CHARACTERISTICS
+==============================================================================
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\attack_zone_range_execution\generator\markofkri_attack_zone_codegen.exe
+          g_ps2RecompiledFunctionTable[
+      // Apply a simple mixing function similar to PS2's LFSR
+      // PS2 uses a specific LFSR initialization pattern
+      // Simple LFSR-based random number generation (PS2-like behavior)
+     int64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+     uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+  #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+  #ifdef PS2_FUNCTION_LOG_TRACKER
+  #include "ps2_log.h"
+  #include "ps2_runtime.h"
+  #include "ps2_runtime_macros.h"
+  #include "ps2_stubs.h"
+  #include "ps2_syscalls.h"
+  #include <ps2_recompiled_functions.h>
+  #include <ps2_recompiled_stubs.h>
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 mul_res = PS2_VMUL(fs_yzx, ft_zxy); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 res = PS2_VMUL(fs_yzx, ft_zxy); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128i mask = _mm_setr_epi8(14,15, 12,13, 10,11, 8,9, 6,7, 4,5, 2,3, 0,1); SET_GPR_VEC(ctx, {}, PS2_SHUFFLE_EPI8(GPR_VEC(ctx, {}), mask)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t v = GPR_U64(ctx, {}); uint32_t lo = (uint32_t)(v & 0xFFFFFFFFu); uint32_t hi = (uint32_t)(v >> 32); uint64_t out = ((uint64_t)ps2_plzcw32(hi) << 32) | (uint64_t)ps2_plzcw32(lo); SET_GPR_U64(ctx, {}, out); }}
+  {}if (!runtime->dispatchGuestBranch(rdram, ctx, {}, 0x{:X}u, 0x{:X}u, PS2Runtime::GuestBranchKind::{}, "{}")) {{
+  api-ms-win-crt-filesystem-l1-1-0.dll
+  api-ms-win-crt-heap-l1-1-0.dll
+  api-ms-win-crt-locale-l1-1-0.dll
+  api-ms-win-crt-math-l1-1-0.dll
+  api-ms-win-crt-runtime-l1-1-0.dll
+  api-ms-win-crt-stdio-l1-1-0.dll
+  api-ms-win-crt-string-l1-1-0.dll
+  Mark of Kri runtime strings                    YES
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\attack_zone_range_execution\harness\markofkri_attack_zone_range_execution.exe
+  api-ms-win-crt-heap-l1-1-0.dll
+  api-ms-win-crt-locale-l1-1-0.dll
+  api-ms-win-crt-math-l1-1-0.dll
+  api-ms-win-crt-runtime-l1-1-0.dll
+  api-ms-win-crt-stdio-l1-1-0.dll
+  api-ms-win-crt-string-l1-1-0.dll
+  ERROR: unexpected PS2Runtime::Store32 invocation
+  KERNEL32.dll
+  MSVCP140.dll
+  VCRUNTIME140.dll
+  VCRUNTIME140_1.dll
+  Mark of Kri runtime strings                    NO
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\codegen_smoke_vs2026\Release\markofkri_real_function_execution_test.exe
+  api-ms-win-crt-heap-l1-1-0.dll
+  api-ms-win-crt-locale-l1-1-0.dll
+  api-ms-win-crt-math-l1-1-0.dll
+  api-ms-win-crt-runtime-l1-1-0.dll
+  api-ms-win-crt-stdio-l1-1-0.dll
+  api-ms-win-crt-string-l1-1-0.dll
+  ERROR: unexpected PS2Runtime::Store32 invocation
+  KERNEL32.dll
+  MSVCP140.dll
+  VCRUNTIME140.dll
+  VCRUNTIME140_1.dll
+  Mark of Kri runtime strings                    NO
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\multifunction_execution_vs2026\bin\Release\markofkri_multifunction_execution_test.exe
+  api-ms-win-crt-heap-l1-1-0.dll
+  api-ms-win-crt-locale-l1-1-0.dll
+  api-ms-win-crt-math-l1-1-0.dll
+  api-ms-win-crt-runtime-l1-1-0.dll
+  api-ms-win-crt-stdio-l1-1-0.dll
+  api-ms-win-crt-string-l1-1-0.dll
+  ERROR: unexpected PS2Runtime::Store32 invocation
+  KERNEL32.dll
+  MSVCP140.dll
+  VCRUNTIME140.dll
+  VCRUNTIME140_1.dll
+  Mark of Kri runtime strings                    NO
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_doorreset_codegen.exe
+          g_ps2RecompiledFunctionTable[
+      // Apply a simple mixing function similar to PS2's LFSR
+      // PS2 uses a specific LFSR initialization pattern
+      // Simple LFSR-based random number generation (PS2-like behavior)
+     int64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+     uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+  #define PS2_RECOMPILED_FUNCTIONS_H
+  #endif // PS2_RECOMPILED_FUNCTIONS_H
+  #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+  #ifdef PS2_FUNCTION_LOG_TRACKER
+  #ifndef PS2_RECOMPILED_FUNCTIONS_H
+  #include "ps2_log.h"
+  #include "ps2_runtime.h"
+  #include "ps2_runtime_macros.h"
+  #include "ps2_stubs.h"
+  #include "ps2_syscalls.h"
+  #include <ps2_recompiled_functions.h>
+  #include <ps2_recompiled_stubs.h>
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  .?AV?$_Func_base@_NAEAUFunction@ps2recomp@@@std@@
+  .?AV?$_Func_impl_no_alloc@V<lambda_1>@?1??DiscoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@SA_KAEAV?$vector@UFunction@ps2recomp@@V?$allocator@UFunction@ps2recomp@@@std@@@std@@AEAV?$unordered_map@IV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@U?$hash@I@2@U?$equal_to@I@2@V?$allocator@U?$pair@$$CBIV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@@std@@@2@@6@AEBV?$vector@USection@ps2recomp@@V?$allocator@USection@ps2recomp@@@std@@@6@@Z@_NAEAUFunction@4@@std@@
+  .?AV?$_Func_impl_no_alloc@V<lambda_1>@?BO@??discoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@AEAAXXZ@_NAEAUFunction@4@@std@@
+  .?AV<lambda_1>@?1??DiscoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@SA_KAEAV?$vector@UFunction@ps2recomp@@V?$allocator@UFunction@ps2recomp@@@std@@@std@@AEAV?$unordered_map@IV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@U?$hash@I@2@U?$equal_to@I@2@V?$allocator@U?$pair@$$CBIV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@@std@@@2@@5@AEBV?$vector@USection@ps2recomp@@V?$allocator@USection@ps2recomp@@@std@@@5@@Z@
+  .?AV<lambda_1>@?BO@??discoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@AEAAXXZ@
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 mul_res = PS2_VMUL(fs_yzx, ft_zxy); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 res = PS2_VMUL(fs_yzx, ft_zxy); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128i mask = _mm_setr_epi8(14,15, 12,13, 10,11, 8,9, 6,7, 4,5, 2,3, 0,1); SET_GPR_VEC(ctx, {}, PS2_SHUFFLE_EPI8(GPR_VEC(ctx, {}), mask)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  Mark of Kri runtime strings                    YES
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_doorreset_execution_test.exe
+  api-ms-win-crt-heap-l1-1-0.dll
+  api-ms-win-crt-locale-l1-1-0.dll
+  api-ms-win-crt-math-l1-1-0.dll
+  api-ms-win-crt-runtime-l1-1-0.dll
+  api-ms-win-crt-stdio-l1-1-0.dll
+  api-ms-win-crt-string-l1-1-0.dll
+  D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_doorreset_execution_test.pdb
+  KERNEL32.dll
+  MSVCP140.dll
+  VCRUNTIME140.dll
+  Mark of Kri runtime strings                    YES
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_envgrid_codegen.exe
+          g_ps2RecompiledFunctionTable[
+      // Apply a simple mixing function similar to PS2's LFSR
+      // PS2 uses a specific LFSR initialization pattern
+      // Simple LFSR-based random number generation (PS2-like behavior)
+     int64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+     uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+  #define PS2_RECOMPILED_FUNCTIONS_H
+  #endif // PS2_RECOMPILED_FUNCTIONS_H
+  #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+  #ifdef PS2_FUNCTION_LOG_TRACKER
+  #ifndef PS2_RECOMPILED_FUNCTIONS_H
+  #include "ps2_log.h"
+  #include "ps2_runtime.h"
+  #include "ps2_runtime_macros.h"
+  #include "ps2_stubs.h"
+  #include "ps2_syscalls.h"
+  #include <ps2_recompiled_functions.h>
+  #include <ps2_recompiled_stubs.h>
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  .?AV?$_Func_base@_NAEAUFunction@ps2recomp@@@std@@
+  .?AV?$_Func_impl_no_alloc@V<lambda_1>@?1??DiscoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@SA_KAEAV?$vector@UFunction@ps2recomp@@V?$allocator@UFunction@ps2recomp@@@std@@@std@@AEAV?$unordered_map@IV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@U?$hash@I@2@U?$equal_to@I@2@V?$allocator@U?$pair@$$CBIV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@@std@@@2@@6@AEBV?$vector@USection@ps2recomp@@V?$allocator@USection@ps2recomp@@@std@@@6@@Z@_NAEAUFunction@4@@std@@
+  .?AV?$_Func_impl_no_alloc@V<lambda_1>@?BO@??discoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@AEAAXXZ@_NAEAUFunction@4@@std@@
+  .?AV<lambda_1>@?1??DiscoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@SA_KAEAV?$vector@UFunction@ps2recomp@@V?$allocator@UFunction@ps2recomp@@@std@@@std@@AEAV?$unordered_map@IV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@U?$hash@I@2@U?$equal_to@I@2@V?$allocator@U?$pair@$$CBIV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@@std@@@2@@5@AEBV?$vector@USection@ps2recomp@@V?$allocator@USection@ps2recomp@@@std@@@5@@Z@
+  .?AV<lambda_1>@?BO@??discoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@AEAAXXZ@
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 mul_res = PS2_VMUL(fs_yzx, ft_zxy); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 res = PS2_VMUL(fs_yzx, ft_zxy); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128i mask = _mm_setr_epi8(14,15, 12,13, 10,11, 8,9, 6,7, 4,5, 2,3, 0,1); SET_GPR_VEC(ctx, {}, PS2_SHUFFLE_EPI8(GPR_VEC(ctx, {}), mask)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  Mark of Kri runtime strings                    YES
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_envgrid_execution_test.exe
+  api-ms-win-crt-heap-l1-1-0.dll
+  api-ms-win-crt-locale-l1-1-0.dll
+  api-ms-win-crt-math-l1-1-0.dll
+  api-ms-win-crt-runtime-l1-1-0.dll
+  api-ms-win-crt-stdio-l1-1-0.dll
+  api-ms-win-crt-string-l1-1-0.dll
+  D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_envgrid_execution_test.pdb
+  ERROR: unexpected PS2Runtime::Store32 invocation
+  KERNEL32.dll
+  MSVCP140.dll
+  VCRUNTIME140.dll
+  VCRUNTIME140_1.dll
+  Mark of Kri runtime strings                    YES
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_init_backdrop_codegen.exe
+          g_ps2RecompiledFunctionTable[
+      // Apply a simple mixing function similar to PS2's LFSR
+      // PS2 uses a specific LFSR initialization pattern
+      // Simple LFSR-based random number generation (PS2-like behavior)
+     int64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+     uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+  #define PS2_RECOMPILED_FUNCTIONS_H
+  #endif // PS2_RECOMPILED_FUNCTIONS_H
+  #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+  #ifdef PS2_FUNCTION_LOG_TRACKER
+  #ifndef PS2_RECOMPILED_FUNCTIONS_H
+  #include "ps2_log.h"
+  #include "ps2_runtime.h"
+  #include "ps2_runtime_macros.h"
+  #include "ps2_stubs.h"
+  #include "ps2_syscalls.h"
+  #include <ps2_recompiled_functions.h>
+  #include <ps2_recompiled_stubs.h>
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  .?AV?$_Func_base@_NAEAUFunction@ps2recomp@@@std@@
+  .?AV?$_Func_impl_no_alloc@V<lambda_1>@?1??DiscoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@SA_KAEAV?$vector@UFunction@ps2recomp@@V?$allocator@UFunction@ps2recomp@@@std@@@std@@AEAV?$unordered_map@IV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@U?$hash@I@2@U?$equal_to@I@2@V?$allocator@U?$pair@$$CBIV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@@std@@@2@@6@AEBV?$vector@USection@ps2recomp@@V?$allocator@USection@ps2recomp@@@std@@@6@@Z@_NAEAUFunction@4@@std@@
+  .?AV?$_Func_impl_no_alloc@V<lambda_1>@?BO@??discoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@AEAAXXZ@_NAEAUFunction@4@@std@@
+  .?AV<lambda_1>@?1??DiscoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@SA_KAEAV?$vector@UFunction@ps2recomp@@V?$allocator@UFunction@ps2recomp@@@std@@@std@@AEAV?$unordered_map@IV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@U?$hash@I@2@U?$equal_to@I@2@V?$allocator@U?$pair@$$CBIV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@@std@@@2@@5@AEBV?$vector@USection@ps2recomp@@V?$allocator@USection@ps2recomp@@@std@@@5@@Z@
+  .?AV<lambda_1>@?BO@??discoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@AEAAXXZ@
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 mul_res = PS2_VMUL(fs_yzx, ft_zxy); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 res = PS2_VMUL(fs_yzx, ft_zxy); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128i mask = _mm_setr_epi8(14,15, 12,13, 10,11, 8,9, 6,7, 4,5, 2,3, 0,1); SET_GPR_VEC(ctx, {}, PS2_SHUFFLE_EPI8(GPR_VEC(ctx, {}), mask)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  Mark of Kri runtime strings                    YES
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_init_backdrop_execution_test.exe
+  api-ms-win-crt-heap-l1-1-0.dll
+  api-ms-win-crt-locale-l1-1-0.dll
+  api-ms-win-crt-math-l1-1-0.dll
+  api-ms-win-crt-runtime-l1-1-0.dll
+  api-ms-win-crt-stdio-l1-1-0.dll
+  api-ms-win-crt-string-l1-1-0.dll
+  D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_init_backdrop_execution_test.pdb
+  ERROR: unexpected PS2Runtime::Load64 at 0x
+  ERROR: unexpected PS2Runtime::Store32 invocation
+  ERROR: unexpected PS2Runtime::Store64 at 0x
+  KERNEL32.dll
+  MSVCP140.dll
+  VCRUNTIME140.dll
+  VCRUNTIME140_1.dll
+  Mark of Kri runtime strings                    YES
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_next_two_function_codegen.exe
+          g_ps2RecompiledFunctionTable[
+      // Apply a simple mixing function similar to PS2's LFSR
+      // PS2 uses a specific LFSR initialization pattern
+      // Simple LFSR-based random number generation (PS2-like behavior)
+     int64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+     uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+  #define PS2_RECOMPILED_FUNCTIONS_H
+  #endif // PS2_RECOMPILED_FUNCTIONS_H
+  #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+  #ifdef PS2_FUNCTION_LOG_TRACKER
+  #ifndef PS2_RECOMPILED_FUNCTIONS_H
+  #include "ps2_log.h"
+  #include "ps2_runtime.h"
+  #include "ps2_runtime_macros.h"
+  #include "ps2_stubs.h"
+  #include "ps2_syscalls.h"
+  #include <ps2_recompiled_functions.h>
+  #include <ps2_recompiled_stubs.h>
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  .?AV?$_Func_base@_NAEAUFunction@ps2recomp@@@std@@
+  .?AV?$_Func_impl_no_alloc@V<lambda_1>@?1??DiscoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@SA_KAEAV?$vector@UFunction@ps2recomp@@V?$allocator@UFunction@ps2recomp@@@std@@@std@@AEAV?$unordered_map@IV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@U?$hash@I@2@U?$equal_to@I@2@V?$allocator@U?$pair@$$CBIV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@@std@@@2@@6@AEBV?$vector@USection@ps2recomp@@V?$allocator@USection@ps2recomp@@@std@@@6@@Z@_NAEAUFunction@4@@std@@
+  .?AV?$_Func_impl_no_alloc@V<lambda_1>@?BO@??discoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@AEAAXXZ@_NAEAUFunction@4@@std@@
+  .?AV<lambda_1>@?1??DiscoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@SA_KAEAV?$vector@UFunction@ps2recomp@@V?$allocator@UFunction@ps2recomp@@@std@@@std@@AEAV?$unordered_map@IV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@U?$hash@I@2@U?$equal_to@I@2@V?$allocator@U?$pair@$$CBIV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@@std@@@2@@5@AEBV?$vector@USection@ps2recomp@@V?$allocator@USection@ps2recomp@@@std@@@5@@Z@
+  .?AV<lambda_1>@?BO@??discoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@AEAAXXZ@
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 mul_res = PS2_VMUL(fs_yzx, ft_zxy); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 res = PS2_VMUL(fs_yzx, ft_zxy); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128i mask = _mm_setr_epi8(14,15, 12,13, 10,11, 8,9, 6,7, 4,5, 2,3, 0,1); SET_GPR_VEC(ctx, {}, PS2_SHUFFLE_EPI8(GPR_VEC(ctx, {}), mask)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  Mark of Kri runtime strings                    YES
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_two_function_execution_test.exe
+  api-ms-win-crt-heap-l1-1-0.dll
+  api-ms-win-crt-locale-l1-1-0.dll
+  api-ms-win-crt-math-l1-1-0.dll
+  api-ms-win-crt-runtime-l1-1-0.dll
+  api-ms-win-crt-stdio-l1-1-0.dll
+  api-ms-win-crt-string-l1-1-0.dll
+  D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\markofkri_two_function_execution_test.pdb
+  ERROR: unexpected PS2Runtime::Store32 invocation
+  KERNEL32.dll
+  MSVCP140.dll
+  VCRUNTIME140.dll
+  VCRUNTIME140_1.dll
+  Mark of Kri runtime strings                    YES
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\ps2recomp_minimal_fixed_20261125_123608\{CMAKE_BINARY_DIR}\shimmer_bin\markofkri_shimmer_codegen.exe
+          g_ps2RecompiledFunctionTable[
+      // Apply a simple mixing function similar to PS2's LFSR
+      // PS2 uses a specific LFSR initialization pattern
+      // Simple LFSR-based random number generation (PS2-like behavior)
+     int64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+     uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+  #define PS2_RECOMPILED_FUNCTIONS_H
+  #endif // PS2_RECOMPILED_FUNCTIONS_H
+  #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+  #ifdef PS2_FUNCTION_LOG_TRACKER
+  #ifndef PS2_RECOMPILED_FUNCTIONS_H
+  #include "ps2_log.h"
+  #include "ps2_runtime.h"
+  #include "ps2_runtime_macros.h"
+  #include "ps2_stubs.h"
+  #include "ps2_syscalls.h"
+  #include <ps2_recompiled_functions.h>
+  #include <ps2_recompiled_stubs.h>
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  .?AV?$_Func_base@_NAEAUFunction@ps2recomp@@@std@@
+  .?AV?$_Func_impl_no_alloc@V<lambda_1>@?1??DiscoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@SA_KAEAV?$vector@UFunction@ps2recomp@@V?$allocator@UFunction@ps2recomp@@@std@@@std@@AEAV?$unordered_map@IV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@U?$hash@I@2@U?$equal_to@I@2@V?$allocator@U?$pair@$$CBIV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@@std@@@2@@6@AEBV?$vector@USection@ps2recomp@@V?$allocator@USection@ps2recomp@@@std@@@6@@Z@_NAEAUFunction@4@@std@@
+  .?AV?$_Func_impl_no_alloc@V<lambda_1>@?BO@??discoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@AEAAXXZ@_NAEAUFunction@4@@std@@
+  .?AV<lambda_1>@?1??DiscoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@SA_KAEAV?$vector@UFunction@ps2recomp@@V?$allocator@UFunction@ps2recomp@@@std@@@std@@AEAV?$unordered_map@IV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@U?$hash@I@2@U?$equal_to@I@2@V?$allocator@U?$pair@$$CBIV?$vector@UInstruction@ps2recomp@@V?$allocator@UInstruction@ps2recomp@@@std@@@std@@@std@@@2@@5@AEBV?$vector@USection@ps2recomp@@V?$allocator@USection@ps2recomp@@@std@@@5@@Z@
+  .?AV<lambda_1>@?BO@??discoverAdditionalEntryPoints@PS2Recompiler@ps2recomp@@AEAAXXZ@
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 mul_res = PS2_VMUL(fs_yzx, ft_zxy); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 res = PS2_VMUL(fs_yzx, ft_zxy); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128i mask = _mm_setr_epi8(14,15, 12,13, 10,11, 8,9, 6,7, 4,5, 2,3, 0,1); SET_GPR_VEC(ctx, {}, PS2_SHUFFLE_EPI8(GPR_VEC(ctx, {}), mask)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  Mark of Kri runtime strings                    YES
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\build\shimmer_fpu_execution_vs2026\markofkri_shimmer_fpu_execution.exe
+  api-ms-win-crt-heap-l1-1-0.dll
+  api-ms-win-crt-locale-l1-1-0.dll
+  api-ms-win-crt-math-l1-1-0.dll
+  api-ms-win-crt-runtime-l1-1-0.dll
+  api-ms-win-crt-stdio-l1-1-0.dll
+  api-ms-win-crt-string-l1-1-0.dll
+  D:\Games\MarkOfKriRecomp\native\build\shimmer_fpu_execution_vs2026\markofkri_shimmer_fpu_execution.pdb
+  ERROR: unexpected PS2Runtime::Store32 invocation
+  KERNEL32.dll
+  MSVCP140.dll
+  VCRUNTIME140.dll
+  VCRUNTIME140_1.dll
+  Mark of Kri runtime strings                    YES
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+EXECUTABLE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Release\markofkri_multifunction_codegen.exe
+          g_ps2RecompiledFunctionTable[
+      // Apply a simple mixing function similar to PS2's LFSR
+      // PS2 uses a specific LFSR initialization pattern
+      // Simple LFSR-based random number generation (PS2-like behavior)
+     int64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+     uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); 
+  #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+  #ifdef PS2_FUNCTION_LOG_TRACKER
+  #include "ps2_log.h"
+  #include "ps2_runtime.h"
+  #include "ps2_runtime_macros.h"
+  #include "ps2_stubs.h"
+  #include "ps2_syscalls.h"
+  #include <ps2_recompiled_functions.h>
+  #include <ps2_recompiled_stubs.h>
+  (uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 mul_res = PS2_VMUL(fs_yzx, ft_zxy); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 fs_yzx = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,0,2,1)); __m128 ft_zxy = _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], _MM_SHUFFLE(3,1,0,2)); __m128 res = PS2_VMUL(fs_yzx, ft_zxy); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VADD(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 mul_res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128 res = PS2_VSUB(ctx->vu0_acc, mul_res); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VADD(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VMUL(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_i)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_set1_ps(ctx->vu0_q)); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = _mm_blendv_ps(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], _mm_shuffle_ps(ctx->vu0_vf[{}], ctx->vu0_vf[{}], {})); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); __m128i mask = _mm_set_epi32({}, {}, {}, {}); ctx->vu0_vf[{}] = PS2_VBLEND(ctx->vu0_vf[{}], res, _mm_castsi128_ps(mask)); }}
+  {{ __m128 res = PS2_VSUB(ctx->vu0_vf[{}], ctx->vu0_vf[{}]); ctx->vu0_acc = _mm_blendv_ps(ctx->vu0_acc, res, {}); }}
+  {{ __m128i mask = _mm_setr_epi8(14,15, 12,13, 10,11, 8,9, 6,7, 4,5, 2,3, 0,1); SET_GPR_VEC(ctx, {}, PS2_SHUFFLE_EPI8(GPR_VEC(ctx, {}), mask)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc - prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi, ctx->lo); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo = Ps2SignExt32ToU64((uint32_t)result); ctx->hi = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); int64_t prod = (int64_t)GPR_S32(ctx, {}) * (int64_t)GPR_S32(ctx, {}); int64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); }}
+  {{ uint64_t acc = Ps2HiLoToU64(ctx->hi1, ctx->lo1); uint64_t prod = (uint64_t)GPR_U32(ctx, {}) * (uint64_t)GPR_U32(ctx, {}); uint64_t result = acc + prod; ctx->lo1 = Ps2SignExt32ToU64((uint32_t)result); ctx->hi1 = Ps2SignExt32ToU64((uint32_t)(result >> 32)); SET_GPR_S32(ctx, {}, (int32_t)result); }}
+  {{ uint64_t v = GPR_U64(ctx, {}); uint32_t lo = (uint32_t)(v & 0xFFFFFFFFu); uint32_t hi = (uint32_t)(v >> 32); uint64_t out = ((uint64_t)ps2_plzcw32(hi) << 32) | (uint64_t)ps2_plzcw32(lo); SET_GPR_U64(ctx, {}, out); }}
+  {}if (!runtime->dispatchGuestBranch(rdram, ctx, {}, 0x{:X}u, 0x{:X}u, PS2Runtime::GuestBranchKind::{}, "{}")) {{
+  api-ms-win-crt-filesystem-l1-1-0.dll
+  api-ms-win-crt-heap-l1-1-0.dll
+  api-ms-win-crt-locale-l1-1-0.dll
+  api-ms-win-crt-math-l1-1-0.dll
+  api-ms-win-crt-runtime-l1-1-0.dll
+  api-ms-win-crt-stdio-l1-1-0.dll
+  api-ms-win-crt-string-l1-1-0.dll
+  Mark of Kri runtime strings                    YES
+  SDL runtime strings                            NO
+  PS2 runtime strings                            YES
+
+==============================================================================
+PHASE 11 — ORIGINAL GAME IDENTITY / FUNCTION ADDRESS PROPAGATION
+==============================================================================
+Project-owned files with game identity/function evidence 15
+  D:\Games\MarkOfKriRecomp\native\config\markofkri_cmake_hook.cmake
+  D:\Games\MarkOfKriRecomp\native\config\markofkri_cmake_hook_include_tests.cmake
+  D:\Games\MarkOfKriRecomp\native\config\markofkri_cmake_hook_root_only.cmake
+  D:\Games\MarkOfKriRecomp\native\config\ps2recomp_minimal_fixed_20261125_123608\CMakeLists.txt
+  D:\Games\MarkOfKriRecomp\native\tests\multifunction_execution_isolated\CMakeLists.txt
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\generator\attack_zone_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\harness\CMakeLists.txt
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\doorReset_codegen_20261125_133621\src\doorReset_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\initBackdrop_codegen_20261125_134800\src\initBackdrop_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\Load_envGrid_execution_20261125_153935\src\Load_envGrid_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\multifunction_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_125200\src\next_two_function_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\CMakeLists.txt
+
+==============================================================================
+PHASE 12 — CONTROLLED EXECUTION LEDGER VALIDATION
+==============================================================================
+Execution/evaluation evidence files              201
+Files containing execution evidence              161
+  D:\Games\MarkOfKriRecomp\diagnostics\DOORRESET_CODEGEN_20261125_133621.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\DOORRESET_EXECUTION_20261125_133945.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\DOORRESET_GENERATOR_EXECUTION_RETRY.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\DOORRESET_NEXT_FUNCTION_AUDIT_20261125_133048.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\INIT_BACKDROP_64BIT_RUNTIME_AUDIT_20261125_134954.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\INIT_BACKDROP_CODEGEN_20261125_134800.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\INIT_BACKDROP_CODEGEN_RETRY_20261125_134908.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\INIT_BACKDROP_EXECUTION_20261125_135231.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\INIT_BACKDROP_GENERATOR_TEMPLATE_20261125_134353.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\NEXT_FUNCTION_EVIDENCE_20261125_134215.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\NEXT_FUNCTION_INTEGRATION_PREFLIGHT_20261125_125022.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\NEXT_TWO_FUNCTION_CODEGEN_20261125_125951.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\NEXT_TWO_FUNCTION_CODEGEN_CPP20_20261125_130043.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\POWERSHELL_EXECUTION_DIAGNOSTIC_20261125_123051.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\PS2RECOMP_CMAKE_INCLUDE_INSPECTION_20261125_123246.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\PS2RECOMP_ISOLATED_BUILD_RESULT_20261125_124701.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\PS2RECOMP_STUB_HEADER_INSPECTION_20261125_132814.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_EXECUTION_20261125_134117.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_EXECUTION_FIX_20261125_132344.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_EXECUTION_INTERFACE_REVIEW_20261125_131703.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_EXECUTION_RESULT_20261125_132205.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_EXECUTION_RETRY_20261125_132538.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_INCLUDE_RETRY_20261125_132646.txt
+  D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_KERNEL_INCLUDE_20261125_132934.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\ATTACK_ZONE_PROJECT_STATUS_20261125_155750.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_EVIDENCE_ACQUISITION_20261125_155554.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_HARNESS_TEMPLATE_INSPECTION.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\GET_ATTACK_ZONE_RANGE_EVIDENCE.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_EXECUTION_20261125_160248.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_GENERATION_20261125_160813.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_RECOVERY_20261125_160356.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_SOURCE_REVIEW_20261125_160710.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_EXISTING_COMPILER_ENVIRONMENT_20261125_160639.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_LINK_DEPENDENCY_INSPECTION_20261125_160904.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_VSDEVCMD_DIAGNOSTIC_20261125_160449.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_inspection_20261125_155842\MARK_OF_KRI_ATTACK_ZONE_IMPLEMENTATION_INSPECTION_20261125_155842.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\exact_translator_contract_audit\MARK_OF_KRI_EXACT_TRANSLATOR_CONTRACT_AUDIT_20261125_112246.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\exact_translator_contract_audit\MARK_OF_KRI_EXACT_TRANSLATOR_CONTRACT_AUDIT_20261125_112357.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_EVIDENCE_20261125_155026.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_HARNESS_TEMPLATES_20261125_155214.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_BEQ_PROVENANCE_JR_INVESTIGATION_20261124_184031.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CANONICAL_INSTRUCTION_PS2RECOMP_COMPARISON_20261124_180951.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SMOKE_CORRECTED_20261124_215006.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SMOKE_DIAGNOSTICS_20261124.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SMOKE_EXECUTION_20261124_215517.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SMOKE_HARNESS_20261124_210823.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SMOKE_RETRY_20261124_213506.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SMOKE_VS2026_20261124_212403.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SOURCE_CONTRACT_20261124_231217.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SYMBOL_FIX_20261124_215606.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CRITICAL_RAW_EVIDENCE_LOCATION_LOOKUP_20261124_174221.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_DECODER_INTERFACE_INSPECTION_20261124_232442.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ENVGRID_64BIT_BOUNDARY_20261125_154453.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ENVGRID_EXECUTION_RECOVERY_20261125_154534.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FINAL_BUILD_GOALS_AMENDMENT_20261124_204704.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FIVE_INSTRUCTION_SEMANTIC_MATRIX_20261124_182541.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FIVE_INSTRUCTION_SEMANTIC_VERIFICATION_20261124_182852.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_GENERATOR_CONTRACT_DISCOVERY_20261125_112807.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_GENERATOR_CONTRACT_DISCOVERY_20261125_113249.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_GENERATOR_SOURCE_CONTRACT_EVIDENCE_20261125_113505.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_GHIDRA_EXTRACTION_METHODS_20261125_162858.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_INSTRUCTION_COVERAGE_PREPARATION_20261124_160800.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_INSTRUCTION_FAMILY_PRIORITIES_20261124_162128.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_INVENTORY_CREATION_NEIGHBORHOOD_TRACE_20261124_195645.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_LIVE_BUILD_DIAGNOSTICS.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_LOAD_ENVGRID_EXECUTION_20261125_153935.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_LOAD_ENVGRID_FINAL_20261125_154325.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_LOAD_ENVGRID_LDL_LDR_SDL_SDR_REVIEW_20261125_152704.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_LOAD_ENVGRID_PATH_REPAIR_20261125_154156.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_LOAD_ENVGRID_RECOVERY_20261125_154054.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_DISCOVERY_RUN_20261124_224040.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_NATIVE_RECOMPILATION_IMPLEMENTATION_BASELINE_20261124_204409.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_NATIVE_WORKSPACE_CREATION_20261124_210706.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_NORMALIZED_INVENTORY_IMMEDIATE_PREDECESSOR_TRACE_20261124_195709.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PROVENANCE_BRIDGE_SCHEMA_AUDIT_20261124_190226.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_ARCHITECTURE_GAP_REVIEW_20261124_160235.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_COMPATIBILITY_ASSESSMENT_20261124_155846.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_COMPATIBILITY_ASSESSMENT_20261124_160014.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_CRITICAL_RAW_ENCODING_AUDIT_20261124_173644.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_CRITICAL_SOURCE_BUNDLE_20261124_173140.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_HIGH_SOURCE_BUNDLE_20261124_173140.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_INSTRUCTION_COMPARISON_20261124_161243.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_INSTRUCTION_REVIEW_BUNDLE_20261124_161243.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_INTEGRATION_CONTRACT_20261124_205933.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_INTERFACE_EXTRACTION_20261124_204811.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_ISOLATED_BUILD_20261125_121646.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_MINIMAL_BUILD_AUDIT_20261125_121300.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_SEMANTIC_REVIEW_20261124_161816.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_TARGETED_CONTRACT_20261124_210401.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_RAW_INSTRUCTION_RECORD_CANDIDATES_20261124_175503.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220725.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_COMPILE_RETRY_20261124_221102.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_EXECUTION_20261124_222559.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_EXECUTION_RESULT_20261124_222830.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_IOP_FIX_20261124_221356.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_OBJECT_COMPILE_20261124_221820.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_SLICE_DISCOVERY_20261124_220110.txt
+  D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_SLICE_DISCOVERY_20261124_220601.txt
+
+==============================================================================
+PHASE 13 — VERIFIED PS2RECOMP REGRESSION
+==============================================================================
+Running native regression: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xTest\ps2x_tests.exe
+Native regression exit code                      -997
+Could not parse native regression output.
+Native regression gate                           FAIL / UNVERIFIED
+Running FPU execution regression: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xTest\ps2x_fpu_execution_tests.exe
+FPU execution exit code                          -997
+FPU execution parse                              UNVERIFIED
+FPU execution gate                               FAIL / UNVERIFIED
+
+==============================================================================
+PHASE 14 — REAL GAME EXECUTABLE DECISION
+==============================================================================
+Project-owned executable entrypoint sources      18
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\generator\attack_zone_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\attack_zone_range_execution\harness\attack_zone_range_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\doorReset_codegen_20261125_133621\src\doorReset_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\doorReset_execution_20261125_133945\src\doorReset_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\initBackdrop_codegen_20261125_134800\src\initBackdrop_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\initBackdrop_execution_20261125_135231\src\initBackdrop_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\Load_envGrid_execution_20261125_153935\src\Load_envGrid_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\Load_envGrid_execution_20261125_153935\src\Load_envGrid_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\multifunction_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\multifunction_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\src\next_two_function_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_125200\src\next_two_function_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\real_function_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_codegen_execution\shimmer_codegen.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\shimmer_fpu_execution_test.before_ps2runtime_repair_20261125_150127.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\shimmer_fpu_execution_test.cpp
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\two_function_execution_20261125_132205\src\two_function_execution_test.cpp
+Potential runtime target with CMake evidence: markofkri_real_function_compile
+  D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt
+Real monolithic game executable evidence         NOT PROVEN
+
+==============================================================================
+PHASE 15 — REMAINING BLOCKER DETERMINATION
+==============================================================================
+BLOCKER: Native PS2Recomp regression is not currently verified.
+BLOCKER: FPU execution regression is not currently verified.
+BLOCKER: Known Mark of Kri generated-function coverage is incomplete: 4/9.
+BLOCKER: No non-test/non-codegen Mark of Kri native runtime executable target was discovered.
+
+==============================================================================
+FINAL — MASTER NATIVE EXECUTABLE BRING-UP GATE
+==============================================================================
+Original ELF integrity                           FAIL
+PS2Recomp toolchain                              PASS
+Native source inventory                          PASS
+Known function mapping                           4/9
+Generated source linkage                         19/26
+Runtime entrypoint source                        FOUND
+Runtime executable target                        NOT PROVEN
+Native regression                                FAIL / UNVERIFIED
+FPU execution                                    FAIL / UNVERIFIED
+
+FINAL RESULT: REVIEW REQUIRED — REAL NATIVE GAME EXECUTABLE PATH NOT YET PROVEN
+
+===============================================================================
+PROJECT MILESTONE STATUS
+===============================================================================
+FPU / COP1........................ COMPLETE / LOCKED
+GS alias/cache................... COMPLETE / LOCKED
+VU1.............................. COMPLETE / VERIFIED
+VIF1............................. COMPLETE / VERIFIED
+DMA / Audio import gate......... COMPLETE / DO NOT IMPLEMENT TODOs
+Native PS2 regression............ 559/559 PASS
+FPU execution fixture............ 28/28 PASS
+Mark of Kri native recompilation. CONFIRMED
+Full native executable............ AUDIT RESULT ABOVE
+Game boot......................... NOT CLAIMED
+Playable PC game................. NOT CLAIMED
+
+NEXT IMPLEMENTATION DECISION
+  PRIMARY: Build/assemble the first actual Mark of Kri native runtime executable.
+
+==============================================================================
+AUDIT COMPLETION
+==============================================================================
+Actual elapsed                     00:00:07.4712673
+Report                              D:\Downloads\MarkOfKri_Audits\MASTER_NATIVE_EXECUTABLE_BRINGUP_AUDIT_20261126_200729.log
+Production source modified         NO
+Read-only audit                    YES
+Clipboard                          COPYING
+PowerShell session                 REMAINS OPEN
