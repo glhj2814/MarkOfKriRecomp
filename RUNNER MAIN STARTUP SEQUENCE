@@ -1,0 +1,940 @@
+
+====================================================================================================
+1. RUNNER MAIN STARTUP SEQUENCE
+====================================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\main.cpp
+  150: #if defined(PS2X_DEFAULT_BOOT_ELF)
+  151:         std::cout << "Using default boot file" << std::endl;
+  152:         const std::filesystem::path configuredPath = std::filesystem::path(PS2X_DEFAULT_BOOT_ELF);
+  153: #if defined(PLATFORM_VITA)
+  154:         return configuredPath;
+  155: #endif
+  156:         if (configuredPath.is_absolute())
+  157:         {
+  158:             return configuredPath;
+  159:         }
+  160:         return (std::filesystem::current_path() / configuredPath).lexically_normal();
+  161: #else
+  162:         throw std::runtime_error("Unable to determine executable path. Pass the guest ELF as argv[1] or define PS2X_DEFAULT_BOOT_ELF.");
+  163: #endif
+  164:     }
+  165: }
+  166: 
+  167: int main(int argc, char *argv[])
+  168: {
+  169: #if defined(__ANDROID__)
+  170:     redirectStdioToLogcat();
+  171: #endif
+  172:     setupTerminateLogger();
+  173: 
+  174:     try
+  175:     {
+  176:         std::filesystem::path pathObj = getExecutablePath(argc, argv);
+  177: 
+  178:         std::string filePathStr = pathObj.string();
+  179:         std::string elfName = pathObj.filename().string();
+  180:         std::string normalizedId = normalizeGameId(elfName);
+  181: 
+  182:         std::string windowTitle = "PS2-Recomp | ";
+  183:         const char *gameName = getGameName(normalizedId);
+  184: 
+  185: #if !defined(PLATFORM_VITA)
+  186:         if (gameName)
+  187:         {
+  188:             windowTitle += std::string(gameName) + " | " + elfName;
+  189:         }
+  190:         else
+  191: #endif
+  192:         {
+  193:             windowTitle += elfName;
+  194:         }
+  195: 
+  196:         PS2Runtime runtime;
+  197: #if defined(PS2X_ENABLE_DEBUG_UI) && !defined(PLATFORM_VITA)
+  198:         // This hook is to prevent leak rlimgui deps to recompiler etc
+  199:         PS2DebugPanel debugPanel;
+  200:         runtime.setDebugUiCallbacks(
+  201:             [](PS2Runtime &rt, void *userData)
+  202:             {
+  203:                 (void)rt;
+  204:                 static_cast<PS2DebugPanel *>(userData)->initialize();
+  205:             },
+  206:             [](PS2Runtime &rt, void *userData)
+  207:             {
+  208:                 static_cast<PS2DebugPanel *>(userData)->draw(rt);
+  209:             },
+  210:             [](PS2Runtime &rt, void *userData)
+  211:             {
+  212:                 (void)rt;
+  213:                 static_cast<PS2DebugPanel *>(userData)->shutdown();
+  214:             },
+  215:             &debugPanel);
+  216: #endif
+  217:         if (!runtime.initialize(windowTitle.c_str()))
+  218:         {
+  219:             std::cerr << "Failed to initialize PS2 runtime" << std::endl;
+  220:             return 1;
+  221:         }
+  222: 
+  223:         if (!runtime.loadELF(filePathStr))
+  224:         {
+  225:             std::cerr << "Failed to load ELF file: " << filePathStr << std::endl;
+  226:             return 1;
+  227:         }
+  228: 
+  229:         runtime.run();
+  230: 
+  231: #ifdef _DEBUG
+  232:         ps2_log::print_saved_location();
+  233: #endif
+  234:         std::cout.flush();
+  235:         std::cerr.flush();
+  236:         std::_Exit(0);
+  237:     }
+  238:     catch (const std::exception &e)
+  239:     {
+  240:         std::cerr << "[main] fatal exception: " << e.what() << std::endl;
+  241:     }
+  242:     catch (...)
+  243:     {
+  244:         std::cerr << "[main] fatal exception: unknown" << std::endl;
+  245:     }
+  246: 
+  247:     std::cout.flush();
+  248:     std::cerr.flush();
+  249:     std::_Exit(1);
+  250: }
+
+====================================================================================================
+2. FUNCTION REGISTRATION IMPLEMENTATION
+====================================================================================================
+ 1120:     if (normalized.hostRoot.empty())
+ 1121:     {
+ 1122:         normalized.hostRoot = normalized.elfDirectory;
+ 1123:     }
+ 1124:     if (normalized.cdRoot.empty())
+ 1125:     {
+ 1126:         normalized.cdRoot = normalized.elfDirectory;
+ 1127:     }
+ 1128:     if (normalized.mcRoot.empty())
+ 1129:     {
+ 1130:         normalized.mcRoot = normalized.elfDirectory / "mc0";
+ 1131:     }
+ 1132: 
+ 1133:     runtimeIoPaths() = normalized;
+ 1134: }
+ 1135: 
+ 1136: void PS2Runtime::configureIoPathsFromElf(const std::string &elfPath)
+ 1137: {
+ 1138:     IoPaths paths = runtimeIoPaths();
+ 1139:     paths.elfPath = normalizeAbsolutePath(std::filesystem::path(elfPath));
+ 1140:     if (!paths.elfPath.empty())
+ 1141:     {
+ 1142:         paths.elfDirectory = paths.elfPath.parent_path();
+ 1143:     }
+ 1144: 
+ 1145:     if (!paths.elfDirectory.empty())
+ 1146:     {
+ 1147:         paths.hostRoot = paths.elfDirectory;
+ 1148:         paths.cdRoot = paths.elfDirectory;
+ 1149:         paths.mcRoot = paths.elfDirectory / "mc0";
+ 1150:     }
+ 1151: 
+ 1152:     setIoPaths(paths);
+ 1153: }
+ 1154: 
+ 1155: namespace
+ 1156: {
+ 1157:     bool generatedFunctionTableSlot(uint32_t address, uint32_t &slot)
+ 1158:     {
+ 1159:         if ((address & 3u) != 0u || g_ps2RecompiledFunctionTableSlotCount == 0u)
+ 1160:         {
+ 1161:             return false;
+ 1162:         }
+ 1163: 
+ 1164:         if (address < g_ps2RecompiledFunctionTableBase || address >= g_ps2RecompiledFunctionTableEnd)
+ 1165:         {
+ 1166:             return false;
+ 1167:         }
+ 1168: 
+ 1169:         const uint32_t offset = address - g_ps2RecompiledFunctionTableBase;
+ 1170:         slot = offset >> 2;
+ 1171:         return slot < g_ps2RecompiledFunctionTableSlotCount;
+ 1172:     }
+ 1173: }
+ 1174: 
+ 1175: bool PS2Runtime::replaceFunction(uint32_t address, RecompiledFunction func)
+ 1176: {
+ 1177:     uint32_t slot = 0u;
+ 1178:     if (!generatedFunctionTableSlot(address, slot))
+ 1179:     {
+ 1180:         std::cerr << "[function-table] cannot replace guest PC 0x" << std::hex << address
+ 1181:                   << ": outside generated dense table [0x" << g_ps2RecompiledFunctionTableBase
+ 1182:                   << ", 0x" << g_ps2RecompiledFunctionTableEnd << ")"
+ 1183:                   << std::dec << std::endl;
+ 1184:         return false;
+ 1185:     }
+ 1186: 
+ 1187:     g_ps2RecompiledFunctionTable[slot] = func;
+ 1188:     return true;
+ 1189: }
+ 1190: 
+ 1191: bool PS2Runtime::registerFunction(uint32_t address, RecompiledFunction func)
+ 1192: {
+ 1193:     return replaceFunction(address, func);
+ 1194: }
+ 1195: 
+ 1196: bool PS2Runtime::hasFunction(uint32_t address) const
+ 1197: {
+ 1198:     uint32_t slot = 0u;
+ 1199:     return generatedFunctionTableSlot(address, slot) && g_ps2RecompiledFunctionTable[slot] != nullptr;
+ 1200: }
+ 1201: 
+ 1202: const char *describeGuestBranchKind(PS2Runtime::GuestBranchKind kind)
+ 1203: {
+ 1204:     switch (kind)
+ 1205:     {
+ 1206:     case PS2Runtime::GuestBranchKind::DirectJump:
+ 1207:         return "DirectJump";
+ 1208:     case PS2Runtime::GuestBranchKind::DirectCall:
+ 1209:         return "DirectCall";
+ 1210:     case PS2Runtime::GuestBranchKind::IndirectJump:
+ 1211:         return "IndirectJump";
+ 1212:     case PS2Runtime::GuestBranchKind::IndirectCall:
+ 1213:         return "IndirectCall";
+ 1214:     case PS2Runtime::GuestBranchKind::Return:
+ 1215:         return "Return";
+ 1216:     default:
+ 1217:         return "Unknown";
+ 1218:     }
+ 1219: }
+ 1220: 
+ 1221: PS2Runtime::RecompiledFunction PS2Runtime::lookupFunction(uint32_t address)
+ 1222: {
+ 1223:     pushDispatchPc(address);
+ 1224: 
+ 1225:     uint32_t slot = 0u;
+ 1226:     if (generatedFunctionTableSlot(address, slot))
+ 1227:     {
+ 1228:         RecompiledFunction fn = g_ps2RecompiledFunctionTable[slot];
+ 1229:         if (fn != nullptr)
+ 1230:         {
+ 1231:             return fn;
+ 1232:         }
+ 1233:     }
+ 1234: 
+ 1235:     std::cerr << "Error: No exact recompiled function for guest PC 0x" << std::hex << address
+
+ 1235:     std::cerr << "Error: No exact recompiled function for guest PC 0x" << std::hex << address
+ 1236:               << " tableBase=0x" << g_ps2RecompiledFunctionTableBase
+ 1237:               << " tableEnd=0x" << g_ps2RecompiledFunctionTableEnd
+ 1238:               << " codeRegion=" << (m_memory.isCodeAddress(address) ? "yes" : "no")
+ 1239:               << " trace=" << formatDispatchHistory()
+ 1240:               << std::dec << std::endl;
+ 1241: 
+ 1242:     static RecompiledFunction missingFunction = [](uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ 1243:     {
+ 1244:         const uint32_t badPc = ctx->pc;
+ 1245:         runtime->reportMissingFunction(rdram,
+ 1246:                                        ctx,
+ 1247:                                        badPc,
+ 1248:                                        0u,
+ 1249:                                        PS2Runtime::GuestBranchKind::IndirectJump,
+ 1250:                                        "dispatch");
+ 1251:     };
+ 1252: 
+ 1253:     return missingFunction;
+ 1254: }
+ 1255: 
+ 1256: void PS2Runtime::setMissingFunctionPolicy(MissingFunctionPolicy policy)
+ 1257: {
+ 1258:     m_missingFunctionPolicy.store(static_cast<uint32_t>(policy), std::memory_order_release);
+ 1259: }
+ 1260: 
+ 1261: PS2Runtime::MissingFunctionPolicy PS2Runtime::missingFunctionPolicy() const
+ 1262: {
+ 1263:     return static_cast<MissingFunctionPolicy>(m_missingFunctionPolicy.load(std::memory_order_acquire));
+ 1264: }
+ 1265: 
+ 1266: void PS2Runtime::resetMissingFunctionReportOnce()
+ 1267: {
+ 1268:     m_missingFunctionReports.store(0u, std::memory_order_release);
+ 1269: }
+ 1270: 
+ 1271: void PS2Runtime::reportMissingFunction(uint8_t *rdram,
+ 1272:                                        R5900Context *ctx,
+ 1273:                                        uint32_t targetPc,
+ 1274:                                        uint32_t sourcePc,
+ 1275:                                        GuestBranchKind kind,
+ 1276:                                        const char *debugName)
+ 1277: {
+ 1278:     const MissingFunctionPolicy policy = missingFunctionPolicy();
+ 1279:     // One line per distinct failure is what a play log needs; a game that keeps hitting missing
+ 1280:     // targets after the first would otherwise hide every later one, so report the first few.
+ 1281:     constexpr uint32_t kMaxMissingFunctionReports = 16u;
+ 1282:     const uint32_t reportIndex = m_missingFunctionReports.fetch_add(1u, std::memory_order_acq_rel);
+ 1283:     const bool firstReport = reportIndex < kMaxMissingFunctionReports;
+ 1284:     const bool breakOnce = reportIndex == 0u;
+ 1285: 
+ 1286:     const uint32_t pc = ctx->pc;
+ 1287:     const uint32_t ra = static_cast<uint32_t>(_mm_extract_epi32(ctx->r[31], 0));
+ 1288:     const uint32_t sp = static_cast<uint32_t>(_mm_extract_epi32(ctx->r[29], 0));
+ 1289:     const uint32_t gp = static_cast<uint32_t>(_mm_extract_epi32(ctx->r[28], 0));
+ 1290:     const uint32_t a0 = static_cast<uint32_t>(_mm_extract_epi32(ctx->r[4], 0));
+ 1291:     const uint32_t a1 = static_cast<uint32_t>(_mm_extract_epi32(ctx->r[5], 0));
+ 1292:     const uint32_t a2 = static_cast<uint32_t>(_mm_extract_epi32(ctx->r[6], 0));
+ 1293:     const uint32_t a3 = static_cast<uint32_t>(_mm_extract_epi32(ctx->r[7], 0));
+ 1294:     const uint32_t s0 = static_cast<uint32_t>(_mm_extract_epi32(ctx->r[16], 0));
+ 1295:     const uint32_t s1 = static_cast<uint32_t>(_mm_extract_epi32(ctx->r[17], 0));
+ 1296:     const uint32_t v0 = static_cast<uint32_t>(_mm_extract_epi32(ctx->r[2], 0));
+ 1297:     const uint32_t v1 = static_cast<uint32_t>(_mm_extract_epi32(ctx->r[3], 0));
+ 1298: 
+ 1299:     auto readGuestU32At = [rdram](uint32_t addr, uint32_t &out) -> bool
+ 1300:     {
+ 1301:         // TODO this !rdram exist only because of test fix those test later
+ 1302:         if (!rdram || addr > PS2_RAM_SIZE - sizeof(uint32_t))
+ 1303:         {
+ 1304:             out = 0u;
+ 1305:             return false;
+ 1306:         }
+ 1307: 
+ 1308:         std::memcpy(&out, rdram + addr, sizeof(uint32_t));
+ 1309:         return true;
+ 1310:     };
+ 1311: 
+ 1312:     auto readGuestU32Offset = [&readGuestU32At](uint32_t base, uint32_t offset, uint32_t &out) -> bool
+ 1313:     {
+ 1314:         if (base > PS2_RAM_SIZE - sizeof(uint32_t) || offset > PS2_RAM_SIZE - sizeof(uint32_t) - base)
+ 1315:         {
+ 1316:             out = 0u;
+ 1317:             return false;
+ 1318:         }
+ 1319: 
+ 1320:         return readGuestU32At(base + offset, out);
+ 1321:     };
+ 1322: 
+ 1323:     uint32_t a0Word0 = 0u;
+ 1324:     uint32_t a0Word4 = 0u;
+ 1325:     uint32_t a0Word8 = 0u;
+
+ 2410:     constexpr uint32_t kTableGuestBase = 0x80011F80u;
+ 2411:     constexpr uint32_t kTableBase = kTableGuestBase & 0x1FFFFFFFu;
+ 2412:     constexpr uint32_t kMirrorLimit = 0x00080000u;
+ 2413:     constexpr uint32_t kProbeBase = 0x000002F0u;
+ 2414: 
+ 2415:     std::lock_guard lock(m_eeKernelStateMutex);
+ 2416:     for (const uint32_t address : m_eeSyscallMirrorAddresses)
+ 2417:     {
+ 2418:         const uint32_t zero = 0u;
+ 2419:         std::memcpy(rdram + address, &zero, sizeof(zero));
+ 2420:     }
+ 2421:     m_eeSyscallMirrorAddresses.clear();
+ 2422:     const uint32_t high = kTableGuestBase >> 16;
+ 2423:     const uint32_t low = kTableGuestBase & 0xFFFFu;
+ 2424:     std::memcpy(rdram + kProbeBase, &high, sizeof(high));
+ 2425:     std::memcpy(rdram + kProbeBase + 8u, &low, sizeof(low));
+ 2426:     m_eeSyscallMirrorAddresses.insert(kProbeBase);
+ 2427:     m_eeSyscallMirrorAddresses.insert(kProbeBase + 8u);
+ 2428: 
+ 2429:     for (const auto &[syscallNumber, handler] : m_eeSyscallOverrides)
+ 2430:     {
+ 2431:         const int64_t offset = static_cast<int64_t>(static_cast<int32_t>(syscallNumber)) * 4;
+ 2432:         const int64_t address = static_cast<int64_t>(kTableBase) + offset;
+ 2433:         if (address < 0 || address + 4 > kMirrorLimit)
+ 2434:         {
+ 2435:             continue;
+ 2436:         }
+ 2437:         const uint32_t guestAddress = static_cast<uint32_t>(address);
+ 2438:         std::memcpy(rdram + guestAddress, &handler, sizeof(handler));
+ 2439:         m_eeSyscallMirrorAddresses.insert(guestAddress);
+ 2440:     }
+ 2441: }
+ 2442: 
+ 2443: void PS2Runtime::HandleIntegerOverflow(R5900Context *ctx)
+ 2444: {
+ 2445:     raiseCop0Exception(ctx, EXCEPTION_INTEGER_OVERFLOW);
+ 2446: }
+ 2447: 
+ 2448: void PS2Runtime::run()
+ 2449: {
+ 2450:     m_stopRequested.store(false, std::memory_order_relaxed);
+ 2451:     ps2_stubs::resetSifState();
+ 2452:     resetIop();
+ 2453:     ps2_stubs::resetAudioStubState();
+ 2454:     ps2_stubs::resetMpegStubState();
+ 2455:     initializeEeKernelState(m_memory.getRDRAM());
+ 2456:     m_cpuContext.r[4] = _mm_setzero_si128();
+ 2457:     m_cpuContext.r[5] = _mm_setzero_si128();
+ 2458:     m_cpuContext.r[29] = _mm_set_epi64x(0, static_cast<int64_t>(PS2_RAM_SIZE - 0x10u));
+ 2459:     m_debugPc.store(m_cpuContext.pc, std::memory_order_relaxed);
+ 2460:     m_debugRa.store(static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[31], 0)), std::memory_order_relaxed);
+ 2461:     m_debugSp.store(static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[29], 0)), std::memory_order_relaxed);
+ 2462:     m_debugGp.store(static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[28], 0)), std::memory_order_relaxed);
+ 2463: 
+ 2464:     RUNTIME_LOG("Starting execution at address 0x" << std::hex << m_cpuContext.pc << std::dec);
+ 2465: 
+ 2466:     // A blank image to use as a framebuffer
+ 2467:     Image blank = GenImageColor(FB_WIDTH, FB_HEIGHT, BLANK);
+ 2468:     Texture2D frameTex = LoadTextureFromImage(blank);
+ 2469:     UnloadImage(blank);
+ 2470: 
+ 2471:     std::atomic<bool> gameThreadFinished{false};
+ 2472: 
+ 2473:     // Rasterize on a GS thread so the EE keeps running while primitives are drawn; PS2X_GS_ASYNC=0 keeps
+ 2474:     // drawing on the game thread.
+ 2475:     {
+ 2476:         const char *asyncSetting = std::getenv("PS2X_GS_ASYNC");
+ 2477:         if (!asyncSetting || asyncSetting[0] != '0')
+ 2478:         {
+ 2479:             auto backend = std::make_unique<GSCpuBackend>();
+ 2480:             backend->SetAsync(true);
+ 2481:             backend->SetDisplayRegisters(&m_memory.gs());
+ 2482:             m_gs.setRasterBackend(std::move(backend));
+ 2483:         }
+ 2484:     }
+ 2485: 
+ 2486:     std::thread gameThread([&]()
+ 2487:                            {
+ 2488:         ThreadNaming::SetCurrentThreadName("GameThread");
+ 2489:         try
+ 2490:         {
+ 2491:             m_eeScheduler->reset(m_memory.getRDRAM(), m_cpuContext);
+ 2492:             m_eeScheduler->run();
+ 2493:             uint32_t pc = m_debugPc.load(std::memory_order_relaxed);
+ 2494:             RUNTIME_LOG("Game thread returned. PC=0x" << std::hex << pc
+ 2495:                       << " RA=0x" << static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[31], 0)) << std::dec << std::endl);
+ 2496:         }
+ 2497:         catch (const std::exception &e)
+ 2498:         {
+ 2499:             std::cerr << "Error during program execution: " << e.what() << std::endl;
+ 2500:         }
+ 2501:         catch (...)
+ 2502:         {
+ 2503:             std::cerr << "Error during program execution: unknown exception" << std::endl;
+ 2504:         }
+ 2505:         gameThreadFinished.store(true, std::memory_order_release); });
+ 2506: 
+ 2507:     uint64_t tick = 0;
+ 2508:     while (!isStopRequested() && !gameThreadFinished.load(std::memory_order_acquire))
+ 2509:     {
+ 2510:         PS2_IF_AGRESSIVE_LOGS({
+ 2511:             tick++;
+ 2512:             if ((tick % 120) == 0)
+ 2513:             {
+ 2514:                 uint64_t curDma = m_memory.dmaStartCount();
+ 2515:                 uint64_t curGif = m_memory.gifCopyCount();
+
+
+====================================================================================================
+3. GLOBAL FUNCTION TABLE DECLARATIONS AND REFERENCES
+====================================================================================================
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:552: extern const uint32_t g_ps2RecompiledFunctionTableBase;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:553: extern const uint32_t g_ps2RecompiledFunctionTableEnd;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:554: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:555: extern PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[];
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1159: if ((address & 3u) != 0u || g_ps2RecompiledFunctionTableSlotCount == 0u)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1164: if (address < g_ps2RecompiledFunctionTableBase || address >= g_ps2RecompiledFunctionTableEnd)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1169: const uint32_t offset = address - g_ps2RecompiledFunctionTableBase;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1171: return slot < g_ps2RecompiledFunctionTableSlotCount;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1181: << ": outside generated dense table [0x" << g_ps2RecompiledFunctionTableBase
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1182: << ", 0x" << g_ps2RecompiledFunctionTableEnd << ")"
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1187: g_ps2RecompiledFunctionTable[slot] = func;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1199: return generatedFunctionTableSlot(address, slot) && g_ps2RecompiledFunctionTable[slot] != nullptr;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1228: RecompiledFunction fn = g_ps2RecompiledFunctionTable[slot];
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1236: << " tableBase=0x" << g_ps2RecompiledFunctionTableBase
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1237: << " tableEnd=0x" << g_ps2RecompiledFunctionTableEnd
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\runner\register_functions.cpp:4: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x00000000u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\runner\register_functions.cpp:5: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x01000000u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\runner\register_functions.cpp:6: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = (g_ps2RecompiledFunctionTableEnd - g_ps2RecompiledFunctionTableBase) >> 2;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\runner\register_functions.cpp:7: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[g_ps2RecompiledFunctionTableSlotCount] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:54: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:55: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1159bcu;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:56: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:57: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:62: g_ps2RecompiledFunctionTable[0] = resetGrabMode__6Camera; // 0x1159b8
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1d20c8u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1d20ccu;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp:15: g_ps2RecompiledFunctionTable[0] = getAttackZoneRange__9NpcMasterP3NpcPfT2; // 0x1d20c8
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1f0078u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1f007cu;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp:15: g_ps2RecompiledFunctionTable[0] = doorReset__FP6Mscobj; // 0x1f0078
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x2dc180u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x2dc184u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp:15: g_ps2RecompiledFunctionTable[0] = Init__10gsBackdropi; // 0x2dc180
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x0u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x0u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 0u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x21acd0u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x34da54u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 314209u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[314209u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:15: g_ps2RecompiledFunctionTable[0] = addSpirit__6PlayerP9ObjHandle; // 0x21acd0
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:16: g_ps2RecompiledFunctionTable[166906] = SetViewArea__14DisplayEnvInfoUiUi; // 0x2bdcb8
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:17: g_ps2RecompiledFunctionTable[314208] = GetVoDataSizeInMacroBlocks__8movVoBuf; // 0x34da50
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1161a0u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x19c8c4u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 137673u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[137673u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:15: g_ps2RecompiledFunctionTable[0] = allowLockMode__6Camerab; // 0x1161a0
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:16: g_ps2RecompiledFunctionTable[137672] = anmcmd_exitHeader__Fv; // 0x19c8c0
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x2d6850u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x2d6854u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp:15: g_ps2RecompiledFunctionTable[0] = Update__9Shimmer2Df; // 0x2d6850
+
+====================================================================================================
+4. RUNTIME DISPATCH AND LOOKUP IMPLEMENTATION
+====================================================================================================
+1159: if ((address & 3u) != 0u || g_ps2RecompiledFunctionTableSlotCount == 0u)
+1164: if (address < g_ps2RecompiledFunctionTableBase || address >= g_ps2RecompiledFunctionTableEnd)
+1169: const uint32_t offset = address - g_ps2RecompiledFunctionTableBase;
+1171: return slot < g_ps2RecompiledFunctionTableSlotCount;
+1175: bool PS2Runtime::replaceFunction(uint32_t address, RecompiledFunction func)
+1181: << ": outside generated dense table [0x" << g_ps2RecompiledFunctionTableBase
+1182: << ", 0x" << g_ps2RecompiledFunctionTableEnd << ")"
+1187: g_ps2RecompiledFunctionTable[slot] = func;
+1191: bool PS2Runtime::registerFunction(uint32_t address, RecompiledFunction func)
+1199: return generatedFunctionTableSlot(address, slot) && g_ps2RecompiledFunctionTable[slot] != nullptr;
+1221: PS2Runtime::RecompiledFunction PS2Runtime::lookupFunction(uint32_t address)
+1228: RecompiledFunction fn = g_ps2RecompiledFunctionTable[slot];
+1236: << " tableBase=0x" << g_ps2RecompiledFunctionTableBase
+1237: << " tableEnd=0x" << g_ps2RecompiledFunctionTableEnd
+1242: static RecompiledFunction missingFunction = [](uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+1434: bool PS2Runtime::dispatchGuestBranch(uint8_t *rdram,
+1486: RecompiledFunction targetFn = lookupFunction(targetPc);
+
+====================================================================================================
+5. FUNCTION TABLE GLOBAL DEFINITION
+====================================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\runner\register_functions.cpp
+    1: #include "ps2_runtime.h"
+    2: #include "runtime/ps2_memory.h"
+    3: 
+    4: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x00000000u;
+    5: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x01000000u;
+    6: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = (g_ps2RecompiledFunctionTableEnd - g_ps2RecompiledFunctionTableBase) >> 2;
+    7: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[g_ps2RecompiledFunctionTableSlotCount] = {};
+
+====================================================================================================
+6. RUNTIME FUNCTION POINTER TYPE AND API
+====================================================================================================
+311: using RecompiledFunction = void (*)(uint8_t *, R5900Context *, PS2Runtime *);
+337: bool replaceFunction(uint32_t address, RecompiledFunction func);
+339: bool registerFunction(uint32_t address, RecompiledFunction func);
+340: RecompiledFunction lookupFunction(uint32_t address);
+342: bool dispatchGuestBranch(uint8_t *rdram,
+
+====================================================================================================
+7. GENERATED REGISTRATION FILE CONTENTS
+====================================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp
+    1: #include "ps2_runtime.h"
+    2: #include <ps2_recompiled_functions.h>
+    3: #include "ps2_stubs.h"
+    4: #include <ps2_recompiled_stubs.h>
+    5: #include "ps2_syscalls.h"
+    6: 
+    7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1d20c8u;
+    8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1d20ccu;
+    9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+   10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+   11: 
+   12: namespace {
+   13: struct GeneratedFunctionTableInitializer {
+   14:     GeneratedFunctionTableInitializer() {
+   15:         g_ps2RecompiledFunctionTable[0] = getAttackZoneRange__9NpcMasterP3NpcPfT2; // 0x1d20c8
+   16:     }
+   17: };
+   18: static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+   19: }
+   20: 
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp
+    1: #include "ps2_runtime.h"
+    2: #include <ps2_recompiled_functions.h>
+    3: #include "ps2_stubs.h"
+    4: #include <ps2_recompiled_stubs.h>
+    5: #include "ps2_syscalls.h"
+    6: 
+    7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1f0078u;
+    8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1f007cu;
+    9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+   10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+   11: 
+   12: namespace {
+   13: struct GeneratedFunctionTableInitializer {
+   14:     GeneratedFunctionTableInitializer() {
+   15:         g_ps2RecompiledFunctionTable[0] = doorReset__FP6Mscobj; // 0x1f0078
+   16:     }
+   17: };
+   18: static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+   19: }
+   20: 
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp
+    1: #include "ps2_runtime.h"
+    2: #include <ps2_recompiled_functions.h>
+    3: #include "ps2_stubs.h"
+    4: #include <ps2_recompiled_stubs.h>
+    5: #include "ps2_syscalls.h"
+    6: 
+    7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x2dc180u;
+    8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x2dc184u;
+    9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+   10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+   11: 
+   12: namespace {
+   13: struct GeneratedFunctionTableInitializer {
+   14:     GeneratedFunctionTableInitializer() {
+   15:         g_ps2RecompiledFunctionTable[0] = Init__10gsBackdropi; // 0x2dc180
+   16:     }
+   17: };
+   18: static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+   19: }
+   20: 
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp
+    1: #include "ps2_runtime.h"
+    2: #include <ps2_recompiled_functions.h>
+    3: #include "ps2_stubs.h"
+    4: #include <ps2_recompiled_stubs.h>
+    5: #include "ps2_syscalls.h"
+    6: 
+    7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x0u;
+    8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x0u;
+    9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 0u;
+   10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+   11: 
+   12: namespace {
+   13: struct GeneratedFunctionTableInitializer {
+   14:     GeneratedFunctionTableInitializer() {
+   15:     }
+   16: };
+   17: static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+   18: }
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp
+    1: #include "ps2_runtime.h"
+    2: #include <ps2_recompiled_functions.h>
+    3: #include "ps2_stubs.h"
+    4: #include <ps2_recompiled_stubs.h>
+    5: #include "ps2_syscalls.h"
+    6: 
+    7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x21acd0u;
+    8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x34da54u;
+    9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 314209u;
+   10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[314209u] = {};
+   11: 
+   12: namespace {
+   13: struct GeneratedFunctionTableInitializer {
+   14:     GeneratedFunctionTableInitializer() {
+   15:         g_ps2RecompiledFunctionTable[0] = addSpirit__6PlayerP9ObjHandle; // 0x21acd0
+   16:         g_ps2RecompiledFunctionTable[166906] = SetViewArea__14DisplayEnvInfoUiUi; // 0x2bdcb8
+   17:         g_ps2RecompiledFunctionTable[314208] = GetVoDataSizeInMacroBlocks__8movVoBuf; // 0x34da50
+   18:     }
+   19: };
+   20: static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+   21: }
+   22: 
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp
+    1: #include "ps2_runtime.h"
+    2: #include <ps2_recompiled_functions.h>
+    3: #include "ps2_stubs.h"
+    4: #include <ps2_recompiled_stubs.h>
+    5: #include "ps2_syscalls.h"
+    6: 
+    7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1161a0u;
+    8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x19c8c4u;
+    9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 137673u;
+   10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[137673u] = {};
+   11: 
+   12: namespace {
+   13: struct GeneratedFunctionTableInitializer {
+   14:     GeneratedFunctionTableInitializer() {
+   15:         g_ps2RecompiledFunctionTable[0] = allowLockMode__6Camerab; // 0x1161a0
+   16:         g_ps2RecompiledFunctionTable[137672] = anmcmd_exitHeader__Fv; // 0x19c8c0
+   17:     }
+   18: };
+   19: static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+   20: }
+   21: 
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp
+    1: #include "ps2_runtime.h"
+    2: #include <ps2_recompiled_functions.h>
+    3: #include "ps2_stubs.h"
+    4: #include <ps2_recompiled_stubs.h>
+    5: #include "ps2_syscalls.h"
+    6: 
+    7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x2d6850u;
+    8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x2d6854u;
+    9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+   10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+   11: 
+   12: namespace {
+   13: struct GeneratedFunctionTableInitializer {
+   14:     GeneratedFunctionTableInitializer() {
+   15:         g_ps2RecompiledFunctionTable[0] = Update__9Shimmer2Df; // 0x2d6850
+   16:     }
+   17: };
+   18: static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;
+   19: }
+   20: 
+
+====================================================================================================
+8. GENERATED FUNCTION DEFINITIONS
+====================================================================================================
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+16: void resetGrabMode__6Camera(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+23: // 0x1159b8: 0xac8003bc  sw zero,0x3bc(a0)
+33: // 0x1159c0: 0x24020001  addiu v0,zero,1 (Delay Slot)
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_getAttackZoneRange.cpp
+16: void getAttackZoneRange__9NpcMasterP3NpcPfT2(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+23: // 0x1d20c8: 0x8ca30014  lw          $v1, 0x14($a1)
+26: // 0x1d20cc: 0x24020047  addiu       $v0, $zero, 0x47
+29: // 0x1d20d0: 0x54620007  bnel        $v1, $v0, . + 4 + (0x7 << 2)
+37: // 0x1d20d4: 0xc4a026e4  lwc1        $f0, 0x26E4($a1) (Delay Slot)
+45: // 0x1d20d8: 0x3c014130  lui         $at, 0x4130
+48: // 0x1d20dc: 0x44810000  mtc1        $at, $f0
+54: // 0x1d20e4: 0xe4e00000  swc1        $f0, 0x0($a3)
+64: // 0x1d20ec: 0xe4c00000  swc1        $f0, 0x0($a2) (Delay Slot)
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset__FP6Mscobj.cpp
+16: void doorReset__FP6Mscobj(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+23: // 0x1f0078: 0x24030002  addiu       $v1, $zero, 0x2
+26: // 0x1f007c: 0x8c850014  lw          $a1, 0x14($a0)
+32: // 0x1f0084: 0x24020320  addiu       $v0, $zero, 0x320
+35: // 0x1f0088: 0x10a20004  beq         $a1, $v0, . + 4 + (0x4 << 2)
+42: // 0x1f008c: 0xa0830c50  sb          $v1, 0xC50($a0) (Delay Slot)
+51: // 0x1f0090: 0x24020323  addiu       $v0, $zero, 0x323
+54: // 0x1f0094: 0x14a20002  bne         $a1, $v0, . + 4 + (0x2 << 2)
+65: // 0x1f009c: 0x24060001  addiu       $a2, $zero, 0x1
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_Init__10gsBackdropi.cpp
+16: void Init__10gsBackdropi(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+23: // 0x2dc180: 0xac800000  sw          $zero, 0x0($a0)
+26: // 0x2dc184: 0x24060049  addiu       $a2, $zero, 0x49
+29: // 0x2dc188: 0xac800004  sw          $zero, 0x4($a0)
+32: // 0x2dc18c: 0xac800008  sw          $zero, 0x8($a0)
+35: // 0x2dc190: 0xdc820000  ld          $v0, 0x0($a0)
+38: // 0x2dc194: 0xdc830008  ld          $v1, 0x8($a0)
+41: // 0x2dc198: 0xac850050  sw          $a1, 0x50($a0)
+44: // 0x2dc19c: 0xfc820010  sd          $v0, 0x10($a0)
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load__7envGridPv.cpp
+16: void Load__7envGridPv(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+23: // 0x3208a0: 0x10a00009  beqz        $a1, . + 4 + (0x9 << 2)
+33: // 0x3208a8: 0x68a20007  ldl         $v0, 0x7($a1)
+36: // 0x3208ac: 0x6ca20000  ldr         $v0, 0x0($a1)
+38: { uint32_t addr = ADD32(GPR_U32(ctx, 5), 0); uint32_t aligned_addr = addr & ~7u; uint32_t offset = addr & 7u; uint64_t mem = READ64(aligned_addr); uint32_t shift = offset << 3; uint64_t keepMask = (offset == 0) ? 0ull : (0xFFFFFFFFFFFFFFFFull << ((8u - offset) << 3)); SET_GPR_U64(ctx, 2, (GPR_U64(ctx, 2) & keepMask) | (mem >> shift)); }
+39: // 0x3208b0: 0x68a3000f  ldl         $v1, 0xF($a1)
+42: // 0x3208b4: 0x6ca30008  ldr         $v1, 0x8($a1)
+44: { uint32_t addr = ADD32(GPR_U32(ctx, 5), 8); uint32_t aligned_addr = addr & ~7u; uint32_t offset = addr & 7u; uint64_t mem = READ64(aligned_addr); uint32_t shift = offset << 3; uint64_t keepMask = (offset == 0) ? 0ull : (0xFFFFFFFFFFFFFFFFull << ((8u - offset) << 3)); SET_GPR_U64(ctx, 3, (GPR_U64(ctx, 3) & keepMask) | (mem >> shift)); }
+45: // 0x3208b8: 0xb082001f  sdl         $v0, 0x1F($a0)
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_addSpirit__6PlayerP9ObjHandle.cpp
+16: void addSpirit__6PlayerP9ObjHandle(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+23: // 0x21acd0: 0x90831c30  lbu         $v1, 0x1C30($a0)
+26: // 0x21acd4: 0x306600ff  andi        $a2, $v1, 0xFF
+29: // 0x21acd8: 0x2cc20004  sltiu       $v0, $a2, 0x4
+32: // 0x21acdc: 0x14400003  bnez        $v0, . + 4 + (0x3 << 2)
+39: // 0x21ace0: 0x24630001  addiu       $v1, $v1, 0x1 (Delay Slot)
+75: // 0x21acf4: 0xa0831c30  sb          $v1, 0x1C30($a0)
+78: // 0x21acf8: 0xac451c38  sw          $a1, 0x1C38($v0)
+88: // 0x21ad00: 0x24020001  addiu       $v0, $zero, 0x1 (Delay Slot)
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_GetVoDataSizeInMacroBlocks__8movVoBuf.cpp
+16: void GetVoDataSizeInMacroBlocks__8movVoBuf(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+23: // 0x34da50: 0x8c870018  lw          $a3, 0x18($a0)
+26: // 0x34da54: 0x2406ffff  addiu       $a2, $zero, -0x1
+29: // 0x34da58: 0x8c850014  lw          $a1, 0x14($a0)
+35: // 0x34da60: 0x24e3000f  addiu       $v1, $a3, 0xF
+38: // 0x34da64: 0x24a2000f  addiu       $v0, $a1, 0xF
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_SetViewArea__14DisplayEnvInfoUiUi.cpp
+16: void SetViewArea__14DisplayEnvInfoUiUi(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+23: // 0x2bdcb8: 0x84820004  lh          $v0, 0x4($a0)
+29: // 0x2bdcc0: 0xac800020  sw          $zero, 0x20($a0)
+32: // 0x2bdcc4: 0x38420001  xori        $v0, $v0, 0x1
+35: // 0x2bdcc8: 0xac85002c  sw          $a1, 0x2C($a0)
+41: // 0x2bdcd0: 0xac850008  sw          $a1, 0x8($a0)
+44: // 0x2bdcd4: 0xac830028  sw          $v1, 0x28($a0)
+47: // 0x2bdcd8: 0xac83000c  sw          $v1, 0xC($a0)
+57: // 0x2bdce0: 0xac800024  sw          $zero, 0x24($a0) (Delay Slot)
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_allowLockMode__6Camerab.cpp
+16: void allowLockMode__6Camerab(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+23: // 0x1161a0: 0x10a00003  beqz        $a1, . + 4 + (0x3 << 2)
+30: // 0x1161a4: 0x24020001  addiu       $v0, $zero, 0x1 (Delay Slot)
+46: // 0x1161ac: 0xa08204d0  sb          $v0, 0x4D0($a0) (Delay Slot)
+67: // 0x1161b4: 0xa08004d0  sb          $zero, 0x4D0($a0) (Delay Slot)
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_anmcmd_exitHeader__Fv.cpp
+16: void anmcmd_exitHeader__Fv(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+23: // 0x19c8c0: 0x24020004  addiu       $v0, $zero, 0x4
+26: // 0x19c8c4: 0x2403000a  addiu       $v1, $zero, 0xA
+29: // 0x19c8c8: 0xaf82c370  sw          $v0, -0x3C90($gp)
+32: // 0x19c8cc: 0x24020001  addiu       $v0, $zero, 0x1
+35: // 0x19c8d0: 0xaf83c374  sw          $v1, -0x3C8C($gp)
+38: // 0x19c8d4: 0xaf80c36c  sw          $zero, -0x3C94($gp)
+48: // 0x19c8dc: 0xaf80c378  sw          $zero, -0x3C88($gp) (Delay Slot)
+FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_Update__9Shimmer2Df.cpp
+16: void Update__9Shimmer2Df(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+23: // 0x2d6850: 0x44800000  mtc1        $zero, $f0
+29: // 0x2d6858: 0x460c0034  c.lt.s      $f0, $f12
+35: // 0x2d6860: 0x45000003  bc1f        . + 4 + (0x3 << 2)
+52: // 0x2d686c: 0xe48c0024  swc1        $f12, 0x24($a0) (Delay Slot)
+73: // 0x2d6874: 0xe4800024  swc1        $f0, 0x24($a0) (Delay Slot)
+
+====================================================================================================
+9. DUPLICATE SYMBOL / TABLE DEFINITION RISK
+====================================================================================================
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:552: extern const uint32_t g_ps2RecompiledFunctionTableBase;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:553: extern const uint32_t g_ps2RecompiledFunctionTableEnd;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:554: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime.h:555: extern PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[];
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\runner\register_functions.cpp:4: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x00000000u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\runner\register_functions.cpp:5: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x01000000u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\runner\register_functions.cpp:6: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = (g_ps2RecompiledFunctionTableEnd - g_ps2RecompiledFunctionTableBase) >> 2;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\runner\register_functions.cpp:7: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[g_ps2RecompiledFunctionTableSlotCount] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:54: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:55: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1159bcu;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:56: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:57: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1d20c8u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1d20ccu;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1f0078u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x1f007cu;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\doorReset_codegen_20261125_133621\MARK_OF_KRI_doorReset_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x2dc180u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x2dc184u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\initBackdrop_codegen_20261125_134800\MARK_OF_KRI_InitBackdrop_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x0u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x0u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 0u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\Load_envGrid_codegen_20261125_153935\MARK_OF_KRI_Load_envGrid_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x21acd0u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x34da54u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 314209u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\multifunction\MARK_OF_KRI_CONTROLLED_SLICE_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[314209u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1161a0u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x19c8c4u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 137673u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\next_two_function_codegen_20261125_125200\MARK_OF_KRI_NEXT_TWO_FUNCTION_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[137673u] = {};
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp:7: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x2d6850u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp:8: extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x2d6854u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp:9: extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = 1u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\shimmer_codegen_execution\MARK_OF_KRI_SHIMMER_REGISTRATION.cpp:10: PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[1u] = {};
+Registration translation units found: 7
+Generated function source files found: 11
+
+====================================================================================================
+10. CMAKE RUNNER SOURCE AND TARGET CONFIGURATION
+====================================================================================================
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\CMakeLists.txt
+  434: file(GLOB_RECURSE KERNEL_SRC_FILES CONFIGURE_DEPENDS
+  435:     "${CMAKE_CURRENT_SOURCE_DIR}/src/lib/Kernel/*.cpp"
+  436: )
+  437: 
+  438: target_sources(ps2_runtime PRIVATE
+  439:     ${KERNEL_SRC_FILES}
+  440: )
+  441: 
+  442: file(GLOB RUNNER_SRC_FILES CONFIGURE_DEPENDS
+  443:     "${CMAKE_CURRENT_SOURCE_DIR}/src/runner/*.cpp"
+  444: )
+  445: 
+  446: set(RUNNER_MAIN_CPP "${CMAKE_CURRENT_SOURCE_DIR}/src/runner/main.cpp")
+  447: set(ROOT_MAIN_CPP "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+  448: 
+  449: if(EXISTS "${RUNNER_MAIN_CPP}")
+  450:     list(APPEND RUNNER_SRC_FILES "${RUNNER_MAIN_CPP}")
+  451: elseif(EXISTS "${ROOT_MAIN_CPP}")
+  452:     list(APPEND RUNNER_SRC_FILES "${ROOT_MAIN_CPP}")
+  453: endif()
+  454: 
+  455: if(PS2X_IS_ANDROID)
+  456:     add_library(ps2EntryRunner SHARED
+  457:         ${RUNNER_SRC_FILES}
+  458:     )
+  459: 
+  460:     target_link_options(ps2EntryRunner PRIVATE "-Wl,--undefined=ANativeActivity_onCreate")
+  461: else()
+  462:     add_executable(ps2EntryRunner
+  463:         ${RUNNER_SRC_FILES}
+  464:     )
+  465: endif()
+  466: 
+  467: if(PS2X_ENABLE_RUNNER_UNITY_BUILD)
+  468:     set_target_properties(ps2EntryRunner PROPERTIES
+  469:         UNITY_BUILD ON
+  470:         UNITY_BUILD_BATCH_SIZE "${PS2X_RUNNER_UNITY_BUILD_BATCH_SIZE}"
+  471:     )
+  472: endif()
+  473: 
+  474: if(PS2X_ENABLE_RUNNER_PCH)
+  475:     set(PS2X_RUNNER_PCH_HEADERS
+  476:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_runtime_macros.h"
+  477:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_runtime.h"
+  478:     )
+  479: 
+  480:     foreach(PS2X_RUNNER_GENERATED_HEADER IN ITEMS
+  481:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_recompiled_functions.h"
+  482:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_recompiled_stubs.h")
+  483:         if(EXISTS "${PS2X_RUNNER_GENERATED_HEADER}")
+  484:             list(APPEND PS2X_RUNNER_PCH_HEADERS "${PS2X_RUNNER_GENERATED_HEADER}")
+  485:         endif()
+  486:     endforeach()
+  487: 
+  488:     list(APPEND PS2X_RUNNER_PCH_HEADERS
+  489:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_syscalls.h"
+  490:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_stubs.h"
+  491:     )
+  492: 
+  493:     target_precompile_headers(ps2EntryRunner PRIVATE ${PS2X_RUNNER_PCH_HEADERS})
+  494: endif()
+  495: 
+  496: if(PS2X_DEFAULT_BOOT_ELF_DEFINE)
+  497:     target_compile_definitions(ps2EntryRunner PRIVATE
+  498:         PS2X_DEFAULT_BOOT_ELF="${PS2X_DEFAULT_BOOT_ELF_DEFINE}"
+  499:     )
+  500: endif()
+  501: 
+  502: if(MSVC)
+  503:     target_compile_options(ps2EntryRunner PRIVATE /FS)
+  504: endif()
+  505: 
+  506: target_include_directories(ps2_runtime PUBLIC
+  507:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+  508:     ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/Kernel
+  509: )
+  510: 
+  511: target_link_libraries(ps2_runtime PUBLIC ps2_host_backend ffmpeg ps2_iop)
+  512: target_link_libraries(ps2EntryRunner
+  513:     PRIVATE
+  514:     ps2_runtime
+  515: )
+  516: 
+  517: if(PS2X_ENABLE_DEBUG_UI AND NOT PS2X_IS_VITA AND NOT PS2X_IS_ANDROID)
+  518:     target_sources(ps2EntryRunner PRIVATE
+  519:         src/lib/ps2_debug_panel.cpp
+  520:     )
+  521:     target_link_libraries(ps2EntryRunner PRIVATE rlImGui imgui)
+  522:     target_compile_definitions(ps2EntryRunner PRIVATE PS2X_ENABLE_DEBUG_UI=1)
+  523: endif()
+  524: 
+  525: ps2x_stage_ffmpeg_runtime_dlls(ps2EntryRunner)
+
+====================================================================================================
+11. AUDIT CONCLUSION CHECKLIST
+====================================================================================================
+This is a read-only inspection. No files changed and no build was executed.
+Verify before implementation:
+- Does registerFunction() write to the global table or a separate runtime-owned structure?
+- Does lookupFunction() read the same structure?
+- Does guest branch dispatch consult lookupFunction() before interpreter fallback?
+- Does main.cpp construct, initialize, load, and run the runtime in that order?
+- Can one registration helper safely register all 11 functions without duplicate globals?
+- Are generated function symbols unique across all 11 translation units?
+
+Elapsed: 1.6 seconds
+Report: D:\Downloads\MarkOfKri_Audits\FUNCTION_REGISTRATION_STARTUP_CONTRACT_20261126_202337.log
