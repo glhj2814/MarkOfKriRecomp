@@ -1,0 +1,3236 @@
+MARK OF KRI — ENTRYPOINT / RUNTIME DISPATCH AUDIT
+Generated: 2026-11-26 21:43:49
+Mode: READ ONLY
+ELF entrypoint: 0x00100008
+Startup calls observed: _InitSys 0x00392FA0; FlushCache 0x0038B0E0
+Observed syscall immediates: 0x3C and 0x3D
+
+=== PATH VALIDATION ===
+True : D:\Games\MarkOfKriRecomp
+True : D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime
+True : D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src
+True : D:\Games\MarkOfKriRecomp\native\generated
+True : D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\main.cpp
+True : D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp
+
+=== SCAN INVENTORY ===
+Runtime source/header files: 90
+Generated candidate CSV files: 10
+Generated C++/header files: 20
+
+=== ELF LOAD / ENTRYPOINT INITIALIZATION ===
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\main.cpp:225
+          }
+  
+  >         if (!runtime.loadELF(filePathStr))
+          {
+              std::cerr << "Failed to load ELF file: " << filePathStr << std::endl;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:997
+          {
+              std::lock_guard<std::mutex> lock(g_rpc_mutex);
+  >             rpcInitialized = g_rpc_initialized;
+              rpcNextId = g_rpc_next_id;
+              rpcPacketIndex = g_rpc_packet_index;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_rom_device.cpp:44
+              ++specificity;
+          }
+  >         if (matcher.entryPoint != 0u)
+          {
+              if (matcher.entryPoint != identity.entryPoint)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_rom_device.cpp:46
+          if (matcher.entryPoint != 0u)
+          {
+  >             if (matcher.entryPoint != identity.entryPoint)
+                  return -1;
+              ++specificity;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:239
+          _mm_storeu_si128(reinterpret_cast<__m128i *>(rWords), _mm_castps_si128(ctx->vu0_r));
+          state.r = 0x3F800000u | (rWords[0] & 0x007FFFFFu);
+  >         state.pc = ctx->vu0_pc;
+          state.mac = ctx->vu0_mac_flags;
+          state.clip = ctx->vu0_clip_flags;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:844
+  }
+  
+  > bool PS2Runtime::loadELF(const std::string &elfPath)
+  {
+      configureIoPathsFromElf(elfPath);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:891
+      if (header.phnum != 0u && header.phentsize < sizeof(ProgramHeader))
+      {
+  >         std::cerr << "Unsupported ELF program-header entry size: " << header.phentsize << std::endl;
+          return false;
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:904
+      }
+  
+  >     m_cpuContext.pc = header.entry;
+      m_debugPc.store(m_cpuContext.pc, std::memory_order_relaxed);
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:905
+  
+      m_cpuContext.pc = header.entry;
+  >     m_debugPc.store(m_cpuContext.pc, std::memory_order_relaxed);
+  
+      uint32_t maxLoadedRdramEnd = kGuestHeapDefaultBase;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1079
+      ps2x::iop::GameIdentity identity;
+      identity.elfName = module.name;
+  >     identity.entryPoint = m_cpuContext.pc;
+      identity.crc32 = elfCrc32;
+      std::string romError;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1092
+      ps2_game_overrides::applyMatching(*this,
+                                        elfPath,
+  >                                       m_cpuContext.pc,
+                                        elfCrc32,
+                                        elfCrc32Valid);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1096
+                                        elfCrc32Valid);
+  
+  >     RUNTIME_LOG("ELF file loaded successfully. Entry point: 0x" << std::hex << m_cpuContext.pc << std::dec);
+      return true;
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2331
+                               [resumePc](R5900Context &context)
+                               {
+  >                                  context.pc = resumePc;
+                               });
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2459
+      m_cpuContext.r[5] = _mm_setzero_si128();
+      m_cpuContext.r[29] = _mm_set_epi64x(0, static_cast<int64_t>(PS2_RAM_SIZE - 0x10u));
+  >     m_debugPc.store(m_cpuContext.pc, std::memory_order_relaxed);
+      m_debugRa.store(static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[31], 0)), std::memory_order_relaxed);
+      m_debugSp.store(static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[29], 0)), std::memory_order_relaxed);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2464
+      m_debugGp.store(static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[28], 0)), std::memory_order_relaxed);
+  
+  >     RUNTIME_LOG("Starting execution at address 0x" << std::hex << m_cpuContext.pc << std::dec);
+  
+      // A blank image to use as a framebuffer
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:141
+      main.id = kMainThreadId;
+      main.context = mainContext;
+  >     main.entry = mainContext.pc;
+      // $sp is live execution state, not the stable initial stack descriptor
+      // returned by ReferThreadStatus. SetupThread records that metadata.
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:233
+          publishDebugContext(context);
+  
+  >         if (context.pc == 0u)
+          {
+              if (!running->invocations.empty())
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:276
+          }
+  
+  >         if (!m_runtime.hasFunction(context.pc))
+          {
+              if (!running->invocations.empty())
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:280
+              if (!running->invocations.empty())
+              {
+  >                 context.pc = 0u;
+              }
+              else
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:286
+                  m_runtime.reportMissingFunction(m_rdram,
+                                                  &context,
+  >                                                 context.pc,
+                                                  context.pc,
+                                                  PS2Runtime::GuestBranchKind::DirectJump,
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:287
+                                                  &context,
+                                                  context.pc,
+  >                                                 context.pc,
+                                                  PS2Runtime::GuestBranchKind::DirectJump,
+                                                  "EE scheduler");
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:295
+              continue;
+          }
+  >         PS2Runtime::RecompiledFunction function = m_runtime.lookupFunction(context.pc);
+  
+          if (checkpointDue(kGuestDispatchCycles))
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:521
+  
+      target->context = R5900Context{};
+  >     target->context.pc = target->entry;
+      target->arg = arg;
+      target->suspendCount = 0;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1308
+          GuestInvocation invocation{};
+          invocation.kind = GuestInvocationKind::Interrupt;
+  >         invocation.context.pc = handler.handler;
+          SET_GPR_U32(&invocation.context, 4, cause);
+          SET_GPR_U32(&invocation.context, 5, handler.argument);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1531
+          snapshot.id = id;
+          const R5900Context &context = item.activeContext();
+  >         snapshot.pc = context.pc;
+          snapshot.ra = getRegU32(&context, 31);
+          snapshot.sp = getRegU32(&context, 29);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1930
+              GuestInvocation invocation{};
+              invocation.kind = GuestInvocationKind::GsCallback;
+  >             invocation.context.pc = m_gsVSyncCallback;
+              SET_GPR_U32(&invocation.context, 4, static_cast<uint32_t>(m_vsyncTick));
+              SET_GPR_U32(&invocation.context, 28, m_gsVSyncCallbackGp);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1958
+          GuestInvocation invocation{};
+          invocation.kind = GuestInvocationKind::Alarm;
+  >         invocation.context.pc = alarm.handler;
+          SET_GPR_U32(&invocation.context, 4, static_cast<uint32_t>(alarm.id));
+          SET_GPR_U32(&invocation.context, 5, static_cast<uint32_t>(alarm.ticks));
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:2152
+  void EeScheduler::publishDebugContext(const R5900Context &context)
+  {
+  >     m_runtime.m_debugPc.store(context.pc, std::memory_order_relaxed);
+      m_runtime.m_debugRa.store(getRegU32(&context, 31), std::memory_order_relaxed);
+      m_runtime.m_debugSp.store(getRegU32(&context, 29), std::memory_order_relaxed);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\IPU.cpp:80
+              invocation.kind = GuestInvocationKind::HleCall;
+              invocation.context = *ctx;
+  >             invocation.context.pc = SETD4_CHCR_ENTRY;
+              SET_GPR_U32(&invocation.context, 4, 1u);
+              SET_GPR_U32(&invocation.context, 29, 0u);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp:1611
+              SET_GPR_U32(&callbackCtx, 29, 0u);
+              SET_GPR_U32(&callbackCtx, 31, 0u);
+  >             callbackCtx.pc = callback.func;
+  
+              GuestInvocation invocation{};
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:271
+              invocation.tag = commandId;
+              invocation.context = runtime->cpu();
+  >             invocation.context.pc = registered.function;
+              SET_GPR_U32(&invocation.context, 4, packetAddress);
+              SET_GPR_U32(&invocation.context, 5, registered.argument);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:535
+      }
+  
+  >     void sceSifLoadElf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+          ps2_syscalls::sceSifLoadElf(rdram, ctx, runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:537
+      void sceSifLoadElf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::sceSifLoadElf(rdram, ctx, runtime);
+      }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:540
+      }
+  
+  >     void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+          ps2_syscalls::sceSifLoadElfPart(rdram, ctx, runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:542
+      void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::sceSifLoadElfPart(rdram, ctx, runtime);
+      }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.h:33
+      void sceSifInitRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void sceSifIsAliveIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  >     void sceSifLoadElf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void sceSifLoadFileReset(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.h:34
+      void sceSifIsAliveIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void sceSifLoadElf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  >     void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void sceSifLoadFileReset(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void sceSifLoadIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.cpp:229
+              return true;
+          case 0x5B:
+  >             GetEntryAddress(rdram, ctx, runtime);
+              return true;
+          case 0x5C:
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:13
+              SifRpcDebugEvent event{};
+              event.op = op;
+  >             event.pc = ctx ? ctx->pc : 0u;
+              event.ra = ctx ? getRegU32(ctx, 31) : 0u;
+              event.threadId = runtime ? static_cast<uint32_t>(runtime->eeScheduler().currentThreadId()) : 0u;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:673
+              callback.kind = GuestInvocationKind::RpcCallback;
+              callback.context = parent;
+  >             callback.context.pc = callbackFunction;
+              SET_GPR_U32(&callback.context, 4, endParameter);
+              SET_GPR_U32(&callback.context, 29, runtime->eeScheduler().invocationStackTop());
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:689
+              invocation.kind = GuestInvocationKind::RpcCallback;
+              invocation.context = *ctx;
+  >             invocation.context.pc = guestFunction;
+              SET_GPR_U32(&invocation.context, 4, guestA0);
+              SET_GPR_U32(&invocation.context, 5, guestA1);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:253
+      }
+  
+  >     void SifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+          const uint32_t pathAddr = getRegU32(ctx, 4);     // $a0 - path
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:265
+          }
+  
+  >         const int32_t ret = runSifLoadElfPart(rdram, ctx, runtime, pathAddr, secName, execDataAddr);
+          setReturnS32(ctx, ret);
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:269
+      }
+  
+  >     void sceSifLoadElf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+          const uint32_t pathAddr = getRegU32(ctx, 4);     // $a0 - path
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:273
+          const uint32_t pathAddr = getRegU32(ctx, 4);     // $a0 - path
+          const uint32_t execDataAddr = getRegU32(ctx, 5); // $a1 - t_ExecData*
+  >         const int32_t ret = runSifLoadElfPart(rdram, ctx, runtime, pathAddr, "all", execDataAddr);
+          setReturnS32(ctx, ret);
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:277
+      }
+  
+  >     void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+          SifLoadElfPart(rdram, ctx, runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:279
+      void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         SifLoadElfPart(rdram, ctx, runtime);
+      }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:416
+          invocation.tag = syscallNumber;
+          invocation.context = *ctx;
+  >         invocation.context.pc = handler;
+          SET_GPR_U32(&invocation.context, 29, scheduler.invocationStackTop());
+          SET_GPR_U32(&invocation.context, 31, 0u);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:976
+      }
+  
+  >     void GetEntryAddress(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+          const uint32_t syscallNum = getRegU32(ctx, 4);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.h:19
+      void SetOsdConfigParam2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void GetOsdConfigParam2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  >     void SifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void sceSifLoadElf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.h:20
+      void GetOsdConfigParam2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void SifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  >     void sceSifLoadElf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void sceSifLoadModule(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.h:21
+      void SifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void sceSifLoadElf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  >     void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void sceSifLoadModule(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void sceSifLoadModuleBuffer(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.h:37
+      void GetThreadTLS(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void Copy(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  >     void GetEntryAddress(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void RegisterExitHandler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Thread.cpp:88
+                  invocation.kind = GuestInvocationKind::ExitHandler;
+                  invocation.context = *ctx;
+  >                 invocation.context.pc = handler.function;
+                  SET_GPR_U32(&invocation.context, 4, handler.argument);
+                  SET_GPR_U32(&invocation.context, 29, ee.invocationStackTop());
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Loader.h:270
+      }
+  
+  >     bool loadElfIntoGuestMemory(const std::string &hostPath,
+                                  uint8_t *rdram,
+                                  PS2Runtime *runtime,
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Loader.h:308
+          if (!loadAll && secFilterLogCount < 8u)
+          {
+  >             RUNTIME_LOG("[SifLoadElfPart] section filter \"" << sectionName
+                        << "\" requested; loading PT_LOAD segments only." << std::endl);
+              ++secFilterLogCount;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Loader.h:404
+      }
+  
+  >     int32_t runSifLoadElfPart(uint8_t *rdram,
+                                R5900Context *ctx,
+                                PS2Runtime *runtime,
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Loader.h:430
+          GuestExecData execData{};
+          std::string loadError;
+  >         if (!loadElfIntoGuestMemory(hostPath, rdram, runtime, sectionName, execData, loadError))
+          {
+              static uint32_t logCount = 0;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Loader.h:435
+              if (logCount < 16u)
+              {
+  >                 std::cerr << "[SifLoadElfPart] failed path=\"" << ps2Path << "\" host=\"" << hostPath
+                            << "\" reason=" << loadError << std::endl;
+                  ++logCount;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Loader.h:461
+          if (successLogs < 16u)
+          {
+  >             RUNTIME_LOG("[SifLoadElfPart] loaded \"" << ps2Path << "\" epc=0x"
+                        << std::hex << execData.epc << " gp=0x" << execData.gp << std::dec << std::endl);
+              ++successLogs;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1594
+  {
+      resetScheduler();
+  >     m_state.pc = startPC & microAddressMask();
+      m_state.ebit = false;
+      m_state.haltAfterDelaySlot = false;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1779
+          if (nextPc >= codeSize)
+              nextPc = 0u;
+  >         m_state.pc = nextPc;
+  
+          if (m_state.branchPending)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:1785
+              if (m_state.branchDelay == 0u)
+              {
+  >                 m_state.pc = m_state.branchTarget & microAddressMask();
+                  m_state.branchPending = false;
+              }
+MATCH GROUP COUNT: 63
+
+=== SCHEDULER THREAD / INITIAL PC OWNERSHIP ===
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\main.cpp:237
+          }
+  
+  >         runtime.run();
+  
+  #ifdef _DEBUG
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:702
+      void drawCpuTab(PS2Runtime &runtime, bool showRegisters)
+      {
+  >         const bool executingGuest = runtime.eeScheduler().isExecutingGuest();
+          const EeKernelSnapshot schedulerSnapshot = runtime.eeScheduler().snapshot();
+          const EeThreadSnapshot *selectedThread = nullptr;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:703
+      {
+          const bool executingGuest = runtime.eeScheduler().isExecutingGuest();
+  >         const EeKernelSnapshot schedulerSnapshot = runtime.eeScheduler().snapshot();
+          const EeThreadSnapshot *selectedThread = nullptr;
+          if (!executingGuest)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:732
+          }
+  
+  >         const uint32_t pc = selectedThread ? selectedThread->pc : runtime.m_debugPc.load(std::memory_order_relaxed);
+          const uint32_t ra = selectedThread ? selectedThread->ra : runtime.m_debugRa.load(std::memory_order_relaxed);
+          const uint32_t sp = selectedThread ? selectedThread->sp : runtime.m_debugSp.load(std::memory_order_relaxed);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:803
+      void drawThreadsTab(PS2Runtime &runtime)
+      {
+  >         const EeKernelSnapshot snapshot = runtime.eeScheduler().snapshot();
+          ImGui::Text("Threads: %zu running=%d", snapshot.threads.size(), snapshot.runningThreadId);
+          ImGui::Text("EE cycle: %llu  slice end: %llu  next event: %llu",
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:867
+      void drawKernelTab(PS2Runtime &runtime)
+      {
+  >         const EeKernelSnapshot snapshot = runtime.eeScheduler().snapshot();
+          ImGui::SeparatorText("Semaphores");
+          {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:393
+      static std::vector<uint8_t> s_uploadBuffer(DEFAULT_FB_SIZE, 0u);
+  
+  >     const uint64_t currentTick = rt->eeScheduler().currentVSyncTick();
+      // PS2X_PERF_LOG=1 prints guest vblanks/s against host frames/s every 5 s, so a
+      // scripted run's log shows where the game drops below full speed. The same line counts
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:564
+      m_iopSubsystem = std::make_unique<ps2x::iop::IopSubsystem>(*m_iopHost);
+  
+  >     m_eeScheduler = std::make_unique<EeScheduler>(*this);
+  
+      // Assign rather than memset: R5900Context's constructor zeroes itself and
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:757
+      m_memory.setVu1MscalCallback([this](uint32_t startPC, uint32_t top, uint32_t itop)
+                                   {
+  >                                      R5900Context *cpuContext = m_eeScheduler ? m_eeScheduler->currentContext() : nullptr;
+                                       if (!cpuContext)
+                                       {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:775
+      m_memory.setVu1MscntCallback([this](uint32_t top, uint32_t itop)
+                                   {
+  >                                      R5900Context *cpuContext = m_eeScheduler ? m_eeScheduler->currentContext() : nullptr;
+                                       if (!cpuContext)
+                                       {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:904
+      }
+  
+  >     m_cpuContext.pc = header.entry;
+      m_debugPc.store(m_cpuContext.pc, std::memory_order_relaxed);
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:905
+  
+      m_cpuContext.pc = header.entry;
+  >     m_debugPc.store(m_cpuContext.pc, std::memory_order_relaxed);
+  
+      uint32_t maxLoadedRdramEnd = kGuestHeapDefaultBase;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1079
+      ps2x::iop::GameIdentity identity;
+      identity.elfName = module.name;
+  >     identity.entryPoint = m_cpuContext.pc;
+      identity.crc32 = elfCrc32;
+      std::string romError;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1092
+      ps2_game_overrides::applyMatching(*this,
+                                        elfPath,
+  >                                       m_cpuContext.pc,
+                                        elfCrc32,
+                                        elfCrc32Valid);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1096
+                                        elfCrc32Valid);
+  
+  >     RUNTIME_LOG("ELF file loaded successfully. Entry point: 0x" << std::hex << m_cpuContext.pc << std::dec);
+      return true;
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1448
+      // Backward edges inside generated functions use eeCheckpointDue(), while
+      // this charge bounds straight-line call chains that have no local loop.
+  >     if (m_eeScheduler && m_eeScheduler->checkpointDue(EeScheduler::kGuestDispatchCycles))
+      {
+          return false;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1487
+  
+      RecompiledFunction targetFn = lookupFunction(targetPc);
+  >     const uint32_t entryPc = ctx->pc;
+      targetFn(rdram, ctx, this);
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1495
+      }
+  
+  >     if (ctx->pc == entryPc)
+      {
+          ctx->pc = fallthroughPc;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2292
+  {
+      m_stopRequested.store(true, std::memory_order_relaxed);
+  >     if (m_eeScheduler)
+      {
+          m_eeScheduler->requestStop();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2294
+      if (m_eeScheduler)
+      {
+  >         m_eeScheduler->requestStop();
+      }
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2303
+  }
+  
+  > EeScheduler &PS2Runtime::eeScheduler()
+  {
+      return *m_eeScheduler;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2305
+  EeScheduler &PS2Runtime::eeScheduler()
+  {
+  >     return *m_eeScheduler;
+  }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2308
+  }
+  
+  > const EeScheduler &PS2Runtime::eeScheduler() const
+  {
+      return *m_eeScheduler;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2310
+  const EeScheduler &PS2Runtime::eeScheduler() const
+  {
+  >     return *m_eeScheduler;
+  }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2315
+  void PS2Runtime::postEeEvent(EeEvent event)
+  {
+  >     m_eeScheduler->postEvent(event);
+  }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2320
+  bool PS2Runtime::eeCheckpointDue(uint32_t cycles) noexcept
+  {
+  >     return m_eeScheduler->checkpointDue(cycles);
+  }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2325
+  [[noreturn]] void PS2Runtime::eeWaitVSyncTicks(uint32_t ticks, uint32_t resumePc)
+  {
+  >     const uint64_t currentTick = m_eeScheduler->currentVSyncTick();
+      const uint64_t waitTicks = std::max<uint64_t>(1u, ticks);
+      m_eeScheduler->waitVSync(currentTick + waitTicks - 1u,
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2327
+      const uint64_t currentTick = m_eeScheduler->currentVSyncTick();
+      const uint64_t waitTicks = std::max<uint64_t>(1u, ticks);
+  >     m_eeScheduler->waitVSync(currentTick + waitTicks - 1u,
+                               0,
+                               [resumePc](R5900Context &context)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2331
+                               [resumePc](R5900Context &context)
+                               {
+  >                                  context.pc = resumePc;
+                               });
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2448
+  }
+  
+  > void PS2Runtime::run()
+  {
+      m_stopRequested.store(false, std::memory_order_relaxed);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2459
+      m_cpuContext.r[5] = _mm_setzero_si128();
+      m_cpuContext.r[29] = _mm_set_epi64x(0, static_cast<int64_t>(PS2_RAM_SIZE - 0x10u));
+  >     m_debugPc.store(m_cpuContext.pc, std::memory_order_relaxed);
+      m_debugRa.store(static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[31], 0)), std::memory_order_relaxed);
+      m_debugSp.store(static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[29], 0)), std::memory_order_relaxed);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2464
+      m_debugGp.store(static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[28], 0)), std::memory_order_relaxed);
+  
+  >     RUNTIME_LOG("Starting execution at address 0x" << std::hex << m_cpuContext.pc << std::dec);
+  
+      // A blank image to use as a framebuffer
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2491
+          try
+          {
+  >             m_eeScheduler->reset(m_memory.getRDRAM(), m_cpuContext);
+              m_eeScheduler->run();
+              uint32_t pc = m_debugPc.load(std::memory_order_relaxed);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2492
+          {
+              m_eeScheduler->reset(m_memory.getRDRAM(), m_cpuContext);
+  >             m_eeScheduler->run();
+              uint32_t pc = m_debugPc.load(std::memory_order_relaxed);
+              RUNTIME_LOG("Game thread returned. PC=0x" << std::hex << pc
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2494
+              m_eeScheduler->run();
+              uint32_t pc = m_debugPc.load(std::memory_order_relaxed);
+  >             RUNTIME_LOG("Game thread returned. PC=0x" << std::hex << pc
+                        << " RA=0x" << static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[31], 0)) << std::dec << std::endl);
+          }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2523
+                  const uint32_t dbgSp = m_debugSp.load(std::memory_order_relaxed);
+                  const uint32_t dbgGp = m_debugGp.load(std::memory_order_relaxed);
+  >                 const auto eeSnapshot = m_eeScheduler->snapshot();
+  
+                  RUNTIME_LOG("[run:tick] tick=" << tick
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:42
+      constexpr uint64_t microsecondsToEeCycles(uint64_t microseconds)
+      {
+  >         return (microseconds * EeScheduler::kEeClockHz + 999999ull) / 1000000ull;
+      }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:48
+      {
+          constexpr uint64_t kNanosecondsPerSecond = 1000000000ull;
+  >         const uint64_t wholeSeconds = cycles / EeScheduler::kEeClockHz;
+          const uint64_t remainingCycles = cycles % EeScheduler::kEeClockHz;
+          const uint64_t remainingNanoseconds = (remainingCycles * kNanosecondsPerSecond + EeScheduler::kEeClockHz - 1u) / EeScheduler::kEeClockHz;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:49
+          constexpr uint64_t kNanosecondsPerSecond = 1000000000ull;
+          const uint64_t wholeSeconds = cycles / EeScheduler::kEeClockHz;
+  >         const uint64_t remainingCycles = cycles % EeScheduler::kEeClockHz;
+          const uint64_t remainingNanoseconds = (remainingCycles * kNanosecondsPerSecond + EeScheduler::kEeClockHz - 1u) / EeScheduler::kEeClockHz;
+          return std::chrono::seconds(wholeSeconds) + std::chrono::nanoseconds(remainingNanoseconds);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:50
+          const uint64_t wholeSeconds = cycles / EeScheduler::kEeClockHz;
+          const uint64_t remainingCycles = cycles % EeScheduler::kEeClockHz;
+  >         const uint64_t remainingNanoseconds = (remainingCycles * kNanosecondsPerSecond + EeScheduler::kEeClockHz - 1u) / EeScheduler::kEeClockHz;
+          return std::chrono::seconds(wholeSeconds) + std::chrono::nanoseconds(remainingNanoseconds);
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:76
+  }
+  
+  > EeScheduler::EeScheduler(PS2Runtime &runtime)
+      : m_runtime(runtime)
+  {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:81
+  }
+  
+  > EeScheduler::~EeScheduler()
+  {
+      requestStop();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:86
+  }
+  
+  > void EeScheduler::reset(uint8_t *rdram, const R5900Context &mainContext)
+  {
+      m_executorThread = std::this_thread::get_id();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:141
+      main.id = kMainThreadId;
+      main.context = mainContext;
+  >     main.entry = mainContext.pc;
+      // $sp is live execution state, not the stable initial stack descriptor
+      // returned by ReferThreadStatus. SetupThread records that metadata.
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:157
+  }
+  
+  > void EeScheduler::run()
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:233
+          publishDebugContext(context);
+  
+  >         if (context.pc == 0u)
+          {
+              if (!running->invocations.empty())
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:253
+              // Returning from the entry point is a normal exit, but a null call or corrupt $ra lands here too.
+              if (running->id > 0)
+  >                 std::cerr << "[EeScheduler] thread " << running->id << " reached pc=0 from branch_pc=0x" << std::hex
+                        << context.branch_pc << " ra=0x" << getRegU32(&context, 31) << std::dec
+                        << "; treating as thread exit" << std::endl;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:276
+          }
+  
+  >         if (!m_runtime.hasFunction(context.pc))
+          {
+              if (!running->invocations.empty())
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:280
+              if (!running->invocations.empty())
+              {
+  >                 context.pc = 0u;
+              }
+              else
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:286
+                  m_runtime.reportMissingFunction(m_rdram,
+                                                  &context,
+  >                                                 context.pc,
+                                                  context.pc,
+                                                  PS2Runtime::GuestBranchKind::DirectJump,
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:287
+                                                  &context,
+                                                  context.pc,
+  >                                                 context.pc,
+                                                  PS2Runtime::GuestBranchKind::DirectJump,
+                                                  "EE scheduler");
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:295
+              continue;
+          }
+  >         PS2Runtime::RecompiledFunction function = m_runtime.lookupFunction(context.pc);
+  
+          if (checkpointDue(kGuestDispatchCycles))
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:341
+  }
+  
+  > void EeScheduler::requestStop()
+  {
+      m_stopRequested.store(true, std::memory_order_release);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:348
+  }
+  
+  > void EeScheduler::postEvent(EeEvent event)
+  {
+      if (event.type == EeEventType::Stop)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:364
+  }
+  
+  > bool EeScheduler::checkpointDue(uint32_t cycles) noexcept
+  {
+      advanceGuestCycles(cycles);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:402
+  }
+  
+  > void EeScheduler::accountCycles(uint32_t cycles) noexcept
+  {
+      advanceGuestCycles(cycles);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:408
+  }
+  
+  > void EeScheduler::advanceGuestCycles(uint32_t cycles) noexcept
+  {
+      const uint64_t elapsed = std::max<uint64_t>(1u, cycles);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:420
+  }
+  
+  > void EeScheduler::flushIopCycles() noexcept
+  {
+      if (m_iopPendingEeCycles == 0u)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:431
+  }
+  
+  > bool EeScheduler::isExecutingGuest() const noexcept
+  {
+      return m_guestExecuting.load(std::memory_order_acquire);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:436
+  }
+  
+  > void EeScheduler::setupCurrentThread(uint32_t stack, uint32_t stackSize, uint32_t gp)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:451
+  }
+  
+  > int EeScheduler::createThread(const EeThreadCreateParams &params)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:481
+  }
+  
+  > int EeScheduler::deleteThread(int id, uint32_t &ownedStack)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:507
+  }
+  
+  > int EeScheduler::startThread(int id, uint32_t arg, const R5900Context &caller, bool interruptSafe)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:521
+  
+      target->context = R5900Context{};
+  >     target->context.pc = target->entry;
+      target->arg = arg;
+      target->suspendCount = 0;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:539
+  }
+  
+  > [[noreturn]] void EeScheduler::exitCurrent(bool deleteThreadRecord)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:560
+  }
+  
+  > int EeScheduler::terminateThread(int id, uint32_t &ownedStack, bool interruptSafe)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:588
+  }
+  
+  > int EeScheduler::suspendThread(int id, bool interruptSafe)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:634
+  }
+  
+  > int EeScheduler::resumeThread(int id, bool interruptSafe)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:668
+  }
+  
+  > void EeScheduler::sleepCurrent()
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:682
+  }
+  
+  > int EeScheduler::wakeupThread(int id, bool interruptSafe)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:711
+  }
+  
+  > int EeScheduler::cancelWakeup(int id)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:729
+  }
+  
+  > int EeScheduler::changePriority(int id, int priority, bool interruptSafe, int &oldPriority)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:772
+  }
+  
+  > int EeScheduler::rotateReadyQueue(int priority, bool interruptSafe)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:807
+  }
+  
+  > int EeScheduler::releaseWait(int id, bool interruptSafe)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:829
+  }
+  
+  > void EeScheduler::transferIfRequested(bool interruptSafe)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:849
+  }
+  
+  > int EeScheduler::createSemaphore(int initCount, int maxCount, uint32_t attr, uint32_t option)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:873
+  }
+  
+  > int EeScheduler::deleteSemaphore(int id, bool interruptSafe)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:894
+  }
+  
+  > int EeScheduler::signalSemaphore(int id, bool interruptSafe)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:921
+  }
+  
+  > int EeScheduler::pollSemaphore(int id)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:938
+  }
+  
+  > void EeScheduler::waitSemaphore(int id)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:964
+  }
+  
+  > int EeScheduler::createEventFlag(uint32_t initialBits, uint32_t attr, uint32_t option)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:983
+  }
+  
+  > int EeScheduler::deleteEventFlag(int id, bool interruptSafe)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1004
+  }
+  
+  > int EeScheduler::setEventFlag(int id, uint32_t bits, bool interruptSafe)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1018
+  }
+  
+  > int EeScheduler::clearEventFlag(int id, uint32_t mask)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1031
+  }
+  
+  > int EeScheduler::pollEventFlag(int id, uint32_t bits, uint32_t mode, uint32_t &observedBits)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1056
+  }
+  
+  > void EeScheduler::waitEventFlag(int id, uint32_t bits, uint32_t mode, uint32_t resultAddress)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1088
+  }
+  
+  > int EeScheduler::setAlarm(uint16_t ticks,
+                            uint32_t handler,
+                            uint32_t argument,
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1112
+  }
+  
+  > int EeScheduler::cancelAlarm(int id)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1129
+  }
+  
+  > void EeScheduler::queueInvocation(GuestInvocation invocation)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1137
+  }
+  
+  > [[noreturn]] void EeScheduler::invokeCurrent(GuestInvocation invocation)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1152
+  }
+  
+  > [[noreturn]] void EeScheduler::invokeCurrentSequence(std::vector<GuestInvocation> invocations)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1171
+  }
+  
+  > bool EeScheduler::hasInvocation(GuestInvocationKind kind, uint64_t tag) const
+  {
+      const GuestThread *owner = currentThread();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1185
+  }
+  
+  > uint32_t EeScheduler::invocationStackTop()
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1211
+  }
+  
+  > int EeScheduler::addIrqHandler(bool dmac,
+                                 uint32_t cause,
+                                 uint32_t handler,
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1241
+  }
+  
+  > int EeScheduler::removeIrqHandler(bool dmac, uint32_t cause, int id)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1253
+  }
+  
+  > int EeScheduler::setIrqHandlerEnabled(bool dmac, int id, bool enabled)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1265
+  }
+  
+  > int EeScheduler::setIrqCauseEnabled(bool dmac, uint32_t cause, bool enabled)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1283
+  }
+  
+  > void EeScheduler::dispatchIrq(bool dmac, uint32_t cause)
+  {
+      assertExecutor();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1308
+          GuestInvocation invocation{};
+          invocation.kind = GuestInvocationKind::Interrupt;
+  >         invocation.context.pc = handler.handler;
+          SET_GPR_U32(&invocation.context, 4, cause);
+          SET_GPR_U32(&invocation.context, 5, handler.argument);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1318
+  }
+  
+  > void EeScheduler::setVSyncFlag(uint32_t flagAddress, uint32_t tickAddress)
+  {
+      assertExecutor();
+MATCH GROUP COUNT: 100
+
+=== SYSCALL DISPATCH IMPLEMENTATION ===
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:5
+  #include "ps2_runtime.h"
+  #include "ps2_runtime_calls.h"
+  #include "ps2_stubs.h"
+  > #include "ps2_syscalls.h"
+  #include "ps2_log.h"
+  #include <algorithm>
+  #include <cctype>
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:63
+  
+      std::optional<PS2Runtime::RecompiledFunction> resolveHandlerByName(std::string_view handlerName)
+      {
+  >         const std::string_view resolvedSyscall = ps2_runtime_calls::resolveSyscallName(handlerName);
+          if (!resolvedSyscall.empty())
+          {
+  #define PS2_RESOLVE_SYSCALL(name)                   \
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:64
+      std::optional<PS2Runtime::RecompiledFunction> resolveHandlerByName(std::string_view handlerName)
+      {
+          const std::string_view resolvedSyscall = ps2_runtime_calls::resolveSyscallName(handlerName);
+  >         if (!resolvedSyscall.empty())
+          {
+  #define PS2_RESOLVE_SYSCALL(name)                   \
+      if (resolvedSyscall == std::string_view{#name}) \
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:66
+          const std::string_view resolvedSyscall = ps2_runtime_calls::resolveSyscallName(handlerName);
+          if (!resolvedSyscall.empty())
+          {
+  > #define PS2_RESOLVE_SYSCALL(name)                   \
+      if (resolvedSyscall == std::string_view{#name}) \
+      {                                               \
+          return &ps2_syscalls::name;                 \
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:67
+          if (!resolvedSyscall.empty())
+          {
+  #define PS2_RESOLVE_SYSCALL(name)                   \
+  >     if (resolvedSyscall == std::string_view{#name}) \
+      {                                               \
+          return &ps2_syscalls::name;                 \
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:69
+  #define PS2_RESOLVE_SYSCALL(name)                   \
+      if (resolvedSyscall == std::string_view{#name}) \
+      {                                               \
+  >         return &ps2_syscalls::name;                 \
+      }
+              PS2_SYSCALL_LIST(PS2_RESOLVE_SYSCALL)
+  #undef PS2_RESOLVE_SYSCALL
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:71
+      {                                               \
+          return &ps2_syscalls::name;                 \
+      }
+  >             PS2_SYSCALL_LIST(PS2_RESOLVE_SYSCALL)
+  #undef PS2_RESOLVE_SYSCALL
+          }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:72
+          return &ps2_syscalls::name;                 \
+      }
+              PS2_SYSCALL_LIST(PS2_RESOLVE_SYSCALL)
+  > #undef PS2_RESOLVE_SYSCALL
+          }
+  
+          const std::string_view resolvedStub = ps2_runtime_calls::resolveStubName(handlerName);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:8
+  #include "runtime/ee_scheduler.h"
+  
+  #include <unordered_set>
+  > #include "Kernel/Syscalls/Helpers/State.h"
+  #include "Kernel/Stubs/CD.h"
+  #include "Kernel/Stubs/MemoryCard.h"
+  #include "Kernel/Stubs/Pad.h"
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:8
+  #include "Kernel/Stubs/SIF.h"
+  #include "runtime/ps2_memory.h"
+  #include "Kernel/Stubs/MemoryCard.h"
+  > #include "Kernel/Syscalls/Common.h"
+  
+  #include <algorithm>
+  #include <cstring>
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:4
+  #include "ps2_runtime.h"
+  #include "ps2_log.h"
+  #include "ps2_stubs.h"
+  > #include "ps2_syscalls.h"
+  #include "game_overrides.h"
+  #include "ps2_runtime_macros.h"
+  #include "runtime/gs/gs_frontend.h"
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1544
+      executeVU0Microprogram(rdram, ctx, address);
+  }
+  
+  > void PS2Runtime::handleSyscall(uint8_t *rdram, R5900Context *ctx)
+  {
+      handleSyscall(rdram, ctx, 0);
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1546
+  
+  void PS2Runtime::handleSyscall(uint8_t *rdram, R5900Context *ctx)
+  {
+  >     handleSyscall(rdram, ctx, 0);
+  }
+  
+  void PS2Runtime::handleSyscall(uint8_t *rdram, R5900Context *ctx, uint32_t encodedSyscallId)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1549
+      handleSyscall(rdram, ctx, 0);
+  }
+  
+  > void PS2Runtime::handleSyscall(uint8_t *rdram, R5900Context *ctx, uint32_t encodedSyscallId)
+  {
+      if (ctx->in_delay_slot)
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1553
+  {
+      if (ctx->in_delay_slot)
+      {
+  >         throw std::runtime_error("Attempted to execute a syscall inside a branch delay slot! "
+                                   "This breaks the atomic basic block model and is structurally unsupported by the emulator.");
+      }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1557
+                                   "This breaks the atomic basic block model and is structurally unsupported by the emulator.");
+      }
+  
+  >     const uint32_t syscallId = (encodedSyscallId != 0u)
+                                     ? encodedSyscallId
+                                     : getRegU32(ctx, 3); // $v1 / $3 is the EE kernel syscall number
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1558
+      }
+  
+      const uint32_t syscallId = (encodedSyscallId != 0u)
+  >                                    ? encodedSyscallId
+                                     : getRegU32(ctx, 3); // $v1 / $3 is the EE kernel syscall number
+  
+      if (ps2_syscalls::dispatchNumericSyscall(syscallId, rdram, ctx, this))
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1559
+  
+      const uint32_t syscallId = (encodedSyscallId != 0u)
+                                     ? encodedSyscallId
+  >                                    : getRegU32(ctx, 3); // $v1 / $3 is the EE kernel syscall number
+  
+      if (ps2_syscalls::dispatchNumericSyscall(syscallId, rdram, ctx, this))
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1561
+                                     ? encodedSyscallId
+                                     : getRegU32(ctx, 3); // $v1 / $3 is the EE kernel syscall number
+  
+  >     if (ps2_syscalls::dispatchNumericSyscall(syscallId, rdram, ctx, this))
+      {
+          return;
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1567
+      }
+  
+      // God help you
+  >     ps2_syscalls::TODO(rdram, ctx, this, encodedSyscallId);
+  }
+  
+  void PS2Runtime::handleBreak(uint8_t *rdram, R5900Context *ctx)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1579
+  {
+      for (uint32_t cause : m_memory.consumeCompletedDmacCauses())
+      {
+  >         ps2_syscalls::dispatchDmacHandlersForCause(rdram, this, cause);
+      }
+  }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2360
+      m_eeExitHandlers.erase(threadId);
+  }
+  
+  > bool PS2Runtime::findEeSyscallOverride(uint32_t syscallNumber, uint32_t &handler) const
+  {
+      std::lock_guard lock(m_eeKernelStateMutex);
+      const auto it = m_eeSyscallOverrides.find(syscallNumber);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2363
+  bool PS2Runtime::findEeSyscallOverride(uint32_t syscallNumber, uint32_t &handler) const
+  {
+      std::lock_guard lock(m_eeKernelStateMutex);
+  >     const auto it = m_eeSyscallOverrides.find(syscallNumber);
+      if (it == m_eeSyscallOverrides.end())
+      {
+          return false;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2364
+  {
+      std::lock_guard lock(m_eeKernelStateMutex);
+      const auto it = m_eeSyscallOverrides.find(syscallNumber);
+  >     if (it == m_eeSyscallOverrides.end())
+      {
+          return false;
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2372
+      return true;
+  }
+  
+  > void PS2Runtime::setEeSyscallOverride(uint8_t *rdram, uint32_t syscallNumber, uint32_t handler)
+  {
+      constexpr uint32_t kTableBase = 0x80011F80u & 0x1FFFFFFFu;
+      constexpr uint32_t kMirrorLimit = 0x00080000u;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2376
+  {
+      constexpr uint32_t kTableBase = 0x80011F80u & 0x1FFFFFFFu;
+      constexpr uint32_t kMirrorLimit = 0x00080000u;
+  >     const int64_t offset = static_cast<int64_t>(static_cast<int32_t>(syscallNumber)) * 4;
+      const int64_t address = static_cast<int64_t>(kTableBase) + offset;
+  
+      std::lock_guard lock(m_eeKernelStateMutex);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2382
+      std::lock_guard lock(m_eeKernelStateMutex);
+      if (handler == 0u)
+      {
+  >         m_eeSyscallOverrides.erase(syscallNumber);
+      }
+      else
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2386
+      }
+      else
+      {
+  >         m_eeSyscallOverrides[syscallNumber] = handler;
+      }
+      if (!rdram || address < 0 || address + 4 > kMirrorLimit)
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2396
+      std::memcpy(rdram + guestAddress, &handler, sizeof(handler));
+      if (handler == 0u)
+      {
+  >         m_eeSyscallMirrorAddresses.erase(guestAddress);
+      }
+      else
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2400
+      }
+      else
+      {
+  >         m_eeSyscallMirrorAddresses.insert(guestAddress);
+      }
+  }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2416
+      constexpr uint32_t kProbeBase = 0x000002F0u;
+  
+      std::lock_guard lock(m_eeKernelStateMutex);
+  >     for (const uint32_t address : m_eeSyscallMirrorAddresses)
+      {
+          const uint32_t zero = 0u;
+          std::memcpy(rdram + address, &zero, sizeof(zero));
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2421
+          const uint32_t zero = 0u;
+          std::memcpy(rdram + address, &zero, sizeof(zero));
+      }
+  >     m_eeSyscallMirrorAddresses.clear();
+      const uint32_t high = kTableGuestBase >> 16;
+      const uint32_t low = kTableGuestBase & 0xFFFFu;
+      std::memcpy(rdram + kProbeBase, &high, sizeof(high));
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2426
+      const uint32_t low = kTableGuestBase & 0xFFFFu;
+      std::memcpy(rdram + kProbeBase, &high, sizeof(high));
+      std::memcpy(rdram + kProbeBase + 8u, &low, sizeof(low));
+  >     m_eeSyscallMirrorAddresses.insert(kProbeBase);
+      m_eeSyscallMirrorAddresses.insert(kProbeBase + 8u);
+  
+      for (const auto &[syscallNumber, handler] : m_eeSyscallOverrides)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2427
+      std::memcpy(rdram + kProbeBase, &high, sizeof(high));
+      std::memcpy(rdram + kProbeBase + 8u, &low, sizeof(low));
+      m_eeSyscallMirrorAddresses.insert(kProbeBase);
+  >     m_eeSyscallMirrorAddresses.insert(kProbeBase + 8u);
+  
+      for (const auto &[syscallNumber, handler] : m_eeSyscallOverrides)
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2429
+      m_eeSyscallMirrorAddresses.insert(kProbeBase);
+      m_eeSyscallMirrorAddresses.insert(kProbeBase + 8u);
+  
+  >     for (const auto &[syscallNumber, handler] : m_eeSyscallOverrides)
+      {
+          const int64_t offset = static_cast<int64_t>(static_cast<int32_t>(syscallNumber)) * 4;
+          const int64_t address = static_cast<int64_t>(kTableBase) + offset;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2431
+  
+      for (const auto &[syscallNumber, handler] : m_eeSyscallOverrides)
+      {
+  >         const int64_t offset = static_cast<int64_t>(static_cast<int32_t>(syscallNumber)) * 4;
+          const int64_t address = static_cast<int64_t>(kTableBase) + offset;
+          if (address < 0 || address + 4 > kMirrorLimit)
+          {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2439
+          }
+          const uint32_t guestAddress = static_cast<uint32_t>(address);
+          std::memcpy(rdram + guestAddress, &handler, sizeof(handler));
+  >         m_eeSyscallMirrorAddresses.insert(guestAddress);
+      }
+  }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1485
+      return m_rdram;
+  }
+  
+  > void EeScheduler::bindMainContextForSyscall(R5900Context &ctx, uint8_t *rdram)
+  {
+      if (m_executorThread == std::thread::id{})
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Common.h:7
+  #include "ps2_log.h"
+  #include "ps2_runtime.h"
+  #include "ps2_runtime_macros.h"
+  > #include "ps2_syscalls.h"
+  #include "Unimplemented.h"
+  
+  #include <iostream>
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\FileIO.cpp:33
+  
+      void close(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::fioClose(rdram, ctx, runtime);
+      }
+  
+      void fstat(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\FileIO.cpp:50
+  
+      void lseek(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::fioLseek(rdram, ctx, runtime);
+      }
+  
+      void open(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\FileIO.cpp:55
+  
+      void open(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::fioOpen(rdram, ctx, runtime);
+      }
+  
+      void read(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\FileIO.cpp:60
+  
+      void read(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::fioRead(rdram, ctx, runtime);
+      }
+  
+      void sceClose(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\FileIO.cpp:65
+  
+      void sceClose(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::fioClose(rdram, ctx, runtime);
+      }
+  
+      void sceFsInit(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\FileIO.cpp:103
+  
+      void sceLseek(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::fioLseek(rdram, ctx, runtime);
+      }
+  
+      void sceOpen(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\FileIO.cpp:108
+  
+      void sceOpen(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::fioOpen(rdram, ctx, runtime);
+      }
+  
+      void sceRead(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\FileIO.cpp:113
+  
+      void sceRead(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::fioRead(rdram, ctx, runtime);
+      }
+  
+      void sceWrite(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\FileIO.cpp:118
+  
+      void sceWrite(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::fioWrite(rdram, ctx, runtime);
+      }
+  
+      void stat(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\FileIO.cpp:138
+  
+      void write(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::fioWrite(rdram, ctx, runtime);
+      }
+  
+      void cvFsSetDefDev(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:868
+              SET_GPR_U32(&crt, 4, static_cast<uint32_t>(interlace & 1));
+              SET_GPR_U32(&crt, 5, static_cast<uint32_t>(omode & 0xFF));
+              SET_GPR_U32(&crt, 6, static_cast<uint32_t>(ffmode & 1));
+  >             ps2_syscalls::GsSetCrt(rdram, &crt, runtime);
+          }
+  
+          setReturnS32(ctx, 0);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1347
+  
+      void sceGsSyncV(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::WaitVSyncTick(rdram,
+                                      ctx,
+                                      runtime,
+                                      g_gparam.interlace != 0u ? -1 : 1);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:1362
+          const uint32_t sp = getRegU32(ctx, 29);
+  
+          EeScheduler &ee = runtime->eeScheduler();
+  >         ee.bindMainContextForSyscall(*ctx, rdram);
+          const uint32_t oldCallback = ee.setGsVSyncCallback(newCallback, gp, sp);
+  
+          static uint32_t s_syncVCallbackLogCount = 0u;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\IPU.cpp:76
+          if (runtime->hasFunction(SETD4_CHCR_ENTRY))
+          {
+              EeScheduler &scheduler = runtime->eeScheduler();
+  >             scheduler.bindMainContextForSyscall(*ctx, rdram);
+              GuestInvocation invocation{};
+              invocation.kind = GuestInvocationKind::HleCall;
+              invocation.context = *ctx;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MemoryCard.cpp:96
+  
+          constexpr int32_t kCvMcSaveFileBytes = 0x838;
+          constexpr int32_t kCvMcConfigFileBytes = 0x34;
+  >         constexpr int32_t kCvMcIconInfoBytes = 0x3C4;
+          constexpr int32_t kCvMcIconFileBytes = 0xB3F8;
+  
+          constexpr int32_t cvMcKilobytes(int32_t bytes)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp:22
+  #include <deque>
+  #include <memory>
+  
+  > #include "Syscalls/Helpers/State.h"
+  
+  namespace ps2_stubs
+  {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp:2033
+  
+          static const unsigned s_zeroOffsets[] = {
+              0xB4, 0xB8, 0xBC, 0xC0, 0xC4, 0xC8, 0xCC, 0xD0, 0xD4, 0xD8, 0xDC, 0xE0, 0xE4, 0xE8, 0xF8,
+  >             0x0C, 0x14, 0x2C, 0x34, 0x3C,
+              0x48, 0xFC, 0x100, 0x104, 0x70, 0x90, 0xAC};
+          for (unsigned off : s_zeroOffsets)
+              mpegGuestWrite32(rdram, uVar3 + off, 0u);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:3
+  #include "Common.h"
+  #include "SIF.h"
+  > #include "../Syscalls/RPC.h"
+  #include "../../ps2_iop_transport.h"
+  #include "runtime/ps2_address.h"
+  #include "runtime/ee_scheduler.h"
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:22
+  
+      void sceSifLoadModule(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::SifLoadModule(rdram, ctx, runtime);
+      }
+  
+      void sceSifSendCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:318
+  
+      void sceSifBindRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::SifBindRpc(rdram, ctx, runtime);
+      }
+  
+      void sceSifCheckStatRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:323
+  
+      void sceSifCheckStatRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::SifCheckStatRpc(rdram, ctx, runtime);
+      }
+  
+      void sceSifDmaStat(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:527
+  
+      void sceSifInitRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::SifInitRpc(rdram, ctx, runtime);
+      }
+  
+      void sceSifIsAliveIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:537
+  
+      void sceSifLoadElf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::sceSifLoadElf(rdram, ctx, runtime);
+      }
+  
+      void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:542
+  
+      void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::sceSifLoadElfPart(rdram, ctx, runtime);
+      }
+  
+      void sceSifLoadFileReset(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:557
+  
+      void sceSifLoadModuleBuffer(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::sceSifLoadModuleBuffer(rdram, ctx, runtime);
+      }
+  
+      void sceSifRebootIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:568
+  
+      void sceSifRegisterRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::SifRegisterRpc(rdram, ctx, runtime);
+      }
+  
+      void sceSifRemoveCmdHandler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:581
+  
+      void sceSifRemoveRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::SifRemoveRpc(rdram, ctx, runtime);
+      }
+  
+      void sceSifRemoveRpcQueue(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:586
+  
+      void sceSifRemoveRpcQueue(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::SifRemoveRpcQueue(rdram, ctx, runtime);
+      }
+  
+      void sceSifResetIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:761
+              return;
+          }
+  
+  >         ps2_syscalls::dispatchDmacHandlersForCause(rdram, runtime, 5u);
+  
+          setReturnS32(ctx, static_cast<int32_t>(allocateSifDmaTransferId()));
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:809
+  
+      void sceSifSetRpcQueue(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         ps2_syscalls::SifSetRpcQueue(rdram, ctx, runtime);
+      }
+  
+      void sceSifSetSreg(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Helpers\Support.h:1439
+  
+          for (const uint32_t completedCause : completedCauses)
+          {
+  >             ps2_syscalls::dispatchDmacHandlersForCause(rdram, runtime, completedCause);
+          }
+  
+          return 0;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Helpers\Support.h:1473
+          }
+          for (const uint32_t completedCause : mem.consumeCompletedDmacCauses())
+          {
+  >             ps2_syscalls::dispatchDmacHandlersForCause(rdram, runtime, completedCause);
+          }
+          return 0;
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Common.h:1
+  > #include "ps2_syscalls.h"
+  #include "ps2_log.h"
+  #include "ps2_runtime.h"
+  #include "runtime/ee_scheduler.h"
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Deci2.cpp:124
+      }
+  }
+  
+  > namespace ps2_syscalls
+  {
+      void Deci2Call(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.cpp:5
+  #include "Dispatcher.h"
+  #include "System.h"
+  
+  > namespace ps2_syscalls
+  {
+      bool dispatchNumericSyscall(uint32_t syscallNumber, uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.cpp:7
+  
+  namespace ps2_syscalls
+  {
+  >     bool dispatchNumericSyscall(uint32_t syscallNumber, uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+          if (dispatchSyscallOverride(syscallNumber, rdram, ctx, runtime))
+          {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.cpp:9
+  {
+      bool dispatchNumericSyscall(uint32_t syscallNumber, uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         if (dispatchSyscallOverride(syscallNumber, rdram, ctx, runtime))
+          {
+              return true;
+          }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.cpp:14
+              return true;
+          }
+  
+  >         switch (syscallNumber)
+          {
+          case 0x01:
+              ResetEE(rdram, ctx, runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.cpp:147
+          case static_cast<uint32_t>(-0x3A):
+              ResumeThread(rdram, ctx, runtime);
+              return true;
+  >         case 0x3C:
+              SetupThread(rdram, ctx, runtime);
+              return true;
+          case 0x3D:
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.cpp:150
+          case 0x3C:
+              SetupThread(rdram, ctx, runtime);
+              return true;
+  >         case 0x3D:
+              SetupHeap(rdram, ctx, runtime);
+              return true;
+          case 0x3E:
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.cpp:281
+              SetVSyncFlag(rdram, ctx, runtime);
+              return true;
+          case 0x74:
+  >             SetSyscall(rdram, ctx, runtime);
+              return true;
+          case 0x76:
+          case static_cast<uint32_t>(-0x76):
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.cpp:295
+          case static_cast<uint32_t>(-0x78):
+              ps2_stubs::sceSifSetDChain(rdram, ctx, runtime);
+              return true;
+  >         // SIF register syscalls. sceSifInitCmd (0x11A480) issues syscall 0x7A and the
+          // runtime answered "Unimplemented PS2 syscall" 11 271 times, with zero CD reads
+          // and a black screen (run168). Identified from the disassembly, not guessed:
+          //   0x118B60: `li v1,0x79; syscall` called with (0x80000000, value) then
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.cpp:296
+              ps2_stubs::sceSifSetDChain(rdram, ctx, runtime);
+              return true;
+          // SIF register syscalls. sceSifInitCmd (0x11A480) issues syscall 0x7A and the
+  >         // runtime answered "Unimplemented PS2 syscall" 11 271 times, with zero CD reads
+          // and a black screen (run168). Identified from the disassembly, not guessed:
+          //   0x118B60: `li v1,0x79; syscall` called with (0x80000000, value) then
+          //             (0x80000001, address) -> TWO arguments -> sceSifSetReg(reg,val)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.cpp:298
+          // SIF register syscalls. sceSifInitCmd (0x11A480) issues syscall 0x7A and the
+          // runtime answered "Unimplemented PS2 syscall" 11 271 times, with zero CD reads
+          // and a black screen (run168). Identified from the disassembly, not guessed:
+  >         //   0x118B60: `li v1,0x79; syscall` called with (0x80000000, value) then
+          //             (0x80000001, address) -> TWO arguments -> sceSifSetReg(reg,val)
+          //   0x118B70: `li v1,0x7A; syscall` called with (0x80000000), (4), (2)
+          //             -> ONE argument -> sceSifGetReg(reg)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.cpp:300
+          // and a black screen (run168). Identified from the disassembly, not guessed:
+          //   0x118B60: `li v1,0x79; syscall` called with (0x80000000, value) then
+          //             (0x80000001, address) -> TWO arguments -> sceSifSetReg(reg,val)
+  >         //   0x118B70: `li v1,0x7A; syscall` called with (0x80000000), (4), (2)
+          //             -> ONE argument -> sceSifGetReg(reg)
+          // The neighbours confirm the family: 0x76 DmaStat, 0x77 SetDma, 0x78 SetDChain.
+          // Both handlers ALREADY exist in Stubs/SIF.cpp and read a0/a1, exactly the
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.cpp:304
+          //             -> ONE argument -> sceSifGetReg(reg)
+          // The neighbours confirm the family: 0x76 DmaStat, 0x77 SetDma, 0x78 SetDChain.
+          // Both handlers ALREADY exist in Stubs/SIF.cpp and read a0/a1, exactly the
+  >         // syscall convention - only the dispatch branch was missing.
+          // Bit 31 of `reg` is the PS2 convention (0x80000000 | SIF register number).
+          case 0x79:
+          case static_cast<uint32_t>(-0x79):
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.h:3
+  #pragma once
+  
+  > #include "ps2_syscalls.h"
+  
+  namespace ps2_syscalls
+  {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.h:5
+  
+  #include "ps2_syscalls.h"
+  
+  > namespace ps2_syscalls
+  {
+      bool dispatchNumericSyscall(uint32_t syscallNumber, uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Dispatcher.h:7
+  
+  namespace ps2_syscalls
+  {
+  >     bool dispatchNumericSyscall(uint32_t syscallNumber, uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\FileIO.cpp:4
+  #include "Common.h"
+  #include "FileIO.h"
+  
+  > namespace ps2_syscalls
+  {
+      static PS2VfsMounts currentVfsMounts()
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\FileIO.h:3
+  #pragma once
+  
+  > #include "ps2_syscalls.h"
+  
+  namespace ps2_syscalls
+  {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\FileIO.h:5
+  
+  #include "ps2_syscalls.h"
+  
+  > namespace ps2_syscalls
+  {
+      void fioOpen(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void fioClose(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Interrupt.cpp:4
+  #include "Common.h"
+  #include "Interrupt.h"
+  
+  > namespace ps2_syscalls
+  {
+      namespace
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Interrupt.cpp:11
+          EeScheduler &scheduler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+          {
+              EeScheduler &result = runtime->eeScheduler();
+  >             result.bindMainContextForSyscall(*ctx, rdram);
+              return result;
+          }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Interrupt.h:3
+  #pragma once
+  
+  > #include "ps2_syscalls.h"
+  
+  namespace ps2_syscalls
+  {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Interrupt.h:5
+  
+  #include "ps2_syscalls.h"
+  
+  > namespace ps2_syscalls
+  {
+      void dispatchDmacHandlersForCause(uint8_t *rdram, PS2Runtime *runtime, uint32_t cause);
+      uint64_t GetCurrentVSyncTick(PS2Runtime *runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:5
+  #include "RPC.h"
+  #include "../../ps2_iop_transport.h"
+  
+  > namespace ps2_syscalls
+  {
+      namespace
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.h:3
+  #pragma once
+  
+  > #include "ps2_syscalls.h"
+  
+  namespace ps2_syscalls
+  {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.h:5
+  
+  #include "ps2_syscalls.h"
+  
+  > namespace ps2_syscalls
+  {
+      void SifStopModule(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void SifLoadModule(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Sync.cpp:5
+  #include "Sync.h"
+  #include "runtime/ee_scheduler.h"
+  
+  > namespace ps2_syscalls
+  {
+      namespace
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Sync.cpp:18
+          EeScheduler &scheduler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+          {
+              EeScheduler &result = runtime->eeScheduler();
+  >             result.bindMainContextForSyscall(*ctx, rdram);
+              return result;
+          }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Sync.h:3
+  #pragma once
+  
+  > #include "ps2_syscalls.h"
+  
+  namespace ps2_syscalls
+  {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Sync.h:5
+  
+  #include "ps2_syscalls.h"
+  
+  > namespace ps2_syscalls
+  {
+      void CreateSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+      void DeleteSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:4
+  #include "Common.h"
+  #include "System.h"
+  
+  > namespace ps2_syscalls
+  {
+      void GsSetCrt(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:21
+  
+              gs.smode2 = smode2;
+  
+  >             // Keep CRT1 enabled after the BIOS syscall selects a display mode.
+              if ((gs.pmode & 0x3ull) == 0ull)
+              {
+                  gs.pmode |= 0x1ull;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:326
+          setReturnS32(ctx, loaded.moduleId);
+      }
+  
+  >     void TODO(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime, uint32_t encodedSyscallId)
+      {
+          // a bit more detail mayber reomve old logic, lets get it more raw
+          std::cerr << "[Syscall TODO]"
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:329
+      void TODO(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime, uint32_t encodedSyscallId)
+      {
+          // a bit more detail mayber reomve old logic, lets get it more raw
+  >         std::cerr << "[Syscall TODO]"
+                    << " encoded=0x" << std::hex << encodedSyscallId
+                    << " v1=0x" << getRegU32(ctx, 3)
+                    << " v0=0x" << getRegU32(ctx, 2)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:330
+      {
+          // a bit more detail mayber reomve old logic, lets get it more raw
+          std::cerr << "[Syscall TODO]"
+  >                   << " encoded=0x" << std::hex << encodedSyscallId
+                    << " v1=0x" << getRegU32(ctx, 3)
+                    << " v0=0x" << getRegU32(ctx, 2)
+                    << " a0=0x" << getRegU32(ctx, 4)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:343
+          const uint32_t v0 = getRegU32(ctx, 2);
+          const uint32_t v1 = getRegU32(ctx, 3);
+          const uint32_t caller_ra = getRegU32(ctx, 31);
+  >         uint32_t syscallId = encodedSyscallId;
+          if (syscallId == 0u)
+          {
+              syscallId = v1;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:344
+          const uint32_t v1 = getRegU32(ctx, 3);
+          const uint32_t caller_ra = getRegU32(ctx, 31);
+          uint32_t syscallId = encodedSyscallId;
+  >         if (syscallId == 0u)
+          {
+              syscallId = v1;
+          }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:346
+          uint32_t syscallId = encodedSyscallId;
+          if (syscallId == 0u)
+          {
+  >             syscallId = v1;
+          }
+  
+          std::cerr << "Warning: Unimplemented PS2 syscall called. PC=0x" << std::hex << ctx->pc
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:349
+              syscallId = v1;
+          }
+  
+  >         std::cerr << "Warning: Unimplemented PS2 syscall called. PC=0x" << std::hex << ctx->pc
+                    << ", RA=0x" << caller_ra
+                    << ", Encoded=0x" << encodedSyscallId
+                    << ", v0=0x" << v0
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:351
+  
+          std::cerr << "Warning: Unimplemented PS2 syscall called. PC=0x" << std::hex << ctx->pc
+                    << ", RA=0x" << caller_ra
+  >                   << ", Encoded=0x" << encodedSyscallId
+                    << ", v0=0x" << v0
+                    << ", v1=0x" << v1
+                    << ", Chosen=0x" << syscallId
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:354
+                    << ", Encoded=0x" << encodedSyscallId
+                    << ", v0=0x" << v0
+                    << ", v1=0x" << v1
+  >                   << ", Chosen=0x" << syscallId
+                    << std::dec << std::endl;
+  
+          std::cerr << "  Args: $a0=0x" << std::hex << getRegU32(ctx, 4)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:362
+                    << ", $a2=0x" << getRegU32(ctx, 6)
+                    << ", $a3=0x" << getRegU32(ctx, 7) << std::dec << std::endl;
+  
+  >         // Common syscalls:
+          // 0x04: Exit
+          // 0x06: LoadExecPS2
+          // 0x07: ExecPS2
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:366
+          // 0x04: Exit
+          // 0x06: LoadExecPS2
+          // 0x07: ExecPS2
+  >         if (syscallId == 0x04u)
+          {
+              std::cerr << "  -> Syscall is Exit(), calling ExitThread stub." << std::endl;
+              ExitThread(rdram, ctx, runtime);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:368
+          // 0x07: ExecPS2
+          if (syscallId == 0x04u)
+          {
+  >             std::cerr << "  -> Syscall is Exit(), calling ExitThread stub." << std::endl;
+              ExitThread(rdram, ctx, runtime);
+              return;
+          }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:377
+          static std::unordered_map<uint32_t, uint64_t> s_unknownCounts;
+          {
+              std::lock_guard<std::mutex> lock(s_unknownMutex);
+  >             const uint64_t count = ++s_unknownCounts[syscallId];
+              if (count == 1 || (count % 5000u) == 0u)
+              {
+                  std::cerr << "  -> Unknown syscallId=0x" << std::hex << syscallId
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:380
+              const uint64_t count = ++s_unknownCounts[syscallId];
+              if (count == 1 || (count % 5000u) == 0u)
+              {
+  >                 std::cerr << "  -> Unknown syscallId=0x" << std::hex << syscallId
+                            << " hits=" << std::dec << count << std::endl;
+              }
+          }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:385
+              }
+          }
+  
+  >         // Bootstrap default: avoid hard-failing loops that probe syscall availability.
+          setReturnS32(ctx, 0);
+      }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:389
+          setReturnS32(ctx, 0);
+      }
+  
+  >     bool dispatchSyscallOverride(uint32_t syscallNumber, uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+          uint32_t handler = 0u;
+          if (!runtime || !ctx ||
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:393
+      {
+          uint32_t handler = 0u;
+          if (!runtime || !ctx ||
+  >             !runtime->findEeSyscallOverride(syscallNumber, handler) ||
+              handler == 0u)
+          {
+              return false;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:400
+          }
+  
+          EeScheduler &scheduler = runtime->eeScheduler();
+  >         scheduler.bindMainContextForSyscall(*ctx, rdram);
+          if (scheduler.hasInvocation(GuestInvocationKind::SyscallOverride, syscallNumber))
+          {
+              return false;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:401
+  
+          EeScheduler &scheduler = runtime->eeScheduler();
+          scheduler.bindMainContextForSyscall(*ctx, rdram);
+  >         if (scheduler.hasInvocation(GuestInvocationKind::SyscallOverride, syscallNumber))
+          {
+              return false;
+          }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:413
+          }
+  
+          GuestInvocation invocation{};
+  >         invocation.kind = GuestInvocationKind::SyscallOverride;
+          invocation.tag = syscallNumber;
+          invocation.context = *ctx;
+          invocation.context.pc = handler;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:414
+  
+          GuestInvocation invocation{};
+          invocation.kind = GuestInvocationKind::SyscallOverride;
+  >         invocation.tag = syscallNumber;
+          invocation.context = *ctx;
+          invocation.context.pc = handler;
+          SET_GPR_U32(&invocation.context, 29, scheduler.invocationStackTop());
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:426
+          scheduler.invokeCurrent(std::move(invocation));
+      }
+  
+  >     static bool tryResolveGuestSyscallMirrorAddr(uint32_t syscallIndex, uint32_t &guestAddr)
+      {
+          const int64_t offsetBytes =
+              static_cast<int64_t>(static_cast<int32_t>(syscallIndex)) * static_cast<int64_t>(sizeof(uint32_t));
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:429
+      static bool tryResolveGuestSyscallMirrorAddr(uint32_t syscallIndex, uint32_t &guestAddr)
+      {
+          const int64_t offsetBytes =
+  >             static_cast<int64_t>(static_cast<int32_t>(syscallIndex)) * static_cast<int64_t>(sizeof(uint32_t));
+          const int64_t guestAddr64 = static_cast<int64_t>(kGuestSyscallTablePhysBase) + offsetBytes;
+          if (guestAddr64 < 0 || (guestAddr64 + static_cast<int64_t>(sizeof(uint32_t))) > static_cast<int64_t>(kGuestSyscallMirrorLimit))
+          {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:430
+      {
+          const int64_t offsetBytes =
+              static_cast<int64_t>(static_cast<int32_t>(syscallIndex)) * static_cast<int64_t>(sizeof(uint32_t));
+  >         const int64_t guestAddr64 = static_cast<int64_t>(kGuestSyscallTablePhysBase) + offsetBytes;
+          if (guestAddr64 < 0 || (guestAddr64 + static_cast<int64_t>(sizeof(uint32_t))) > static_cast<int64_t>(kGuestSyscallMirrorLimit))
+          {
+              return false;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:431
+          const int64_t offsetBytes =
+              static_cast<int64_t>(static_cast<int32_t>(syscallIndex)) * static_cast<int64_t>(sizeof(uint32_t));
+          const int64_t guestAddr64 = static_cast<int64_t>(kGuestSyscallTablePhysBase) + offsetBytes;
+  >         if (guestAddr64 < 0 || (guestAddr64 + static_cast<int64_t>(sizeof(uint32_t))) > static_cast<int64_t>(kGuestSyscallMirrorLimit))
+          {
+              return false;
+          }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:462
+          runtime->initializeEeKernelState(rdram);
+      }
+  
+  >     void SetSyscall(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+          const uint32_t syscallIndex = getRegU32(ctx, 4);
+          const uint32_t handler = getRegU32(ctx, 5);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:464
+  
+      void SetSyscall(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         const uint32_t syscallIndex = getRegU32(ctx, 4);
+          const uint32_t handler = getRegU32(ctx, 5);
+          runtime->setEeSyscallOverride(rdram, syscallIndex, handler);
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:466
+      {
+          const uint32_t syscallIndex = getRegU32(ctx, 4);
+          const uint32_t handler = getRegU32(ctx, 5);
+  >         runtime->setEeSyscallOverride(rdram, syscallIndex, handler);
+  
+          setReturnS32(ctx, 0);
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:471
+          setReturnS32(ctx, 0);
+      }
+  
+  >     // 0x3C SetupThread
+      // args: $a0 = gp, $a1 = stack, $a2 = stack_size, $a3 = args, $t0 = root_func
+      void SetupThread(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:480
+          const int32_t stackSizeSigned = static_cast<int32_t>(getRegU32(ctx, 6));
+          const uint32_t currentSp = getRegU32(ctx, 29);
+          EeScheduler &scheduler = runtime->eeScheduler();
+  >         scheduler.bindMainContextForSyscall(*ctx, rdram);
+  
+          if (gp != 0u)
+          {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:543
+          setReturnU32(ctx, sp);
+      }
+  
+  >     // 0x3D SetupHeap: returns heap base/start pointer
+      void SetupHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+          const uint32_t heapBaseRaw = getRegU32(ctx, 4); // $a0
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:941
+      void GetThreadTLS(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+          EeScheduler &ee = runtime->eeScheduler();
+  >         ee.bindMainContextForSyscall(*ctx, rdram);
+          GuestThread *info = ee.currentThread();
+          if (!info)
+          {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:969
+              const uint8_t *srcPtr = getConstMemPtr(rdram, src);
+              if (destPtr && srcPtr)
+              {
+  >                 ps2TraceGuestRangeWrite(rdram, dest, size, "syscallCopy", ctx);
+                  std::memcpy(destPtr, srcPtr, size);
+              }
+          }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:978
+  
+      void GetEntryAddress(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+      {
+  >         const uint32_t syscallNum = getRegU32(ctx, 4);
+  
+          const uint32_t entryAddr = kGuestSyscallTableGuestBase + (syscallNum * 4u);
+          uint32_t handler = 0;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:980
+      {
+          const uint32_t syscallNum = getRegU32(ctx, 4);
+  
+  >         const uint32_t entryAddr = kGuestSyscallTableGuestBase + (syscallNum * 4u);
+          uint32_t handler = 0;
+          if (const uint8_t *ptr = getConstMemPtr(rdram, entryAddr))
+          {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:1001
+          }
+  
+          EeScheduler &ee = runtime->eeScheduler();
+  >         ee.bindMainContextForSyscall(*ctx, rdram);
+          const int tid = ee.currentThreadId();
+          runtime->addEeExitHandler(tid, func, arg);
+  
+MATCH GROUP COUNT: 140
+
+=== MISSING FUNCTION / INTERPRETER FALLBACK ===
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:50
+          case EeThreadStatus::WaitingSuspended:
+              return "WAITSUSP";
+  >         case EeThreadStatus::Dormant:
+              return "DORMANT";
+          default:
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:51
+              return "WAITSUSP";
+          case EeThreadStatus::Dormant:
+  >             return "DORMANT";
+          default:
+              return "?";
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:148
+              {kSifRpcDebugFlagServerDispatch, "server"},
+              {kSifRpcDebugFlagUnhandled, "unhandled"},
+  >             {kSifRpcDebugFlagFallbackCopy, "fallback-copy"},
+              {kSifRpcDebugFlagFallbackZero, "fallback-zero"},
+          };
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:149
+              {kSifRpcDebugFlagUnhandled, "unhandled"},
+              {kSifRpcDebugFlagFallbackCopy, "fallback-copy"},
+  >             {kSifRpcDebugFlagFallbackZero, "fallback-zero"},
+          };
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:720
+                                                    schedulerSnapshot.threads.end(),
+                                                    [](const EeThreadSnapshot &thread)
+  >                                                   { return thread.status != EeThreadStatus::Dormant; });
+                  if (blocked != schedulerSnapshot.threads.end())
+                  {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:1266
+  
+          ImGui::SeparatorText("IOP/RPC tracer");
+  >         ImGui::TextDisabled("Unhandled rows are RPC calls that no HLE service or EE server callback consumed; the runtime used copy/zero fallback.");
+          static bool tracerOnlyUnhandled = true;
+          ImGui::Checkbox("Only unhandled", &tracerOnlyUnhandled);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:1482
+                      ImGui::Text("0x%08X", row.lastReadDataAddr);
+                      ImGui::TableNextColumn();
+  >                     ImGui::TextUnformatted(row.lastUsedOverride ? "override" : (row.lastUsedBackend ? "backend" : "fallback"));
+                      ImGui::TableNextColumn();
+                      ImGui::Text("0x%04X", row.lastButtons);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:487
+  bool PS2IopHostAdapter::hasGuestFunction(uint32_t address) const
+  {
+  >     return m_runtime.hasFunction(address);
+  }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_ipu.cpp:742
+      for (const int16_t *plane : {static_cast<const int16_t *>(luma), static_cast<const int16_t *>(cb), static_cast<const int16_t *>(cr)})
+      {
+  >         const auto *bytes = reinterpret_cast<const uint8_t *>(plane);
+          m_output.insert(m_output.end(), bytes, bytes + (plane == luma ? sizeof(luma) : sizeof(cb)));
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:867
+          m_ipu.readOutputFifo(fifoData);
+          serviceIpuDma();
+  >         return _mm_loadu_si128(reinterpret_cast<const __m128i *>(fifoData));
+      }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:873
+      {
+          inRange(physAddr, sizeof(__m128i), PS2_SCRATCHPAD_SIZE, "read128 scratchpad", address);
+  >         return _mm_loadu_si128(reinterpret_cast<__m128i *>(&m_scratchpad[physAddr]));
+      }
+      if (physAddr < PS2_RAM_SIZE)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:878
+      {
+          inRange(physAddr, sizeof(__m128i), PS2_RAM_SIZE, "read128 rdram", address);
+  >         return _mm_loadu_si128(reinterpret_cast<__m128i *>(&m_rdram[physAddr]));
+      }
+      uint32_t vuOffset = 0;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:885
+      {
+          inRange(vuOffset, sizeof(__m128i), vuLimit, "read128 vu", address);
+  >         return _mm_loadu_si128(reinterpret_cast<const __m128i *>(vuMem + vuOffset));
+      }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:1103
+      {
+          alignas(16) uint8_t fifoData[16];
+  >         _mm_storeu_si128(reinterpret_cast<__m128i *>(fifoData), value);
+          processVIF0Data(fifoData, sizeof(fifoData));
+          return;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:1110
+      {
+          alignas(16) uint8_t fifoData[16];
+  >         _mm_storeu_si128(reinterpret_cast<__m128i *>(fifoData), value);
+          processVIF1Data(fifoData, sizeof(fifoData));
+          return;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:1117
+      {
+          alignas(16) uint8_t fifoData[16];
+  >         _mm_storeu_si128(reinterpret_cast<__m128i *>(fifoData), value);
+          m_ipu.writeInputFifo(fifoData);
+          return;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:1125
+      {
+          inRange(physAddr, sizeof(__m128i), PS2_SCRATCHPAD_SIZE, "write128 scratchpad", address);
+  >         _mm_storeu_si128(reinterpret_cast<__m128i *>(&m_scratchpad[physAddr]), value);
+      }
+      else if (physAddr < PS2_RAM_SIZE)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:1131
+          markModified(address, 16);
+          inRange(physAddr, sizeof(__m128i), PS2_RAM_SIZE, "write128 rdram", address);
+  >         _mm_storeu_si128(reinterpret_cast<__m128i *>(&m_rdram[physAddr]), value);
+      }
+      else
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:1140
+          {
+              inRange(vuOffset, sizeof(__m128i), vuLimit, "write128 vu", address);
+  >             _mm_storeu_si128(reinterpret_cast<__m128i *>(vuMem + vuOffset), value);
+              if (vuMem == m_vu0Code)
+                  markVU0CodeModified();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:143
+          while (file.good())
+          {
+  >             file.read(reinterpret_cast<char *>(buffer.data()), static_cast<std::streamsize>(buffer.size()));
+              const std::streamsize count = file.gcount();
+              for (std::streamsize i = 0; i < count; ++i)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:237
+          state.i = ctx->vu0_i;
+          alignas(16) uint32_t rWords[4]{};
+  >         _mm_storeu_si128(reinterpret_cast<__m128i *>(rWords), _mm_castps_si128(ctx->vu0_r));
+          state.r = 0x3F800000u | (rWords[0] & 0x007FFFFFu);
+          state.pc = ctx->vu0_pc;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:865
+  
+      ElfHeader header{};
+  >     if (!file.read(reinterpret_cast<char *>(&header), sizeof(header)))
+      {
+          std::cerr << "Failed to read ELF header from: " << elfPath << std::endl;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:904
+      }
+  
+  >     m_cpuContext.pc = header.entry;
+      m_debugPc.store(m_cpuContext.pc, std::memory_order_relaxed);
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:905
+  
+      m_cpuContext.pc = header.entry;
+  >     m_debugPc.store(m_cpuContext.pc, std::memory_order_relaxed);
+  
+      uint32_t maxLoadedRdramEnd = kGuestHeapDefaultBase;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:925
+          ProgramHeader ph{};
+          file.seekg(static_cast<std::streamoff>(phOffset), std::ios::beg);
+  >         if (!file.read(reinterpret_cast<char *>(&ph), sizeof(ph)))
+          {
+              std::cerr << "Failed to read ELF program header " << i << std::endl;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:988
+          {
+              file.seekg(static_cast<std::streamoff>(ph.offset), std::ios::beg);
+  >             if (!file.read(reinterpret_cast<char *>(dest), ph.filesz))
+              {
+                  std::cerr << "Failed to read ELF segment " << i << " payload." << std::endl;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1079
+      ps2x::iop::GameIdentity identity;
+      identity.elfName = module.name;
+  >     identity.entryPoint = m_cpuContext.pc;
+      identity.crc32 = elfCrc32;
+      std::string romError;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1092
+      ps2_game_overrides::applyMatching(*this,
+                                        elfPath,
+  >                                       m_cpuContext.pc,
+                                        elfCrc32,
+                                        elfCrc32Valid);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1096
+                                        elfCrc32Valid);
+  
+  >     RUNTIME_LOG("ELF file loaded successfully. Entry point: 0x" << std::hex << m_cpuContext.pc << std::dec);
+      return true;
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1196
+  }
+  
+  > bool PS2Runtime::hasFunction(uint32_t address) const
+  {
+      uint32_t slot = 0u;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1206
+      switch (kind)
+      {
+  >     case PS2Runtime::GuestBranchKind::DirectJump:
+          return "DirectJump";
+      case PS2Runtime::GuestBranchKind::DirectCall:
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1207
+      {
+      case PS2Runtime::GuestBranchKind::DirectJump:
+  >         return "DirectJump";
+      case PS2Runtime::GuestBranchKind::DirectCall:
+          return "DirectCall";
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1210
+      case PS2Runtime::GuestBranchKind::DirectCall:
+          return "DirectCall";
+  >     case PS2Runtime::GuestBranchKind::IndirectJump:
+          return "IndirectJump";
+      case PS2Runtime::GuestBranchKind::IndirectCall:
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1211
+          return "DirectCall";
+      case PS2Runtime::GuestBranchKind::IndirectJump:
+  >         return "IndirectJump";
+      case PS2Runtime::GuestBranchKind::IndirectCall:
+          return "IndirectCall";
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1221
+  }
+  
+  > PS2Runtime::RecompiledFunction PS2Runtime::lookupFunction(uint32_t address)
+  {
+      pushDispatchPc(address);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1245
+      {
+          const uint32_t badPc = ctx->pc;
+  >         runtime->reportMissingFunction(rdram,
+                                         ctx,
+                                         badPc,
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1249
+                                         badPc,
+                                         0u,
+  >                                        PS2Runtime::GuestBranchKind::IndirectJump,
+                                         "dispatch");
+      };
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1271
+  }
+  
+  > void PS2Runtime::reportMissingFunction(uint8_t *rdram,
+                                         R5900Context *ctx,
+                                         uint32_t targetPc,
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1455
+      if (!isCall)
+      {
+  >         if (!hasFunction(targetPc))
+          {
+              reportMissingFunction(rdram, ctx, targetPc, sourcePc, kind, debugName);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1457
+          if (!hasFunction(targetPc))
+          {
+  >             reportMissingFunction(rdram, ctx, targetPc, sourcePc, kind, debugName);
+          }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1464
+      }
+  
+  >     if (!hasFunction(targetPc))
+      {
+          reportMissingFunction(rdram, ctx, targetPc, sourcePc, kind, debugName);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1466
+      if (!hasFunction(targetPc))
+      {
+  >         reportMissingFunction(rdram, ctx, targetPc, sourcePc, kind, debugName);
+  
+          const MissingFunctionPolicy policy = missingFunctionPolicy();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1486
+      }
+  
+  >     RecompiledFunction targetFn = lookupFunction(targetPc);
+      const uint32_t entryPc = ctx->pc;
+      targetFn(rdram, ctx, this);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1734
+      if (base == 0u)
+      {
+  >         const uint32_t fallbackBase = (m_guestHeapSuggestedBase != 0u) ? m_guestHeapSuggestedBase : kGuestHeapDefaultBase;
+          base = alignGuestHeapValue(clampGuestHeapBase(fallbackBase), kGuestHeapDefaultAlignment);
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1735
+      {
+          const uint32_t fallbackBase = (m_guestHeapSuggestedBase != 0u) ? m_guestHeapSuggestedBase : kGuestHeapDefaultBase;
+  >         base = alignGuestHeapValue(clampGuestHeapBase(fallbackBase), kGuestHeapDefaultAlignment);
+      }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2243
+  {
+      alignas(16) uint64_t _parts[2];
+  >     _mm_storeu_si128(reinterpret_cast<__m128i *>(_parts), value);
+      ps2TraceGuestWrite(rdram, vaddr, 16u, _parts[0], _parts[1], "WRITE128", ctx);
+      try
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2331
+                               [resumePc](R5900Context &context)
+                               {
+  >                                  context.pc = resumePc;
+                               });
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2459
+      m_cpuContext.r[5] = _mm_setzero_si128();
+      m_cpuContext.r[29] = _mm_set_epi64x(0, static_cast<int64_t>(PS2_RAM_SIZE - 0x10u));
+  >     m_debugPc.store(m_cpuContext.pc, std::memory_order_relaxed);
+      m_debugRa.store(static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[31], 0)), std::memory_order_relaxed);
+      m_debugSp.store(static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[29], 0)), std::memory_order_relaxed);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2464
+      m_debugGp.store(static_cast<uint32_t>(_mm_extract_epi32(m_cpuContext.r[28], 0)), std::memory_order_relaxed);
+  
+  >     RUNTIME_LOG("Starting execution at address 0x" << std::hex << m_cpuContext.pc << std::dec);
+  
+      // A blank image to use as a framebuffer
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:271
+                          lanes[c] = scalar;
+                      }
+  >                     _mm_storeu_si128(reinterpret_cast<__m128i *>(m_vu0Data + destOff), _mm_loadu_si128(reinterpret_cast<const __m128i *>(lanes)));
+                  }
+              }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:713
+                      }
+  
+  >                     // Unknown compressed format fallback: preserve legacy raw-copy behavior.
+                      if (!handledFormat && decoded && !maskEnable && (vif1_regs.mode == 0u || vif1_regs.mode == 3u))
+                      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:540
+          auto channels = [](uint32_t texel)
+          {
+  >             const uint8x8_t bytes = vreinterpret_u8_u32(vdup_n_u32(texel));
+              return vcvtq_f32_u32(vmovl_u16(vget_low_u16(vmovl_u8(bytes))));
+          };
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:549
+          const float32x4_t top = vfmaq_n_f32(f00, vsubq_f32(f10, f00), fx);
+          const float32x4_t bottom = vfmaq_n_f32(f01, vsubq_f32(f11, f01), fx);
+  >         const uint32x4_t rounded = vreinterpretq_u32_s32(vcvtaq_s32_f32(vfmaq_n_f32(top, vsubq_f32(bottom, top), fy)));
+          const uint8x8_t packed = vmovn_u16(vcombine_u16(vmovn_u32(rounded), vdup_n_u16(0)));
+          return vget_lane_u32(vreinterpret_u32_u8(packed), 0);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:551
+          const uint32x4_t rounded = vreinterpretq_u32_s32(vcvtaq_s32_f32(vfmaq_n_f32(top, vsubq_f32(bottom, top), fy)));
+          const uint8x8_t packed = vmovn_u16(vcombine_u16(vmovn_u32(rounded), vdup_n_u16(0)));
+  >         return vget_lane_u32(vreinterpret_u32_u8(packed), 0);
+  #else
+          uint32_t out = 0u;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:2778
+              const uint32_t word = static_cast<uint32_t>(p[0]) | (static_cast<uint32_t>(p[1]) << 8) |
+                                    (static_cast<uint32_t>(p[2]) << 16) | (static_cast<uint32_t>(p[3]) << 24);
+  >             return vreinterpretq_s32_u32(vmovl_u16(vget_low_u16(vmovl_u8(vreinterpret_u8_u32(vdup_n_u32(word))))));
+          };
+          for (; i + 4 <= n; i += 4)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:2784
+              const uint32x4_t fb = vld1q_u32(frameRaw + i);
+              // Destination channels as WritePixelFor sees them (RGB24 reads alpha as 0x80).
+  >             const int32x4_t dr = vreinterpretq_s32_u32(vandq_u32(fb, vdupq_n_u32(0xFFu)));
+              const int32x4_t dg = vreinterpretq_s32_u32(vandq_u32(vshrq_n_u32(fb, 8), vdupq_n_u32(0xFFu)));
+              const int32x4_t db = vreinterpretq_s32_u32(vandq_u32(vshrq_n_u32(fb, 16), vdupq_n_u32(0xFFu)));
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:2785
+              // Destination channels as WritePixelFor sees them (RGB24 reads alpha as 0x80).
+              const int32x4_t dr = vreinterpretq_s32_u32(vandq_u32(fb, vdupq_n_u32(0xFFu)));
+  >             const int32x4_t dg = vreinterpretq_s32_u32(vandq_u32(vshrq_n_u32(fb, 8), vdupq_n_u32(0xFFu)));
+              const int32x4_t db = vreinterpretq_s32_u32(vandq_u32(vshrq_n_u32(fb, 16), vdupq_n_u32(0xFFu)));
+              const int32x4_t da = fpsm == GS_PSM_CT24 ? vdupq_n_s32(0x80) : vreinterpretq_s32_u32(vshrq_n_u32(fb, 24));
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:2786
+              const int32x4_t dr = vreinterpretq_s32_u32(vandq_u32(fb, vdupq_n_u32(0xFFu)));
+              const int32x4_t dg = vreinterpretq_s32_u32(vandq_u32(vshrq_n_u32(fb, 8), vdupq_n_u32(0xFFu)));
+  >             const int32x4_t db = vreinterpretq_s32_u32(vandq_u32(vshrq_n_u32(fb, 16), vdupq_n_u32(0xFFu)));
+              const int32x4_t da = fpsm == GS_PSM_CT24 ? vdupq_n_s32(0x80) : vreinterpretq_s32_u32(vshrq_n_u32(fb, 24));
+              const int32x4_t sr = widen(span.r + i);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:2787
+              const int32x4_t dg = vreinterpretq_s32_u32(vandq_u32(vshrq_n_u32(fb, 8), vdupq_n_u32(0xFFu)));
+              const int32x4_t db = vreinterpretq_s32_u32(vandq_u32(vshrq_n_u32(fb, 16), vdupq_n_u32(0xFFu)));
+  >             const int32x4_t da = fpsm == GS_PSM_CT24 ? vdupq_n_s32(0x80) : vreinterpretq_s32_u32(vshrq_n_u32(fb, 24));
+              const int32x4_t sr = widen(span.r + i);
+              const int32x4_t sg = widen(span.g + i);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:2804
+              const int32x4_t bg = channel(sg, dg);
+              const int32x4_t bb = channel(sb, db);
+  >             const uint16x4_t r16 = vmovn_u32(vreinterpretq_u32_s32(br));
+              const uint16x4_t g16 = vmovn_u32(vreinterpretq_u32_s32(bg));
+              const uint16x4_t b16 = vmovn_u32(vreinterpretq_u32_s32(bb));
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:2805
+              const int32x4_t bb = channel(sb, db);
+              const uint16x4_t r16 = vmovn_u32(vreinterpretq_u32_s32(br));
+  >             const uint16x4_t g16 = vmovn_u32(vreinterpretq_u32_s32(bg));
+              const uint16x4_t b16 = vmovn_u32(vreinterpretq_u32_s32(bb));
+              uint16_t rr[4], gg[4], bbv[4];
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_cpu_backend.cpp:2806
+              const uint16x4_t r16 = vmovn_u32(vreinterpretq_u32_s32(br));
+              const uint16x4_t g16 = vmovn_u32(vreinterpretq_u32_s32(bg));
+  >             const uint16x4_t b16 = vmovn_u32(vreinterpretq_u32_s32(bb));
+              uint16_t rr[4], gg[4], bbv[4];
+              vst1_u16(rr, r16);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:22
+      constexpr int KE_UNKNOWN_SEMID = -408;
+      constexpr int KE_UNKNOWN_EVFID = -409;
+  >     constexpr int KE_DORMANT = -413;
+      constexpr int KE_NOT_DORMANT = -414;
+      constexpr int KE_NOT_SUSPEND = -415;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:23
+      constexpr int KE_UNKNOWN_EVFID = -409;
+      constexpr int KE_DORMANT = -413;
+  >     constexpr int KE_NOT_DORMANT = -414;
+      constexpr int KE_NOT_SUSPEND = -415;
+      constexpr int KE_NOT_WAIT = -416;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:141
+      main.id = kMainThreadId;
+      main.context = mainContext;
+  >     main.entry = mainContext.pc;
+      // $sp is live execution state, not the stable initial stack descriptor
+      // returned by ReferThreadStatus. SetupThread records that metadata.
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:233
+          publishDebugContext(context);
+  
+  >         if (context.pc == 0u)
+          {
+              if (!running->invocations.empty())
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:256
+                        << context.branch_pc << " ra=0x" << getRegU32(&context, 31) << std::dec
+                        << "; treating as thread exit" << std::endl;
+  >             makeDormant(*running);
+              m_currentThreadId = 0;
+              copyMainContextToRuntime();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:276
+          }
+  
+  >         if (!m_runtime.hasFunction(context.pc))
+          {
+              if (!running->invocations.empty())
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:280
+              if (!running->invocations.empty())
+              {
+  >                 context.pc = 0u;
+              }
+              else
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:284
+              else
+              {
+  >                 m_runtime.reportMissingFunction(m_rdram,
+                                                  &context,
+                                                  context.pc,
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:286
+                  m_runtime.reportMissingFunction(m_rdram,
+                                                  &context,
+  >                                                 context.pc,
+                                                  context.pc,
+                                                  PS2Runtime::GuestBranchKind::DirectJump,
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:287
+                                                  &context,
+                                                  context.pc,
+  >                                                 context.pc,
+                                                  PS2Runtime::GuestBranchKind::DirectJump,
+                                                  "EE scheduler");
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:288
+                                                  context.pc,
+                                                  context.pc,
+  >                                                 PS2Runtime::GuestBranchKind::DirectJump,
+                                                  "EE scheduler");
+                  makeDormant(*running);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:290
+                                                  PS2Runtime::GuestBranchKind::DirectJump,
+                                                  "EE scheduler");
+  >                 makeDormant(*running);
+                  m_currentThreadId = 0;
+              }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:295
+              continue;
+          }
+  >         PS2Runtime::RecompiledFunction function = m_runtime.lookupFunction(context.pc);
+  
+          if (checkpointDue(kGuestDispatchCycles))
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:475
+      thread.initialPriority = params.priority;
+      thread.currentPriority = params.priority;
+  >     thread.status = EeThreadStatus::Dormant;
+      m_threads.emplace(id, std::move(thread));
+      publishSnapshot();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:494
+          return KE_UNKNOWN_THID;
+      }
+  >     if (it->second.status != EeThreadStatus::Dormant)
+      {
+          return KE_NOT_DORMANT;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:496
+      if (it->second.status != EeThreadStatus::Dormant)
+      {
+  >         return KE_NOT_DORMANT;
+      }
+      if (it->second.ownsStack)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:515
+          return KE_UNKNOWN_THID;
+      }
+  >     if (target->status != EeThreadStatus::Dormant)
+      {
+          return KE_NOT_DORMANT;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:517
+      if (target->status != EeThreadStatus::Dormant)
+      {
+  >         return KE_NOT_DORMANT;
+      }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:521
+  
+      target->context = R5900Context{};
+  >     target->context.pc = target->entry;
+      target->arg = arg;
+      target->suspendCount = 0;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:546
+      const int id = exiting->id;
+      const uint32_t ownedStack = deleteThreadRecord && exiting->ownsStack ? exiting->stack : 0u;
+  >     makeDormant(*exiting);
+      m_currentThreadId = 0;
+      if (deleteThreadRecord && id != kMainThreadId)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:573
+          return KE_UNKNOWN_THID;
+      }
+  >     if (target->status == EeThreadStatus::Dormant)
+      {
+          return KE_DORMANT;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:575
+      if (target->status == EeThreadStatus::Dormant)
+      {
+  >         return KE_DORMANT;
+      }
+      if (target->ownsStack)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:582
+          target->ownsStack = false;
+      }
+  >     makeDormant(*target);
+      (void)interruptSafe;
+      publishSnapshot();
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:600
+          return KE_UNKNOWN_THID;
+      }
+  >     if (target->status == EeThreadStatus::Dormant)
+      {
+          return KE_DORMANT;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:602
+      if (target->status == EeThreadStatus::Dormant)
+      {
+  >         return KE_DORMANT;
+      }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:623
+      case EeThreadStatus::Suspended:
+          break;
+  >     case EeThreadStatus::Dormant:
+          break;
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:694
+          return KE_UNKNOWN_THID;
+      }
+  >     if (target->status == EeThreadStatus::Dormant)
+      {
+          return KE_DORMANT;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:696
+      if (target->status == EeThreadStatus::Dormant)
+      {
+  >         return KE_DORMANT;
+      }
+      if ((target->status == EeThreadStatus::Waiting || target->status == EeThreadStatus::WaitingSuspended) &&
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1095
+  {
+      assertExecutor();
+  >     if (handler == 0u || !m_runtime.hasFunction(handler))
+      {
+          return KE_ERROR;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1297
+          (void)id;
+          if (handler.enabled && handler.cause == cause && handler.handler != 0u &&
+  >             m_runtime.hasFunction(handler.handler))
+          {
+              matching.push_back(handler);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1308
+          GuestInvocation invocation{};
+          invocation.kind = GuestInvocationKind::Interrupt;
+  >         invocation.context.pc = handler.handler;
+          SET_GPR_U32(&invocation.context, 4, cause);
+          SET_GPR_U32(&invocation.context, 5, handler.argument);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1531
+          snapshot.id = id;
+          const R5900Context &context = item.activeContext();
+  >         snapshot.pc = context.pc;
+          snapshot.ra = getRegU32(&context, 31);
+          snapshot.sp = getRegU32(&context, 29);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1601
+      for (auto &[id, candidate] : m_threads)
+      {
+  >         if (id < 0 && candidate.status == EeThreadStatus::Dormant && candidate.invocations.empty())
+          {
+              return candidate;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1611
+      dispatcher.initialPriority = 0;
+      dispatcher.currentPriority = 0;
+  >     dispatcher.status = EeThreadStatus::Dormant;
+      return m_threads.emplace(dispatcher.id, std::move(dispatcher)).first->second;
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1669
+  }
+  
+  > void EeScheduler::makeDormant(GuestThread &item)
+  {
+      removeReady(item);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1673
+      removeReady(item);
+      removeFromWaitObject(item);
+  >     item.status = EeThreadStatus::Dormant;
+      item.wait = {};
+      item.resumeCompletion = {};
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1926
+          m_vsyncTickAddress = 0u;
+          completeVSync(m_vsyncTick);
+  >         if (m_gsVSyncCallback != 0u && m_runtime.hasFunction(m_gsVSyncCallback))
+          {
+              GuestInvocation invocation{};
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1930
+              GuestInvocation invocation{};
+              invocation.kind = GuestInvocationKind::GsCallback;
+  >             invocation.context.pc = m_gsVSyncCallback;
+              SET_GPR_U32(&invocation.context, 4, static_cast<uint32_t>(m_vsyncTick));
+              SET_GPR_U32(&invocation.context, 28, m_gsVSyncCallbackGp);
+MATCH GROUP COUNT: 100
+
+=== CANDIDATE CSV ADDRESS / SYMBOL SEARCH ===
+CSV: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_FUNCTION_CANDIDATES_20261124_220601.csv
+ROW: FlushCache 0038b0e0 0038b0e0 0038b0ef 4 16 false false
+CSV: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_FUNCTION_CANDIDATES_20261124_220601.csv
+ROW: iFlushCache 0038b110 0038b110 0038b11f 4 16 false false
+CSV: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_FUNCTION_CANDIDATES_20261124_220601.csv
+ROW: _InitSys 00392fa0 00392fa0 00392fdb 15 60 false false
+CSV: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_MULTIFUNCTION_CANDIDATES_20261124_224040.csv
+ROW: FlushCache 0038b0e0 4 0038b0e0 0038b0ec 92 BRANCH_OR_JUMP
+CSV: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_MULTIFUNCTION_CANDIDATES_20261124_224040.csv
+ROW: iFlushCache 0038b110 4 0038b110 0038b11c 92 BRANCH_OR_JUMP
+CANDIDATE ROW HITS: 5
+
+=== GENERATED SOURCE COVERAGE FOR STARTUP TARGETS ===
+MATCH GROUP COUNT: 0
+
+=== CURRENT MARK OF KRI REGISTRATION / RUNNER STARTUP ===
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:16
+  extern void Update__9Shimmer2Df(uint8_t*, R5900Context*, PS2Runtime*);
+  
+  > bool RegisterMarkOfKriFunctions(PS2Runtime& runtime)
+  {
+      bool registered = true;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:19
+  {
+      bool registered = true;
+  >     registered = runtime.registerFunction(0x001159B8u, &resetGrabMode__6Camera) && registered;
+      registered = runtime.registerFunction(0x001D20C8u, &getAttackZoneRange__9NpcMasterP3NpcPfT2) && registered;
+      registered = runtime.registerFunction(0x001F0078u, &doorReset__FP6Mscobj) && registered;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:20
+      bool registered = true;
+      registered = runtime.registerFunction(0x001159B8u, &resetGrabMode__6Camera) && registered;
+  >     registered = runtime.registerFunction(0x001D20C8u, &getAttackZoneRange__9NpcMasterP3NpcPfT2) && registered;
+      registered = runtime.registerFunction(0x001F0078u, &doorReset__FP6Mscobj) && registered;
+      registered = runtime.registerFunction(0x002DC180u, &Init__10gsBackdropi) && registered;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:21
+      registered = runtime.registerFunction(0x001159B8u, &resetGrabMode__6Camera) && registered;
+      registered = runtime.registerFunction(0x001D20C8u, &getAttackZoneRange__9NpcMasterP3NpcPfT2) && registered;
+  >     registered = runtime.registerFunction(0x001F0078u, &doorReset__FP6Mscobj) && registered;
+      registered = runtime.registerFunction(0x002DC180u, &Init__10gsBackdropi) && registered;
+      registered = runtime.registerFunction(0x003208A0u, &Load__7envGridPv) && registered;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:22
+      registered = runtime.registerFunction(0x001D20C8u, &getAttackZoneRange__9NpcMasterP3NpcPfT2) && registered;
+      registered = runtime.registerFunction(0x001F0078u, &doorReset__FP6Mscobj) && registered;
+  >     registered = runtime.registerFunction(0x002DC180u, &Init__10gsBackdropi) && registered;
+      registered = runtime.registerFunction(0x003208A0u, &Load__7envGridPv) && registered;
+      registered = runtime.registerFunction(0x0021ACD0u, &addSpirit__6PlayerP9ObjHandle) && registered;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:23
+      registered = runtime.registerFunction(0x001F0078u, &doorReset__FP6Mscobj) && registered;
+      registered = runtime.registerFunction(0x002DC180u, &Init__10gsBackdropi) && registered;
+  >     registered = runtime.registerFunction(0x003208A0u, &Load__7envGridPv) && registered;
+      registered = runtime.registerFunction(0x0021ACD0u, &addSpirit__6PlayerP9ObjHandle) && registered;
+      registered = runtime.registerFunction(0x0034DA50u, &GetVoDataSizeInMacroBlocks__8movVoBuf) && registered;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:24
+      registered = runtime.registerFunction(0x002DC180u, &Init__10gsBackdropi) && registered;
+      registered = runtime.registerFunction(0x003208A0u, &Load__7envGridPv) && registered;
+  >     registered = runtime.registerFunction(0x0021ACD0u, &addSpirit__6PlayerP9ObjHandle) && registered;
+      registered = runtime.registerFunction(0x0034DA50u, &GetVoDataSizeInMacroBlocks__8movVoBuf) && registered;
+      registered = runtime.registerFunction(0x002BDCB8u, &SetViewArea__14DisplayEnvInfoUiUi) && registered;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:25
+      registered = runtime.registerFunction(0x003208A0u, &Load__7envGridPv) && registered;
+      registered = runtime.registerFunction(0x0021ACD0u, &addSpirit__6PlayerP9ObjHandle) && registered;
+  >     registered = runtime.registerFunction(0x0034DA50u, &GetVoDataSizeInMacroBlocks__8movVoBuf) && registered;
+      registered = runtime.registerFunction(0x002BDCB8u, &SetViewArea__14DisplayEnvInfoUiUi) && registered;
+      registered = runtime.registerFunction(0x001161A0u, &allowLockMode__6Camerab) && registered;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:26
+      registered = runtime.registerFunction(0x0021ACD0u, &addSpirit__6PlayerP9ObjHandle) && registered;
+      registered = runtime.registerFunction(0x0034DA50u, &GetVoDataSizeInMacroBlocks__8movVoBuf) && registered;
+  >     registered = runtime.registerFunction(0x002BDCB8u, &SetViewArea__14DisplayEnvInfoUiUi) && registered;
+      registered = runtime.registerFunction(0x001161A0u, &allowLockMode__6Camerab) && registered;
+      registered = runtime.registerFunction(0x0019C8C0u, &anmcmd_exitHeader__Fv) && registered;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:27
+      registered = runtime.registerFunction(0x0034DA50u, &GetVoDataSizeInMacroBlocks__8movVoBuf) && registered;
+      registered = runtime.registerFunction(0x002BDCB8u, &SetViewArea__14DisplayEnvInfoUiUi) && registered;
+  >     registered = runtime.registerFunction(0x001161A0u, &allowLockMode__6Camerab) && registered;
+      registered = runtime.registerFunction(0x0019C8C0u, &anmcmd_exitHeader__Fv) && registered;
+      registered = runtime.registerFunction(0x002D6850u, &Update__9Shimmer2Df) && registered;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:28
+      registered = runtime.registerFunction(0x002BDCB8u, &SetViewArea__14DisplayEnvInfoUiUi) && registered;
+      registered = runtime.registerFunction(0x001161A0u, &allowLockMode__6Camerab) && registered;
+  >     registered = runtime.registerFunction(0x0019C8C0u, &anmcmd_exitHeader__Fv) && registered;
+      registered = runtime.registerFunction(0x002D6850u, &Update__9Shimmer2Df) && registered;
+  
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:29
+      registered = runtime.registerFunction(0x001161A0u, &allowLockMode__6Camerab) && registered;
+      registered = runtime.registerFunction(0x0019C8C0u, &anmcmd_exitHeader__Fv) && registered;
+  >     registered = runtime.registerFunction(0x002D6850u, &Update__9Shimmer2Df) && registered;
+  
+      bool verified = true;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:32
+  
+      bool verified = true;
+  >     verified = runtime.hasFunction(0x001159B8u) && verified;
+      verified = runtime.hasFunction(0x001D20C8u) && verified;
+      verified = runtime.hasFunction(0x001F0078u) && verified;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:33
+      bool verified = true;
+      verified = runtime.hasFunction(0x001159B8u) && verified;
+  >     verified = runtime.hasFunction(0x001D20C8u) && verified;
+      verified = runtime.hasFunction(0x001F0078u) && verified;
+      verified = runtime.hasFunction(0x002DC180u) && verified;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:34
+      verified = runtime.hasFunction(0x001159B8u) && verified;
+      verified = runtime.hasFunction(0x001D20C8u) && verified;
+  >     verified = runtime.hasFunction(0x001F0078u) && verified;
+      verified = runtime.hasFunction(0x002DC180u) && verified;
+      verified = runtime.hasFunction(0x003208A0u) && verified;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:35
+      verified = runtime.hasFunction(0x001D20C8u) && verified;
+      verified = runtime.hasFunction(0x001F0078u) && verified;
+  >     verified = runtime.hasFunction(0x002DC180u) && verified;
+      verified = runtime.hasFunction(0x003208A0u) && verified;
+      verified = runtime.hasFunction(0x0021ACD0u) && verified;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:36
+      verified = runtime.hasFunction(0x001F0078u) && verified;
+      verified = runtime.hasFunction(0x002DC180u) && verified;
+  >     verified = runtime.hasFunction(0x003208A0u) && verified;
+      verified = runtime.hasFunction(0x0021ACD0u) && verified;
+      verified = runtime.hasFunction(0x0034DA50u) && verified;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:37
+      verified = runtime.hasFunction(0x002DC180u) && verified;
+      verified = runtime.hasFunction(0x003208A0u) && verified;
+  >     verified = runtime.hasFunction(0x0021ACD0u) && verified;
+      verified = runtime.hasFunction(0x0034DA50u) && verified;
+      verified = runtime.hasFunction(0x002BDCB8u) && verified;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:38
+      verified = runtime.hasFunction(0x003208A0u) && verified;
+      verified = runtime.hasFunction(0x0021ACD0u) && verified;
+  >     verified = runtime.hasFunction(0x0034DA50u) && verified;
+      verified = runtime.hasFunction(0x002BDCB8u) && verified;
+      verified = runtime.hasFunction(0x001161A0u) && verified;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:39
+      verified = runtime.hasFunction(0x0021ACD0u) && verified;
+      verified = runtime.hasFunction(0x0034DA50u) && verified;
+  >     verified = runtime.hasFunction(0x002BDCB8u) && verified;
+      verified = runtime.hasFunction(0x001161A0u) && verified;
+      verified = runtime.hasFunction(0x0019C8C0u) && verified;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:40
+      verified = runtime.hasFunction(0x0034DA50u) && verified;
+      verified = runtime.hasFunction(0x002BDCB8u) && verified;
+  >     verified = runtime.hasFunction(0x001161A0u) && verified;
+      verified = runtime.hasFunction(0x0019C8C0u) && verified;
+      verified = runtime.hasFunction(0x002D6850u) && verified;
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:41
+      verified = runtime.hasFunction(0x002BDCB8u) && verified;
+      verified = runtime.hasFunction(0x001161A0u) && verified;
+  >     verified = runtime.hasFunction(0x0019C8C0u) && verified;
+      verified = runtime.hasFunction(0x002D6850u) && verified;
+  
+FILE: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:42
+      verified = runtime.hasFunction(0x001161A0u) && verified;
+      verified = runtime.hasFunction(0x0019C8C0u) && verified;
+  >     verified = runtime.hasFunction(0x002D6850u) && verified;
+  
+      return registered && verified;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\main.cpp:26
+  #endif
+  
+  > bool RegisterMarkOfKriFunctions(PS2Runtime& runtime);
+  
+  namespace
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\main.cpp:225
+          }
+  
+  >         if (!runtime.loadELF(filePathStr))
+          {
+              std::cerr << "Failed to load ELF file: " << filePathStr << std::endl;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\main.cpp:231
+          }
+  
+  >         if (!RegisterMarkOfKriFunctions(runtime))
+          {
+              std::cerr << "Failed to register Mark of Kri recompiled functions" << std::endl;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\main.cpp:237
+          }
+  
+  >         runtime.run();
+  
+  #ifdef _DEBUG
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:4
+  #include "ps2_log.h"
+  #include "ps2_stubs.h"
+  > #include "ps2_syscalls.h"
+  #include "game_overrides.h"
+  #include "ps2_runtime_macros.h"
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:68
+      uint16_t machine;
+      uint32_t version2;
+  >     uint32_t entry;
+      uint32_t phoff;
+      uint32_t shoff;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:844
+  }
+  
+  > bool PS2Runtime::loadELF(const std::string &elfPath)
+  {
+      configureIoPathsFromElf(elfPath);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:891
+      if (header.phnum != 0u && header.phentsize < sizeof(ProgramHeader))
+      {
+  >         std::cerr << "Unsupported ELF program-header entry size: " << header.phentsize << std::endl;
+          return false;
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:904
+      }
+  
+  >     m_cpuContext.pc = header.entry;
+      m_debugPc.store(m_cpuContext.pc, std::memory_order_relaxed);
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1079
+      ps2x::iop::GameIdentity identity;
+      identity.elfName = module.name;
+  >     identity.entryPoint = m_cpuContext.pc;
+      identity.crc32 = elfCrc32;
+      std::string romError;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1096
+                                        elfCrc32Valid);
+  
+  >     RUNTIME_LOG("ELF file loaded successfully. Entry point: 0x" << std::hex << m_cpuContext.pc << std::dec);
+      return true;
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1191
+  }
+  
+  > bool PS2Runtime::registerFunction(uint32_t address, RecompiledFunction func)
+  {
+      return replaceFunction(address, func);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1196
+  }
+  
+  > bool PS2Runtime::hasFunction(uint32_t address) const
+  {
+      uint32_t slot = 0u;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1455
+      if (!isCall)
+      {
+  >         if (!hasFunction(targetPc))
+          {
+              reportMissingFunction(rdram, ctx, targetPc, sourcePc, kind, debugName);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1464
+      }
+  
+  >     if (!hasFunction(targetPc))
+      {
+          reportMissingFunction(rdram, ctx, targetPc, sourcePc, kind, debugName);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1487
+  
+      RecompiledFunction targetFn = lookupFunction(targetPc);
+  >     const uint32_t entryPc = ctx->pc;
+      targetFn(rdram, ctx, this);
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1495
+      }
+  
+  >     if (ctx->pc == entryPc)
+      {
+          ctx->pc = fallthroughPc;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1544
+  }
+  
+  > void PS2Runtime::handleSyscall(uint8_t *rdram, R5900Context *ctx)
+  {
+      handleSyscall(rdram, ctx, 0);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1546
+  void PS2Runtime::handleSyscall(uint8_t *rdram, R5900Context *ctx)
+  {
+  >     handleSyscall(rdram, ctx, 0);
+  }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1549
+  }
+  
+  > void PS2Runtime::handleSyscall(uint8_t *rdram, R5900Context *ctx, uint32_t encodedSyscallId)
+  {
+      if (ctx->in_delay_slot)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1553
+      if (ctx->in_delay_slot)
+      {
+  >         throw std::runtime_error("Attempted to execute a syscall inside a branch delay slot! "
+                                   "This breaks the atomic basic block model and is structurally unsupported by the emulator.");
+      }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1557
+      }
+  
+  >     const uint32_t syscallId = (encodedSyscallId != 0u)
+                                     ? encodedSyscallId
+                                     : getRegU32(ctx, 3); // $v1 / $3 is the EE kernel syscall number
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1558
+  
+      const uint32_t syscallId = (encodedSyscallId != 0u)
+  >                                    ? encodedSyscallId
+                                     : getRegU32(ctx, 3); // $v1 / $3 is the EE kernel syscall number
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1559
+      const uint32_t syscallId = (encodedSyscallId != 0u)
+                                     ? encodedSyscallId
+  >                                    : getRegU32(ctx, 3); // $v1 / $3 is the EE kernel syscall number
+  
+      if (ps2_syscalls::dispatchNumericSyscall(syscallId, rdram, ctx, this))
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1561
+                                     : getRegU32(ctx, 3); // $v1 / $3 is the EE kernel syscall number
+  
+  >     if (ps2_syscalls::dispatchNumericSyscall(syscallId, rdram, ctx, this))
+      {
+          return;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1567
+  
+      // God help you
+  >     ps2_syscalls::TODO(rdram, ctx, this, encodedSyscallId);
+  }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1579
+      for (uint32_t cause : m_memory.consumeCompletedDmacCauses())
+      {
+  >         ps2_syscalls::dispatchDmacHandlersForCause(rdram, this, cause);
+      }
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1602
+      }
+  
+  >     // Preserve low ASID bits in EntryHi.
+      ctx->cop0_entryhi = (ctx->cop0_entryhi & 0x00000FFFu) | (vpn & 0xFFFFF000u);
+      ctx->cop0_entrylo0 = (ctx->cop0_entrylo0 & ~0x03FFFFC2u) |
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1603
+  
+      // Preserve low ASID bits in EntryHi.
+  >     ctx->cop0_entryhi = (ctx->cop0_entryhi & 0x00000FFFu) | (vpn & 0xFFFFF000u);
+      ctx->cop0_entrylo0 = (ctx->cop0_entrylo0 & ~0x03FFFFC2u) |
+                           ((pfn & 0x000FFFFFu) << 6) |
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1604
+      // Preserve low ASID bits in EntryHi.
+      ctx->cop0_entryhi = (ctx->cop0_entryhi & 0x00000FFFu) | (vpn & 0xFFFFF000u);
+  >     ctx->cop0_entrylo0 = (ctx->cop0_entrylo0 & ~0x03FFFFC2u) |
+                           ((pfn & 0x000FFFFFu) << 6) |
+                           (valid ? 0x2u : 0u);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1613
+  {
+      const uint32_t index = ctx->cop0_index & 0x3Fu;
+  >     const uint32_t vpn = ctx->cop0_entryhi & 0xFFFFF000u;
+      const uint32_t pfn = (ctx->cop0_entrylo0 >> 6) & 0x000FFFFFu;
+      const uint32_t mask = ctx->cop0_pagemask & 0x01FFE000u;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1614
+      const uint32_t index = ctx->cop0_index & 0x3Fu;
+      const uint32_t vpn = ctx->cop0_entryhi & 0xFFFFF000u;
+  >     const uint32_t pfn = (ctx->cop0_entrylo0 >> 6) & 0x000FFFFFu;
+      const uint32_t mask = ctx->cop0_pagemask & 0x01FFE000u;
+      const bool valid = (ctx->cop0_entrylo0 & 0x2u) != 0u;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1616
+      const uint32_t pfn = (ctx->cop0_entrylo0 >> 6) & 0x000FFFFFu;
+      const uint32_t mask = ctx->cop0_pagemask & 0x01FFE000u;
+  >     const bool valid = (ctx->cop0_entrylo0 & 0x2u) != 0u;
+  
+      if (!m_memory.tlbWrite(index, vpn, pfn, mask, valid))
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1626
+  void PS2Runtime::handleTLBWR(uint8_t *rdram, R5900Context *ctx)
+  {
+  >     const uint32_t entryCount = static_cast<uint32_t>(m_memory.tlbEntryCount());
+      if (entryCount == 0)
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1627
+  {
+      const uint32_t entryCount = static_cast<uint32_t>(m_memory.tlbEntryCount());
+  >     if (entryCount == 0)
+      {
+          raiseCop0Exception(ctx, EXCEPTION_RESERVED_INSTRUCTION);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1633
+      }
+  
+  >     const uint32_t wired = std::min(ctx->cop0_wired, entryCount - 1);
+      uint32_t random = ctx->cop0_random % entryCount;
+      if (random < wired)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1634
+  
+      const uint32_t wired = std::min(ctx->cop0_wired, entryCount - 1);
+  >     uint32_t random = ctx->cop0_random % entryCount;
+      if (random < wired)
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1640
+      }
+  
+  >     const uint32_t vpn = ctx->cop0_entryhi & 0xFFFFF000u;
+      const uint32_t pfn = (ctx->cop0_entrylo0 >> 6) & 0x000FFFFFu;
+      const uint32_t mask = ctx->cop0_pagemask & 0x01FFE000u;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1641
+  
+      const uint32_t vpn = ctx->cop0_entryhi & 0xFFFFF000u;
+  >     const uint32_t pfn = (ctx->cop0_entrylo0 >> 6) & 0x000FFFFFu;
+      const uint32_t mask = ctx->cop0_pagemask & 0x01FFE000u;
+      const bool valid = (ctx->cop0_entrylo0 & 0x2u) != 0u;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1643
+      const uint32_t pfn = (ctx->cop0_entrylo0 >> 6) & 0x000FFFFFu;
+      const uint32_t mask = ctx->cop0_pagemask & 0x01FFE000u;
+  >     const bool valid = (ctx->cop0_entrylo0 & 0x2u) != 0u;
+  
+      if (!m_memory.tlbWrite(random, vpn, pfn, mask, valid))
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1653
+      // Keep COP0 bookkeeping in sync with the selected slot.
+      ctx->cop0_index = (ctx->cop0_index & ~0x3Fu) | (random & 0x3Fu);
+  >     ctx->cop0_random = (random <= wired) ? (entryCount - 1) : (random - 1);
+  }
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:1658
+  void PS2Runtime::handleTLBP(uint8_t *rdram, R5900Context *ctx)
+  {
+  >     const int32_t index = m_memory.tlbProbe(ctx->cop0_entryhi & 0xFFFFF000u);
+      if (index >= 0)
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2360
+  }
+  
+  > bool PS2Runtime::findEeSyscallOverride(uint32_t syscallNumber, uint32_t &handler) const
+  {
+      std::lock_guard lock(m_eeKernelStateMutex);
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2363
+  {
+      std::lock_guard lock(m_eeKernelStateMutex);
+  >     const auto it = m_eeSyscallOverrides.find(syscallNumber);
+      if (it == m_eeSyscallOverrides.end())
+      {
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2364
+      std::lock_guard lock(m_eeKernelStateMutex);
+      const auto it = m_eeSyscallOverrides.find(syscallNumber);
+  >     if (it == m_eeSyscallOverrides.end())
+      {
+          return false;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2372
+  }
+  
+  > void PS2Runtime::setEeSyscallOverride(uint8_t *rdram, uint32_t syscallNumber, uint32_t handler)
+  {
+      constexpr uint32_t kTableBase = 0x80011F80u & 0x1FFFFFFFu;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2376
+      constexpr uint32_t kTableBase = 0x80011F80u & 0x1FFFFFFFu;
+      constexpr uint32_t kMirrorLimit = 0x00080000u;
+  >     const int64_t offset = static_cast<int64_t>(static_cast<int32_t>(syscallNumber)) * 4;
+      const int64_t address = static_cast<int64_t>(kTableBase) + offset;
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2382
+      if (handler == 0u)
+      {
+  >         m_eeSyscallOverrides.erase(syscallNumber);
+      }
+      else
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2386
+      else
+      {
+  >         m_eeSyscallOverrides[syscallNumber] = handler;
+      }
+      if (!rdram || address < 0 || address + 4 > kMirrorLimit)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2396
+      if (handler == 0u)
+      {
+  >         m_eeSyscallMirrorAddresses.erase(guestAddress);
+      }
+      else
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2400
+      else
+      {
+  >         m_eeSyscallMirrorAddresses.insert(guestAddress);
+      }
+  }
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2416
+  
+      std::lock_guard lock(m_eeKernelStateMutex);
+  >     for (const uint32_t address : m_eeSyscallMirrorAddresses)
+      {
+          const uint32_t zero = 0u;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2421
+          std::memcpy(rdram + address, &zero, sizeof(zero));
+      }
+  >     m_eeSyscallMirrorAddresses.clear();
+      const uint32_t high = kTableGuestBase >> 16;
+      const uint32_t low = kTableGuestBase & 0xFFFFu;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2426
+      std::memcpy(rdram + kProbeBase, &high, sizeof(high));
+      std::memcpy(rdram + kProbeBase + 8u, &low, sizeof(low));
+  >     m_eeSyscallMirrorAddresses.insert(kProbeBase);
+      m_eeSyscallMirrorAddresses.insert(kProbeBase + 8u);
+  
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2427
+      std::memcpy(rdram + kProbeBase + 8u, &low, sizeof(low));
+      m_eeSyscallMirrorAddresses.insert(kProbeBase);
+  >     m_eeSyscallMirrorAddresses.insert(kProbeBase + 8u);
+  
+      for (const auto &[syscallNumber, handler] : m_eeSyscallOverrides)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2429
+      m_eeSyscallMirrorAddresses.insert(kProbeBase + 8u);
+  
+  >     for (const auto &[syscallNumber, handler] : m_eeSyscallOverrides)
+      {
+          const int64_t offset = static_cast<int64_t>(static_cast<int32_t>(syscallNumber)) * 4;
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2431
+      for (const auto &[syscallNumber, handler] : m_eeSyscallOverrides)
+      {
+  >         const int64_t offset = static_cast<int64_t>(static_cast<int32_t>(syscallNumber)) * 4;
+          const int64_t address = static_cast<int64_t>(kTableBase) + offset;
+          if (address < 0 || address + 4 > kMirrorLimit)
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2439
+          const uint32_t guestAddress = static_cast<uint32_t>(address);
+          std::memcpy(rdram + guestAddress, &handler, sizeof(handler));
+  >         m_eeSyscallMirrorAddresses.insert(guestAddress);
+      }
+  }
+MATCH GROUP COUNT: 81
+
+=== CURRENT RUNNER BUILD ARTIFACTS ===
+PRESENT size=9453056 modified=11/26/2026 9:34:42 PM path=D:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ps2EntryRunner.exe
+PRESENT size=19639640 modified=11/26/2026 9:34:33 PM path=D:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ps2xIOP\ps2_iop.lib
+PRESENT size=77688554 modified=11/26/2026 9:34:40 PM path=D:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ps2_runtime.lib
+PRESENT size=232724 modified=11/26/2026 9:32:48 PM path=D:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\build.ninja
+
+=== RESULT ===
+Read-only audit completed. No source files modified.
+No build or executable was launched.
+Actual elapsed: 1.17 seconds
+Estimated execution: 3–30 seconds
+PowerShell session remains open.
