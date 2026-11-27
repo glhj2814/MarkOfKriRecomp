@@ -1,0 +1,1663 @@
+MARK OF KRI — ECOFF IMPLEMENTATION PREFLIGHT
+Generated: 2026-11-27 16:41:27
+Estimated runtime: 10–30 seconds
+Mode: READ-ONLY
+
+1. REPOSITORY ROOTS
+Repository: D:\Games\MarkOfKriRecomp
+PS2Recomp: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+Parser source: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp
+
+2. DISCOVERED HEADER LOCATIONS
+elf_parser.h candidates: 1
+HEADER CANDIDATE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\elf_parser.h
+Selected parser header: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\elf_parser.h
+types.h candidates: 2
+TYPE CANDIDATE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h
+TYPE CANDIDATE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\types.h
+Selected types header: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h
+
+3. SOURCE FILE IDENTITY
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp
+SIZE: 109475
+SHA256: 567AB55EBB037C212B0F0F1487F418B5BC4D79E718F0A036E030E47B60890113
+
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\elf_parser.h
+SIZE: 2395
+SHA256: 1A44D56A26F13D5456B6E37C44B111872BEC4C80AA183198E92503DA47785043
+
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h
+SIZE: 6238
+SHA256: F33027CC08DE16084EF27CA1B2593E4736A0734031CD619B62E4981A774041D3
+
+4. TEST SOURCE DISCOVERY
+First-party files scanned: 354
+Test source candidates: 1
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp
+SIZE: 114720
+SHA256: C897D6EA1A4DCDA8C43D320048767FCD6B3419A3EA23521CCD14145120DC82B3
+
+5. PARSER FUNCTION LOCATIONS
+loadDebugFunctions: line 2779
+extractFunctions: line 1989
+ScanFunctionStartsFallback: line 2853
+HasDwarfSections: line 2785
+Parser total lines: 2879
+
+----- LOAD DEBUG FUNCTIONS IMPLEMENTATION -----
+ 2754:                     reloc.type = type;
+ 2755:                     reloc.addend = static_cast<int32_t>(addend);
+ 2756: 
+ 2757:                     if (symbol < symbols.get_symbols_num())
+ 2758:                     {
+ 2759:                         std::string symName;
+ 2760:                         ELFIO::Elf64_Addr symValue = 0;
+ 2761:                         ELFIO::Elf_Xword symSize = 0;
+ 2762:                         unsigned char symBind = 0;
+ 2763:                         unsigned char symType = 0;
+ 2764:                         ELFIO::Elf_Half symSectionIndex = 0;
+ 2765:                         unsigned char symOther = 0;
+ 2766:                         if (symbols.get_symbol(symbol, symName, symValue, symSize,
+ 2767:                                                symBind, symType, symSectionIndex, symOther))
+ 2768:                         {
+ 2769:                             reloc.symbolName = symName;
+ 2770:                         }
+ 2771:                     }
+ 2772: 
+ 2773:                     m_relocations.push_back(reloc);
+ 2774:                 }
+ 2775:             }
+ 2776:         }
+ 2777:     }
+ 2778: 
+ 2779:     void ElfParser::loadDebugFunctions()
+ 2780:     {
+ 2781:         m_extraFunctions.clear();
+ 2782:         m_hasLoadedGhidraMap = false;
+ 2783:         m_ghidraMapStarts.clear();
+ 2784: 
+ 2785:         if (HasDwarfSections(*m_elf))
+ 2786:         {
+ 2787: #if defined(_WIN32)
+ 2788:             const int fileDescriptor = _open(m_filePath.c_str(), _O_RDONLY | _O_BINARY);
+ 2789: #else
+ 2790:             const int fileDescriptor = ::open(m_filePath.c_str(), O_RDONLY);
+ 2791: #endif
+ 2792:             if (fileDescriptor >= 0)
+ 2793:             {
+ 2794:                 Dwarf_Debug dbg = nullptr;
+ 2795:                 Dwarf_Error error = nullptr;
+ 2796: 
+ 2797:                 const int initResult = dwarf_init_b(fileDescriptor, DW_GROUPNUMBER_BASE, nullptr, nullptr, &dbg, &error);
+ 2798:                 if (initResult == DW_DLV_OK)
+ 2799:                 {
+ 2800:                     for (;;)
+ 2801:                     {
+ 2802:                         Dwarf_Unsigned cuHeaderLength = 0;
+ 2803:                         Dwarf_Half versionStamp = 0;
+ 2804:                         Dwarf_Unsigned abbrevOffset = 0;
+ 2805:                         Dwarf_Half addressSize = 0;
+ 2806:                         Dwarf_Half lengthSize = 0;
+ 2807:                         Dwarf_Half extensionSize = 0;
+ 2808:                         Dwarf_Sig8 typeSignature = {0};
+ 2809:                         Dwarf_Unsigned typeOffset = 0;
+ 2810:                         Dwarf_Unsigned nextCuHeader = 0;
+ 2811:                         Dwarf_Half headerCuType = 0;
+ 2812:                         Dwarf_Die cuDie = nullptr;
+ 2813: 
+ 2814:                         const int cuResult = dwarf_next_cu_header_e(
+ 2815:                             dbg,
+ 2816:                             TRUE,
+ 2817:                             &cuDie,
+ 2818:                             &cuHeaderLength,
+ 2819:                             &versionStamp,
+ 2820:                             &abbrevOffset,
+ 2821:                             &addressSize,
+ 2822:                             &lengthSize,
+ 2823:                             &extensionSize,
+ 2824:                             &typeSignature,
+ 2825:                             &typeOffset,
+ 2826:                             &nextCuHeader,
+ 2827:                             &headerCuType,
+ 2828:                             &error);
+ 2829: 
+ 2830:                         if (cuResult != DW_DLV_OK)
+ 2831:                         {
+ 2832:                             break;
+ 2833:                         }
+ 2834: 
+ 2835:                         if (cuDie != nullptr)
+ 2836:                         {
+ 2837:                             VisitDieTreeAndCollectFunctions(dbg, cuDie, this, m_extraFunctions);
+ 2838:                         }
+ 2839:                     }
+ 2840: 
+ 2841:                     dwarf_finish(dbg);
+ 2842:                 }
+ 2843: 
+ 2844: #if defined(_WIN32)
+ 2845:                 _close(fileDescriptor);
+ 2846: #else
+ 2847:                 ::close(fileDescriptor);
+ 2848: #endif
+ 2849:             }
+ 2850:         }
+ 2851: 
+ 2852:         // DWARF in retail ELFs is often partial.
+ 2853:         ScanFunctionStartsFallback(this, m_extraFunctions);
+ 2854: 
+ 2855:         std::sort(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 2856:                   [](const Function &a, const Function &b)
+ 2857:                   {
+ 2858:                       if (a.start != b.start)
+ 2859:                       {
+ 2860:                         return a.start < b.start;
+ 2861:                       }
+ 2862: 
+ 2863:                       const bool aAuto = IsAutoGeneratedName(a.name);
+ 2864:                       const bool bAuto = IsAutoGeneratedName(b.name);
+ 2865:                       if (aAuto != bAuto)
+ 2866:                       {
+ 2867:                         return !aAuto;
+ 2868:                       }
+ 2869: 
+ 2870:                       return a.end > b.end;
+ 2871:                   });
+ 2872: 
+ 2873:         m_extraFunctions.erase(
+ 2874:             std::unique(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 2875:                         [](const Function &a, const Function &b)
+ 2876:                         { return a.start == b.start; }),
+ 2877:             m_extraFunctions.end());
+ 2878:     }
+ 2879: }
+
+----- EXTRACT FUNCTIONS IMPLEMENTATION -----
+ 1974:         // but their words use the VU ISA rather than the EE/R5900 ISA. Keep the
+ 1975:         // bytes in the parsed ELF while excluding these ABI-defined section
+ 1976:         // names from EE function discovery and recompilation.
+ 1977:         const std::string name = section->get_name();
+ 1978:         const bool vuText = name == ".vutext" || name.rfind(".vutext.", 0) == 0;
+ 1979:         const bool dvpOverlay = name == ".DVP.overlay" || name.rfind(".DVP.overlay.", 0) == 0;
+ 1980:         return !vuText && !dvpOverlay;
+ 1981:     }
+ 1982: 
+ 1983:     bool ElfParser::isDataSection(const ELFIO::section *section) const
+ 1984:     {
+ 1985:         return (section->get_flags() & ELFIO::SHF_ALLOC) != 0 &&
+ 1986:                !(section->get_flags() & ELFIO::SHF_EXECINSTR);
+ 1987:     }
+ 1988: 
+ 1989:     std::vector<Function> ElfParser::extractFunctions() const
+ 1990:     {
+ 1991:         std::vector<Function> functions;
+ 1992:         functions.reserve(m_symbols.size() + m_extraFunctions.size());
+ 1993: 
+ 1994:         std::unordered_map<uint32_t, size_t> indexByStart;
+ 1995:         indexByStart.reserve(functions.capacity());
+ 1996: 
+ 1997:         // Symbol table sizes are authoritative wwhen exist
+ 1998:         std::unordered_map<uint32_t, uint32_t> authoritativeEndByStart;
+ 1999:         authoritativeEndByStart.reserve(m_symbols.size());
+ 2000:         for (const auto &symbol : m_symbols)
+ 2001:         {
+ 2002:             if (!symbol.isFunction || symbol.isImported || symbol.size == 0)
+ 2003:             {
+ 2004:                 continue;
+ 2005:             }
+ 2006: 
+ 2007:             if (m_hasLoadedGhidraMap &&
+ 2008:                 IsAutoGeneratedName(symbol.name) &&
+ 2009:                 !m_ghidraMapStarts.contains(symbol.address))
+ 2010:             {
+ 2011:                 continue;
+ 2012:             }
+ 2013: 
+ 2014:             const Section *functionSection = FindFunctionSectionByAddress(m_sections, symbol.address);
+ 2015:             if (!functionSection)
+ 2016:             {
+ 2017:                 continue;
+ 2018:             }
+ 2019: 
+ 2020:             const uint64_t symbolEnd64 = static_cast<uint64_t>(symbol.address) + static_cast<uint64_t>(symbol.size);
+ 2021:             uint32_t symbolEnd = (symbolEnd64 > 0xFFFFFFFFull)
+ 2022:                                      ? 0xFFFFFFFFu
+ 2023:                                      : static_cast<uint32_t>(symbolEnd64);
+ 2024:             symbolEnd = ClampFunctionEndToSection(functionSection, symbol.address, symbolEnd);
+ 2025:             if (symbolEnd <= symbol.address)
+ 2026:             {
+ 2027:                 continue;
+ 2028:             }
+ 2029: 
+ 2030:             auto inserted = authoritativeEndByStart.emplace(symbol.address, symbolEnd);
+ 2031:             if (!inserted.second && symbolEnd > inserted.first->second)
+ 2032:             {
+ 2033:                 inserted.first->second = symbolEnd;
+ 2034:             }
+ 2035:         }
+ 2036: 
+ 2037:         // Named debug/map functions with explicit bounds are authoritative too.
+ 2038:         for (const auto &extra : m_extraFunctions)
+ 2039:         {
+ 2040:             if (extra.start == 0 || extra.end <= extra.start || extra.name.empty() || IsAutoGeneratedName(extra.name))
+ 2041:             {
+ 2042:                 continue;
+ 2043:             }
+ 2044: 
+ 2045:             const Section *functionSection = FindFunctionSectionByAddress(m_sections, extra.start);
+ 2046:             if (!functionSection)
+ 2047:             {
+ 2048:                 continue;
+ 2049:             }
+ 2050: 
+ 2051:             const uint32_t clampedEnd = ClampFunctionEndToSection(functionSection, extra.start, extra.end);
+ 2052:             if (clampedEnd <= extra.start)
+ 2053:             {
+ 2054:                 continue;
+ 2055:             }
+ 2056: 
+ 2057:             auto inserted = authoritativeEndByStart.emplace(extra.start, clampedEnd);
+ 2058:             if (!inserted.second && clampedEnd > inserted.first->second)
+ 2059:             {
+ 2060:                 inserted.first->second = clampedEnd;
+ 2061:             }
+ 2062:         }
+ 2063: 
+ 2064:         std::vector<std::pair<uint32_t, uint32_t>> authoritativeRanges;
+ 2065:         authoritativeRanges.reserve(authoritativeEndByStart.size());
+ 2066:         for (const auto &entry : authoritativeEndByStart)
+ 2067:         {
+ 2068:             authoritativeRanges.emplace_back(entry.first, entry.second);
+ 2069:         }
+ 2070:         std::sort(authoritativeRanges.begin(), authoritativeRanges.end(),
+ 2071:                   [](const std::pair<uint32_t, uint32_t> &a, const std::pair<uint32_t, uint32_t> &b)
+ 2072:                   { return a.first < b.first; });
+ 2073: 
+ 2074:         auto isInsideAuthoritativeRange = [&](uint32_t startAddress)
+ 2075:         {
+ 2076:             if (authoritativeRanges.empty())
+ 2077:             {
+ 2078:                 return false;
+ 2079:             }
+ 2080: 
+ 2081:             auto it = std::upper_bound(
+ 2082:                 authoritativeRanges.begin(),
+ 2083:                 authoritativeRanges.end(),
+ 2084:                 startAddress,
+
+6. PARSER HEADER DECLARATIONS
+----- SEARCH: PARSER HEADER MEMBERS AND METHODS -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\elf_parser.h:22: explicit ElfParser(const std::string &filePath);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\elf_parser.h:23: ~ElfParser();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\elf_parser.h:28: std::vector<Function> extractFunctions() const;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\elf_parser.h:51: std::vector<Function> m_extraFunctions;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\elf_parser.h:59: void loadDebugFunctions();
+
+----- PARSER HEADER TOP -----
+    1: #ifndef PS2RECOMP_ELF_PARSER_H
+    2: #define PS2RECOMP_ELF_PARSER_H
+    3: 
+    4: #include <cstdint>
+    5: #include <elfio/elfio.hpp>
+    6: #include <string>
+    7: #include <vector>
+    8: #include <memory>
+    9: #include <unordered_set>
+   10: 
+   11: namespace ps2recomp
+   12: {
+   13:         struct Relocation;
+   14:         struct Section;
+   15:         struct Function;
+   16:         struct Symbol;
+   17:         class RecompilerReporter;
+   18: 
+   19:         class ElfParser
+   20:         {
+   21:         public:
+   22:                 explicit ElfParser(const std::string &filePath);
+   23:                 ~ElfParser();
+   24: 
+   25:                 bool parse();
+   26: 
+   27:                 bool loadGhidraFunctionMap(const std::string &mapPath);
+   28:                 std::vector<Function> extractFunctions() const;
+   29:                 std::vector<Function> extractExtraFunctions() const;
+   30:                 std::vector<Symbol> extractSymbols();
+   31:                 std::vector<Section> getSections();
+   32:                 std::vector<Relocation> getRelocations();
+   33: 
+   34:                 // Helper methods
+   35:                 bool isValidAddress(uint32_t address) const;
+   36:                 uint32_t readWord(uint32_t address) const;
+   37:                 uint8_t *getSectionData(const std::string &sectionName) const;
+   38:                 uint32_t getSectionAddress(const std::string &sectionName) const;
+   39:                 uint32_t getSectionSize(const std::string &sectionName) const;
+   40:                 uint32_t getEntryPoint() const;
+   41:                 void setReporter(RecompilerReporter *reporter);
+   42:                 void debugAddress(uint32_t address) const;
+   43: 
+   44:         private:
+   45:                 std::string m_filePath;
+   46:                 std::unique_ptr<ELFIO::elfio> m_elf;
+   47: 
+   48:                 std::vector<Section> m_sections;
+   49:                 std::vector<Symbol> m_symbols;
+   50:                 std::vector<Relocation> m_relocations;
+   51:                 std::vector<Function> m_extraFunctions;
+   52:                 bool m_hasLoadedGhidraMap = false;
+   53:                 RecompilerReporter *m_reporter = nullptr;
+   54:                 std::unordered_set<uint32_t> m_ghidraMapStarts;
+   55: 
+   56:                 void loadSections();
+   57:                 void loadSymbols();
+   58:                 void loadRelocations();
+   59:                 void loadDebugFunctions();
+   60:                 bool isExecutableSection(const ELFIO::section *section) const;
+   61:                 bool isDataSection(const ELFIO::section *section) const;
+   62:         };
+   63: 
+   64: } // namespace ps2recomp
+   65: 
+   66: #endif // PS2RECOMP_ELF_PARSER_H
+
+----- SEARCH: FUNCTION AND SYMBOL STRUCTURES -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h:90: struct Function
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h:93: uint32_t start;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h:94: uint32_t end;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h:98: bool isRecompiled = false;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h:99: bool isStub = false;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h:100: bool isSkipped = false;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h:104: struct Symbol
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h:157: uint32_t startAddress;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h:158: uint32_t endAddress;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h:168: struct FunctionCall
+
+7. EXISTING TEST FIXTURES AND ASSERTIONS
+----- SEARCH: TEST FIXTURE PATTERNS: ps2_recompiler_tests.cpp -----
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:8: #include <elfio/elfio.hpp>
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:67: ELFIO::elfio writer;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:68: writer.create(ELFIO::ELFCLASS32, ELFIO::ELFDATA2LSB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:69: writer.set_os_abi(ELFIO::ELFOSABI_NONE);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:70: writer.set_type(ELFIO::ET_EXEC);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:71: writer.set_machine(ELFIO::EM_MIPS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:74: ELFIO::section *text = writer.sections.add(".text");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:75: text->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:76: text->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_EXECINSTR);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:82: ELFIO::section *data = writer.sections.add(".data");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:83: data->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:84: data->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_WRITE);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:90: ELFIO::section *strtab = writer.sections.add(".strtab");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:91: strtab->set_type(ELFIO::SHT_STRTAB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:94: ELFIO::section *symtab = writer.sections.add(".symtab");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:95: symtab->set_type(ELFIO::SHT_SYMTAB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:99: symtab->set_entry_size(writer.get_default_entry_size(ELFIO::SHT_SYMTAB));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:101: ELFIO::symbol_section_accessor symbols(writer, symtab);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:102: ELFIO::string_section_accessor strings(strtab);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:103: symbols.add_symbol(strings, "", 0, 0, ELFIO::STB_LOCAL, ELFIO::STT_NOTYPE, 0, ELFIO::SHN_UNDEF);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:105: ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, text->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:107: ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, data->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:109: ELFIO::segment *textSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:110: textSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:111: textSegment->set_flags(ELFIO::PF_R | ELFIO::PF_X);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:113: textSegment->add_section_index(text->get_index(), text->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:115: ELFIO::segment *dataSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:116: dataSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:117: dataSegment->set_flags(ELFIO::PF_R | ELFIO::PF_W);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:119: dataSegment->add_section_index(data->get_index(), data->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:126: ELFIO::elfio writer;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:127: writer.create(ELFIO::ELFCLASS32, ELFIO::ELFDATA2LSB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:128: writer.set_os_abi(ELFIO::ELFOSABI_NONE);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:129: writer.set_type(ELFIO::ET_EXEC);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:130: writer.set_machine(ELFIO::EM_MIPS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:133: ELFIO::section *text = writer.sections.add(".text");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:134: text->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:135: text->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_EXECINSTR);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:148: static_cast<ELFIO::Elf_Word>(textWords.size() * sizeof(uint32_t)));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:150: ELFIO::segment *textSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:151: textSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:152: textSegment->set_flags(ELFIO::PF_R | ELFIO::PF_X);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:154: textSegment->add_section_index(text->get_index(), text->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:161: ELFIO::elfio writer;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:162: writer.create(ELFIO::ELFCLASS32, ELFIO::ELFDATA2LSB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:163: writer.set_os_abi(ELFIO::ELFOSABI_NONE);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:164: writer.set_type(ELFIO::ET_EXEC);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:165: writer.set_machine(ELFIO::EM_MIPS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:168: ELFIO::section *text = writer.sections.add(".text");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:169: text->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:170: text->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_EXECINSTR);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:220: static_cast<ELFIO::Elf_Word>(textWords.size() * sizeof(uint32_t)));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:222: ELFIO::section *rodata = writer.sections.add(".rodata");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:223: rodata->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:224: rodata->set_flags(ELFIO::SHF_ALLOC);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:243: static_cast<ELFIO::Elf_Word>(rodataWords.size() * sizeof(uint32_t)));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:245: ELFIO::segment *textSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:246: textSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:247: textSegment->set_flags(ELFIO::PF_R | ELFIO::PF_X);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:249: textSegment->add_section_index(text->get_index(), text->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:251: ELFIO::segment *rodataSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:252: rodataSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:253: rodataSegment->set_flags(ELFIO::PF_R);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:255: rodataSegment->add_section_index(rodata->get_index(), rodata->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:262: ELFIO::elfio writer;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:263: writer.create(ELFIO::ELFCLASS32, ELFIO::ELFDATA2LSB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:264: writer.set_os_abi(ELFIO::ELFOSABI_NONE);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:265: writer.set_type(ELFIO::ET_EXEC);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:266: writer.set_machine(ELFIO::EM_MIPS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:269: ELFIO::section *text = writer.sections.add(".text");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:270: text->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:271: text->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_EXECINSTR);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:277: ELFIO::section *vuText = writer.sections.add(".vutext");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:278: vuText->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:279: vuText->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_EXECINSTR);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:285: ELFIO::section *strtab = writer.sections.add(".strtab");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:286: strtab->set_type(ELFIO::SHT_STRTAB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:289: ELFIO::section *symtab = writer.sections.add(".symtab");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:290: symtab->set_type(ELFIO::SHT_SYMTAB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:294: symtab->set_entry_size(writer.get_default_entry_size(ELFIO::SHT_SYMTAB));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:296: ELFIO::symbol_section_accessor symbols(writer, symtab);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:297: ELFIO::string_section_accessor strings(strtab);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:298: symbols.add_symbol(strings, "", 0, 0, ELFIO::STB_LOCAL, ELFIO::STT_NOTYPE, 0, ELFIO::SHN_UNDEF);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:300: ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, text->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:302: ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, vuText->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:304: ELFIO::segment *textSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:305: textSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:306: textSegment->set_flags(ELFIO::PF_R | ELFIO::PF_X);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:308: textSegment->add_section_index(text->get_index(), text->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:310: ELFIO::segment *vuSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:311: vuSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:312: vuSegment->set_flags(ELFIO::PF_R | ELFIO::PF_X);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:314: vuSegment->add_section_index(vuText->get_index(), vuText->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:321: ELFIO::elfio writer;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:322: writer.create(ELFIO::ELFCLASS32, ELFIO::ELFDATA2LSB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:323: writer.set_os_abi(ELFIO::ELFOSABI_NONE);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:324: writer.set_type(ELFIO::ET_EXEC);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:325: writer.set_machine(ELFIO::EM_MIPS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:328: ELFIO::section *text = writer.sections.add(".text");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:329: text->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:330: text->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_EXECINSTR);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:341: static_cast<ELFIO::Elf_Word>(textWords.size() * sizeof(uint32_t)));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:343: ELFIO::section *strtab = writer.sections.add(".strtab");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:344: strtab->set_type(ELFIO::SHT_STRTAB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:347: ELFIO::section *symtab = writer.sections.add(".symtab");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:348: symtab->set_type(ELFIO::SHT_SYMTAB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:352: symtab->set_entry_size(writer.get_default_entry_size(ELFIO::SHT_SYMTAB));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:354: ELFIO::symbol_section_accessor symbols(writer, symtab);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:355: ELFIO::string_section_accessor strings(strtab);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:357: ELFIO::STB_LOCAL, ELFIO::STT_NOTYPE, 0, ELFIO::SHN_UNDEF);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:359: ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, text->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:361: ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, text->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:363: ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, text->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:365: ELFIO::segment *textSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:366: textSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:367: textSegment->set_flags(ELFIO::PF_R | ELFIO::PF_X);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:369: textSegment->add_section_index(text->get_index(), text->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:376: ELFIO::elfio writer;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:377: writer.create(ELFIO::ELFCLASS32, ELFIO::ELFDATA2LSB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:378: writer.set_os_abi(ELFIO::ELFOSABI_NONE);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:379: writer.set_type(ELFIO::ET_EXEC);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:380: writer.set_machine(ELFIO::EM_MIPS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:383: ELFIO::section *text = writer.sections.add(".text");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:384: text->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:385: text->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_EXECINSTR);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:400: static_cast<ELFIO::Elf_Word>(textWords.size() * sizeof(uint32_t)));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:402: ELFIO::section *strtab = writer.sections.add(".strtab");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:403: strtab->set_type(ELFIO::SHT_STRTAB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:406: ELFIO::section *symtab = writer.sections.add(".symtab");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:407: symtab->set_type(ELFIO::SHT_SYMTAB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:411: symtab->set_entry_size(writer.get_default_entry_size(ELFIO::SHT_SYMTAB));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:413: ELFIO::symbol_section_accessor symbols(writer, symtab);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:414: ELFIO::string_section_accessor strings(strtab);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:416: ELFIO::STB_LOCAL, ELFIO::STT_NOTYPE, 0, ELFIO::SHN_UNDEF);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:418: ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, text->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:420: ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, text->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:422: ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, text->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:424: ELFIO::segment *textSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:425: textSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:426: textSegment->set_flags(ELFIO::PF_R | ELFIO::PF_X);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:428: textSegment->add_section_index(text->get_index(), text->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:435: ELFIO::elfio writer;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:436: writer.create(ELFIO::ELFCLASS32, ELFIO::ELFDATA2LSB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:437: writer.set_os_abi(ELFIO::ELFOSABI_NONE);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:438: writer.set_type(ELFIO::ET_EXEC);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:439: writer.set_machine(ELFIO::EM_MIPS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:442: ELFIO::section *text = writer.sections.add(".text");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:443: text->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:444: text->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_EXECINSTR);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:459: static_cast<ELFIO::Elf_Word>(textWords.size() * sizeof(uint32_t)));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:461: ELFIO::section *strtab = writer.sections.add(".strtab");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:462: strtab->set_type(ELFIO::SHT_STRTAB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:465: ELFIO::section *symtab = writer.sections.add(".symtab");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:466: symtab->set_type(ELFIO::SHT_SYMTAB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:470: symtab->set_entry_size(writer.get_default_entry_size(ELFIO::SHT_SYMTAB));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:472: ELFIO::symbol_section_accessor symbols(writer, symtab);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:473: ELFIO::string_section_accessor strings(strtab);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:474: symbols.add_symbol(strings, "", 0, 0, ELFIO::STB_LOCAL, ELFIO::STT_NOTYPE, 0, ELFIO::SHN_UNDEF);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:475: symbols.add_symbol(strings, "wrapper", 0x00100000u, 8u, ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, text->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:476: symbols.add_symbol(strings, "slot_entry", 0x00100008u, 12u, ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, text->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:477: symbols.add_symbol(strings, "target", 0x00100018u, 8u, ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, text->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:479: ELFIO::segment *textSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:480: textSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:481: textSegment->set_flags(ELFIO::PF_R | ELFIO::PF_X);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:483: textSegment->add_section_index(text->get_index(), text->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:491: ELFIO::elfio writer;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:492: writer.create(ELFIO::ELFCLASS32, ELFIO::ELFDATA2LSB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:493: writer.set_os_abi(ELFIO::ELFOSABI_NONE);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:494: writer.set_type(ELFIO::ET_EXEC);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:495: writer.set_machine(ELFIO::EM_MIPS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:498: ELFIO::section *text = writer.sections.add(".text");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:499: text->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:500: text->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_EXECINSTR);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:754: static_cast<ELFIO::Elf_Word>(textWords.size() * sizeof(uint32_t)));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:756: ELFIO::section *rodata = writer.sections.add(".rodata");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:757: rodata->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:758: rodata->set_flags(ELFIO::SHF_ALLOC);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:778: static_cast<ELFIO::Elf_Word>(tableWords.size() * sizeof(uint32_t)));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:780: ELFIO::section *data = writer.sections.add(".data");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:781: data->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:782: data->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_WRITE);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:798: static_cast<ELFIO::Elf_Word>(singletonCallbacks.size() * sizeof(uint32_t)));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:816: ELFIO::section *debugAbbrev = writer.sections.add(".debug_abbrev");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:817: debugAbbrev->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:820: static_cast<ELFIO::Elf_Word>(abbrevBytes.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:859: ELFIO::section *debugInfo = writer.sections.add(".debug_info");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:860: debugInfo->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:863: static_cast<ELFIO::Elf_Word>(infoBytes.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:866: ELFIO::segment *textSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:867: textSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:868: textSegment->set_flags(ELFIO::PF_R | ELFIO::PF_X);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:870: textSegment->add_section_index(text->get_index(), text->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:872: ELFIO::segment *dataSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:873: dataSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:874: dataSegment->set_flags(ELFIO::PF_R);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:876: dataSegment->add_section_index(rodata->get_index(), rodata->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:877: dataSegment->add_section_index(data->get_index(), data->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:886: ELFIO::elfio writer;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:887: writer.create(ELFIO::ELFCLASS32, ELFIO::ELFDATA2LSB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:888: writer.set_os_abi(ELFIO::ELFOSABI_NONE);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:889: writer.set_type(ELFIO::ET_EXEC);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:890: writer.set_machine(ELFIO::EM_MIPS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:893: ELFIO::section *text = writer.sections.add(".text");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:894: text->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:895: text->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_EXECINSTR);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:903: static_cast<ELFIO::Elf_Word>(textWords.size() * sizeof(uint32_t)));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:905: ELFIO::section *ctors = writer.sections.add(".ctors");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:906: ctors->set_type(ELFIO::SHT_PROGBITS);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:907: ctors->set_flags(ELFIO::SHF_ALLOC | ELFIO::SHF_WRITE);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:911: static_cast<ELFIO::Elf_Word>(sizeof(initializerTarget)));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:913: ELFIO::section *strtab = writer.sections.add(".strtab");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:914: strtab->set_type(ELFIO::SHT_STRTAB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:917: ELFIO::section *symtab = writer.sections.add(".symtab");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:918: symtab->set_type(ELFIO::SHT_SYMTAB);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:922: symtab->set_entry_size(writer.get_default_entry_size(ELFIO::SHT_SYMTAB));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:924: ELFIO::symbol_section_accessor symbols(writer, symtab);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:925: ELFIO::string_section_accessor strings(strtab);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:927: ELFIO::STB_LOCAL, ELFIO::STT_NOTYPE, 0, ELFIO::SHN_UNDEF);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:929: ELFIO::STB_GLOBAL, ELFIO::STT_FUNC, 0, text->get_index());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:931: ELFIO::segment *textSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:932: textSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:933: textSegment->set_flags(ELFIO::PF_R | ELFIO::PF_X);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:935: textSegment->add_section_index(text->get_index(), text->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:937: ELFIO::segment *dataSegment = writer.segments.add();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:938: dataSegment->set_type(ELFIO::PT_LOAD);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:939: dataSegment->set_flags(ELFIO::PF_R | ELFIO::PF_W);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:941: dataSegment->add_section_index(ctors->get_index(), ctors->get_addr_align());
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:991: tc.Run("game helpers are not classified as runtime stubs", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:992: t.IsFalse(ps2_runtime_calls::isStubName("Pad_init"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:994: t.IsFalse(ps2_runtime_calls::isStubName("Pad_set"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:996: t.IsFalse(ps2_runtime_calls::isStubName("pdInitPeripheral"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:998: t.IsFalse(ps2_runtime_calls::isStubName("pdGetPeripheral"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1000: t.IsFalse(ps2_runtime_calls::isStubName("InitThread"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1002: t.IsFalse(ps2_runtime_calls::isStubName("syFree"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1004: t.IsFalse(ps2_runtime_calls::isStubName("syMallocInit"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1006: t.IsFalse(ps2_runtime_calls::isStubName("syHwInit"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1008: t.IsFalse(ps2_runtime_calls::isStubName("syHwInit2"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1010: t.IsFalse(ps2_runtime_calls::isStubName("syRtcInit"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1012: t.IsFalse(ps2_runtime_calls::isStubName("sdDrvInit"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1014: t.IsFalse(ps2_runtime_calls::isStubName("sdSndStopAll"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1016: t.IsFalse(ps2_runtime_calls::isStubName("sdSysFinish"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1018: t.IsFalse(ps2_runtime_calls::isStubName("iopGetArea"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1020: t.IsTrue(ps2_runtime_calls::isStubName("builtin_set_imask"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1022: t.IsTrue(ps2_runtime_calls::isStubName("getpid"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1024: t.IsTrue(ps2_runtime_calls::isStubName("scePadRead"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1028: tc.Run("additional entries split at nearest discovered boundary", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1057: t.Equals(discovered, static_cast<size_t>(3),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1078: t.Equals(entry1008->end, 0x100Cu,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1080: t.Equals(entry100C->end, 0x1018u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1085: t.Equals(entry2008->end, 0x2010u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1092: t.IsTrue(decoded1008It != decodedFunctions.end(), "decoded slice for 0x1008 should exist");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1093: t.IsTrue(decoded100CIt != decodedFunctions.end(), "decoded slice for 0x100C should exist");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1094: t.IsTrue(decoded2008It != decodedFunctions.end(), "decoded slice for 0x2008 should exist");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1097: t.Equals(decoded1008It->second.size(), static_cast<size_t>(1),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1101: t.Equals(decoded1008It->second.front().address, 0x1008u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1107: t.Equals(decoded100CIt->second.front().address, 0x100Cu,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1112: t.Equals(decoded2008It->second.size(), static_cast<size_t>(2),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1116: t.Equals(decoded2008It->second.front().address, 0x2008u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1122: tc.Run("entry reslice trims earlier entries after late discovery", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1151: t.Equals(resliced, static_cast<size_t>(1),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1170: t.Equals(entry1008->end, 0x100Cu,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1175: t.Equals(entry100C->end, 0x1018u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1181: t.IsTrue(decoded1008It != decodedFunctions.end(), "decoded slice for 0x1008 should exist");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1182: t.IsTrue(decoded100CIt != decodedFunctions.end(), "decoded slice for 0x100C should exist");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1185: t.Equals(decoded1008It->second.size(), static_cast<size_t>(1),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1189: t.Equals(decoded1008It->second.front().address, 0x1008u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1195: t.Equals(decoded100CIt->second.size(), static_cast<size_t>(3),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1200: tc.Run("same-function JAL return addresses get entry wrappers but targets stay labels", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1223: t.Equals(discovered, static_cast<size_t>(1),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1236: t.IsTrue(hasResumeEntry, "same-function JAL return address should be promoted to a resumable entry");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1237: t.IsFalse(hasCallEntry, "same-function JAL target should remain an internal label");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1238: t.IsFalse(hasJumpEntry, "same-function J target should remain an internal label only");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1241: tc.Run("JAL return addresses get resumable entry wrappers", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1267: t.Equals(discovered, static_cast<size_t>(1),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1272: t.IsTrue(entryIt != functions.end(), "return address 0x1008 should be promoted to an entry wrapper");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1275: t.Equals(entryIt->end, 0x1018u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1280: t.IsTrue(decodedEntryIt != decodedFunctions.end(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1284: t.Equals(decodedEntryIt->second.size(), static_cast<size_t>(4),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1288: t.Equals(decodedEntryIt->second.front().address, 0x1008u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1294: tc.Run("JAL to an already-known function still discovers the return entry", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1322: t.Equals(discovered, static_cast<size_t>(1),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1327: t.IsTrue(entryIt != functions.end(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1331: t.Equals(entryIt->end, 0x1020u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1336: tc.Run("block starts after unconditional transfers become resume entries of their function", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1373: t.Equals(added, static_cast<size_t>(2), "two block starts follow a transfer and its delay slot");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1374: t.IsTrue(has(0x1008u), "the instruction after `jr ra` and its delay slot is a resume entry");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1375: t.IsTrue(has(0x102Cu), "the instruction after `j` and its delay slot is a resume entry");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1376: t.IsFalse(has(0x1014u), "zero padding after a return is not an entry");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1377: t.IsFalse(has(0x1020u), "the fallthrough after a call is not an entry");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1380: tc.Run("discovery ignores synthetic entry wrappers", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1406: t.Equals(discovered, static_cast<size_t>(0),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1412: t.IsFalse(hasRecursiveResumeEntry,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1416: tc.Run("entry reslice handles entries without containing function", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1436: t.Equals(resliced, static_cast<size_t>(1),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1455: t.Equals(entry1008->end, 0x100Cu,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1460: t.Equals(entry100C->end, 0x1018u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1466: t.IsTrue(decoded1008It != decodedFunctions.end(), "decoded slice for 0x1008 should exist");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1467: t.IsTrue(decoded100CIt != decodedFunctions.end(), "decoded slice for 0x100C should exist");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1470: t.Equals(decoded1008It->second.size(), static_cast<size_t>(1),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1475: t.Equals(decoded100CIt->second.size(), static_cast<size_t>(3),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1480: tc.Run("non-executable section targets are ignored", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1505: t.Equals(discovered, static_cast<size_t>(0),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1510: t.IsFalse(hasDataEntry, "target in data section must not produce entry wrapper");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1513: tc.Run("entry starting at jr ra is capped to return thunk", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1540: t.Equals(discovered, static_cast<size_t>(1),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1545: t.IsTrue(entryIt != functions.end(), "entry wrapper at 0x10A0 should exist");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1548: t.Equals(entryIt->end, 0x10A8u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1553: t.IsTrue(decodedEntryIt != decodedFunctions.end(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1557: t.Equals(decodedEntryIt->second.size(), static_cast<size_t>(2),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1561: t.Equals(decodedEntryIt->second.front().address, 0x10A0u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1567: tc.Run("config manager parses jump_tables table entries", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1574: t.IsTrue(static_cast<bool>(configFile), "temp config file should be writable");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1596: t.Equals(config.jumpTables.size(), static_cast<size_t>(1),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1601: t.Equals(table.address, 0x200000u, "table address should parse from hex string");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1602: t.Equals(table.baseRegister, 9u, "base register should parse");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1603: t.Equals(table.entries.size(), static_cast<size_t>(2),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1607: t.Equals(table.entries[0].index, 0u, "first entry index should parse");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1608: t.Equals(table.entries[0].target, 0x1620u, "first entry target should parse");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1609: t.Equals(table.entries[1].index, 1u, "second entry index should parse");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1610: t.Equals(table.entries[1].target, 0x1630u, "second entry target should parse");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1618: tc.Run("config manager loads modern and legacy guest entry hints", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1625: t.IsTrue(static_cast<bool>(configFile), "temp config file should be writable");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1641: t.Equals(config.entryPointHints.size(), static_cast<size_t>(2),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1643: t.IsTrue(std::find(config.entryPointHints.begin(), config.entryPointHints.end(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1646: t.IsTrue(std::find(config.entryPointHints.begin(), config.entryPointHints.end(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1654: tc.Run("configured entry hint synthesizes an omitted standalone function", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1672: t.IsTrue(elfWritten && configWritten,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1678: t.IsTrue(recompiler.initialize(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1680: t.IsTrue(recompiler.recompile(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1689: t.IsTrue(registration.find("// 0x100010") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1691: t.IsTrue(recompiler.reportCounters().additionalEntryPoints >= 1u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1699: tc.Run("configured stub at an undiscovered address still gets a registered wrapper", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1717: t.IsTrue(elfWritten && configWritten, "stub synthesis regression inputs should be generated");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1722: t.IsTrue(recompiler.initialize(), "stub synthesis config should initialize");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1723: t.IsTrue(recompiler.recompile(), "stub synthesis config should recompile");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1731: t.IsTrue(registration.find("// 0x100010") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1733: t.IsTrue(recompiler.reportCounters().functionsStubbed >= 1u,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1741: tc.Run("standalone entry_ blocks register resume points for their JAL return addresses", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1753: t.IsTrue(elfWritten && configWritten,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1759: t.IsTrue(recompiler.initialize(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1761: t.IsTrue(recompiler.recompile(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1772: t.IsTrue(registration.find("// 0x100008") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1780: tc.Run("a jump in a function's last word executes its delay slot even when the next function starts there", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1792: t.IsTrue(elfWritten && configWritten, "delay slot boundary inputs should be generated");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1797: t.IsTrue(recompiler.initialize(), "delay slot boundary config should initialize");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1798: t.IsTrue(recompiler.recompile(), "delay slot boundary ELF should recompile");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1809: t.IsTrue(!wrapperSource.empty(), "wrapper should be emitted to its own file");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1812: t.IsTrue(wrapperSource.find("ADD32(GPR_U32(ctx, 29), 16)") != std::string::npos,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1820: tc.Run("elf parser ignores STT_FUNC symbols in non-executable sections", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1827: t.IsTrue(writeOk, "temporary ELF should be generated");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1835: t.IsTrue(parseOk, "generated ELF should parse");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1851: t.IsTrue(hasCodeFunction, "function in executable section should be retained");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1852: t.IsFalse(hasDataFunction, "STT_FUNC symbol in .data must be ignored");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1858: tc.Run("elf parser keeps VU microprograms out of EE code discovery", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1865: t.IsTrue(writeOk, "temporary ELF with .vutext should be generated");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1871: t.IsTrue(parseOk, "ELF with .vutext should parse");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1878: t.IsTrue(vuSection != sections.end(), ".vutext bytes should remain available");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1880: t.IsFalse(vuSection->isCode, ".vutext must not be decoded as R5900 code");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1886: t.IsFalse(hasVuFunction, "VU symbol must not become an EE function");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1893: tc.Run("ghidra map replaces JAL fallback-only auto starts", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1902: t.IsTrue(writeOk, "temporary ELF should be generated");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1910: t.IsTrue(parseOk, "generated ELF should parse");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1923: t.IsTrue(hasFallbackStart, "JAL fallback should discover secondary start before map load");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1926: t.IsTrue(static_cast<bool>(mapFile), "ghidra map file should be writable");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1938: t.IsTrue(mapLoaded, "ghidra map should load");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1945: t.IsTrue(entryIt != functions.end(), "ghidra entry should exist");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1948: t.Equals(entryIt->name, std::string("FUN_00100000"),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1956: t.IsFalse(stillHasFallbackOnlyStart,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1964: tc.Run("elf parser discovers address-taken callbacks in stripped ELFs", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1971: t.IsTrue(writeOk, "temporary stripped ELF should be generated");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1979: t.IsTrue(parseOk, "generated ELF should parse");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1995: t.IsTrue(hasStart(0x00100040u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1997: t.IsTrue(hasStart(0x00100060u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:1999: t.IsTrue(hasStart(0x00100068u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2001: t.IsTrue(hasStart(0x00100080u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2003: t.IsTrue(hasStart(0x001000E0u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2005: t.IsTrue(hasStart(0x00100120u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2007: t.IsTrue(hasStart(0x00100280u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2009: t.IsTrue(hasStart(0x001002C0u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2011: t.IsTrue(hasStart(0x00100340u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2013: t.IsTrue(hasStart(0x00100380u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2015: t.IsTrue(hasStart(0x001003C8u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2017: t.IsTrue(hasStart(0x001003E0u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2019: t.IsTrue(hasStart(0x00100400u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2021: t.IsFalse(hasStart(0x00100548u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2023: t.IsTrue(hasStart(0x00100580u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2025: t.IsFalse(hasStart(0x00100588u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2027: t.IsFalse(hasStart(0x00100300u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2029: t.IsTrue(hasStart(0x00100600u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2031: t.IsTrue(hasStart(0x00100620u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2033: t.IsTrue(hasStart(0x00100648u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2040: tc.Run("elf parser keeps switch jump table labels inside their function", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2047: t.IsTrue(writeOk, "temporary stripped ELF should be generated");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2055: t.IsTrue(parseOk, "generated ELF should parse");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2072: t.IsTrue(addiuSwitch != functions.end(), "the lui/addiu switch function should be discovered");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2075: t.IsTrue(containsAll(*addiuSwitch, {0x00100044u, 0x00100048u, 0x00100050u, 0x00100058u}),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2080: t.IsTrue(findStart(label) == functions.end(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2085: t.IsTrue(foldedSwitch != functions.end(), "the folded-offset switch function should be discovered");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2088: t.IsTrue(containsAll(*foldedSwitch, {0x00100098u, 0x001000A0u}),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2093: t.IsTrue(findStart(label) == functions.end(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2097: t.IsTrue(findStart(0x001000C0u) != functions.end(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2099: t.IsTrue(findStart(0x001000E0u) != functions.end(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2107: tc.Run("elf parser supplements partial DWARF with address-taken callbacks", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2114: t.IsTrue(writeOk, "temporary ELF with partial DWARF should be generated");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2122: t.IsTrue(parseOk, "generated ELF with partial DWARF should parse");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2130: t.IsTrue(callbackIt != functions.end(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2137: t.IsTrue(lastFallbackIt != functions.end(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2141: t.Equals(0x001003F0u, lastFallbackIt->end,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2150: tc.Run("runtime call resolution includes Veronica compatibility aliases", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2151: t.Equals(ps2_runtime_calls::resolveSyscallName("ReleaseAlarm"), std::string_view{"ReleaseAlarm"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2153: t.Equals(ps2_runtime_calls::resolveSyscallName("_ReleaseAlarm"), std::string_view{"ReleaseAlarm"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2155: t.Equals(ps2_runtime_calls::resolveSyscallName("EnableCache"), std::string_view{"EnableCache"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2157: t.Equals(ps2_runtime_calls::resolveSyscallName("DisableCache"), std::string_view{"DisableCache"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2159: t.Equals(ps2_runtime_calls::resolveStubName("isceSifSetDma"), std::string_view{"isceSifSetDma"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2161: t.Equals(ps2_runtime_calls::resolveStubName("isceSifSetDChain"), std::string_view{"isceSifSetDChain"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2163: t.Equals(ps2_runtime_calls::resolveStubName("memalign"), std::string_view{"memalign"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2165: t.Equals(ps2_runtime_calls::resolveStubName("_memalign_r"), std::string_view{"memalign_r"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2167: t.Equals(ps2_runtime_calls::resolveStubName("_realloc_r"), std::string_view{"realloc_r"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2169: t.Equals(ps2_runtime_calls::resolveStubName("malloc_extend_top"), std::string_view{"malloc_extend_top"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2171: t.Equals(ps2_runtime_calls::resolveStubName("__malloc_lock"), std::string_view{"__malloc_lock"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2173: t.Equals(ps2_runtime_calls::resolveStubName("__malloc_unlock"), std::string_view{"__malloc_unlock"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2175: t.Equals(ps2_runtime_calls::resolveStubName("memclr"), std::string_view{"memclr"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2177: t.Equals(ps2_runtime_calls::resolveStubName("__divdi3"), std::string_view{"__divdi3"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2179: t.Equals(ps2_runtime_calls::resolveStubName("__mcmp"), std::string_view{},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2181: t.Equals(ps2_runtime_calls::resolveStubName("__sprint"), std::string_view{},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2183: t.Equals(ps2_runtime_calls::resolveStubName("__sprint_r"), std::string_view{},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2185: t.Equals(ps2_runtime_calls::resolveStubName("__sbprintf"), std::string_view{},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2189: tc.Run("initializer skips fall back to guest recompilation", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2203: t.IsTrue(elfWritten && configWritten,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2209: t.IsTrue(recompiler.initialize(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2211: t.IsTrue(recompiler.recompile(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2214: t.Equals(counters.correctnessCriticalGuestFallbacks, static_cast<size_t>(1u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2216: t.Equals(counters.correctnessCriticalFailures, static_cast<size_t>(0u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2218: t.Equals(counters.functionsSkipped, static_cast<size_t>(0u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2220: t.Equals(counters.functionsRecompiled, static_cast<size_t>(1u),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2228: tc.Run("missing constructor-table targets fail recompilation", [](TestCase &t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2242: t.IsTrue(elfWritten && configWritten,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2249: t.IsTrue(recompiler.initialize(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2251: t.IsFalse(recompiler.recompile(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2253: t.Equals(recompiler.reportCounters().correctnessCriticalFailures,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2262: t.IsTrue(overrideWritten,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2267: t.IsTrue(overridden.initialize(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2269: t.IsTrue(overridden.recompile(),
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2271: t.Equals(overridden.reportCounters().functionsStubbed,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2281: tc.Run("respect max length for .cpp filenames", [](TestCase& t) {
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2283: t.IsTrue(PS2Recompiler::ClampFilenameLength("ReallyLongFunctionNameReallyLongFunctionNameReallyLongFunctionName_0x12345678",".cpp",50).length() <= 50,"Function name must be max 50 characters");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_recompiler_tests.cpp:2285: t.IsTrue(PS2Recompiler::ClampFilenameLength("ReallyLongFunctionNameReallyLongFunctionNameReallyLongFunctionName_0x12345678", ".cpp", 50).rfind("0x12345678") != std::string::npos, "Function name must mantain the function address at the end, if present");
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 1597 -----
+ 1585:             configFile << "address = \"0x200000\"\n";
+ 1586:             configFile << "base_register = 9\n";
+ 1587:             configFile << "entries = [\n";
+ 1588:             configFile << "  { index = 0, target = \"0x1620\" },\n";
+ 1589:             configFile << "  { index = 1, target = \"0x1630\" },\n";
+ 1590:             configFile << "]\n";
+ 1591:             configFile.close();
+ 1592: 
+ 1593:             ConfigManager manager(configPath.string());
+ 1594:             RecompilerConfig config = manager.loadConfig();
+ 1595: 
+ 1596:             t.Equals(config.jumpTables.size(), static_cast<size_t>(1),
+ 1597:                      "one configured jump table should be loaded");
+ 1598:             if (!config.jumpTables.empty())
+ 1599:             {
+ 1600:                 const JumpTable &table = config.jumpTables.front();
+ 1601:                 t.Equals(table.address, 0x200000u, "table address should parse from hex string");
+ 1602:                 t.Equals(table.baseRegister, 9u, "base register should parse");
+ 1603:                 t.Equals(table.entries.size(), static_cast<size_t>(2),
+ 1604:                          "two jump table entries should parse");
+ 1605:                 if (table.entries.size() >= 2)
+ 1606:                 {
+ 1607:                     t.Equals(table.entries[0].index, 0u, "first entry index should parse");
+ 1608:                     t.Equals(table.entries[0].target, 0x1620u, "first entry target should parse");
+ 1609:                     t.Equals(table.entries[1].index, 1u, "second entry index should parse");
+ 1610:                     t.Equals(table.entries[1].target, 0x1630u, "second entry target should parse");
+ 1611:                 }
+ 1612:             }
+ 1613: 
+ 1614:             std::error_code removeError;
+ 1615:             std::filesystem::remove(configPath, removeError);
+ 1616:         });
+ 1617: 
+ 1618:         tc.Run("config manager loads modern and legacy guest entry hints", [](TestCase &t) {
+ 1619:             const auto uniqueSuffix = std::to_string(
+ 1620:                 static_cast<unsigned long long>(std::chrono::steady_clock::now().time_since_epoch().count()));
+ 1621:             const std::filesystem::path configPath =
+ 1622:                 std::filesystem::temp_directory_path() / ("ps2recomp-entry-hints-" + uniqueSuffix + ".toml");
+ 1623: 
+ 1624:             std::ofstream configFile(configPath);
+ 1625:             t.IsTrue(static_cast<bool>(configFile), "temp config file should be writable");
+ 1626:             if (!configFile)
+ 1627:             {
+ 1628:                 return;
+ 1629:             }
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 1604 -----
+ 1592: 
+ 1593:             ConfigManager manager(configPath.string());
+ 1594:             RecompilerConfig config = manager.loadConfig();
+ 1595: 
+ 1596:             t.Equals(config.jumpTables.size(), static_cast<size_t>(1),
+ 1597:                      "one configured jump table should be loaded");
+ 1598:             if (!config.jumpTables.empty())
+ 1599:             {
+ 1600:                 const JumpTable &table = config.jumpTables.front();
+ 1601:                 t.Equals(table.address, 0x200000u, "table address should parse from hex string");
+ 1602:                 t.Equals(table.baseRegister, 9u, "base register should parse");
+ 1603:                 t.Equals(table.entries.size(), static_cast<size_t>(2),
+ 1604:                          "two jump table entries should parse");
+ 1605:                 if (table.entries.size() >= 2)
+ 1606:                 {
+ 1607:                     t.Equals(table.entries[0].index, 0u, "first entry index should parse");
+ 1608:                     t.Equals(table.entries[0].target, 0x1620u, "first entry target should parse");
+ 1609:                     t.Equals(table.entries[1].index, 1u, "second entry index should parse");
+ 1610:                     t.Equals(table.entries[1].target, 0x1630u, "second entry target should parse");
+ 1611:                 }
+ 1612:             }
+ 1613: 
+ 1614:             std::error_code removeError;
+ 1615:             std::filesystem::remove(configPath, removeError);
+ 1616:         });
+ 1617: 
+ 1618:         tc.Run("config manager loads modern and legacy guest entry hints", [](TestCase &t) {
+ 1619:             const auto uniqueSuffix = std::to_string(
+ 1620:                 static_cast<unsigned long long>(std::chrono::steady_clock::now().time_since_epoch().count()));
+ 1621:             const std::filesystem::path configPath =
+ 1622:                 std::filesystem::temp_directory_path() / ("ps2recomp-entry-hints-" + uniqueSuffix + ".toml");
+ 1623: 
+ 1624:             std::ofstream configFile(configPath);
+ 1625:             t.IsTrue(static_cast<bool>(configFile), "temp config file should be writable");
+ 1626:             if (!configFile)
+ 1627:             {
+ 1628:                 return;
+ 1629:             }
+ 1630: 
+ 1631:             configFile << "[general]\n";
+ 1632:             configFile << "input = \"dummy.elf\"\n";
+ 1633:             configFile << "output = \"out\"\n";
+ 1634:             configFile << "entry_points = [\"callback@0x7008\"]\n";
+ 1635:             configFile << "untracked_stubs = [\"legacy_callback@0x7018\"]\n";
+ 1636:             configFile.close();
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 1833 -----
+ 1821:             const auto uniqueSuffix = std::to_string(
+ 1822:                 static_cast<unsigned long long>(std::chrono::steady_clock::now().time_since_epoch().count()));
+ 1823:             const std::filesystem::path elfPath =
+ 1824:                 std::filesystem::temp_directory_path() / ("ps2recomp-parser-" + uniqueSuffix + ".elf");
+ 1825: 
+ 1826:             const bool writeOk = writeMinimalMipsElfWithCodeAndDataFunctionSymbols(elfPath);
+ 1827:             t.IsTrue(writeOk, "temporary ELF should be generated");
+ 1828:             if (!writeOk)
+ 1829:             {
+ 1830:                 return;
+ 1831:             }
+ 1832: 
+ 1833:             ElfParser parser(elfPath.string());
+ 1834:             const bool parseOk = parser.parse();
+ 1835:             t.IsTrue(parseOk, "generated ELF should parse");
+ 1836:             if (!parseOk)
+ 1837:             {
+ 1838:                 std::error_code removeError;
+ 1839:                 std::filesystem::remove(elfPath, removeError);
+ 1840:                 return;
+ 1841:             }
+ 1842: 
+ 1843:             const auto functions = parser.extractFunctions();
+ 1844:             const bool hasCodeFunction = std::any_of(functions.begin(), functions.end(),
+ 1845:                                                      [](const Function &fn)
+ 1846:                                                      { return fn.start == 0x00100000u; });
+ 1847:             const bool hasDataFunction = std::any_of(functions.begin(), functions.end(),
+ 1848:                                                      [](const Function &fn)
+ 1849:                                                      { return fn.start == 0x00200000u; });
+ 1850: 
+ 1851:             t.IsTrue(hasCodeFunction, "function in executable section should be retained");
+ 1852:             t.IsFalse(hasDataFunction, "STT_FUNC symbol in .data must be ignored");
+ 1853: 
+ 1854:             std::error_code removeError;
+ 1855:             std::filesystem::remove(elfPath, removeError);
+ 1856:         });
+ 1857: 
+ 1858:         tc.Run("elf parser keeps VU microprograms out of EE code discovery", [](TestCase &t) {
+ 1859:             const auto uniqueSuffix = std::to_string(
+ 1860:                 static_cast<unsigned long long>(std::chrono::steady_clock::now().time_since_epoch().count()));
+ 1861:             const std::filesystem::path elfPath =
+ 1862:                 std::filesystem::temp_directory_path() / ("ps2recomp-vutext-" + uniqueSuffix + ".elf");
+ 1863: 
+ 1864:             const bool writeOk = writeMinimalMipsElfWithVuMicroprogramSection(elfPath);
+ 1865:             t.IsTrue(writeOk, "temporary ELF with .vutext should be generated");
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 1869 -----
+ 1857: 
+ 1858:         tc.Run("elf parser keeps VU microprograms out of EE code discovery", [](TestCase &t) {
+ 1859:             const auto uniqueSuffix = std::to_string(
+ 1860:                 static_cast<unsigned long long>(std::chrono::steady_clock::now().time_since_epoch().count()));
+ 1861:             const std::filesystem::path elfPath =
+ 1862:                 std::filesystem::temp_directory_path() / ("ps2recomp-vutext-" + uniqueSuffix + ".elf");
+ 1863: 
+ 1864:             const bool writeOk = writeMinimalMipsElfWithVuMicroprogramSection(elfPath);
+ 1865:             t.IsTrue(writeOk, "temporary ELF with .vutext should be generated");
+ 1866:             if (!writeOk)
+ 1867:                 return;
+ 1868: 
+ 1869:             ElfParser parser(elfPath.string());
+ 1870:             const bool parseOk = parser.parse();
+ 1871:             t.IsTrue(parseOk, "ELF with .vutext should parse");
+ 1872:             if (parseOk)
+ 1873:             {
+ 1874:                 const auto sections = parser.getSections();
+ 1875:                 const auto vuSection = std::find_if(sections.begin(), sections.end(),
+ 1876:                                                     [](const Section &section)
+ 1877:                                                     { return section.name == ".vutext"; });
+ 1878:                 t.IsTrue(vuSection != sections.end(), ".vutext bytes should remain available");
+ 1879:                 if (vuSection != sections.end())
+ 1880:                     t.IsFalse(vuSection->isCode, ".vutext must not be decoded as R5900 code");
+ 1881: 
+ 1882:                 const auto functions = parser.extractFunctions();
+ 1883:                 const bool hasVuFunction = std::any_of(functions.begin(), functions.end(),
+ 1884:                                                        [](const Function &function)
+ 1885:                                                        { return function.start == 0x00250000u; });
+ 1886:                 t.IsFalse(hasVuFunction, "VU symbol must not become an EE function");
+ 1887:             }
+ 1888: 
+ 1889:             std::error_code removeError;
+ 1890:             std::filesystem::remove(elfPath, removeError);
+ 1891:         });
+ 1892: 
+ 1893:         tc.Run("ghidra map replaces JAL fallback-only auto starts", [](TestCase &t) {
+ 1894:             const auto uniqueSuffix = std::to_string(
+ 1895:                 static_cast<unsigned long long>(std::chrono::steady_clock::now().time_since_epoch().count()));
+ 1896:             const std::filesystem::path elfPath =
+ 1897:                 std::filesystem::temp_directory_path() / ("ps2recomp-ghidra-merge-" + uniqueSuffix + ".elf");
+ 1898:             const std::filesystem::path mapPath =
+ 1899:                 std::filesystem::temp_directory_path() / ("ps2recomp-ghidra-merge-" + uniqueSuffix + ".csv");
+ 1900: 
+ 1901:             const bool writeOk = writeMinimalMipsElfWithJalFallbackTarget(elfPath);
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 1908 -----
+ 1896:             const std::filesystem::path elfPath =
+ 1897:                 std::filesystem::temp_directory_path() / ("ps2recomp-ghidra-merge-" + uniqueSuffix + ".elf");
+ 1898:             const std::filesystem::path mapPath =
+ 1899:                 std::filesystem::temp_directory_path() / ("ps2recomp-ghidra-merge-" + uniqueSuffix + ".csv");
+ 1900: 
+ 1901:             const bool writeOk = writeMinimalMipsElfWithJalFallbackTarget(elfPath);
+ 1902:             t.IsTrue(writeOk, "temporary ELF should be generated");
+ 1903:             if (!writeOk)
+ 1904:             {
+ 1905:                 return;
+ 1906:             }
+ 1907: 
+ 1908:             ElfParser parser(elfPath.string());
+ 1909:             const bool parseOk = parser.parse();
+ 1910:             t.IsTrue(parseOk, "generated ELF should parse");
+ 1911:             if (!parseOk)
+ 1912:             {
+ 1913:                 std::error_code removeError;
+ 1914:                 std::filesystem::remove(elfPath, removeError);
+ 1915:                 return;
+ 1916:             }
+ 1917: 
+ 1918:             const auto fallbackExtras = parser.extractExtraFunctions();
+ 1919:             const bool hasFallbackStart = std::any_of(
+ 1920:                 fallbackExtras.begin(), fallbackExtras.end(),
+ 1921:                 [](const Function &fn)
+ 1922:                 { return fn.start == 0x00100010u; });
+ 1923:             t.IsTrue(hasFallbackStart, "JAL fallback should discover secondary start before map load");
+ 1924: 
+ 1925:             std::ofstream mapFile(mapPath);
+ 1926:             t.IsTrue(static_cast<bool>(mapFile), "ghidra map file should be writable");
+ 1927:             if (!mapFile)
+ 1928:             {
+ 1929:                 std::error_code removeError;
+ 1930:                 std::filesystem::remove(elfPath, removeError);
+ 1931:                 return;
+ 1932:             }
+ 1933:             mapFile << "name,start,end,size\n";
+ 1934:             mapFile << "FUN_00100000,0x00100000,0x00100010,0x10\n";
+ 1935:             mapFile.close();
+ 1936: 
+ 1937:             const bool mapLoaded = parser.loadGhidraFunctionMap(mapPath.string());
+ 1938:             t.IsTrue(mapLoaded, "ghidra map should load");
+ 1939: 
+ 1940:             const auto functions = parser.extractFunctions();
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 1964 -----
+ 1952:             const bool stillHasFallbackOnlyStart = std::any_of(
+ 1953:                 functions.begin(), functions.end(),
+ 1954:                 [](const Function &fn)
+ 1955:                 { return fn.start == 0x00100010u; });
+ 1956:             t.IsFalse(stillHasFallbackOnlyStart,
+ 1957:                       "fallback-only function starts should be removed once ghidra map is loaded");
+ 1958: 
+ 1959:             std::error_code removeError;
+ 1960:             std::filesystem::remove(elfPath, removeError);
+ 1961:             std::filesystem::remove(mapPath, removeError);
+ 1962:         });
+ 1963: 
+ 1964:         tc.Run("elf parser discovers address-taken callbacks in stripped ELFs", [](TestCase &t) {
+ 1965:             const auto uniqueSuffix = std::to_string(
+ 1966:                 static_cast<unsigned long long>(std::chrono::steady_clock::now().time_since_epoch().count()));
+ 1967:             const std::filesystem::path elfPath =
+ 1968:                 std::filesystem::temp_directory_path() / ("ps2recomp-address-taken-" + uniqueSuffix + ".elf");
+ 1969: 
+ 1970:             const bool writeOk = writeMinimalMipsElfWithAddressTakenCallbacks(elfPath);
+ 1971:             t.IsTrue(writeOk, "temporary stripped ELF should be generated");
+ 1972:             if (!writeOk)
+ 1973:             {
+ 1974:                 return;
+ 1975:             }
+ 1976: 
+ 1977:             ElfParser parser(elfPath.string());
+ 1978:             const bool parseOk = parser.parse();
+ 1979:             t.IsTrue(parseOk, "generated ELF should parse");
+ 1980:             if (!parseOk)
+ 1981:             {
+ 1982:                 std::error_code removeError;
+ 1983:                 std::filesystem::remove(elfPath, removeError);
+ 1984:                 return;
+ 1985:             }
+ 1986: 
+ 1987:             const auto functions = parser.extractFunctions();
+ 1988:             auto hasStart = [&functions](uint32_t start)
+ 1989:             {
+ 1990:                 return std::any_of(functions.begin(), functions.end(),
+ 1991:                                    [start](const Function &function)
+ 1992:                                    { return function.start == start; });
+ 1993:             };
+ 1994: 
+ 1995:             t.IsTrue(hasStart(0x00100040u),
+ 1996:                      "LUI plus delay-slot ADDIU should discover the callback entry");
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 1977 -----
+ 1965:             const auto uniqueSuffix = std::to_string(
+ 1966:                 static_cast<unsigned long long>(std::chrono::steady_clock::now().time_since_epoch().count()));
+ 1967:             const std::filesystem::path elfPath =
+ 1968:                 std::filesystem::temp_directory_path() / ("ps2recomp-address-taken-" + uniqueSuffix + ".elf");
+ 1969: 
+ 1970:             const bool writeOk = writeMinimalMipsElfWithAddressTakenCallbacks(elfPath);
+ 1971:             t.IsTrue(writeOk, "temporary stripped ELF should be generated");
+ 1972:             if (!writeOk)
+ 1973:             {
+ 1974:                 return;
+ 1975:             }
+ 1976: 
+ 1977:             ElfParser parser(elfPath.string());
+ 1978:             const bool parseOk = parser.parse();
+ 1979:             t.IsTrue(parseOk, "generated ELF should parse");
+ 1980:             if (!parseOk)
+ 1981:             {
+ 1982:                 std::error_code removeError;
+ 1983:                 std::filesystem::remove(elfPath, removeError);
+ 1984:                 return;
+ 1985:             }
+ 1986: 
+ 1987:             const auto functions = parser.extractFunctions();
+ 1988:             auto hasStart = [&functions](uint32_t start)
+ 1989:             {
+ 1990:                 return std::any_of(functions.begin(), functions.end(),
+ 1991:                                    [start](const Function &function)
+ 1992:                                    { return function.start == start; });
+ 1993:             };
+ 1994: 
+ 1995:             t.IsTrue(hasStart(0x00100040u),
+ 1996:                      "LUI plus delay-slot ADDIU should discover the callback entry");
+ 1997:             t.IsTrue(hasStart(0x00100060u),
+ 1998:                      "clustered rodata pointers should discover the first leaf callback");
+ 1999:             t.IsTrue(hasStart(0x00100068u),
+ 2000:                      "clustered rodata pointers should discover the second leaf callback");
+ 2001:             t.IsTrue(hasStart(0x00100080u),
+ 2002:                      "clustered pointers should discover an initializer with a delayed stack prologue");
+ 2003:             t.IsTrue(hasStart(0x001000E0u),
+ 2004:                      "a nearby registrar call should discover a longer leaf callback");
+ 2005:             t.IsTrue(hasStart(0x00100120u),
+ 2006:                      "a clustered descriptor should discover a long leaf method");
+ 2007:             t.IsTrue(hasStart(0x00100280u),
+ 2008:                      "a callback should flow through a saved register into a call argument");
+ 2009:             t.IsTrue(hasStart(0x001002C0u),
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 2040 -----
+ 2028:                       "an isolated data pointer or non-callback code materialization must not become a function");
+ 2029:             t.IsTrue(hasStart(0x00100600u),
+ 2030:                      "a strided record table should discover its short leaf handler");
+ 2031:             t.IsTrue(hasStart(0x00100620u),
+ 2032:                      "a strided record table should discover a handler that returns beyond the probe window");
+ 2033:             t.IsTrue(hasStart(0x00100648u),
+ 2034:                      "a strided record table should discover its longest leaf handler");
+ 2035: 
+ 2036:             std::error_code removeError;
+ 2037:             std::filesystem::remove(elfPath, removeError);
+ 2038:         });
+ 2039: 
+ 2040:         tc.Run("elf parser keeps switch jump table labels inside their function", [](TestCase &t) {
+ 2041:             const auto uniqueSuffix = std::to_string(
+ 2042:                 static_cast<unsigned long long>(std::chrono::steady_clock::now().time_since_epoch().count()));
+ 2043:             const std::filesystem::path elfPath =
+ 2044:                 std::filesystem::temp_directory_path() / ("ps2recomp-switch-table-" + uniqueSuffix + ".elf");
+ 2045: 
+ 2046:             const bool writeOk = writeMinimalMipsElfWithSwitchJumpTables(elfPath);
+ 2047:             t.IsTrue(writeOk, "temporary stripped ELF should be generated");
+ 2048:             if (!writeOk)
+ 2049:             {
+ 2050:                 return;
+ 2051:             }
+ 2052: 
+ 2053:             ElfParser parser(elfPath.string());
+ 2054:             const bool parseOk = parser.parse();
+ 2055:             t.IsTrue(parseOk, "generated ELF should parse");
+ 2056:             if (parseOk)
+ 2057:             {
+ 2058:                 const auto functions = parser.extractFunctions();
+ 2059:                 auto findStart = [&functions](uint32_t start)
+ 2060:                 {
+ 2061:                     return std::find_if(functions.begin(), functions.end(),
+ 2062:                                         [start](const Function &function)
+ 2063:                                         { return function.start == start; });
+ 2064:                 };
+ 2065:                 auto containsAll = [](const Function &function, std::initializer_list<uint32_t> targets)
+ 2066:                 {
+ 2067:                     return std::all_of(targets.begin(), targets.end(), [&function](uint32_t target)
+ 2068:                                        { return target >= function.start && target < function.end; });
+ 2069:                 };
+ 2070: 
+ 2071:                 const auto addiuSwitch = findStart(0x00100020u);
+ 2072:                 t.IsTrue(addiuSwitch != functions.end(), "the lui/addiu switch function should be discovered");
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 2053 -----
+ 2041:             const auto uniqueSuffix = std::to_string(
+ 2042:                 static_cast<unsigned long long>(std::chrono::steady_clock::now().time_since_epoch().count()));
+ 2043:             const std::filesystem::path elfPath =
+ 2044:                 std::filesystem::temp_directory_path() / ("ps2recomp-switch-table-" + uniqueSuffix + ".elf");
+ 2045: 
+ 2046:             const bool writeOk = writeMinimalMipsElfWithSwitchJumpTables(elfPath);
+ 2047:             t.IsTrue(writeOk, "temporary stripped ELF should be generated");
+ 2048:             if (!writeOk)
+ 2049:             {
+ 2050:                 return;
+ 2051:             }
+ 2052: 
+ 2053:             ElfParser parser(elfPath.string());
+ 2054:             const bool parseOk = parser.parse();
+ 2055:             t.IsTrue(parseOk, "generated ELF should parse");
+ 2056:             if (parseOk)
+ 2057:             {
+ 2058:                 const auto functions = parser.extractFunctions();
+ 2059:                 auto findStart = [&functions](uint32_t start)
+ 2060:                 {
+ 2061:                     return std::find_if(functions.begin(), functions.end(),
+ 2062:                                         [start](const Function &function)
+ 2063:                                         { return function.start == start; });
+ 2064:                 };
+ 2065:                 auto containsAll = [](const Function &function, std::initializer_list<uint32_t> targets)
+ 2066:                 {
+ 2067:                     return std::all_of(targets.begin(), targets.end(), [&function](uint32_t target)
+ 2068:                                        { return target >= function.start && target < function.end; });
+ 2069:                 };
+ 2070: 
+ 2071:                 const auto addiuSwitch = findStart(0x00100020u);
+ 2072:                 t.IsTrue(addiuSwitch != functions.end(), "the lui/addiu switch function should be discovered");
+ 2073:                 if (addiuSwitch != functions.end())
+ 2074:                 {
+ 2075:                     t.IsTrue(containsAll(*addiuSwitch, {0x00100044u, 0x00100048u, 0x00100050u, 0x00100058u}),
+ 2076:                              "every case label of the lui/addiu switch should stay inside its function");
+ 2077:                 }
+ 2078:                 for (uint32_t label : {0x00100044u, 0x00100048u, 0x00100050u, 0x00100058u})
+ 2079:                 {
+ 2080:                     t.IsTrue(findStart(label) == functions.end(),
+ 2081:                              "a lui/addiu switch case label must not become a function start");
+ 2082:                 }
+ 2083: 
+ 2084:                 const auto foldedSwitch = findStart(0x00100080u);
+ 2085:                 t.IsTrue(foldedSwitch != functions.end(), "the folded-offset switch function should be discovered");
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 2107 -----
+ 2095:                 }
+ 2096: 
+ 2097:                 t.IsTrue(findStart(0x001000C0u) != functions.end(),
+ 2098:                          "a callback table right after a switch table should still discover its first entry");
+ 2099:                 t.IsTrue(findStart(0x001000E0u) != functions.end(),
+ 2100:                          "a callback table right after a switch table should still discover its second entry");
+ 2101:             }
+ 2102: 
+ 2103:             std::error_code removeError;
+ 2104:             std::filesystem::remove(elfPath, removeError);
+ 2105:         });
+ 2106: 
+ 2107:         tc.Run("elf parser supplements partial DWARF with address-taken callbacks", [](TestCase &t) {
+ 2108:             const auto uniqueSuffix = std::to_string(
+ 2109:                 static_cast<unsigned long long>(std::chrono::steady_clock::now().time_since_epoch().count()));
+ 2110:             const std::filesystem::path elfPath =
+ 2111:                 std::filesystem::temp_directory_path() / ("ps2recomp-partial-dwarf-" + uniqueSuffix + ".elf");
+ 2112: 
+ 2113:             const bool writeOk = writeMinimalMipsElfWithAddressTakenCallbacks(elfPath, true);
+ 2114:             t.IsTrue(writeOk, "temporary ELF with partial DWARF should be generated");
+ 2115:             if (!writeOk)
+ 2116:             {
+ 2117:                 return;
+ 2118:             }
+ 2119: 
+ 2120:             ElfParser parser(elfPath.string());
+ 2121:             const bool parseOk = parser.parse();
+ 2122:             t.IsTrue(parseOk, "generated ELF with partial DWARF should parse");
+ 2123:             if (parseOk)
+ 2124:             {
+ 2125:                 const auto functions = parser.extractFunctions();
+ 2126:                 const auto callbackIt = std::find_if(
+ 2127:                     functions.begin(), functions.end(),
+ 2128:                     [](const Function &function)
+ 2129:                     { return function.start == 0x00100040u; });
+ 2130:                 t.IsTrue(callbackIt != functions.end(),
+ 2131:                          "partial DWARF must not suppress static callback discovery");
+ 2132: 
+ 2133:                 const auto lastFallbackIt = std::find_if(
+ 2134:                     functions.begin(), functions.end(),
+ 2135:                     [](const Function &function)
+ 2136:                     { return function.start == 0x001003E0u; });
+ 2137:                 t.IsTrue(lastFallbackIt != functions.end(),
+ 2138:                          "the last inferred callback should still be discovered");
+ 2139:                 if (lastFallbackIt != functions.end())
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 2114 -----
+ 2102: 
+ 2103:             std::error_code removeError;
+ 2104:             std::filesystem::remove(elfPath, removeError);
+ 2105:         });
+ 2106: 
+ 2107:         tc.Run("elf parser supplements partial DWARF with address-taken callbacks", [](TestCase &t) {
+ 2108:             const auto uniqueSuffix = std::to_string(
+ 2109:                 static_cast<unsigned long long>(std::chrono::steady_clock::now().time_since_epoch().count()));
+ 2110:             const std::filesystem::path elfPath =
+ 2111:                 std::filesystem::temp_directory_path() / ("ps2recomp-partial-dwarf-" + uniqueSuffix + ".elf");
+ 2112: 
+ 2113:             const bool writeOk = writeMinimalMipsElfWithAddressTakenCallbacks(elfPath, true);
+ 2114:             t.IsTrue(writeOk, "temporary ELF with partial DWARF should be generated");
+ 2115:             if (!writeOk)
+ 2116:             {
+ 2117:                 return;
+ 2118:             }
+ 2119: 
+ 2120:             ElfParser parser(elfPath.string());
+ 2121:             const bool parseOk = parser.parse();
+ 2122:             t.IsTrue(parseOk, "generated ELF with partial DWARF should parse");
+ 2123:             if (parseOk)
+ 2124:             {
+ 2125:                 const auto functions = parser.extractFunctions();
+ 2126:                 const auto callbackIt = std::find_if(
+ 2127:                     functions.begin(), functions.end(),
+ 2128:                     [](const Function &function)
+ 2129:                     { return function.start == 0x00100040u; });
+ 2130:                 t.IsTrue(callbackIt != functions.end(),
+ 2131:                          "partial DWARF must not suppress static callback discovery");
+ 2132: 
+ 2133:                 const auto lastFallbackIt = std::find_if(
+ 2134:                     functions.begin(), functions.end(),
+ 2135:                     [](const Function &function)
+ 2136:                     { return function.start == 0x001003E0u; });
+ 2137:                 t.IsTrue(lastFallbackIt != functions.end(),
+ 2138:                          "the last inferred callback should still be discovered");
+ 2139:                 if (lastFallbackIt != functions.end())
+ 2140:                 {
+ 2141:                     t.Equals(0x001003F0u, lastFallbackIt->end,
+ 2142:                              "later partial DWARF should bound an inferred callback");
+ 2143:                 }
+ 2144:             }
+ 2145: 
+ 2146:             std::error_code removeError;
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 2120 -----
+ 2108:             const auto uniqueSuffix = std::to_string(
+ 2109:                 static_cast<unsigned long long>(std::chrono::steady_clock::now().time_since_epoch().count()));
+ 2110:             const std::filesystem::path elfPath =
+ 2111:                 std::filesystem::temp_directory_path() / ("ps2recomp-partial-dwarf-" + uniqueSuffix + ".elf");
+ 2112: 
+ 2113:             const bool writeOk = writeMinimalMipsElfWithAddressTakenCallbacks(elfPath, true);
+ 2114:             t.IsTrue(writeOk, "temporary ELF with partial DWARF should be generated");
+ 2115:             if (!writeOk)
+ 2116:             {
+ 2117:                 return;
+ 2118:             }
+ 2119: 
+ 2120:             ElfParser parser(elfPath.string());
+ 2121:             const bool parseOk = parser.parse();
+ 2122:             t.IsTrue(parseOk, "generated ELF with partial DWARF should parse");
+ 2123:             if (parseOk)
+ 2124:             {
+ 2125:                 const auto functions = parser.extractFunctions();
+ 2126:                 const auto callbackIt = std::find_if(
+ 2127:                     functions.begin(), functions.end(),
+ 2128:                     [](const Function &function)
+ 2129:                     { return function.start == 0x00100040u; });
+ 2130:                 t.IsTrue(callbackIt != functions.end(),
+ 2131:                          "partial DWARF must not suppress static callback discovery");
+ 2132: 
+ 2133:                 const auto lastFallbackIt = std::find_if(
+ 2134:                     functions.begin(), functions.end(),
+ 2135:                     [](const Function &function)
+ 2136:                     { return function.start == 0x001003E0u; });
+ 2137:                 t.IsTrue(lastFallbackIt != functions.end(),
+ 2138:                          "the last inferred callback should still be discovered");
+ 2139:                 if (lastFallbackIt != functions.end())
+ 2140:                 {
+ 2141:                     t.Equals(0x001003F0u, lastFallbackIt->end,
+ 2142:                              "later partial DWARF should bound an inferred callback");
+ 2143:                 }
+ 2144:             }
+ 2145: 
+ 2146:             std::error_code removeError;
+ 2147:             std::filesystem::remove(elfPath, removeError);
+ 2148:         });
+ 2149: 
+ 2150:         tc.Run("runtime call resolution includes Veronica compatibility aliases", [](TestCase &t) {
+ 2151:             t.Equals(ps2_runtime_calls::resolveSyscallName("ReleaseAlarm"), std::string_view{"ReleaseAlarm"},
+ 2152:                      "ReleaseAlarm should resolve as a syscall name");
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 2122 -----
+ 2110:             const std::filesystem::path elfPath =
+ 2111:                 std::filesystem::temp_directory_path() / ("ps2recomp-partial-dwarf-" + uniqueSuffix + ".elf");
+ 2112: 
+ 2113:             const bool writeOk = writeMinimalMipsElfWithAddressTakenCallbacks(elfPath, true);
+ 2114:             t.IsTrue(writeOk, "temporary ELF with partial DWARF should be generated");
+ 2115:             if (!writeOk)
+ 2116:             {
+ 2117:                 return;
+ 2118:             }
+ 2119: 
+ 2120:             ElfParser parser(elfPath.string());
+ 2121:             const bool parseOk = parser.parse();
+ 2122:             t.IsTrue(parseOk, "generated ELF with partial DWARF should parse");
+ 2123:             if (parseOk)
+ 2124:             {
+ 2125:                 const auto functions = parser.extractFunctions();
+ 2126:                 const auto callbackIt = std::find_if(
+ 2127:                     functions.begin(), functions.end(),
+ 2128:                     [](const Function &function)
+ 2129:                     { return function.start == 0x00100040u; });
+ 2130:                 t.IsTrue(callbackIt != functions.end(),
+ 2131:                          "partial DWARF must not suppress static callback discovery");
+ 2132: 
+ 2133:                 const auto lastFallbackIt = std::find_if(
+ 2134:                     functions.begin(), functions.end(),
+ 2135:                     [](const Function &function)
+ 2136:                     { return function.start == 0x001003E0u; });
+ 2137:                 t.IsTrue(lastFallbackIt != functions.end(),
+ 2138:                          "the last inferred callback should still be discovered");
+ 2139:                 if (lastFallbackIt != functions.end())
+ 2140:                 {
+ 2141:                     t.Equals(0x001003F0u, lastFallbackIt->end,
+ 2142:                              "later partial DWARF should bound an inferred callback");
+ 2143:                 }
+ 2144:             }
+ 2145: 
+ 2146:             std::error_code removeError;
+ 2147:             std::filesystem::remove(elfPath, removeError);
+ 2148:         });
+ 2149: 
+ 2150:         tc.Run("runtime call resolution includes Veronica compatibility aliases", [](TestCase &t) {
+ 2151:             t.Equals(ps2_runtime_calls::resolveSyscallName("ReleaseAlarm"), std::string_view{"ReleaseAlarm"},
+ 2152:                      "ReleaseAlarm should resolve as a syscall name");
+ 2153:             t.Equals(ps2_runtime_calls::resolveSyscallName("_ReleaseAlarm"), std::string_view{"ReleaseAlarm"},
+ 2154:                      "underscore ReleaseAlarm alias should resolve to ReleaseAlarm");
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 2131 -----
+ 2119: 
+ 2120:             ElfParser parser(elfPath.string());
+ 2121:             const bool parseOk = parser.parse();
+ 2122:             t.IsTrue(parseOk, "generated ELF with partial DWARF should parse");
+ 2123:             if (parseOk)
+ 2124:             {
+ 2125:                 const auto functions = parser.extractFunctions();
+ 2126:                 const auto callbackIt = std::find_if(
+ 2127:                     functions.begin(), functions.end(),
+ 2128:                     [](const Function &function)
+ 2129:                     { return function.start == 0x00100040u; });
+ 2130:                 t.IsTrue(callbackIt != functions.end(),
+ 2131:                          "partial DWARF must not suppress static callback discovery");
+ 2132: 
+ 2133:                 const auto lastFallbackIt = std::find_if(
+ 2134:                     functions.begin(), functions.end(),
+ 2135:                     [](const Function &function)
+ 2136:                     { return function.start == 0x001003E0u; });
+ 2137:                 t.IsTrue(lastFallbackIt != functions.end(),
+ 2138:                          "the last inferred callback should still be discovered");
+ 2139:                 if (lastFallbackIt != functions.end())
+ 2140:                 {
+ 2141:                     t.Equals(0x001003F0u, lastFallbackIt->end,
+ 2142:                              "later partial DWARF should bound an inferred callback");
+ 2143:                 }
+ 2144:             }
+ 2145: 
+ 2146:             std::error_code removeError;
+ 2147:             std::filesystem::remove(elfPath, removeError);
+ 2148:         });
+ 2149: 
+ 2150:         tc.Run("runtime call resolution includes Veronica compatibility aliases", [](TestCase &t) {
+ 2151:             t.Equals(ps2_runtime_calls::resolveSyscallName("ReleaseAlarm"), std::string_view{"ReleaseAlarm"},
+ 2152:                      "ReleaseAlarm should resolve as a syscall name");
+ 2153:             t.Equals(ps2_runtime_calls::resolveSyscallName("_ReleaseAlarm"), std::string_view{"ReleaseAlarm"},
+ 2154:                      "underscore ReleaseAlarm alias should resolve to ReleaseAlarm");
+ 2155:             t.Equals(ps2_runtime_calls::resolveSyscallName("EnableCache"), std::string_view{"EnableCache"},
+ 2156:                      "EnableCache should resolve as a syscall name");
+ 2157:             t.Equals(ps2_runtime_calls::resolveSyscallName("DisableCache"), std::string_view{"DisableCache"},
+ 2158:                      "DisableCache should resolve as a syscall name");
+ 2159:             t.Equals(ps2_runtime_calls::resolveStubName("isceSifSetDma"), std::string_view{"isceSifSetDma"},
+ 2160:                      "isceSifSetDma should resolve as a stub name");
+ 2161:             t.Equals(ps2_runtime_calls::resolveStubName("isceSifSetDChain"), std::string_view{"isceSifSetDChain"},
+ 2162:                      "isceSifSetDChain should resolve as a stub name");
+ 2163:             t.Equals(ps2_runtime_calls::resolveStubName("memalign"), std::string_view{"memalign"},
+
+----- TEST CONTEXT ps2_recompiler_tests.cpp LINE 2142 -----
+ 2130:                 t.IsTrue(callbackIt != functions.end(),
+ 2131:                          "partial DWARF must not suppress static callback discovery");
+ 2132: 
+ 2133:                 const auto lastFallbackIt = std::find_if(
+ 2134:                     functions.begin(), functions.end(),
+ 2135:                     [](const Function &function)
+ 2136:                     { return function.start == 0x001003E0u; });
+ 2137:                 t.IsTrue(lastFallbackIt != functions.end(),
+ 2138:                          "the last inferred callback should still be discovered");
+ 2139:                 if (lastFallbackIt != functions.end())
+ 2140:                 {
+ 2141:                     t.Equals(0x001003F0u, lastFallbackIt->end,
+ 2142:                              "later partial DWARF should bound an inferred callback");
+ 2143:                 }
+ 2144:             }
+ 2145: 
+ 2146:             std::error_code removeError;
+ 2147:             std::filesystem::remove(elfPath, removeError);
+ 2148:         });
+ 2149: 
+ 2150:         tc.Run("runtime call resolution includes Veronica compatibility aliases", [](TestCase &t) {
+ 2151:             t.Equals(ps2_runtime_calls::resolveSyscallName("ReleaseAlarm"), std::string_view{"ReleaseAlarm"},
+ 2152:                      "ReleaseAlarm should resolve as a syscall name");
+ 2153:             t.Equals(ps2_runtime_calls::resolveSyscallName("_ReleaseAlarm"), std::string_view{"ReleaseAlarm"},
+ 2154:                      "underscore ReleaseAlarm alias should resolve to ReleaseAlarm");
+ 2155:             t.Equals(ps2_runtime_calls::resolveSyscallName("EnableCache"), std::string_view{"EnableCache"},
+ 2156:                      "EnableCache should resolve as a syscall name");
+ 2157:             t.Equals(ps2_runtime_calls::resolveSyscallName("DisableCache"), std::string_view{"DisableCache"},
+ 2158:                      "DisableCache should resolve as a syscall name");
+ 2159:             t.Equals(ps2_runtime_calls::resolveStubName("isceSifSetDma"), std::string_view{"isceSifSetDma"},
+ 2160:                      "isceSifSetDma should resolve as a stub name");
+ 2161:             t.Equals(ps2_runtime_calls::resolveStubName("isceSifSetDChain"), std::string_view{"isceSifSetDChain"},
+ 2162:                      "isceSifSetDChain should resolve as a stub name");
+ 2163:             t.Equals(ps2_runtime_calls::resolveStubName("memalign"), std::string_view{"memalign"},
+ 2164:                      "memalign should resolve as a stub name");
+ 2165:             t.Equals(ps2_runtime_calls::resolveStubName("_memalign_r"), std::string_view{"memalign_r"},
+ 2166:                      "_memalign_r should resolve to the memalign_r stub");
+ 2167:             t.Equals(ps2_runtime_calls::resolveStubName("_realloc_r"), std::string_view{"realloc_r"},
+ 2168:                      "_realloc_r should resolve to the realloc_r stub");
+ 2169:             t.Equals(ps2_runtime_calls::resolveStubName("malloc_extend_top"), std::string_view{"malloc_extend_top"},
+ 2170:                      "malloc_extend_top should resolve as an allocator compatibility stub");
+ 2171:             t.Equals(ps2_runtime_calls::resolveStubName("__malloc_lock"), std::string_view{"__malloc_lock"},
+ 2172:                      "__malloc_lock should resolve as an allocator compatibility stub");
+ 2173:             t.Equals(ps2_runtime_calls::resolveStubName("__malloc_unlock"), std::string_view{"__malloc_unlock"},
+ 2174:                      "__malloc_unlock should resolve as an allocator compatibility stub");
+
+8. CMAKE REGISTRATION
+CMAKE FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\CMakeLists.txt
+16: option(PS2X_BUILD_RECOMP "Build ps2xRecomp" ON)
+83: add_subdirectory("ps2xRecomp")
+
+CMAKE FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xAnalyzer\CMakeLists.txt
+26: add_library(ps2_analyzer_lib STATIC ${PS2ANALYZER_LIB_SOURCES})
+30: ${CMAKE_SOURCE_DIR}/ps2xRecomp/include
+39: add_executable(ps2_analyzer
+
+CMAKE FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\CMakeLists.txt
+7: add_library(ps2_iop STATIC
+47: add_library(ps2x::iop ALIAS ps2_iop)
+50: enable_testing()
+51: add_executable(ps2_iop_emulator_tests tests/iop_emulator_tests.cpp)
+53: add_test(NAME ps2_iop_emulator_tests COMMAND ps2_iop_emulator_tests)
+55: add_executable(ps2_iop_import_tests tests/iop_import_tests.cpp)
+58: add_test(NAME ps2_iop_import_tests COMMAND ps2_iop_import_tests)
+60: add_executable(ps2_iop_compatibility_tests tests/iop_compatibility_tests.cpp)
+62: add_test(NAME ps2_iop_compatibility_tests COMMAND ps2_iop_compatibility_tests)
+64: add_executable(ps2_iop_import_version_tests tests/iop_import_version_tests.cpp)
+67: add_test(NAME ps2_iop_import_version_tests COMMAND ps2_iop_import_version_tests)
+69: add_executable(ps2_iop_spu2_tests tests/iop_spu2_tests.cpp)
+72: add_test(NAME ps2_iop_spu2_tests COMMAND ps2_iop_spu2_tests)
+
+CMAKE FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\CMakeLists.txt
+67: add_library(rabbitizer STATIC ${RABBITIZER_SOURCES})
+85: add_library(ps2_recomp_lib STATIC ${PS2RECOMP_LIB_SOURCES} ${PS2RECOMP_HEADERS})
+116: add_executable(ps2_recomp ${PS2RECOMP_EXE_SOURCES})
+
+CMAKE FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\CMakeLists.txt
+101: add_library(imgui STATIC
+124: add_library(rlImGui STATIC
+132: add_library(ps2_host_backend INTERFACE)
+255: add_library(ffmpeg INTERFACE)
+285: add_library(ffmpeg_avcodec STATIC IMPORTED GLOBAL)
+292: add_library(ffmpeg_avformat STATIC IMPORTED GLOBAL)
+299: add_library(ffmpeg_avutil STATIC IMPORTED GLOBAL)
+306: add_library(ffmpeg_swresample STATIC IMPORTED GLOBAL)
+313: add_library(ffmpeg_swscale STATIC IMPORTED GLOBAL)
+320: add_library(ffmpeg INTERFACE)
+351: add_library(ffmpeg INTERFACE)
+378: add_library(ps2_runtime STATIC
+438: target_sources(ps2_runtime PRIVATE
+456: add_library(ps2EntryRunner SHARED
+462: add_executable(ps2EntryRunner
+490: target_sources(ps2EntryRunner PRIVATE ${MARK_OF_KRI_NATIVE_SOURCES})
+556: target_sources(ps2EntryRunner PRIVATE
+623: target_sources(ps2EntryRunner PRIVATE src/lib/ps2_vita_runtime.cpp)
+631: target_sources(ps2EntryRunner PRIVATE src/lib/ps2_android_runtime.cpp)
+
+CMAKE FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xStudio\CMakeLists.txt
+73: add_library(imgui_lib STATIC ${IMGUI_SOURCES})
+82: add_library(imgui_colortextedit_lib STATIC
+90: add_library(imgui_memory_editor_lib INTERFACE)
+98: add_library(imgui_filedialog_lib STATIC
+112: add_executable(ps2xStudio ${STUDIO_SOURCES} ${STUDIO_HEADERS})
+115: target_sources(ps2xStudio PRIVATE $<TARGET_OBJECTS:ps2_test_function_table>)
+121: ${CMAKE_CURRENT_SOURCE_DIR}/../ps2xRecomp/include
+
+CMAKE FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\CMakeLists.txt
+14: add_library(ps2_test_function_table OBJECT
+23: add_library(ps2_test_lib STATIC
+38: src/ps2_recompiler_tests.cpp
+45: add_executable(ps2_generate_fpu_execution_fixture
+67: target_sources(ps2_test_lib PRIVATE
+73: ${CMAKE_SOURCE_DIR}/ps2xRecomp/include
+90: add_executable(ps2x_tests
+104: ${CMAKE_SOURCE_DIR}/ps2xRecomp/include
+138: add_executable(ps2x_fpu_execution_tests src/fpu_execution_main.cpp)
+139: target_sources(ps2x_fpu_execution_tests PRIVATE
+
+CMAKE FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\gs_cache\CMakeLists.txt
+14: add_library(ps2_gs_cache_backend_under_test STATIC
+35: add_executable(${target} "${source}")
+39: add_test(NAME "gs_cache.${prefix}.${test_name}" COMMAND ${target} "${test_name}")
+
+9. ECOFF ASSOCIATION CSV SCHEMA
+CSV: D:\Downloads\MarkOfKri_Audits\ECOFF_PACKED_FDR_PDR_ASSOCIATION_20261127_162333\PACKED_FDR_PDR_TARGET_ASSOCIATIONS.csv
+ROWS: 281
+COLUMNS:
+Address, Name, SymbolType, SymIndex, FDR, FDRIsymBase, LocalSymbolIndex, PdrStart, PdrCount, PdrIndexMatches, ExactAdrMatches, FdrRelativeAdrMatches, MatchedPdr, MatchedPdrAdr, Status
+FIRST THREE ROWS:
+{"Address":"0x00100370","Name":"updateTimers__Fv","SymbolType":"6","SymIndex":"19","FDR":"1","FDRIsymBase":"14","LocalSymbolIndex":"5","PdrStart":"0","PdrCount":"56","PdrIndexMatches":"1","ExactAdrMatches":"0","FdrRelativeAdrMatches":"1","MatchedPdr":"2","MatchedPdrAdr":"0x000002A8","Status":"FDR_RELATIVE_ADDRESS_MATCH"}
+{"Address":"0x00100418","Name":"updateMovieRequests__Fv","SymbolType":"6","SymIndex":"21","FDR":"1","FDRIsymBase":"14","LocalSymbolIndex":"7","PdrStart":"0","PdrCount":"56","PdrIndexMatches":"1","ExactAdrMatches":"0","FdrRelativeAdrMatches":"1","MatchedPdr":"3","MatchedPdrAdr":"0x00000350","Status":"FDR_RELATIVE_ADDRESS_MATCH"}
+{"Address":"0x00101EB0","Name":"UpdateControl__Fv","SymbolType":"14","SymIndex":"49","FDR":"1","FDRIsymBase":"14","LocalSymbolIndex":"35","PdrStart":"0","PdrCount":"56","PdrIndexMatches":"1","ExactAdrMatches":"0","FdrRelativeAdrMatches":"1","MatchedPdr":"17","MatchedPdrAdr":"0x00001DE8","Status":"FDR_RELATIVE_ADDRESS_MATCH"}
+
+CSV: D:\Downloads\MarkOfKri_Audits\ECOFF_ADDRESS_HDRR_VALIDATION_20261127_163904\ECOFF_PROCEDURE_ADDRESS_VALIDATION.csv
+ROWS: 267
+COLUMNS:
+Address, AddressValue, Name, SymbolType, SymIndex, FDR, LocalSymbolIndex, MatchedPdr, Section, SectionIndex, Status, ProvisionalEnd, BoundaryType
+FIRST THREE ROWS:
+{"Address":"0x00100370","AddressValue":"1049456","Name":"updateTimers__Fv","SymbolType":"6","SymIndex":"19","FDR":"1","LocalSymbolIndex":"5","MatchedPdr":"2","Section":".text","SectionIndex":"1","Status":"EXECUTABLE_SECTION_MATCH","ProvisionalEnd":"0x00100418","BoundaryType":"NEXT_RECOVERED_START_PROVISIONAL"}
+{"Address":"0x00100418","AddressValue":"1049624","Name":"updateMovieRequests__Fv","SymbolType":"6","SymIndex":"21","FDR":"1","LocalSymbolIndex":"7","MatchedPdr":"3","Section":".text","SectionIndex":"1","Status":"EXECUTABLE_SECTION_MATCH","ProvisionalEnd":"0x00101EB0","BoundaryType":"NEXT_RECOVERED_START_PROVISIONAL"}
+{"Address":"0x00101EB0","AddressValue":"1056432","Name":"UpdateControl__Fv","SymbolType":"14","SymIndex":"49","FDR":"1","LocalSymbolIndex":"35","MatchedPdr":"17","Section":".text","SectionIndex":"1","Status":"EXECUTABLE_SECTION_MATCH","ProvisionalEnd":"0x001034A8","BoundaryType":"NEXT_RECOVERED_START_PROVISIONAL"}
+
+10. VALIDATED ECOFF EXPECTATIONS
+ELF: ELF32, little-endian, EM_MIPS
+.mdebug file offset: 0x00338DE4
+.mdebug size: 0x0016DD68
+HDRR magic: 0x7009
+HDRR vstamp: 0x069B
+PDR count: 7,226
+SYMR count: 31,004
+FDR count: 528
+AUX count: 14,980
+Procedure symbols recovered: 267
+Executable mappings: 267
+Invalid/ambiguous addresses: 0
+Duplicate procedure addresses: 0
+All recovered procedure addresses map into .text.
+Next-symbol function boundaries remain provisional.
+
+11. IMPLEMENTATION READINESS CHECKLIST
+PASS : Repository root exists
+PASS : Parser source exists
+PASS : Parser header uniquely discovered
+PASS : Types header uniquely discovered
+PASS : loadDebugFunctions located
+PASS : extractFunctions located
+PASS : Fallback scan located
+PASS : Association CSV exists
+PASS : Address validation CSV exists
+PASS : Parser test source discovered
+PASS : CMake files discovered
+
+Readiness checks passed: 11
+Readiness checks failed: 0
+Production source modifications: 0
+Production build modifications: 0
+
+Elapsed seconds: 1
+Output directory: D:\Downloads\MarkOfKri_Audits\ECOFF_IMPLEMENTATION_PREFLIGHT_20261127_164127
