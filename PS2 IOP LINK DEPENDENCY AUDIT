@@ -1,0 +1,333 @@
+MARK OF KRI — PS2 IOP LINK DEPENDENCY AUDIT
+Generated: 2026-11-26 21:30:05
+Build directory: D:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug
+Mode: READ ONLY — NO BUILD OR SOURCE MODIFICATION
+
+=== PATH VALIDATION ===
+IOP CMakeLists: True
+Runtime CMakeLists: True
+build.ninja: True
+Ninja executable: True
+
+=== IOP TARGET DEFINITION ===
+   6: 
+   7: add_library(ps2_iop STATIC
+   8:     src/ps2_path.cpp
+   9:     src/iop_module_manager.cpp
+  10:     src/iop_subsystem.cpp
+  11:     src/emulator/iop_emulator.cpp
+  12:     src/emulator/core/iop_cpu.cpp
+---
+  46: 
+  47: add_library(ps2x::iop ALIAS ps2_iop)
+  48: 
+  49: if(PS2X_IOP_BUILD_TESTS)
+  50:     enable_testing()
+  51:     add_executable(ps2_iop_emulator_tests tests/iop_emulator_tests.cpp)
+  52:     target_link_libraries(ps2_iop_emulator_tests PRIVATE ps2_iop)
+---
+  51:     add_executable(ps2_iop_emulator_tests tests/iop_emulator_tests.cpp)
+  52:     target_link_libraries(ps2_iop_emulator_tests PRIVATE ps2_iop)
+  53:     add_test(NAME ps2_iop_emulator_tests COMMAND ps2_iop_emulator_tests)
+  54: 
+  55:     add_executable(ps2_iop_import_tests tests/iop_import_tests.cpp)
+  56:     target_link_libraries(ps2_iop_import_tests PRIVATE ps2_iop)
+  57:     target_include_directories(ps2_iop_import_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+---
+  55:     add_executable(ps2_iop_import_tests tests/iop_import_tests.cpp)
+  56:     target_link_libraries(ps2_iop_import_tests PRIVATE ps2_iop)
+  57:     target_include_directories(ps2_iop_import_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  58:     add_test(NAME ps2_iop_import_tests COMMAND ps2_iop_import_tests)
+  59: 
+  60:     add_executable(ps2_iop_compatibility_tests tests/iop_compatibility_tests.cpp)
+  61:     target_link_libraries(ps2_iop_compatibility_tests PRIVATE ps2_iop)
+---
+  60:     add_executable(ps2_iop_compatibility_tests tests/iop_compatibility_tests.cpp)
+  61:     target_link_libraries(ps2_iop_compatibility_tests PRIVATE ps2_iop)
+  62:     add_test(NAME ps2_iop_compatibility_tests COMMAND ps2_iop_compatibility_tests)
+  63: 
+  64:     add_executable(ps2_iop_import_version_tests tests/iop_import_version_tests.cpp)
+  65:     target_link_libraries(ps2_iop_import_version_tests PRIVATE ps2_iop)
+  66:     target_include_directories(ps2_iop_import_version_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+---
+  64:     add_executable(ps2_iop_import_version_tests tests/iop_import_version_tests.cpp)
+  65:     target_link_libraries(ps2_iop_import_version_tests PRIVATE ps2_iop)
+  66:     target_include_directories(ps2_iop_import_version_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  67:     add_test(NAME ps2_iop_import_version_tests COMMAND ps2_iop_import_version_tests)
+  68: 
+  69:     add_executable(ps2_iop_spu2_tests tests/iop_spu2_tests.cpp)
+  70:     target_link_libraries(ps2_iop_spu2_tests PRIVATE ps2_iop)
+---
+  69:     add_executable(ps2_iop_spu2_tests tests/iop_spu2_tests.cpp)
+  70:     target_link_libraries(ps2_iop_spu2_tests PRIVATE ps2_iop)
+  71:     target_include_directories(ps2_iop_spu2_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  72:     add_test(NAME ps2_iop_spu2_tests COMMAND ps2_iop_spu2_tests)
+  73: 
+  74: endif()
+  75: 
+---
+
+=== IOP LIBRARY FILE DISCOVERY ===
+No IOP-named .lib files found under build or IOP directories.
+
+=== NINJA TARGET INVENTORY ===
+Target inventory exit: 0
+CMakeFiles/ps2_runtime.dir/src/lib/ps2_iop_host.cpp.obj: CXX_COMPILER__ps2_runtime_unscanned_Debug
+
+=== NINJA TARGET QUERIES ===
+Query: ps2_iop
+Exit: 1
+ninja: error: unknown target 'ps2_iop'
+---
+Query: ps2_iop.lib
+Exit: 1
+ninja: error: unknown target 'ps2_iop.lib'
+---
+Query: ps2_iop:all
+Exit: 1
+ninja: error: unknown target 'ps2_iop:all'
+---
+
+=== BUILD GRAPH IOP REFERENCES ===
+Matching build.ninja lines: 66
+181: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+192: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+203: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+214: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+225: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+236: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+247: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+258: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+265: build CMakeFiles\ps2_runtime.dir\src\lib\ps2_iop_host.cpp.obj: CXX_COMPILER__ps2_runtime_unscanned_Debug D$:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp || cmake_object_order_depends_target_ps2_runtime
+269: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+280: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+291: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+302: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+313: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+324: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+335: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+346: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+357: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+368: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+379: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+390: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+401: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+412: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+423: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+434: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+445: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+456: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+467: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+478: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+489: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+500: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+511: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+522: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+533: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+544: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+555: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+566: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+577: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+588: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+599: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+610: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+621: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+632: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+643: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+654: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+665: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+676: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+687: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+698: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+713: build ps2_runtime.lib: CXX_STATIC_LIBRARY_LINKER__ps2_runtime_Debug CMakeFiles\ps2_runtime.dir\src\lib\game_overrides.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\gs\ps2_gif_arbiter.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\ps2_audio.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\ps2_audio_vag.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\ps2_audio_stream.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\gs\ps2_gs_memory.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\gs\gs_frontend.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\gs\gs_cpu_backend.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\ps2_iop_host.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\ps2_memory.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\ps2_ipu.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\ps2_pad.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\ps2_rom_device.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\ps2_vfs.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\ps2_runtime.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\ps2_vif1_interpreter.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\vu\ps2_vu1_core.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\vu\ps2_vu1_upper.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\vu\ps2_vu1_lower.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\games_database.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\EeScheduler.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\Audio.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\CD.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\Compatibility.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\DMA.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\Deci2.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\FileIO.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\Font.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\GS.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\IPU.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\LibC.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\MPEG.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\MemoryCard.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\Pad.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\RPC.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\SIF.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\System.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\TTY.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\Unimplemented.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Stubs\VU.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Syscalls\Deci2.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Syscalls\Dispatcher.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Syscalls\FileIO.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Syscalls\Interrupt.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Syscalls\RPC.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Syscalls\Sync.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Syscalls\System.cpp.obj CMakeFiles\ps2_runtime.dir\src\lib\Kernel\Syscalls\Thread.cpp.obj || _deps\raylib-build\raylib\external\glfw\src\glfw _deps\raylib-build\raylib\raylib.lib ffmpeg_external
+738: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+749: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+760: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+771: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+782: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+793: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+804: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+815: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+826: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+837: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+848: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+859: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+870: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+881: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+892: INCLUDES = -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\..\..\native\generated\controlled_slice\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel -ID:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\..\ps2xIOP\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\raylib-src\src\external\glfw\include -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\rlimgui-src -ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\_deps\imgui-src -external:ID:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include -external:W0
+911: LINK_LIBRARIES = ps2_runtime.lib  rlImGui.lib  imgui.lib  ThirdParty\ffmpeg-prefix\src\ffmpeg_external\bin\avcodec.lib  ThirdParty\ffmpeg-prefix\src\ffmpeg_external\bin\avformat.lib  ThirdParty\ffmpeg-prefix\src\ffmpeg_external\bin\avutil.lib  ThirdParty\ffmpeg-prefix\src\ffmpeg_external\bin\swresample.lib  ThirdParty\ffmpeg-prefix\src\ffmpeg_external\bin\swscale.lib  bcrypt.lib  secur32.lib  ws2_32.lib  user32.lib  advapi32.lib  ole32.lib  shell32.lib  ps2_iop.lib  _deps\raylib-build\raylib\raylib.lib  opengl32.lib  glu32.lib  winmm.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+
+=== IOP SOURCE INVENTORY ===
+IOP cpp source files: 27
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\iop_module_manager.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\iop_subsystem.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\ps2_path.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\iop_emulator.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\core\iop_cpu.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\core\iop_kernel.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\core\iop_memory.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\core\iop_sio2.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\core\iop_spu2.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\imports\iop_cdvd.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\imports\iop_dmacman.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\imports\iop_format.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\imports\iop_heaplib.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\imports\iop_imports.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\imports\iop_intrman.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\imports\iop_ioman.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\imports\iop_loadcore.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\imports\iop_stdio.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\imports\iop_sysclib.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\imports\iop_sysmem.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\imports\iop_timrman.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\imports\iop_vblank.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\services\iop_module_loader.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\emulator\services\iop_rpc.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\modules\dbcman.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\modules\libsd.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xIOP\src\modules\mcserv.cpp
+
+=== RUNTIME LINK REFERENCES ===
+ 106:             "${PS2X_IMGUI_SOURCE_DIR}/imgui_demo.cpp"
+ 107:         )
+ 108:         target_include_directories(imgui PUBLIC "${PS2X_IMGUI_SOURCE_DIR}")
+ 109: 
+ 110:         FetchContent_Declare(
+ 111:             rlImGui
+ 112:             GIT_REPOSITORY https://github.com/raylib-extras/rlImGui.git
+ 113:             GIT_TAG "Raylib_5_5"
+---
+ 125:             "${PS2X_RLIMGUI_SOURCE_DIR}/rlImGui.cpp"
+ 126:         )
+ 127:         target_include_directories(rlImGui PUBLIC "${PS2X_RLIMGUI_SOURCE_DIR}")
+ 128:         target_link_libraries(rlImGui PUBLIC raylib imgui)
+ 129:     endif()
+ 130: endif()
+ 131: 
+ 132: add_library(ps2_host_backend INTERFACE)
+---
+ 126:         )
+ 127:         target_include_directories(rlImGui PUBLIC "${PS2X_RLIMGUI_SOURCE_DIR}")
+ 128:         target_link_libraries(rlImGui PUBLIC raylib imgui)
+ 129:     endif()
+ 130: endif()
+ 131: 
+ 132: add_library(ps2_host_backend INTERFACE)
+ 133: 
+---
+ 228: 
+ 229:     target_compile_definitions(ps2_host_backend INTERFACE PLATFORM_VITA)
+ 230:     target_include_directories(ps2_host_backend INTERFACE ${PS2X_VITA_INCLUDE_DIRS})
+ 231:     target_link_libraries(ps2_host_backend INTERFACE
+ 232:         ${PS2X_VITA_RESOLVED_LIBRARIES}
+ 233:         m
+ 234:         c
+ 235:         pthread
+---
+ 229:     target_compile_definitions(ps2_host_backend INTERFACE PLATFORM_VITA)
+ 230:     target_include_directories(ps2_host_backend INTERFACE ${PS2X_VITA_INCLUDE_DIRS})
+ 231:     target_link_libraries(ps2_host_backend INTERFACE
+ 232:         ${PS2X_VITA_RESOLVED_LIBRARIES}
+ 233:         m
+ 234:         c
+ 235:         pthread
+ 236:     )
+---
+ 236:     )
+ 237: else()
+ 238:     target_link_libraries(ps2_host_backend INTERFACE raylib)
+ 239: 
+ 240:     if(PS2X_IS_ANDROID)
+ 241:         target_link_libraries(ps2_host_backend INTERFACE log android)
+ 242:     endif()
+ 243: endif()
+---
+ 239: 
+ 240:     if(PS2X_IS_ANDROID)
+ 241:         target_link_libraries(ps2_host_backend INTERFACE log android)
+ 242:     endif()
+ 243: endif()
+ 244: 
+ 245: if(PS2X_IS_ANDROID)
+ 246:     set(PS2X_ENABLE_FFMPEG_DEFAULT OFF)
+---
+ 319: 
+ 320:     add_library(ffmpeg INTERFACE)
+ 321:     target_link_libraries(ffmpeg INTERFACE
+ 322:         ffmpeg_avcodec
+ 323:         ffmpeg_avformat
+ 324:         ffmpeg_avutil
+ 325:         ffmpeg_swresample
+ 326:         ffmpeg_swscale
+---
+ 350: 
+ 351:     add_library(ffmpeg INTERFACE)
+ 352:     target_link_libraries(ffmpeg INTERFACE PkgConfig::FFMPEG)
+ 353: endif()
+ 354: 
+ 355: function(ps2x_stage_ffmpeg_runtime_dlls target_name)
+ 356:     if(NOT WIN32)
+ 357:         return()
+---
+ 385:     src/lib/gs/gs_frontend.cpp
+ 386:     src/lib/gs/gs_cpu_backend.cpp
+ 387:     src/lib/ps2_iop_host.cpp
+ 388:     src/lib/ps2_memory.cpp
+ 389:     src/lib/ps2_ipu.cpp
+ 390:     src/lib/ps2_pad.cpp
+ 391:     src/lib/ps2_rom_device.cpp
+ 392:     src/lib/ps2_vfs.cpp
+---
+ 532: endif()
+ 533: 
+ 534: target_include_directories(ps2_runtime PUBLIC
+ 535:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+ 536:     ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/Kernel
+ 537:     ${CMAKE_CURRENT_SOURCE_DIR}/../ps2xIOP/include
+ 538: )
+ 539: 
+---
+ 538: )
+ 539: 
+ 540: target_link_libraries(ps2_runtime PUBLIC ps2_host_backend ffmpeg ps2_iop)
+ 541: target_link_libraries(ps2EntryRunner
+ 542:     PRIVATE
+ 543:     ps2_runtime
+ 544: )
+ 545: 
+---
+ 539: 
+ 540: target_link_libraries(ps2_runtime PUBLIC ps2_host_backend ffmpeg ps2_iop)
+ 541: target_link_libraries(ps2EntryRunner
+ 542:     PRIVATE
+ 543:     ps2_runtime
+ 544: )
+ 545: 
+ 546: if(PS2X_ENABLE_DEBUG_UI AND NOT PS2X_IS_VITA AND NOT PS2X_IS_ANDROID)
+---
+ 548:         src/lib/ps2_debug_panel.cpp
+ 549:     )
+ 550:     target_link_libraries(ps2EntryRunner PRIVATE rlImGui imgui)
+ 551:     target_compile_definitions(ps2EntryRunner PRIVATE PS2X_ENABLE_DEBUG_UI=1)
+ 552: endif()
+ 553: 
+ 554: ps2x_stage_ffmpeg_runtime_dlls(ps2EntryRunner)
+ 555: 
+---
+ 642: 
+ 643: # MARK_OF_KRI_GENERATED_INCLUDE_PATHS
+ 644: target_include_directories(ps2EntryRunner PRIVATE
+ 645:     "${CMAKE_CURRENT_SOURCE_DIR}/../../../native/generated/controlled_slice/include"
+ 646: )
+ 647: 
+---
+
+=== SUMMARY ===
+IOP library files found: 0
+IOP-related target entries: 1
+Ninja inventory exit: 0
+No build or source modification performed.
+
+Actual elapsed: 0.14 seconds
+Estimated execution: 2–20 seconds
+PowerShell session remains open.
