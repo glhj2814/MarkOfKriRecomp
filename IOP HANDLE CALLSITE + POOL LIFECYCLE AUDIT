@@ -1,0 +1,1353 @@
+MARK OF KRI — IOP HANDLE CALLSITE + POOL LIFECYCLE AUDIT
+Generated: 2026-11-27 21:07:56
+Root: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+READ ONLY — no source modifications.
+
+Source files scanned: 280
+
+===== SEARCH: allocateIopHandle =====
+ps2xIOP\include\ps2x\iop\iop_host.h:93: virtual uint32_t allocateIopHandle(IopHandleKind kind) = 0;
+ps2xIOP\tests\iop_compat_test_support.h:61: uint32_t allocateIopHandle(IopHandleKind) override { return nextHandle += 0x80u; }
+ps2xIOP\tests\iop_emulator_tests.cpp:58: uint32_t allocateIopHandle(IopHandleKind) override { return 1u; }
+ps2xIOP\tests\iop_import_tests.cpp:43: uint32_t allocateIopHandle(IopHandleKind) override { return 1u; }
+ps2xRuntime\src\lib\ps2_iop_host.cpp:223: uint32_t PS2IopHostAdapter::allocateIopHandle(ps2x::iop::IopHandleKind kind)
+ps2xRuntime\src\lib\ps2_iop_host.h:56: uint32_t allocateIopHandle(ps2x::iop::IopHandleKind kind) override;
+
+===== SEARCH: IopHandleKind =====
+ps2xIOP\include\ps2x\iop\iop_host.h:93: virtual uint32_t allocateIopHandle(IopHandleKind kind) = 0;
+ps2xIOP\include\ps2x\iop\iop_types.h:78: enum class IopHandleKind : uint32_t
+ps2xIOP\tests\iop_compat_test_support.h:61: uint32_t allocateIopHandle(IopHandleKind) override { return nextHandle += 0x80u; }
+ps2xIOP\tests\iop_emulator_tests.cpp:58: uint32_t allocateIopHandle(IopHandleKind) override { return 1u; }
+ps2xIOP\tests\iop_import_tests.cpp:43: uint32_t allocateIopHandle(IopHandleKind) override { return 1u; }
+ps2xRuntime\src\lib\ps2_iop_host.cpp:223: uint32_t PS2IopHostAdapter::allocateIopHandle(ps2x::iop::IopHandleKind kind)
+ps2xRuntime\src\lib\ps2_iop_host.cpp:232: return kind == ps2x::iop::IopHandleKind::RpcPacket
+ps2xRuntime\src\lib\ps2_iop_host.h:56: uint32_t allocateIopHandle(ps2x::iop::IopHandleKind kind) override;
+
+===== SEARCH: rpcAllocPacketAddr =====
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:86: static uint32_t rpcAllocPacketAddr(uint8_t *rdram)
+ps2xRuntime\src\lib\ps2_iop_host.cpp:233: ? rpcAllocPacketAddr(rdram)
+
+===== SEARCH: rpcAllocServerAddr =====
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:97: static uint32_t rpcAllocServerAddr(uint8_t *rdram)
+ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:304: serverPtr = rpcAllocServerAddr(rdram);
+ps2xRuntime\src\lib\ps2_iop_host.cpp:234: : rpcAllocServerAddr(rdram);
+
+===== SEARCH: g_rpc_packet_index =====
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:91: uint32_t slot = g_rpc_packet_index++ % kRpcPacketPoolCount;
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:216: inline uint32_t g_rpc_packet_index = 0;
+ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:236: g_rpc_packet_index = 0;
+ps2xRuntime\src\lib\ps2_debug_panel.cpp:999: rpcPacketIndex = g_rpc_packet_index;
+
+===== SEARCH: g_rpc_server_index =====
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:102: uint32_t slot = g_rpc_server_index++ % kRpcServerPoolCount;
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:217: inline uint32_t g_rpc_server_index = 0;
+ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:237: g_rpc_server_index = 0;
+ps2xRuntime\src\lib\ps2_debug_panel.cpp:1000: rpcServerIndex = g_rpc_server_index;
+
+===== SEARCH: kRpcPacketPool =====
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:88: if (kRpcPacketPoolCount == 0)
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:91: uint32_t slot = g_rpc_packet_index++ % kRpcPacketPoolCount;
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:92: uint32_t addr = kRpcPacketPoolBase + (slot * kRpcPacketSize);
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:246: static constexpr uint32_t kRpcPacketPoolBase = 0x01F00000;
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:247: static constexpr uint32_t kRpcPacketPoolBytes = 0x00010000;
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:248: static constexpr uint32_t kRpcPacketPoolCount = kRpcPacketPoolBytes / kRpcPacketSize;
+
+===== SEARCH: kRpcServerPool =====
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:99: if (kRpcServerPoolCount == 0)
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:102: uint32_t slot = g_rpc_server_index++ % kRpcServerPoolCount;
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:103: uint32_t addr = kRpcServerPoolBase + (slot * kRpcServerStride);
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:249: static constexpr uint32_t kRpcServerPoolBase = 0x01F10000;
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:250: static constexpr uint32_t kRpcServerPoolBytes = 0x00010000;
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:252: static constexpr uint32_t kRpcServerPoolCount = kRpcServerPoolBytes / kRpcServerStride;
+
+===== SEARCH: rpcZeroRdram =====
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:44: static void rpcZeroRdram(uint8_t *rdram, uint32_t dst, size_t size)
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:49: ps2TraceGuestRangeWrite(rdram, dst, static_cast<uint32_t>(size), "rpcZeroRdram", nullptr);
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:93: rpcZeroRdram(rdram, addr, kRpcPacketSize);
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:104: rpcZeroRdram(rdram, addr, kRpcServerStride);
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:336: rpcZeroRdram(rdram, addr, kTlsBlockSize);
+ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:351: rpcZeroRdram(rdram, addr, aligned);
+ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:605: rpcZeroRdram(rdram, receiveBuffer, receiveSize);
+
+===== SEARCH: resetIop =====
+ps2xAnalyzer\include\ps2recomp\sce_symbol_database_data.h:194: std::string_view{R"PS2SDB( "2.2.2", "2.2.4", "2.3.0-5", "2.3.0", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["1.4.2", "1.4.4", "1.5.0", "1.5.1", "1.5.3", "1.6.1", "1.6.3", "1.6.5", "2.0.0", "2.0.2", "2.0.7", "2.1.0", "2.1.1", "2.1.3", "2.1.4", "2.2.0", "2.2.1", "2.2.2", "2.2.4", "2.3.0", "2.3.2", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.5.7", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"8": {"type": "MIPS_26", "symbol": "_sceSifLoadElfPart", "scope": "LIBRARY", "original": ".text"}}}}}, "sceSifLoadElf": {"3f54f74d35af8d283604adee724f13d9fe2989fe": {"50c4b94c": {"type": "FUNCTION", "size": 40, "library": "libkernl", "scope": "GLOBAL", "is_interface": true, "versions": ["2.0.0", "2.0.2", "2.0.5", "2.1.0", "2.1.1", "2.1.3", "2.1.4", "2.2.0", "2.2.1", "2.2.2", "2.2.4", "2.3.0-5", "2.3.0", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["1.4.2", "1.4.4", "1.5.0", "1.5.1", "1.5.3", "1.6.1", "1.6.3", "1.6.5", "2.0.0", "2.0.2", "2.0.7", "2.1.0", "2.1.1", "2.1.3", "2.1.4", "2.2.0", "2.2.1", "2.2.2", "2.2.4", "2.3.0", "2.3.2", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.5.7", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"8": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".rodata"}, "16": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".rodata"}, "20": {"type": "MIPS_26", "symbol": "_sceSifLoadElfPart", "scope": "LIBRARY", "original": ".text"}}}}}, "sceSifGetIopAddr": {"a1cc3b2776e30604d5676d93347e38a79c5898c5": {"cc781f57": {"type": "FUNCTION", "size": 236, "library": "libkernl", "scope": "GLOBAL", "is_interface": false, "versions": ["2.0.0", "2.0.2", "2.0.5", "2.1.0", "2.1.1", "2.1.3", "2.1.4", "2.2.0", "2.2.1", "2.2.2", "2.2.4", "2.3.0-5", "2.3.0", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["1.4.2", "1.4.4", "1.5.0", "1.5.1", "1.5.3", "1.6.1", "1.6.3", "1.6.5", "2.0.0", "2.0.2", "2.0.7", "2.1.0", "2.1.1", "2.1.3", "2.1.4", "2.2.0", "2.2.1", "2.2.2", "2.2.4", "2.3.0", "2.3.2", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.5.7", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"32": {"type": "MIPS_26", "symbol": "_lf_bind", "scope": "LIBRARY", "original": ".text"}, "60": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".bss"}, "64": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".bss"}, "68": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "72": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "84": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "112": {"type": "MIPS_26", "symbol": "sceSifCallRpc", "scope": "LIBRARY"}, "148": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "168": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "184": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}}}}}, "sceSifSetIopAddr": {"61165350e86bba0a2d17eff2ae5d89f9bbb0926d": {"269f203d": {"type": "FUNCTION", "size": 220, "library": "libkernl", "scope": "GLOBAL", "is_interface": false, "versions": ["2.0.0", "2.0.2", "2.0.5", "2.1.0", "2.1.1", "2.1.3", "2.1.4", "2.2.0", "2.2.1", "2.2.2", "2.2.4", "2.3.0-5", "2.3.0", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["2.0.0", "2.0.2", "2.0.7", "2.1.0", "2.1.1", "2.1.3", "2.1.4", "2.2.0", "2.2.1", "2.2.2", "2.2.4", "2.3.0", "2.3.2", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.5.7", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"28": {"type": "MIPS_26", "symbol": "_lf_bind", "scope": "LIBRARY", "original": ".text"}, "40": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".bss"}, "52": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "56": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "128": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "132": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".bss"}, "136": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "164": {"type": "MIPS_26", "symbol": "sceSifCallRpc", "scope": "LIBRARY"}}}}, "9f8696f0c8b29b32e2685add97224bc790f71c72": {"e7f53fe8": {"type": "FUNCTION", "size": 224, "library": "libkernl", "scope": "GLOBAL", "is_interface": false, "versions": [], "sdk": ["1.4.2", "1.4.4", "1.5.0", "1.5.1", "1.5.3", "1.6.1", "1.6.3", "1.6.5"], "compiler_versions": ["2.3.1.01"], "relocations": {"28": {"type": "MIPS_26", "symbol": "_lf_bind", "scope": "LIBRARY", "original": ".text"}, "40": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".bss"}, "52": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "56": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "132": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "136": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".bss"}, "140": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "168": {"type": "MIPS_26", "symbol": "sceSifCallRpc", "scope": "LIBRARY"}}}}}, "sceSifResetIop": {"1e6da24ddedada4c8f4e8d946424a8651e1d438a": {"f087ff29": {"type": "FUNCTION", "size": 316, "library": "libkernl", "scope": "GLOBAL", "is_interface": false, "versions": ["2.3.0", "2.3.0-5", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1"], "sdk": ["2.3.0", "2.3.2", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.5.7", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"20": {"type": "MIPS_26", "symbol": "sceSifStopDma", "scope": "LIBRARY"}, "32": {"type": "MIPS_26", "symbol": "sceSifGetReg", "scope": "LIBRARY"}, "40": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".bss"}, "48": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "80": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "112": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "144": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "168": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "176": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".bss"}, "196": {"type": "MIPS_26", "symbol": "sceSifWriteBackDCache", "scope": "LIBRARY"}, "208": {"type": "MIPS_26", "symbol": "sceSifSetReg", "scope": "LIBRARY"}, "220": {"type": "MIPS_26", "symbol": "sceSifSetDma", "scope": "LIBRARY"}, "236": {"type": "MIPS_26", "symbol": "sceSifSetReg", "scope": "LIBRARY"}, "248": {"type": "MIPS_26", "symbol": "sceSifSetReg", "scope": "LIBRARY"}, "264": {"type": "MIPS_26", "symbol": "sceSifSetReg", "scope": "LIBRARY"}, "276": {"type": "MIPS_26", "symbol": "sceSifSetReg", "scope": "LIBRARY"}}}}, "33bac3151c16b048e4a4e82beb83e796fe5b4dc1": {"310c0c8e": {"type": "FUNCTION", "size": 340, "library": "libkernl", "scope": "GLOBAL", "is_interface": false, "versions": ["2.8.0"], "sdk": ["2.8.0", "2.8.1", "3.0.1-1"], "compiler_versions": ["2.4.1.01"], "relocations": {"28": {"type": "MIPS_26", "symbol": "sceSifExecNotifyHandler", "scope": "LIBRARY"}, "40": {"type": "MIPS_26", "symbol": "sceSifExecNotifyHandler", "scope": "LIBRARY"}, "48": {"type": "MIPS_26", "symbol": "sceSifStopDma", "scope": "LIBRARY"}, "60": {"type": "MIPS_26", "symbol": "sceSifGetReg")PS2SDB", 8192},
+ps2xAnalyzer\include\ps2recomp\sce_symbol_database_data.h:196: std::string_view{R"PS2SDB(", "scope": "LIBRARY"}, "300": {"type": "MIPS_26", "symbol": "sceSifSetReg", "scope": "LIBRARY"}}}}}, "sceSifIsAliveIop": {"90858e26e668b48956b9c2b323fee1e75761f82b": {"ab61594a": {"type": "FUNCTION", "size": 40, "library": "libkernl", "scope": "GLOBAL", "is_interface": false, "versions": ["2.0.0", "2.0.2", "2.0.5", "2.1.0", "2.1.1", "2.1.3", "2.1.4", "2.2.0", "2.2.1", "2.2.2", "2.2.4", "2.3.0-5", "2.3.0", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["1.4.2", "1.4.4", "1.5.0", "1.5.1", "1.5.3", "1.6.1", "1.6.3", "1.6.5", "2.0.0", "2.0.2", "2.0.7", "2.1.0", "2.1.1", "2.1.3", "2.1.4", "2.2.0", "2.2.1", "2.2.2", "2.2.4", "2.3.0", "2.3.2", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.5.7", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"8": {"type": "MIPS_26", "symbol": "sceSifGetReg", "scope": "LIBRARY"}}}}}, "sceSifSyncIop": {"3294f4ace62d2a1f61a49e6631f787b50ea7c796": {"b271b9ba": {"type": "FUNCTION", "size": 56, "library": "libkernl", "scope": "GLOBAL", "is_interface": true, "versions": ["2.3.0", "2.3.0-5", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1"], "sdk": ["2.3.0", "2.3.2", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.5.7", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"8": {"type": "MIPS_26", "symbol": "sceSifGetReg", "scope": "LIBRARY"}, "32": {"type": "MIPS_26", "symbol": "sceResetttyinit", "scope": "LIBRARY"}}}}, "3592b50eba3fb9687ed49051aae323374e144634": {"5d7400db": {"type": "FUNCTION", "size": 80, "library": "libkernl", "scope": "GLOBAL", "is_interface": true, "versions": ["2.8.0", "3.0.0", "3.1.0"], "sdk": ["2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01"], "relocations": {"8": {"type": "MIPS_26", "symbol": "sceSifGetReg", "scope": "LIBRARY"}, "32": {"type": "MIPS_26", "symbol": "sceResetttyinit", "scope": "LIBRARY"}, "44": {"type": "MIPS_26", "symbol": "sceSifExecNotifyHandler", "scope": "LIBRARY"}, "56": {"type": "MIPS_26", "symbol": "sceSifExecNotifyHandler", "scope": "LIBRARY"}}}}, "812eb9c5f9154b0055ab4bac3224621e510537fa": {"d5646f89": {"type": "FUNCTION", "size": 72, "library": "libkernl", "scope": "GLOBAL", "is_interface": true, "versions": ["2.1.1", "2.1.3", "2.1.4", "2.2.0", "2.2.1", "2.2.2", "2.2.4"], "sdk": ["2.1.1", "2.1.3", "2.1.4", "2.2.0", "2.2.1", "2.2.2", "2.2.4"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"8": {"type": "MIPS_26", "symbol": "sceSifGetReg", "scope": "LIBRARY"}, "32": {"type": "MIPS_26", "symbol": "sceSifSetReg", "scope": "LIBRARY"}, "40": {"type": "MIPS_26", "symbol": "sceResetttyinit", "scope": "LIBRARY"}}}, "a89862c4": {"type": "FUNCTION", "size": 72, "library": "libkernl", "scope": "GLOBAL", "is_interface": true, "versions": ["2.0.0", "2.0.2", "2.0.5", "2.1.0"], "sdk": ["1.4.2", "1.4.4", "1.5.0", "1.5.1", "1.5.3", "1.6.1", "1.6.3", "1.6.5", "2.0.0", "2.0.2", "2.0.7", "2.1.0"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"8": {"type": "MIPS_26", "symbol": "sceSifGetReg", "scope": "LIBRARY"}, "32": {"type": "MIPS_26", "symbol": "sceSifSetReg", "scope": "LIBRARY"}, "40": {"type": "MIPS_26", "symbol": "sceTtyInit", "scope": "LIBRARY"}}}}}, "sceSifRebootIop": {"bf5d948151d24286291e5161702db4d49bf65643": {"fddee473": {"type": "FUNCTION", "size": 272, "library": "libkernl", "scope": "GLOBAL", "is_interface": true, "versions": ["2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"4": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".rodata"}, "32": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".rodata"}, "92": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".rodata"}, "100": {"type": "MIPS_26", "symbol": "scePrintf", "scope": "LIBRARY"}, "104": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".rodata"}, "116": {"type": "MIPS_26", "symbol": "sceSifInitRpc", "scope": "LIBRARY"}, "124": {"type": "MIPS_26", "symbol": "sceSifExitRpc", "scope": "LIBRARY"}, "244": {"type": "MIPS_26", "symbol": "sceSifResetIop", "scope": "LIBRARY", "original": ".text"}}}, "bd740d0b": {"type": "FUNCTION", "size": 272, "library": "libkernl", "scope": "GLOBAL", "is_interface": true, "versions": ["2.2.0", "2.2.1", "2.2.2", "2.2.4", "2.3.0", "2.3.0-5", "2.3.4", "2.4.0"], "sdk": ["2.2.0", "2.2.1", "2.2.2", "2.2.4", "2.3.0", "2.3.2", "2.3.4", "2.4.0", "2.5.7"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"4": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".rodata"}, "32": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".rodata"}, "92": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".rodata"}, "100": {"type": "MIPS_26", "symbol": "printf"}, "104": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".rodata"}, "116": {"type": "MIPS_26", "symbol": "sceSifInitRpc", "scope": "LIBRARY"}, "124": {"type": "MIPS_26", "symbol": "sceSifExitRpc", "scope": "LIBRARY"}, "244": {"type": "MIPS_26", "symbol": "sceSifResetIop", "scope": "LIBRARY", "original": ".text"}}}}, "9ff31ad5641f76f1abccc3e1cc5813b62d901a7c": {"c353d5dd": {"type": "FUNCTION", "size": 248, "library": "libkernl", "scope": "GLOBAL", "is_interface": true, "versions": [], "sdk": ["1.4.2", "1.4.4", "1.5.0", "1.5.1", "1.5.3", "1.6.3", "1.6.5"], "compiler_versions": ["2.3.1.01"], "relocations": {"4": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".rodata"}, "32": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".rodata"}, "84": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".rodata"}, "92": {"type": "MIPS_26", "symbol": "printf"}, "96": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".rodata"}, "108": {"type": "MIPS_26", "symbol": "sceSifInitRpc", "scope": "LIBRARY"}, "116": {"type": "MIPS_26", "symbol": "sceSifExitRpc", "scope": "LIBRARY"}, "220": {"type": "MIPS_26", "symbol": "sceSifResetIop", "scope": "LIBRARY", "original": ".text"}}}}, "24506c42b358da9f84466ded4fe458178660c5b9": {"5db2a62e": {"type": "FUNCTION", "size": 256, "library": "libkernl", "scope": "GLOBAL", "is_interface": true, "versions": ["2.1.3", "2.1.4"], "sdk": ["2.1.3", "2.1.4"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"4": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".rodata"}, "32": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".rodata"}, "92": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".rodata"}, "100": {"type": "MIPS_26", "symbol": "printf"}, "104": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".rodata"}, "116": {"type": "MIPS_26", "symbol": "sceSifInitRpc", "scope": "LIBRARY"}, "124": {"type": "MIPS_26", "symbol": "sceSifExitRpc", "scope": "LIBRARY"}, "228": {"type": "MIPS_26", "symbol": "sceSifResetIop", "scope": "LIBRARY", "original": ".text"}}}}, "dd066cf7ac3df695a9595b0c79630868868a66f7": {"5db2a62e": {"type": "FUNCTION", "size": 256, "library": "libkernl", "scope": "GLOBAL", "is_interface": true, "versions": ["2.0.0", "2.0.2", "2.0.5", "2.1.0", "2.1.1"], "sdk": ["2.0.0", "2.0.2", "2.0.7", "2.1.0", "2.1.1"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"4": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".rodata"}, "32": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".rodata"}, "92": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".rodata"}, "100": {"type": "MIPS_26", "symbol": "printf"}, "104": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".rodata"}, "116": {"type": "MIPS_26", "symbol": "sceSifInitRpc", "scope": "LIBR)PS2SDB", 8192},
+ps2xAnalyzer\include\ps2recomp\sce_symbol_database_data.h:197: std::string_view{R"PS2SDB(ARY"}, "124": {"type": "MIPS_26", "symbol": "sceSifExitRpc", "scope": "LIBRARY"}, "228": {"type": "MIPS_26", "symbol": "sceSifResetIop", "scope": "LIBRARY", "original": ".text"}}}}, "5394ae326363de7c874d9aab65a654d5bcc4e021": {"c353d5dd": {"type": "FUNCTION", "size": 248, "library": "libkernl", "scope": "GLOBAL", "is_interface": true, "versions": [], "sdk": ["1.6.1", "1.6.5"], "compiler_versions": ["2.3.1.01"], "relocations": {"4": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".rodata"}, "32": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".rodata"}, "84": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".rodata"}, "92": {"type": "MIPS_26", "symbol": "printf"}, "96": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".rodata"}, "108": {"type": "MIPS_26", "symbol": "sceSifInitRpc", "scope": "LIBRARY"}, "116": {"type": "MIPS_26", "symbol": "sceSifExitRpc", "scope": "LIBRARY"}, "220": {"type": "MIPS_26", "symbol": "sceSifResetIop", "scope": "LIBRARY", "original": ".text"}}}}}, "SetTLBHandler": {"0bd7220911d4f0146903dad8877a69d35d6c09e7": {"c2c251ea": {"type": "FUNCTION", "size": 96, "library": "libkernl", "scope": "GLOBAL", "is_interface": false, "versions": ["2.3.0", "2.3.0-5", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["2.3.0", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.5.7", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"4": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".data"}, "16": {"type": "MIPS_HI16", "symbol": "_kTLBException"}, "20": {"type": "MIPS_LO16", "symbol": "_kTLBException"}, "28": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".data"}, "40": {"type": "MIPS_26", "symbol": "SetVTLBRefillHandler", "scope": "LIBRARY"}, "52": {"type": "MIPS_26", "symbol": "SetVTLBRefillHandler", "scope": "LIBRARY"}, "64": {"type": "MIPS_26", "symbol": "SetVTLBRefillHandler", "scope": "LIBRARY"}}}}}, "SetDebugHandler": {"5489caa7b1c700198b7ecaa15e7286d22081a15b": {"2ab68d99": {"type": "FUNCTION", "size": 132, "library": "libkernl", "scope": "GLOBAL", "is_interface": true, "versions": ["2.3.0", "2.3.0-5", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["2.3.0", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.5.7", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {"40": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".data"}, "48": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".data"}, "72": {"type": "MIPS_HI16", "symbol": "<data>", "original": "_kDebugException"}, "80": {"type": "MIPS_26", "symbol": "SetVTLBRefillHandler", "scope": "LIBRARY"}, "84": {"type": "MIPS_LO16", "symbol": "<data>", "original": "_kDebugException"}, "96": {"type": "MIPS_HI16", "symbol": "<data>", "original": "_kDebugException"}, "104": {"type": "MIPS_26", "symbol": "SetVCommonHandler", "scope": "LIBRARY"}, "108": {"type": "MIPS_LO16", "symbol": "<data>", "original": "_kDebugException"}}}}}, "Copy": {"2641980b293b45b1d8ba8e6e18eea7f4acba5228": {"00000000": {"type": "FUNCTION", "size": 16, "library": "libkernl", "scope": "LOCAL", "is_interface": false, "versions": ["2.2.1", "2.2.2", "2.2.4", "2.3.0-5", "2.3.0", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["2.2.1", "2.2.2", "2.2.4", "2.3.0", "2.3.2", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.5.7", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {}}}}, "kCopy": {"417d769e1ff2b415ec14548d2aeb1e6fe40e685f": {"00000000": {"type": "FUNCTION", "size": 56, "library": "libkernl", "scope": "LOCAL", "is_interface": false, "versions": ["2.2.1", "2.2.2", "2.2.4", "2.3.0-5", "2.3.0", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["2.2.1", "2.2.2", "2.2.4", "2.3.0", "2.3.2", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.5.7", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {}}}, "0c0e0b697171cf1f8db6c285641d95381c8051f9": {"00000000": {"type": "FUNCTION", "size": 48, "library": "libkernl", "scope": "LOCAL", "is_interface": false, "versions": ["2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01"], "relocations": {}}}}, "GetEntryAddress": {"4328807a69c047c9c44a0c0f235233072d832cd7": {"00000000": {"type": "FUNCTION", "size": 16, "library": "libkernl", "scope": "LOCAL", "is_interface": false, "versions": ["2.2.1", "2.2.2", "2.2.4", "2.3.0-5", "2.3.0", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["2.2.1", "2.2.2", "2.2.4", "2.3.0", "2.3.2", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.5.7", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {}}}}, "setup": {"69c56eae5e01cc87e2221804a4974cf24c00fc9e": {"00000000": {"type": "FUNCTION", "size": 16, "library": "libkernl", "scope": "LOCAL", "is_interface": false, "versions": ["2.2.1", "2.2.2", "2.2.4", "2.3.0-5", "2.3.0", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["2.2.1", "2.2.2", "2.2.4", "2.3.0", "2.3.2", "2.3.4", "2.4.0", "2.4.1", "2.4.2", "2.4.3", "2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.5.7", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01", "2.3.1.01"], "relocations": {}}}}, "InitTLBFunctions": {"2570ece463697f085e8f655b0eab588f2ad48ca8": {"95325f89": {"type": "FUNCTION", "size": 196, "library": "libkernl", "scope": "GLOBAL", "is_interface": true, "versions": ["2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.8.0", "3.0.0", "3.1.0"], "sdk": ["2.5.0", "2.5.2", "2.5.3", "2.5.4", "2.5.5", "2.6.0", "2.7.0", "2.7.1", "2.7.2-3", "2.7.2", "2.8.0", "2.8.1", "3.0.0", "3.0.1-1", "3.0.1", "3.0.2", "3.1.0"], "compiler_versions": ["2.4.1.01"], "relocations": {"4": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".data"}, "28": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".data"}, "32": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".data"}, "40": {"type": "MIPS_26", "symbol": "setup", "original": ".text"}, "48": {"type": "MIPS_HI16", "symbol": "<data>", "original": ".data"}, "60": {"type": "MIPS_LO16", "symbol": "<data>", "original": ".data"}, "64": {"type": "MIPS_26", "symbol": "Copy", "original": ".text"}, "72": {"type": "MIPS_26", "symbol": "FlushCache", "scope": "LIBRARY"}, "80": {"type": "MIPS_26", "symbol": "FlushCache", "scope": "LIBRARY"}, "92": {"type": "MIPS_26", "symbol": "setup", "original": ".text"}, "104": {"type": "MIPS_26", "symbol": "setup", "original": ".text"}, "120": {"type": "MIPS_26", "symbol": "GetEntryAddress", "original": ".text"}, "136": {"type": "MIPS_26", "symbol": "setup", "original": ".text"}, "156": {"type": "MIPS_26", "symbol": "GetEntryAddress", "original": ".text)PS2SDB", 8192},
+ps2xAnalyzer\include\ps2recomp\sce_symbol_database_data.h:1237: std::string_view{R"PS2SDB("next": [], "symbols": [{"name": "tls1_cert_verify_mac", "hash": "8c5034008a1f1310a0f0f629d339fa26c299fa76", "variant": 1702280080, "library": "libhttps"}]}}], "symbols": []}}], "symbols": []}}], "symbols": []}}, {"match": {"value": 8423469}, "child": {"skip": 0, "offset": 16, "next": [{"match": {"value": 1007681536, "relocation": {"type": "MIPS_HI16", "symbol": "<data>"}}, "child": {"skip": 0, "offset": 20, "next": [{"match": {"value": 4290707504}, "child": {"skip": 0, "offset": 24, "next": [{"match": {"value": 201326592, "relocation": {"type": "MIPS_26", "symbol": "PollSema"}}, "child": {"skip": 0, "offset": 28, "next": [{"match": {"value": 2382626816, "relocation": {"type": "MIPS_LO16", "symbol": "<data>"}}, "child": {"skip": 120, "offset": 152, "next": [], "symbols": [{"name": "sceMcGetSlotMax", "hash": "12d3fcfa01daff91ea3e97b38a37531fd370d62b", "variant": 1928573847, "library": "libmc"}]}}], "symbols": []}}, {"match": {"value": 201326592, "relocation": {"type": "MIPS_26", "symbol": "WaitSema"}}, "child": {"skip": 0, "offset": 28, "next": [{"match": {"value": 2382626816, "relocation": {"type": "MIPS_LO16", "symbol": "<data>"}}, "child": {"skip": 16, "offset": 48, "next": [{"match": {"value": 604307457}, "child": {"skip": 0, "offset": 52, "next": [{"match": {"value": 12333}, "child": {"skip": 60, "offset": 116, "next": [], "symbols": [{"name": "sceEENetNotifyEEDriverIsReady", "hash": "e70604fcc2c3752b815b240b87c49b3f5598d344", "variant": 969305504, "library": "libeenet"}]}}], "symbols": []}}, {"match": {"value": 604307458}, "child": {"skip": 0, "offset": 52, "next": [{"match": {"value": 12333}, "child": {"skip": 60, "offset": 116, "next": [], "symbols": [{"name": "sceEENetNotifyEEDriverIsTerminated", "hash": "323c098f8ced28a555f846e987fc6bd6477449e8", "variant": 969305504, "library": "libeenet"}]}}], "symbols": []}}], "symbols": []}}], "symbols": []}}], "symbols": []}}], "symbols": []}}, {"match": {"value": 4290707504}, "child": {"skip": 0, "offset": 20, "next": [{"match": {"value": 201326592, "relocation": {"type": "MIPS_26", "symbol": "sceSifStopDma"}}, "child": {"skip": 0, "offset": 24, "next": [{"match": {"value": 10518573}, "child": {"skip": 12, "offset": 40, "next": [{"match": {"value": 1007288320, "relocation": {"type": "MIPS_HI16", "symbol": "<data>"}}, "child": {"skip": 0, "offset": 44, "next": [{"match": {"value": 4216877}, "child": {"skip": 156, "offset": 204, "next": [{"match": {"value": 604241924}, "child": {"skip": 0, "offset": 208, "next": [{"match": {"value": 201326592, "relocation": {"type": "MIPS_26", "symbol": "sceSifSetReg"}}, "child": {"skip": 104, "offset": 316, "next": [], "symbols": [{"name": "sceSifResetIop", "hash": "1e6da24ddedada4c8f4e8d946424a8651e1d438a", "variant": 4035444521, "library": "libkernl"}]}}], "symbols": []}}, {"match": {"value": 60825645}, "child": {"skip": 0, "offset": 208, "next": [{"match": {"value": 201326592, "relocation": {"type": "MIPS_26", "symbol": "sceSifSetDma"}}, "child": {"skip": 92, "offset": 304, "next": [], "symbols": [{"name": "sceSifResetIop", "hash": "13ebc3d13d48d69bfe0a84735c4d2c844438d9b6", "variant": 2677632542, "library": "libkernl"}]}}], "symbols": []}}], "symbols": []}}], "symbols": []}}, {"match": {"value": 4216877}, "child": {"skip": 0, "offset": 44, "next": [{"match": {"value": 1006764032, "relocation": {"type": "MIPS_HI16", "symbol": "<data>"}}, "child": {"skip": 16, "offset": 64, "next": [{"match": {"value": 272629770}, "child": {"skip": 0, "offset": 68, "next": [{"match": {"value": 18477}, "child": {"skip": 228, "offset": 300, "next": [], "symbols": [{"name": "sceSifResetIop", "hash": "20b97ded59dce03567491d0b26af0f18e0b2a4aa", "variant": 904096614, "library": "libkernl"}]}}], "symbols": []}}, {"match": {"value": 272629771}, "child": {"skip": 0, "offset": 68, "next": [{"match": {"value": 18477}, "child": {"skip": 232, "offset": 304, "next": [], "symbols": [{"name": "sceSifResetIop", "hash": "9a7a9709a46c6b81fa5ee16600e86e410192c854", "variant": 3310506682, "library": "libkernl"}]}}], "symbols": []}}], "symbols": []}}], "symbols": []}}], "symbols": []}}], "symbols": []}}, {"match": {"value": 201326592, "relocation": {"type": "MIPS_26", "symbol": "sceHiPlugCameraGetData"}}, "child": {"skip": 0, "offset": 24, "next": [{"match": {"value": 10518573}, "child": {"skip": 280, "offset": 308, "next": [], "symbols": [{"name": "camera_init", "hash": "5781fdd3db021563c9d1c3a7a8764b1eb2152859", "variant": 2037212786, "library": "libhip"}]}}], "symbols": []}}, {"match": {"value": 2384789504}, "child": {"skip": 0, "offset": 24, "next": [{"match": {"value": 278921229}, "child": {"skip": 424, "offset": 452, "next": [], "symbols": [{"name": "sceHTTPUnparseURI", "hash": "eec2f9f73fcca1c7cb54f448c7ad7bb3474c2d48", "variant": 1527892041, "library": "libhttps"}]}}], "symbols": []}}, {"match": {"value": 10518573}, "child": {"skip": 0, "offset": 24, "next": [{"match": {"value": 2946498560}, "child": {"skip": 196, "offset": 224, "next": [], "symbols": [{"name": "crypto_sslc_rsa_public_encrypt_init", "hash": "8f6d8ab63ef0093b7f79691bd2db9e23c48960bf", "variant": 2284918903, "library": "libhttps"}, {"name": "crypto_sslc_rsa_public_decrypt_init", "hash": "8f6d8ab63ef0093b7f79691bd2db9e23c48960bf", "variant": 2284918903, "library": "libhttps"}, {"name": "crypto_sslc_rsa_private_encrypt_init", "hash": "8f6d8ab63ef0093b7f79691bd2db9e23c48960bf", "variant": 2284918903, "library": "libhttps"}, {"name": "crypto_sslc_rsa_private_decrypt_init", "hash": "8f6d8ab63ef0093b7f79691bd2db9e23c48960bf", "variant": 2284918903, "library": "libhttps"}]}}], "symbols": []}}], "symbols": []}}, {"match": {"value": 10518573}, "child": {"skip": 0, "offset": 20, "next": [{"match": {"value": 4290707504}, "child": {"skip": 0, "offset": 24, "next": [{"match": {"value": 201326592, "relocation": {"type": "MIPS_26", "symbol": "mceEncEcc"}}, "child": {"skip": 0, "offset": 28, "next": [{"match": {"value": 60827693}, "child": {"skip": 248, "offset": 280, "next": [], "symbols": [{"name": "mceDecEcc", "hash": "2c7f5d4dd510d5732d1e2d5a9cfbac8d4102dbed", "variant": 2048511223, "library": "libmc"}]}}], "symbols": []}}, {"match": {"value": 8237}, "child": {"skip": 0, "offset": 28, "next": [{"match": {"value": 201326592, "relocation": {"type": "MIPS_26", "symbol": "sceSifExecNotifyHandler"}}, "child": {"skip": 24, "offset": 56, "next": [{"match": {"value": 201326592, "relocation": {"type": "MIPS_26", "symbol": "sceSifGetReg"}}, "child": {"skip": 0, "offset": 60, "next": [{"match": {"value": 1006927872}, "child": {"skip": 180, "offset": 244, "next": [{"match": {"value": 201326592, "relocation": {"type": "MIPS_26", "symbol": "sceSifSetDma"}}, "child": {"skip": 0, "offset": 248, "next": [{"match": {"value": 604307457}, "child": {"skip": 88, "offset": 340, "next": [], "symbols": [{"name": "sceSifResetIop", "hash": "ee1ff398a2567fafd81f31ee3219cb0020ee8fa6", "variant": 4279737687, "library": "libkernl"}]}}], "symbols": []}}, {"match": {"value": 201326592, "relocation": {"type": "MIPS_26", "symbol": "_sceSifSetDma"}}, "child": {"skip": 0, "offset": 248, "next": [{"match": {"value": 604307457}, "child": {"skip": 88, "offset": 340, "next": [], "symbols": [{"name": "sceSifResetIop", "hash": "ee1ff398a2567fafd81f31ee3219cb0020ee8fa6", "variant": 3031721871, "library": "libkernl"}]}}], "symbols": []}}], "symbols": []}}], "symbols": []}}, {"match": {"value": 1006927872}, "child": {"skip": 0, "offset": 60, "next": [{"match": {"value": 201326592, "relocation": {"type": "MIPS_26", "symbol": "sceSifGetReg"}}, "child": {"skip": 276, "offset": 340, "next": [], "symbols": [{"name": "sceSifResetIop", "hash": "33bac3151c16b048e4a4e82beb83e796fe5b4dc1", "variant": 822873230, "library": "libkernl"}]}}], "symbols": []}}], "symbols": []}}], "symbols": []}}], "symbols": []}}], "symbols": []}}], "symbols": []}}, {"match": {"value": 10520621}, "child": {"skip": 0, "offset": 16, "next": [{"match": {"value": 8421421}, "child": {"skip": 0, "offset": 20, "next": [{"match": {"value": 301989892}, "child": {"skip": 144, "offset": 168, "next": [], "symbols": [{"name": "i2d_ASN1_OBJECT", "hash": "2f70d728604bab0101c5597f0fb4aa7ee4a8f430", "variant": 3944843171, "li)PS2SDB", 8192},
+ps2xRuntime\include\ps2_call_list.h:558: X(sceSifResetIop)                         \
+ps2xRuntime\include\ps2_runtime.h:488: void resetIop();
+ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:589: void sceSifResetIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ps2xRuntime\src\lib\Kernel\Stubs\SIF.h:43: void sceSifResetIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+ps2xRuntime\src\lib\ps2_iop_transport.h:51: runtime->resetIop();
+ps2xRuntime\src\lib\ps2_runtime.cpp:697: void PS2Runtime::resetIop()
+ps2xRuntime\src\lib\ps2_runtime.cpp:791: resetIop();
+ps2xRuntime\src\lib\ps2_runtime.cpp:2452: resetIop();
+
+===== SEARCH: IopSubsystem::reset =====
+ps2xIOP\src\iop_subsystem.cpp:100: void IopSubsystem::reset()
+ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:521: // The physical IOP allocator is initialized by IopSubsystem::reset().
+
+===== SEARCH: IopEmulator::reset =====
+ps2xIOP\src\emulator\iop_emulator.cpp:900: void IopEmulator::reset()
+
+===== SEARCH: m_iopSubsystem =====
+ps2xRuntime\include\ps2_runtime.h:498: std::unique_ptr<ps2x::iop::IopSubsystem> m_iopSubsystem;
+ps2xRuntime\src\lib\ps2_runtime.cpp:562: m_iopSubsystem = std::make_unique<ps2x::iop::IopSubsystem>(*m_iopHost);
+ps2xRuntime\src\lib\ps2_runtime.cpp:611: m_iopSubsystem.reset();
+ps2xRuntime\src\lib\ps2_runtime.cpp:649: return m_iopSubsystem->loadModule(path, arguments, argumentSize);
+ps2xRuntime\src\lib\ps2_runtime.cpp:655: return m_iopSubsystem->loadModuleBuffer(guestAddress, arguments, argumentSize);
+ps2xRuntime\src\lib\ps2_runtime.cpp:661: return m_iopSubsystem->stopModule(moduleId, result);
+ps2xRuntime\src\lib\ps2_runtime.cpp:666: return m_iopSubsystem->selectRpcAbi(request);
+ps2xRuntime\src\lib\ps2_runtime.cpp:671: return m_iopSubsystem->findModuleByAddress(iopAddress);
+ps2xRuntime\src\lib\ps2_runtime.cpp:676: return m_iopSubsystem->canBindRpc(sid);
+ps2xRuntime\src\lib\ps2_runtime.cpp:683: return m_iopSubsystem->handleRpc(request);
+ps2xRuntime\src\lib\ps2_runtime.cpp:689: m_iopSubsystem->onSifTransfer(transfer);
+ps2xRuntime\src\lib\ps2_runtime.cpp:694: m_iopSubsystem->runEeCycles(eeCycles);
+ps2xRuntime\src\lib\ps2_runtime.cpp:699: m_iopSubsystem->reset();
+ps2xRuntime\src\lib\ps2_runtime.cpp:704: return m_iopSubsystem->debugSnapshot();
+ps2xRuntime\src\lib\ps2_runtime.cpp:709: return m_iopSubsystem ? m_iopSubsystem->allocateMemory(size, alignment) : 0u;
+ps2xRuntime\src\lib\ps2_runtime.cpp:714: return m_iopSubsystem && m_iopSubsystem->freeMemory(address);
+ps2xRuntime\src\lib\ps2_runtime.cpp:719: return m_iopSubsystem && m_iopSubsystem->readMemory(address, destination, size);
+ps2xRuntime\src\lib\ps2_runtime.cpp:724: return m_iopSubsystem && m_iopSubsystem->writeMemory(address, source, size);
+ps2xRuntime\src\lib\ps2_runtime.cpp:729: return m_iopSubsystem && m_iopSubsystem->zeroMemory(address, size);
+ps2xRuntime\src\lib\ps2_runtime.cpp:734: return m_iopSubsystem && m_iopSubsystem->isMemoryRange(address, size);
+ps2xRuntime\src\lib\ps2_runtime.cpp:1088: m_iopSubsystem->reset();
+
+===== SEARCH: m_iopHost =====
+ps2xRuntime\include\ps2_runtime.h:497: std::unique_ptr<PS2IopHostAdapter> m_iopHost;
+ps2xRuntime\src\lib\ps2_runtime.cpp:561: m_iopHost = std::make_unique<PS2IopHostAdapter>(*this);
+ps2xRuntime\src\lib\ps2_runtime.cpp:562: m_iopSubsystem = std::make_unique<ps2x::iop::IopSubsystem>(*m_iopHost);
+ps2xRuntime\src\lib\ps2_runtime.cpp:612: m_iopHost.reset();
+ps2xRuntime\src\lib\ps2_runtime.cpp:648: auto scope = m_iopHost->enterCall(nullptr, m_memory.getRDRAM());
+ps2xRuntime\src\lib\ps2_runtime.cpp:654: auto scope = m_iopHost->enterCall(nullptr, m_memory.getRDRAM());
+ps2xRuntime\src\lib\ps2_runtime.cpp:660: auto scope = m_iopHost->enterCall(nullptr, m_memory.getRDRAM());
+ps2xRuntime\src\lib\ps2_runtime.cpp:681: auto scope = m_iopHost->enterCall(ctx, rdram);
+ps2xRuntime\src\lib\ps2_runtime.cpp:688: auto scope = m_iopHost->enterCall(nullptr, rdram);
+
+===== SEARCH: freeIopHandle =====
+No matches.
+
+===== SEARCH: releaseIopHandle =====
+No matches.
+
+===== TARGET CONTEXT: ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h =====
+Total lines: 400
+--- Lines 1-260 ---
+    1: static void setRegU32(R5900Context *ctx, int reg, uint32_t value)
+    2: {
+    3:     if (!ctx || reg < 0 || reg > 31)
+    4:         return;
+    5:     SET_GPR_U32(ctx, reg, value);
+    6: }
+    7: 
+    8: static void rpcCopyToRdram(uint8_t *rdram, uint32_t dst, uint32_t src, size_t size)
+    9: {
+   10:     if (!rdram || size == 0)
+   11:         return;
+   12: 
+   13:     ps2TraceGuestRangeWrite(rdram, dst, static_cast<uint32_t>(size), "rpcCopyToRdram", nullptr);
+   14: 
+   15:     constexpr size_t kMaxRpcTransferBytes = 1u * 1024u * 1024u;
+   16:     const size_t clampedSize = std::min(size, kMaxRpcTransferBytes);
+   17:     if (clampedSize != size)
+   18:     {
+   19:         static uint32_t warnCount = 0;
+   20:         if (warnCount < 8)
+   21:         {
+   22:             std::cerr << "[SifCallRpc] clamping copy size from " << size
+   23:                       << " to " << clampedSize
+   24:                       << " bytes (dst=0x" << std::hex << dst
+   25:                       << " src=0x" << src << std::dec << ")" << std::endl;
+   26:             ++warnCount;
+   27:         }
+   28:     }
+   29: 
+   30:     for (size_t i = 0; i < clampedSize; ++i)
+   31:     {
+   32:         const uint32_t dstAddr = dst + static_cast<uint32_t>(i);
+   33:         const uint32_t srcAddr = src + static_cast<uint32_t>(i);
+   34:         uint8_t *dstPtr = getMemPtr(rdram, dstAddr);
+   35:         const uint8_t *srcPtr = getConstMemPtr(rdram, srcAddr);
+   36:         if (!dstPtr || !srcPtr)
+   37:         {
+   38:             break;
+   39:         }
+   40:         *dstPtr = *srcPtr;
+   41:     }
+   42: }
+   43: 
+   44: static void rpcZeroRdram(uint8_t *rdram, uint32_t dst, size_t size)
+   45: {
+   46:     if (!rdram || size == 0)
+   47:         return;
+   48: 
+   49:     ps2TraceGuestRangeWrite(rdram, dst, static_cast<uint32_t>(size), "rpcZeroRdram", nullptr);
+   50: 
+   51:     constexpr size_t kMaxRpcTransferBytes = 1u * 1024u * 1024u;
+   52:     const size_t clampedSize = std::min(size, kMaxRpcTransferBytes);
+   53:     if (clampedSize != size)
+   54:     {
+   55:         static uint32_t warnCount = 0;
+   56:         if (warnCount < 8)
+   57:         {
+   58:             std::cerr << "[SifCallRpc] clamping zero size from " << size
+   59:                       << " to " << clampedSize
+   60:                       << " bytes (dst=0x" << std::hex << dst << std::dec << ")" << std::endl;
+   61:             ++warnCount;
+   62:         }
+   63:     }
+   64: 
+   65:     for (size_t i = 0; i < clampedSize; ++i)
+   66:     {
+   67:         const uint32_t dstAddr = dst + static_cast<uint32_t>(i);
+   68:         uint8_t *dstPtr = getMemPtr(rdram, dstAddr);
+   69:         if (!dstPtr)
+   70:         {
+   71:             break;
+   72:         }
+   73:         *dstPtr = 0;
+   74:     }
+   75: }
+   76: 
+   77: static bool readStackU32(uint8_t *rdram, uint32_t sp, uint32_t offset, uint32_t &out)
+   78: {
+   79:     uint8_t *ptr = getMemPtr(rdram, sp + offset);
+   80:     if (!ptr)
+   81:         return false;
+   82:     out = *reinterpret_cast<uint32_t *>(ptr);
+   83:     return true;
+   84: }
+   85: 
+   86: static uint32_t rpcAllocPacketAddr(uint8_t *rdram)
+   87: {
+   88:     if (kRpcPacketPoolCount == 0)
+   89:         return 0;
+   90: 
+   91:     uint32_t slot = g_rpc_packet_index++ % kRpcPacketPoolCount;
+   92:     uint32_t addr = kRpcPacketPoolBase + (slot * kRpcPacketSize);
+   93:     rpcZeroRdram(rdram, addr, kRpcPacketSize);
+   94:     return addr;
+   95: }
+   96: 
+   97: static uint32_t rpcAllocServerAddr(uint8_t *rdram)
+   98: {
+   99:     if (kRpcServerPoolCount == 0)
+  100:         return 0;
+  101: 
+  102:     uint32_t slot = g_rpc_server_index++ % kRpcServerPoolCount;
+  103:     uint32_t addr = kRpcServerPoolBase + (slot * kRpcServerStride);
+  104:     rpcZeroRdram(rdram, addr, kRpcServerStride);
+  105:     return addr;
+  106: }
+  107: 
+  108: inline std::string translatePs2Path(const char *ps2Path)
+  109: {
+  110:     if (!ps2Path || !*ps2Path)
+  111:     {
+  112:         return {};
+  113:     }
+  114: 
+  115:     const ps2x::iop::ParsedPs2Path parsed = ps2x::iop::parsePs2Path(ps2Path);
+  116:     if (!parsed)
+  117:     {
+  118:         return {};
+  119:     }
+  120: 
+  121:     auto resolveWithBase = [&](const std::filesystem::path &base, const std::string &suffix) -> std::string
+  122:     {
+  123:         const std::string normalizedSuffix = normalizePs2PathSuffix(suffix);
+  124:         std::filesystem::path resolved = base;
+  125:         if (!normalizedSuffix.empty())
+  126:         {
+  127:             resolved /= std::filesystem::path(normalizedSuffix);
+  128:         }
+  129:         return resolved.lexically_normal().string();
+  130:     };
+  131: 
+  132:     switch (parsed.device)
+  133:     {
+  134:     case ps2x::iop::Ps2PathDevice::Host:
+  135:         return resolveWithBase(getConfiguredHostRoot(), parsed.path);
+  136:     case ps2x::iop::Ps2PathDevice::Cdrom:
+  137:         return resolveWithBase(getConfiguredCdRoot(), parsed.path);
+  138:     case ps2x::iop::Ps2PathDevice::MemoryCard0:
+  139:         return resolveWithBase(getConfiguredMcRoot(), parsed.path);
+  140:     case ps2x::iop::Ps2PathDevice::NativeHost:
+  141:         return std::filesystem::path(parsed.path).lexically_normal().string();
+  142:     default:
+  143:         return {};
+  144:     }
+  145: }
+  146: 
+  147: static bool localtimeSafe(const std::time_t *t, std::tm *out)
+  148: {
+  149: #ifdef _WIN32
+  150:     return localtime_s(out, t) == 0;
+  151: #else
+  152:     return localtime_r(t, out) != nullptr;
+  153: #endif
+  154: }
+  155: 
+  156: static void encodePs2Time(std::time_t t, uint8_t out[8])
+  157: {
+  158:     std::tm tm{};
+  159:     if (!localtimeSafe(&t, &tm))
+  160:     {
+  161:         std::memset(out, 0, 8);
+  162:         return;
+  163:     }
+  164: 
+  165:     uint16_t year = static_cast<uint16_t>(tm.tm_year + 1900);
+  166:     out[0] = 0;
+  167:     out[1] = static_cast<uint8_t>(tm.tm_sec);
+  168:     out[2] = static_cast<uint8_t>(tm.tm_min);
+  169:     out[3] = static_cast<uint8_t>(tm.tm_hour);
+  170:     out[4] = static_cast<uint8_t>(tm.tm_mday);
+  171:     out[5] = static_cast<uint8_t>(tm.tm_mon + 1);
+  172:     out[6] = static_cast<uint8_t>(year & 0xFF);
+  173:     out[7] = static_cast<uint8_t>((year >> 8) & 0xFF);
+  174: }
+  175: 
+  176: static std::time_t fileTimeToTimeT(std::filesystem::file_time_type ft)
+  177: {
+  178:     auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+  179:         ft - std::filesystem::file_time_type::clock::now() + std::chrono::system_clock::now());
+  180:     return std::chrono::system_clock::to_time_t(sctp);
+  181: }
+  182: 
+  183: static bool gmtimeSafe(const std::time_t *t, std::tm *out)
+  184: {
+  185: #ifdef _WIN32
+  186:     return gmtime_s(out, t) == 0;
+  187: #else
+  188:     return gmtime_r(t, out) != nullptr;
+  189: #endif
+  190: }
+  191: 
+  192: static int getTimezoneOffsetMinutes()
+  193: {
+  194:     std::time_t now = std::time(nullptr);
+  195:     std::tm local{};
+  196:     std::tm gmt{};
+  197:     if (!localtimeSafe(&now, &local) || !gmtimeSafe(&now, &gmt))
+  198:         return 0;
+  199: 
+  200:     std::time_t localTime = std::mktime(&local);
+  201:     std::time_t gmtTime = std::mktime(&gmt);
+  202:     if (localTime == static_cast<std::time_t>(-1) || gmtTime == static_cast<std::time_t>(-1))
+  203:         return 0;
+  204: 
+  205:     double diff = std::difftime(localTime, gmtTime);
+  206:     return static_cast<int>(diff / 60.0);
+  207: }
+  208: 
+  209: static uint32_t packOsdConfig(uint32_t spdifMode, uint32_t screenType, uint32_t videoOutput,
+  210:                               uint32_t japLanguage, uint32_t ps1drvConfig, uint32_t version,
+  211:                               uint32_t language, int timezoneOffset)
+  212: {
+  213:     uint32_t raw = 0;
+  214:     raw |= (spdifMode & 0x1) << 0;
+  215:     raw |= (screenType & 0x3) << 1;
+  216:     raw |= (videoOutput & 0x1) << 3;
+  217:     raw |= (japLanguage & 0x1) << 4;
+  218:     raw |= (ps1drvConfig & 0xFF) << 5;
+  219:     raw |= (version & 0x7) << 13;
+  220:     raw |= (language & 0x1F) << 16;
+  221:     raw |= (static_cast<uint32_t>(timezoneOffset) & 0x7FF) << 21;
+  222:     return raw;
+  223: }
+  224: 
+  225: static uint32_t packOsdConfig2(uint32_t format, uint32_t daylightSaving, uint32_t timeFormat,
+  226:                                uint32_t dateFormat, uint32_t version, uint32_t language)
+  227: {
+  228:     const uint32_t flags =
+  229:         ((daylightSaving & 0x1u) << 4) |
+  230:         ((timeFormat & 0x1u) << 5) |
+  231:         ((dateFormat & 0x3u) << 6);
+  232: 
+  233:     return (format & 0xFFu) |
+  234:            ((flags & 0xFFu) << 8) |
+  235:            ((version & 0xFFu) << 16) |
+  236:            ((language & 0xFFu) << 24);
+  237: }
+  238: 
+  239: static int decodeTimezoneOffset(uint32_t raw)
+  240: {
+  241:     int tz = static_cast<int>((raw >> 21) & 0x7FF);
+  242:     if (tz & 0x400)
+  243:         tz |= ~0x7FF;
+  244:     return tz;
+  245: }
+  246: 
+  247: static int clampTimezoneOffset(int tz)
+  248: {
+  249:     if (tz < -1024)
+  250:         return -1024;
+  251:     if (tz > 1023)
+  252:         return 1023;
+  253:     return tz;
+  254: }
+  255: 
+  256: static uint32_t sanitizeOsdConfigRaw(uint32_t raw)
+  257: {
+  258:     uint32_t spdifMode = raw & 0x1;
+  259:     uint32_t screenType = (raw >> 1) & 0x3;
+  260:     if (screenType > 2)
+
+===== TARGET CONTEXT: ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h =====
+Total lines: 354
+--- Lines 1-260 ---
+    1: #pragma once
+    2: 
+    3: #include <cstddef>
+    4: #include <cstdint>
+    5: 
+    6: // Thread status
+    7: #define THS_RUN 0x01
+    8: #define THS_READY 0x02
+    9: #define THS_WAIT 0x04
+   10: #define THS_SUSPEND 0x08
+   11: #define THS_WAITSUSPEND 0x0c
+   12: #define THS_DORMANT 0x10
+   13: 
+   14: // Thread WAIT Status
+   15: #define TSW_NONE 0
+   16: #define TSW_SLEEP 1
+   17: #define TSW_SEMA 2
+   18: #define TSW_EVENT 3
+   19: 
+   20: // Common kernel-like error codes used by thread/event/alarm syscalls.
+   21: constexpr int KE_OK = 0;
+   22: constexpr int KE_ERROR = -1;
+   23: constexpr int KE_ILLEGAL_PRIORITY = -403;
+   24: constexpr int KE_ILLEGAL_MODE = -405;
+   25: constexpr int KE_ILLEGAL_THID = -406;
+   26: constexpr int KE_UNKNOWN_THID = -407;
+   27: constexpr int KE_UNKNOWN_SEMID = -408;
+   28: constexpr int KE_UNKNOWN_EVFID = -409;
+   29: constexpr int KE_DORMANT = -413;
+   30: constexpr int KE_NOT_DORMANT = -414;
+   31: constexpr int KE_NOT_SUSPEND = -415;
+   32: constexpr int KE_NOT_WAIT = -416;
+   33: constexpr int KE_RELEASE_WAIT = -418;
+   34: constexpr int KE_SEMA_ZERO = -419;
+   35: constexpr int KE_SEMA_OVF = -420;
+   36: constexpr int KE_EVF_COND = -421;
+   37: constexpr int KE_EVF_MULTI = -422;
+   38: constexpr int KE_EVF_ILPAT = -423;
+   39: constexpr int KE_WAIT_DELETE = -425;
+   40: 
+   41: // SIF RPC Structures
+   42: struct t_SifRpcHeader
+   43: {
+   44:     uint32_t pkt_addr; // void*
+   45:     uint32_t rpc_id;
+   46:     int sema_id;
+   47:     uint32_t mode;
+   48: };
+   49: 
+   50: struct t_SifRpcClientData
+   51: {
+   52:     t_SifRpcHeader hdr;
+   53:     uint32_t command;
+   54:     uint32_t buf;          // void*
+   55:     uint32_t cbuf;         // void*
+   56:     uint32_t end_function; // func ptr
+   57:     uint32_t end_param;    // void*
+   58:     uint32_t server;       // t_SifRpcServerData*
+   59: };
+   60: 
+   61: struct t_SifRpcServerData
+   62: {
+   63:     int sid;
+   64:     uint32_t func; // func ptr
+   65:     uint32_t buf;  // void*
+   66:     int size;
+   67:     uint32_t cfunc; // func ptr
+   68:     uint32_t cbuf;  // void*
+   69:     int size2;
+   70:     uint32_t client;   // t_SifRpcClientData*
+   71:     uint32_t pkt_addr; // void*
+   72:     int rpc_number;
+   73:     uint32_t recvbuf; // void*
+   74:     int rsize;
+   75:     int rmode;
+   76:     int rid;
+   77:     uint32_t link; // t_SifRpcServerData*
+   78:     uint32_t next; // t_SifRpcServerData*
+   79:     uint32_t base; // t_SifRpcDataQueue*
+   80: };
+   81: 
+   82: struct t_SifRpcDataQueue
+   83: {
+   84:     int thread_id;
+   85:     int active;
+   86:     uint32_t link;  // t_SifRpcServerData*
+   87:     uint32_t start; // t_SifRpcServerData*
+   88:     uint32_t end;   // t_SifRpcServerData*
+   89:     uint32_t next;  // t_SifRpcDataQueue*
+   90: };
+   91: 
+   92: struct ee_thread_status_t
+   93: {
+   94:     int status;           // 0x00
+   95:     uint32_t func;        // 0x04
+   96:     uint32_t stack;       // 0x08
+   97:     int stack_size;       // 0x0C
+   98:     uint32_t gp_reg;      // 0x10
+   99:     int initial_priority; // 0x14
+  100:     int current_priority; // 0x18
+  101:     uint32_t attr;        // 0x1C
+  102:     uint32_t option;      // 0x20
+  103:     uint32_t waitType;    // 0x24
+  104:     uint32_t waitId;      // 0x28
+  105:     uint32_t wakeupCount; // 0x2C
+  106: };
+  107: 
+  108: // PS2SDK EE kernel.h t_ee_thread. CreateThread consumes this full 0x24-byte
+  109: // descriptor; it is not the attr-first IOP thread descriptor.
+  110: struct ee_thread_t
+  111: {
+  112:     int status;
+  113:     uint32_t func;
+  114:     uint32_t stack;
+  115:     int stack_size;
+  116:     uint32_t gp_reg;
+  117:     int initial_priority;
+  118:     int current_priority;
+  119:     uint32_t attr;
+  120:     uint32_t option;
+  121: };
+  122: 
+  123: static_assert(sizeof(ee_thread_t) == 0x24u);
+  124: static_assert(sizeof(ee_thread_status_t) == 0x30u);
+  125: 
+  126: struct ee_sema_t
+  127: {
+  128:     int count;
+  129:     int max_count;
+  130:     int init_count;
+  131:     int wait_threads;
+  132:     uint32_t attr;
+  133:     uint32_t option;
+  134: };
+  135: 
+  136: static_assert(sizeof(ee_sema_t) == 0x18u);
+  137: 
+  138: struct io_stat_t
+  139: {
+  140:     uint32_t mode;
+  141:     uint32_t attr;
+  142:     uint32_t size;
+  143:     uint8_t ctime[8];
+  144:     uint8_t atime[8];
+  145:     uint8_t mtime[8];
+  146:     uint32_t hisize;
+  147: };
+  148: 
+  149: static constexpr uint32_t kFioSoIfLnk = 0x0008;
+  150: static constexpr uint32_t kFioSoIfReg = 0x0010;
+  151: static constexpr uint32_t kFioSoIfDir = 0x0020;
+  152: static constexpr uint32_t kFioSoIROth = 0x0004;
+  153: static constexpr uint32_t kFioSoIWOth = 0x0002;
+  154: static constexpr uint32_t kFioSoIXOth = 0x0001;
+  155: 
+  156: struct RpcServerState
+  157: {
+  158:     uint32_t sid = 0;
+  159:     uint32_t sd_ptr = 0; // PS2 address
+  160: };
+  161: 
+  162: struct RpcClientState
+  163: {
+  164:     bool busy = false;
+  165:     uint32_t last_rpc = 0;
+  166:     uint32_t sid = 0;
+  167: };
+  168: 
+  169: struct SifRpcDebugEvent
+  170: {
+  171:     uint64_t seq = 0;
+  172:     const char *op = "";
+  173:     uint32_t pc = 0;
+  174:     uint32_t ra = 0;
+  175:     uint32_t threadId = 0;
+  176:     uint32_t sid = 0;
+  177:     uint32_t rpcNum = 0;
+  178:     uint32_t clientPtr = 0;
+  179:     uint32_t serverPtr = 0;
+  180:     uint32_t sendBuf = 0;
+  181:     uint32_t sendSize = 0;
+  182:     uint32_t recvBuf = 0;
+  183:     uint32_t recvSize = 0;
+  184:     uint32_t resultPtr = 0;
+  185:     uint32_t mode = 0;
+  186:     uint32_t endFunc = 0;
+  187:     uint32_t endParam = 0;
+  188:     uint32_t semaId = 0;
+  189:     uint32_t flags = 0;
+  190:     uint32_t sendPreviewSize = 0;
+  191:     uint32_t recvPreviewSize = 0;
+  192:     uint8_t sendPreview[16]{};
+  193:     uint8_t recvPreview[16]{};
+  194:     int32_t result = 0;
+  195: };
+  196: 
+  197: static constexpr size_t kSifRpcDebugHistoryCount = 256u;
+  198: static constexpr size_t kSifRpcDebugPreviewBytes = 16u;
+  199: static constexpr uint32_t kSifRpcDebugFlagNowait = 1u << 0;
+  200: static constexpr uint32_t kSifRpcDebugFlagHandledByHle = 1u << 1;
+  201: static constexpr uint32_t kSifRpcDebugFlagCallback = 1u << 2;
+  202: static constexpr uint32_t kSifRpcDebugFlagMissingClient = 1u << 3;
+  203: static constexpr uint32_t kSifRpcDebugFlagServerDispatch = 1u << 4;
+  204: static constexpr uint32_t kSifRpcDebugFlagUnhandled = 1u << 6;
+  205: static constexpr uint32_t kSifRpcDebugFlagFallbackCopy = 1u << 7;
+  206: static constexpr uint32_t kSifRpcDebugFlagFallbackZero = 1u << 8;
+  207: 
+  208: inline std::unordered_map<uint32_t, RpcServerState> g_rpc_servers;
+  209: inline std::unordered_map<uint32_t, RpcClientState> g_rpc_clients;
+  210: inline SifRpcDebugEvent g_sif_rpc_debug_history[kSifRpcDebugHistoryCount]{};
+  211: inline uint64_t g_sif_rpc_debug_next_seq = 0;
+  212: inline std::mutex g_rpc_mutex;
+  213: inline std::recursive_mutex g_sif_call_rpc_mutex;
+  214: inline bool g_rpc_initialized = false;
+  215: inline uint32_t g_rpc_next_id = 1;
+  216: inline uint32_t g_rpc_packet_index = 0;
+  217: inline uint32_t g_rpc_server_index = 0;
+  218: inline uint32_t g_rpc_active_queue = 0;
+  219: inline std::mutex g_bootmode_mutex;
+  220: inline bool g_bootmode_initialized = false;
+  221: inline uint32_t g_bootmode_pool_offset = 0;
+  222: inline std::unordered_map<uint8_t, uint32_t> g_bootmode_addresses;
+  223: 
+  224: static constexpr uint32_t kGuestSyscallTableGuestBase = 0x80011F80u;
+  225: static constexpr uint32_t kGuestSyscallTablePhysBase = kGuestSyscallTableGuestBase & 0x1FFFFFFFu;
+  226: static constexpr uint32_t kGuestSyscallMirrorLimit = 0x00080000u;
+  227: static constexpr uint32_t kGuestSyscallTableProbeBase = 0x000002F0u;
+  228: 
+  229: inline std::mutex g_tls_mutex;
+  230: inline uint32_t g_tls_index = 0;
+  231: 
+  232: inline std::mutex g_osd_mutex;
+  233: inline bool g_osd_config_initialized = false;
+  234: inline uint32_t g_osd_config_raw = 0;
+  235: inline uint32_t g_osd_config2_raw = 0;
+  236: 
+  237: inline std::mutex g_ps2_path_mutex;
+  238: inline bool g_ps2_paths_initialized = false;
+  239: inline std::filesystem::path g_host_base;
+  240: inline std::filesystem::path g_cdrom_base;
+  241: inline std::filesystem::path g_host_cwd;
+  242: inline std::filesystem::path g_cdrom_cwd;
+  243: inline std::string g_ps2_cwd_device = "host0";
+  244: 
+  245: static constexpr uint32_t kRpcPacketSize = 64;
+  246: static constexpr uint32_t kRpcPacketPoolBase = 0x01F00000;
+  247: static constexpr uint32_t kRpcPacketPoolBytes = 0x00010000;
+  248: static constexpr uint32_t kRpcPacketPoolCount = kRpcPacketPoolBytes / kRpcPacketSize;
+  249: static constexpr uint32_t kRpcServerPoolBase = 0x01F10000;
+  250: static constexpr uint32_t kRpcServerPoolBytes = 0x00010000;
+  251: static constexpr uint32_t kRpcServerStride = 0x80;
+  252: static constexpr uint32_t kRpcServerPoolCount = kRpcServerPoolBytes / kRpcServerStride;
+  253: 
+  254: static constexpr uint32_t kTlsPoolBase = 0x01F20000;
+  255: static constexpr uint32_t kTlsPoolBytes = 0x00010000;
+  256: static constexpr uint32_t kTlsBlockSize = 0x100;
+  257: static constexpr uint32_t kTlsPoolCount = kTlsPoolBytes / kTlsBlockSize;
+  258: 
+  259: static constexpr uint32_t kBootModePoolBase = 0x01F30000;
+  260: static constexpr uint32_t kBootModePoolBytes = 0x00001000;
+
+===== TARGET CONTEXT: ps2xRuntime\src\lib\ps2_iop_host.cpp =====
+Total lines: 537
+--- Lines 1-100 ---
+    1: #include "ps2_iop_host.h"
+    2: 
+    3: #include "ps2_runtime.h"
+    4: #include "ps2_stubs.h"
+    5: #include "Kernel/Stubs/SIF.h"
+    6: #include "runtime/ps2_memory.h"
+    7: #include "Kernel/Stubs/MemoryCard.h"
+    8: #include "Kernel/Syscalls/Common.h"
+    9: 
+   10: #include <algorithm>
+   11: #include <cstring>
+   12: #include <filesystem>
+   13: #include <iostream>
+   14: #include <limits>
+   15: #include <utility>
+   16: 
+   17: #if !defined(_WIN32)
+   18: #include <sys/types.h>
+   19: #endif
+   20: 
+   21: PS2IopHostAdapter::CallScope::CallScope(PS2IopHostAdapter &owner, R5900Context *context, uint8_t *rdram)
+   22:     : m_lock(owner.m_callMutex),
+   23:       m_owner(&owner),
+   24:       m_previousContext(owner.m_activeContext),
+   25:       m_previousRdram(owner.m_activeRdram),
+   26:       m_previousToken(owner.m_activeToken)
+   27: {
+   28:     m_token = owner.m_nextToken++;
+   29:     if (m_token == 0)
+   30:     {
+   31:         m_token = owner.m_nextToken++;
+   32:     }
+   33:     owner.m_activeContext = context;
+   34:     owner.m_activeRdram = rdram;
+   35:     owner.m_activeToken = m_token;
+   36: }
+   37: 
+   38: PS2IopHostAdapter::CallScope::~CallScope()
+   39: {
+   40:     release();
+   41: }
+   42: 
+   43: PS2IopHostAdapter::CallScope::CallScope(CallScope &&other) noexcept
+   44:     : m_lock(std::move(other.m_lock)),
+   45:       m_owner(std::exchange(other.m_owner, nullptr)),
+   46:       m_previousContext(other.m_previousContext),
+   47:       m_previousRdram(other.m_previousRdram),
+   48:       m_previousToken(other.m_previousToken),
+   49:       m_token(other.m_token)
+   50: {
+   51: }
+   52: 
+   53: PS2IopHostAdapter::CallScope &PS2IopHostAdapter::CallScope::operator=(CallScope &&other) noexcept
+   54: {
+   55:     if (this != &other)
+   56:     {
+   57:         release();
+   58:         m_lock = std::move(other.m_lock);
+   59:         m_owner = std::exchange(other.m_owner, nullptr);
+   60:         m_previousContext = other.m_previousContext;
+   61:         m_previousRdram = other.m_previousRdram;
+   62:         m_previousToken = other.m_previousToken;
+   63:         m_token = other.m_token;
+   64:     }
+   65:     return *this;
+   66: }
+   67: 
+   68: void PS2IopHostAdapter::CallScope::release()
+   69: {
+   70:     if (m_owner)
+   71:     {
+   72:         m_owner->m_activeContext = m_previousContext;
+   73:         m_owner->m_activeRdram = m_previousRdram;
+   74:         m_owner->m_activeToken = m_previousToken;
+   75:         m_owner = nullptr;
+   76:     }
+   77: }
+   78: 
+   79: PS2IopHostAdapter::PS2IopHostAdapter(PS2Runtime &runtime)
+   80:     : m_runtime(runtime)
+   81: {
+   82: }
+   83: 
+   84: PS2IopHostAdapter::~PS2IopHostAdapter()
+   85: {
+   86:     std::lock_guard<std::mutex> lock(m_hostFileMutex);
+   87:     for (auto &[handle, file] : m_hostFiles)
+   88:     {
+   89:         (void)handle;
+   90:         if (file.stream)
+   91:         {
+   92:             std::fclose(file.stream);
+   93:         }
+   94:     }
+   95:     m_hostFiles.clear();
+   96: }
+   97: 
+   98: PS2IopHostAdapter::CallScope PS2IopHostAdapter::enterCall(R5900Context *context, uint8_t *rdram)
+   99: {
+  100:     return CallScope(*this, context, rdram);
+--- Lines 210-250 ---
+  210: }
+  211: 
+  212: bool PS2IopHostAdapter::normalizeIopAddress(uint32_t address, uint32_t &normalized) const
+  213: {
+  214:     if (!m_runtime.isIopMemoryRange(address, 0u))
+  215:     {
+  216:         normalized = 0u;
+  217:         return false;
+  218:     }
+  219:     normalized = address & 0x1FFFFFFFu;
+  220:     return true;
+  221: }
+  222: 
+  223: uint32_t PS2IopHostAdapter::allocateIopHandle(ps2x::iop::IopHandleKind kind)
+  224: {
+  225:     uint8_t *const rdram = m_activeRdram
+  226:                                ? m_activeRdram
+  227:                                : m_runtime.memory().getRDRAM();
+  228:     if (!rdram)
+  229:     {
+  230:         return 0;
+  231:     }
+  232:     return kind == ps2x::iop::IopHandleKind::RpcPacket
+  233:                ? rpcAllocPacketAddr(rdram)
+  234:                : rpcAllocServerAddr(rdram);
+  235: }
+  236: 
+  237: uint32_t PS2IopHostAdapter::allocateGuest(uint32_t size, uint32_t alignment)
+  238: {
+  239:     return m_runtime.guestMalloc(size, alignment);
+  240: }
+  241: 
+  242: void PS2IopHostAdapter::freeGuest(uint32_t address)
+  243: {
+  244:     m_runtime.guestFree(address);
+  245: }
+  246: 
+  247: void PS2IopHostAdapter::audioCommand(uint32_t sid,
+  248:                                      uint32_t function,
+  249:                                      ps2x::iop::GuestBuffer send,
+  250:                                      ps2x::iop::GuestBuffer receive)
+--- Lines 480-537 ---
+  480:             &context,
+  481:             &m_runtime);
+  482:     return ps2_stubs::getMemoryCardDebugSnapshot().lastResult;
+  483: }
+  484: 
+  485: bool PS2IopHostAdapter::hasGuestFunction(uint32_t address) const
+  486: {
+  487:     return m_runtime.hasFunction(address);
+  488: }
+  489: 
+  490: bool PS2IopHostAdapter::invokeGuestFunction(uint64_t callToken,
+  491:                                             uint32_t address,
+  492:                                             uint32_t a0,
+  493:                                             uint32_t a1,
+  494:                                             uint32_t a2,
+  495:                                             uint32_t a3,
+  496:                                             uint32_t *resultAddress)
+  497: {
+  498:     (void)callToken;
+  499:     (void)address;
+  500:     (void)a0;
+  501:     (void)a1;
+  502:     (void)a2;
+  503:     (void)a3;
+  504:     if (resultAddress)
+  505:     {
+  506:         *resultAddress = 0u;
+  507:     }
+  508:     return false;
+  509: }
+  510: 
+  511: bool PS2IopHostAdapter::sendSifCommand(uint32_t commandId,
+  512:                                        const void *packet,
+  513:                                        size_t packetSize)
+  514: {
+  515:     uint8_t *const rdram = m_activeRdram
+  516:                                ? m_activeRdram
+  517:                                : m_runtime.memory().getRDRAM();
+  518:     return ps2_stubs::dispatchSifCommand(rdram,
+  519:                                          &m_runtime,
+  520:                                          commandId,
+  521:                                          packet,
+  522:                                          packetSize);
+  523: }
+  524: 
+  525: void PS2IopHostAdapter::log(ps2x::iop::LogLevel level, std::string_view message)
+  526: {
+  527:     const char *prefix = "[ps2xIOP]";
+  528:     if (level == ps2x::iop::LogLevel::Warning)
+  529:     {
+  530:         prefix = "[ps2xIOP:warning]";
+  531:     }
+  532:     else if (level == ps2x::iop::LogLevel::Error)
+  533:     {
+  534:         prefix = "[ps2xIOP:error]";
+  535:     }
+  536:     std::cerr << prefix << ' ' << message << std::endl;
+  537: }
+
+===== TARGET CONTEXT: ps2xRuntime\src\lib\ps2_runtime.cpp =====
+Total lines: 2591
+--- Lines 560-645 ---
+  560: {
+  561:     m_iopHost = std::make_unique<PS2IopHostAdapter>(*this);
+  562:     m_iopSubsystem = std::make_unique<ps2x::iop::IopSubsystem>(*m_iopHost);
+  563: 
+  564:     m_eeScheduler = std::make_unique<EeScheduler>(*this);
+  565: 
+  566:     // Assign rather than memset: R5900Context's constructor zeroes itself and
+  567:     // then applies the COP0 reset values, which a memset here would discard.
+  568:     m_cpuContext = R5900Context{};
+  569: 
+  570:     // R0 is always zero in MIPS
+  571:     m_cpuContext.r[0] = _mm_set1_epi32(0);
+  572:     m_cpuContext.vu0_vf[0] = _mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f);
+  573:     m_cpuContext.vu0_q = 1.0f;
+  574:     m_cpuContext.vu0_r = _mm_castsi128_ps(_mm_set1_epi32(0x3F800000));
+  575: 
+  576:     // Stack pointer (SP) and global pointer (GP) will be set by the loaded ELF
+  577: 
+  578:     m_loadedModules.clear();
+  579:     m_guestHeapBlocks.clear();
+  580:     m_guestHeapBase = kGuestHeapDefaultBase;
+  581:     m_guestHeapEnd = kGuestHeapDefaultBase;
+  582:     m_guestHeapLimit = std::min(kGuestHeapHardLimit, PS2_RAM_SIZE);
+  583:     m_guestHeapSuggestedBase = kGuestHeapDefaultBase;
+  584:     m_guestHeapConfigured = false;
+  585:     m_asyncCallbackStackFloor = std::min(kGuestHeapHardLimit, PS2_RAM_SIZE);
+  586:     m_asyncCallbackStackTop = PS2_RAM_SIZE;
+  587: }
+  588: 
+  589: void PS2Runtime::setDebugUiCallbacks(DebugUiCallback initCallback,
+  590:                                      DebugUiCallback drawCallback,
+  591:                                      DebugUiCallback shutdownCallback,
+  592:                                      void *userData)
+  593: {
+  594:     if (m_debugUiInitialized && m_debugUiShutdownCallback)
+  595:     {
+  596:         m_debugUiShutdownCallback(*this, m_debugUiUserData);
+  597:         m_debugUiInitialized = false;
+  598:     }
+  599: 
+  600:     m_debugUiInitCallback = initCallback;
+  601:     m_debugUiDrawCallback = drawCallback;
+  602:     m_debugUiShutdownCallback = shutdownCallback;
+  603:     m_debugUiUserData = userData;
+  604: }
+  605: 
+  606: PS2Runtime::~PS2Runtime()
+  607: {
+  608:     try
+  609:     {
+  610:         requestStop();
+  611:         m_iopSubsystem.reset();
+  612:         m_iopHost.reset();
+  613: #if defined(PLATFORM_VITA)
+  614:         m_audioBackend.stopAll();
+  615:         m_audioBackend.setAudioReady(false);
+  616: #else
+  617:         if (IsAudioDeviceReady())
+  618:         {
+  619:             CloseAudioDevice();
+  620:             m_audioBackend.setAudioReady(false);
+  621:         }
+  622: #endif
+  623:         if (m_debugUiInitialized && m_debugUiShutdownCallback)
+  624:         {
+  625:             m_debugUiShutdownCallback(*this, m_debugUiUserData);
+  626:             m_debugUiInitialized = false;
+  627:         }
+  628: 
+  629:         if (IsWindowReady())
+  630:         {
+  631:             CloseWindow();
+  632:         }
+  633: 
+  634:         m_loadedModules.clear();
+  635:     }
+  636:     catch (const std::exception &e)
+  637:     {
+  638:         std::cerr << "[~PS2Runtime] cleanup exception: " << e.what() << std::endl;
+  639:     }
+  640:     catch (...)
+  641:     {
+  642:         std::cerr << "[~PS2Runtime] cleanup exception: unknown" << std::endl;
+  643:     }
+  644: }
+  645: 
+--- Lines 660-710 ---
+  660:     auto scope = m_iopHost->enterCall(nullptr, m_memory.getRDRAM());
+  661:     return m_iopSubsystem->stopModule(moduleId, result);
+  662: }
+  663: 
+  664: ps2x::iop::RpcAbi PS2Runtime::selectIopRpcAbi(const ps2x::iop::RpcAbiRequest &request) const
+  665: {
+  666:     return m_iopSubsystem->selectRpcAbi(request);
+  667: }
+  668: 
+  669: int32_t PS2Runtime::findIopModuleByAddress(uint32_t iopAddress) const noexcept
+  670: {
+  671:     return m_iopSubsystem->findModuleByAddress(iopAddress);
+  672: }
+  673: 
+  674: bool PS2Runtime::canBindIopRpc(uint32_t sid) const noexcept
+  675: {
+  676:     return m_iopSubsystem->canBindRpc(sid);
+  677: }
+  678: 
+  679: ps2x::iop::RpcResult PS2Runtime::handleIopRpc(uint8_t *rdram, R5900Context *ctx, ps2x::iop::RpcRequest request)
+  680: {
+  681:     auto scope = m_iopHost->enterCall(ctx, rdram);
+  682:     request.callToken = scope.token();
+  683:     return m_iopSubsystem->handleRpc(request);
+  684: }
+  685: 
+  686: void PS2Runtime::notifyIopSifTransfer(uint8_t *rdram, const ps2x::iop::SifTransfer &transfer)
+  687: {
+  688:     auto scope = m_iopHost->enterCall(nullptr, rdram);
+  689:     m_iopSubsystem->onSifTransfer(transfer);
+  690: }
+  691: 
+  692: void PS2Runtime::advanceIopEeCycles(uint64_t eeCycles) noexcept
+  693: {
+  694:     m_iopSubsystem->runEeCycles(eeCycles);
+  695: }
+  696: 
+  697: void PS2Runtime::resetIop()
+  698: {
+  699:     m_iopSubsystem->reset();
+  700: }
+  701: 
+  702: ps2x::iop::DebugSnapshot PS2Runtime::iopDebugSnapshot() const
+  703: {
+  704:     return m_iopSubsystem->debugSnapshot();
+  705: }
+  706: 
+  707: uint32_t PS2Runtime::allocateIopMemory(uint32_t size, uint32_t alignment)
+  708: {
+  709:     return m_iopSubsystem ? m_iopSubsystem->allocateMemory(size, alignment) : 0u;
+  710: }
+
+===== TARGET CONTEXT: ps2xIOP\src\emulator\iop_emulator.cpp =====
+Total lines: 1019
+--- Lines 820-890 ---
+  820:         {
+  821:             std::vector<uint8_t> image;
+  822:             // sceSifLoadModuleBuffer takes an IOP address the EE filled with sceSifSetDma;
+  823:             // EE memory remains a fallback for hosts that stage the image there.
+  824:             if (!IopModuleLoader::readElfFromIopRam(memory, guestAddress, image) &&
+  825:                 !IopModuleLoader::readElfFromGuest(host, guestAddress, image))
+  826:             {
+  827:                 std::ostringstream out;
+  828:                 out << "[IOP] no ELF image at buffer 0x" << std::hex << guestAddress << " in IOP or EE memory";
+  829:                 log(LogLevel::Warning, out.str());
+  830:                 return {true, -1, -1};
+  831:             }
+  832:             std::ostringstream tag;
+  833:             tag << "buffer@0x" << std::hex << guestAddress;
+  834:             return loadImage(tag.str(), image, arguments, argumentSize);
+  835:         }
+  836: 
+  837:         bool stopModule(int32_t moduleId, int32_t *result)
+  838:         {
+  839:             auto it = modules.find(moduleId);
+  840:             if (it == modules.end())
+  841:                 return false;
+  842:             // A removable IRX normally exposes a stop entry through module metadata. We do not guess it; terminate owned execution and release the image cleanly.
+  843:             kernel.terminateThreadsInRange(it->second.base, it->second.size);
+  844:             rpc.removeServersInRange(it->second.base, it->second.size);
+  845:             imports.eraseRange(it->second.base, it->second.size);
+  846:             if (it->second.reserved)
+  847:                 (void)memory.freeAllocation(it->second.base);
+  848:             modules.erase(it);
+  849:             kernel.cleanupDeadThreads();
+  850:             if (result)
+  851:                 *result = 0;
+  852:             return true;
+  853:         }
+  854: 
+  855:         IopHost &host;
+  856:         IopMemory memory;
+  857:         IopSysmem sysmem;
+  858:         IopKernel kernel;
+  859:         IopCdvd cdvd;
+  860:         IopVblank vblank;
+  861:         IopRpcBridge rpc;
+  862:         IopSysclib sysclib;
+  863:         IopStdio stdio;
+  864:         IopHeaplib heaplib;
+  865:         IopIntrman intrman;
+  866:         IopDmacman dmacman;
+  867:         IopTimrman timrman;
+  868:         IopIoman ioman;
+  869:         IopCpuCore cpuCore;
+  870:         IopImportRegistry imports;
+  871:         IopLoadcore loadcore;
+  872:         std::map<int, Module> modules;
+  873:         std::map<int, uint64_t> pendingDmaInterrupts;
+  874:         // Never later than the earliest entry above, so the per-instruction check can skip the map walk.
+  875:         uint64_t earliestDmaInterrupt = UINT64_MAX;
+  876:         std::multimap<uint64_t, ScheduledGuestCallback> pendingGuestCallbacks;
+  877:         uint32_t nextModuleId = 1;
+  878:         uint64_t totalCycles = 0;
+  879:         uint64_t spu2Cycle = 0;
+  880:         std::vector<int16_t> spu2Output;
+  881:         uint64_t totalInstructions = 0;
+  882:         uint64_t eeCycleCarry = 0;
+  883:         CpuState *activeCpu = nullptr;
+  884:         std::string lastError;
+  885:         bool servicingDmaInterrupts = false;
+  886:         bool servicingGuestCallbacks = false;
+  887:         uint32_t callDepth = 0u;
+  888:         GuestCallback secrMcCommandHandler;
+  889:         GuestCallback secrMcDevIdHandler;
+  890:         GuestCallback checkKelfPathCallback;
+--- Lines 900-980 ---
+  900:     void IopEmulator::reset()
+  901:     {
+  902:         m_impl->reset();
+  903:     }
+  904: 
+  905:     ModuleLoadResult IopEmulator::loadModule(std::string_view path, const void *arguments, uint32_t argumentSize)
+  906:     {
+  907:         return m_impl->loadModule(path, arguments, argumentSize);
+  908:     }
+  909: 
+  910:     ModuleLoadResult IopEmulator::loadModuleBuffer(uint32_t guestAddress, const void *arguments, uint32_t argumentSize)
+  911:     {
+  912:         return m_impl->loadModuleBuffer(guestAddress, arguments, argumentSize);
+  913:     }
+  914: 
+  915:     bool IopEmulator::stopModule(int32_t moduleId, int32_t *result)
+  916:     {
+  917:         return m_impl->stopModule(moduleId, result);
+  918:     }
+  919: 
+  920:     int32_t IopEmulator::findModuleByAddress(uint32_t address) const noexcept
+  921:     {
+  922:         const uint32_t phys = address & 0x1FFFFFFFu;
+  923:         for (const auto &[id, module] : m_impl->modules)
+  924:         {
+  925:             if (phys >= module.base && phys - module.base < module.size)
+  926:                 return id;
+  927:         }
+  928:         return -1;
+  929:     }
+  930: 
+  931:     void IopEmulator::runEeCycles(uint64_t eeCycles) noexcept
+  932:     {
+  933:         const uint64_t total = m_impl->eeCycleCarry + eeCycles;
+  934:         const uint64_t iopCycles = total / 8u;
+  935:         m_impl->eeCycleCarry = total % 8u;
+  936:         if (iopCycles)
+  937:             m_impl->runCycles(iopCycles);
+  938:     }
+  939: 
+  940:     RpcResult IopEmulator::handleRpc(const RpcRequest &request)
+  941:     {
+  942:         return m_impl->handleRpc(request);
+  943:     }
+  944: 
+  945:     bool IopEmulator::hasRpcServer(uint32_t sid) const noexcept
+  946:     {
+  947:         return m_impl->rpc.hasServer(sid);
+  948:     }
+  949: 
+  950:     void IopEmulator::onSifTransfer(const SifTransfer &transfer)
+  951:     {
+  952:         m_impl->rpc.onSifTransfer(transfer);
+  953:     }
+  954: 
+  955:     uint32_t IopEmulator::allocateMemory(uint32_t size, uint32_t alignment)
+  956:     {
+  957:         return m_impl->memory.allocate(size, alignment);
+  958:     }
+  959: 
+  960:     bool IopEmulator::freeMemory(uint32_t address)
+  961:     {
+  962:         return m_impl->memory.freeAllocation(address);
+  963:     }
+  964: 
+  965:     bool IopEmulator::readMemory(uint32_t address, void *destination, size_t size) const
+  966:     {
+  967:         return isMemoryRange(address, size) &&
+  968:                m_impl->memory.readRam(address, destination, size);
+  969:     }
+  970: 
+  971:     bool IopEmulator::writeMemory(uint32_t address, const void *source, size_t size)
+  972:     {
+  973:         return isMemoryRange(address, size) &&
+  974:                m_impl->memory.writeRam(address, source, size);
+  975:     }
+  976: 
+  977:     bool IopEmulator::zeroMemory(uint32_t address, size_t size)
+  978:     {
+  979:         return isMemoryRange(address, size) &&
+  980:                m_impl->memory.zeroRam(address, size);
+
+===== TARGET CONTEXT: ps2xIOP\src\iop_subsystem.cpp =====
+Total lines: 282
+--- Lines 1-100 ---
+    1: #include "ps2x/iop/iop_subsystem.h"
+    2: 
+    3: #include "iop_service.h"
+    4: #include "iop_module_manager.h"
+    5: #include "emulator/iop_emulator.h"
+    6: #include "module_factories.h"
+    7: #include "ps2x/iop/ps2_path.h"
+    8: 
+    9: #include <sstream>
+   10: #include <unordered_map>
+   11: #include <unordered_set>
+   12: #include <utility>
+   13: 
+   14: namespace ps2x::iop
+   15: {
+   16:     class IopSubsystem::Impl
+   17:     {
+   18:     public:
+   19:         explicit Impl(IopHost &hostRef)
+   20:             : host(hostRef),
+   21:               emulator(hostRef)
+   22:         {
+   23:             coreServices.emplace_back(detail::createMcservService(host));
+   24:             coreServices.emplace_back(detail::createDbcmanService(host));
+   25:             coreServices.emplace_back(detail::createLibSdService(host));
+   26:             refreshServiceModuleKeys();
+   27:             rebuildRoutes();
+   28:         }
+   29: 
+   30:         bool serviceActive(const detail::IopService &service) const
+   31:         {
+   32:             return moduleManager.isLoaded(service.moduleAliases());
+   33:         }
+   34: 
+   35:         void refreshServiceModuleKeys()
+   36:         {
+   37:             std::vector<std::string> keys;
+   38:             for (const auto &service : coreServices)
+   39:             {
+   40:                 for (std::string_view alias : service->moduleAliases())
+   41:                     keys.emplace_back(alias);
+   42:             }
+   43:             moduleManager.setServiceModuleKeys(std::move(keys));
+   44:         }
+   45: 
+   46:         void rebuildRoutes()
+   47:         {
+   48:             routes.clear();
+   49:             lastError.clear();
+   50:             for (const auto &service : coreServices)
+   51:             {
+   52:                 if (!serviceActive(*service))
+   53:                     continue;
+   54:                 for (const uint32_t sid : service->sids())
+   55:                 {
+   56:                     if (!routes.emplace(sid, service.get()).second)
+   57:                     {
+   58:                         std::ostringstream out;
+   59:                         out << "duplicate IOP SID 0x" << std::hex << sid << " in core services";
+   60:                         lastError = out.str();
+   61:                         routes.clear();
+   62:                         return;
+   63:                     }
+   64:                 }
+   65:             }
+   66:         }
+   67: 
+   68:         void recordLoadOutcome(std::string_view path, bool hle)
+   69:         {
+   70:             constexpr size_t maxOutcomes = 32u;
+   71:             if (loadOutcomes.size() >= maxOutcomes || !loggedLoadPaths.emplace(path).second)
+   72:                 return;
+   73:             std::string message = hle ? "[IOP:HLE] fallback module='" : "[IOP:load-failed] module='";
+   74:             message.append(path);
+   75:             message += hle ? "' physical IRX unavailable; using registered HLE provider"
+   76:                            : "' no HLE provider accepted the module; physical IRX was not loaded";
+   77:             loadOutcomes.push_back(message);
+   78:             host.log(hle ? LogLevel::Info : LogLevel::Warning, message);
+   79:         }
+   80: 
+   81:         IopHost &host;
+   82:         detail::ServiceList coreServices;
+   83:         std::unordered_map<uint32_t, detail::IopService *> routes;
+   84:         std::vector<std::string> loadOutcomes;
+   85:         std::unordered_set<std::string> loggedLoadPaths;
+   86:         std::string lastError;
+   87:         detail::IopModuleManager moduleManager;
+   88:         detail::IopEmulator emulator;
+   89:     };
+   90: 
+   91:     IopSubsystem::IopSubsystem(IopHost &host)
+   92:         : m_impl(std::make_unique<Impl>(host))
+   93:     {
+   94:     }
+   95: 
+   96:     IopSubsystem::~IopSubsystem() = default;
+   97:     IopSubsystem::IopSubsystem(IopSubsystem &&) noexcept = default;
+   98:     IopSubsystem &IopSubsystem::operator=(IopSubsystem &&) noexcept = default;
+   99: 
+  100:     void IopSubsystem::reset()
+--- Lines 150-230 ---
+  150:         return m_impl->emulator.loadModuleBuffer(guestAddress, arguments, argumentSize);
+  151:     }
+  152: 
+  153:     bool IopSubsystem::stopModule(int32_t moduleId, int32_t *result)
+  154:     {
+  155:         if (m_impl->moduleManager.stopHle(moduleId, result))
+  156:         {
+  157:             m_impl->rebuildRoutes();
+  158:             return true;
+  159:         }
+  160:         if (!m_impl->emulator.stopModule(moduleId, result))
+  161:             return false;
+  162:         m_impl->moduleManager.observePhysicalStop(moduleId);
+  163:         m_impl->rebuildRoutes();
+  164:         return true;
+  165:     }
+  166: 
+  167:     int32_t IopSubsystem::findModuleByAddress(uint32_t iopAddress) const noexcept
+  168:     {
+  169:         return m_impl->emulator.findModuleByAddress(iopAddress);
+  170:     }
+  171: 
+  172:     void IopSubsystem::runEeCycles(uint64_t eeCycles) noexcept
+  173:     {
+  174:         m_impl->emulator.runEeCycles(eeCycles);
+  175:     }
+  176: 
+  177:     RpcAbi IopSubsystem::selectRpcAbi(const RpcAbiRequest &request) const
+  178:     {
+  179:         for (const auto &service : m_impl->coreServices)
+  180:         {
+  181:             if (service && m_impl->serviceActive(*service))
+  182:             {
+  183:                 const RpcAbi selected = service->selectRpcAbi(request);
+  184:                 if (selected != RpcAbi::RuntimeDefault)
+  185:                 {
+  186:                     return selected;
+  187:                 }
+  188:             }
+  189:         }
+  190:         return RpcAbi::RuntimeDefault;
+  191:     }
+  192: 
+  193:     bool IopSubsystem::canBindRpc(uint32_t sid) const noexcept
+  194:     {
+  195:         if (m_impl->routes.find(sid) != m_impl->routes.end())
+  196:         {
+  197:             return true;
+  198:         }
+  199:         return m_impl->emulator.hasRpcServer(sid);
+  200:     }
+  201: 
+  202:     RpcResult IopSubsystem::handleRpc(const RpcRequest &request)
+  203:     {
+  204:         const auto route = m_impl->routes.find(request.sid);
+  205:         detail::IopService *hle = route != m_impl->routes.end() ? route->second : nullptr;
+  206: 
+  207:         RpcResult emulated = m_impl->emulator.handleRpc(request);
+  208:         if (emulated.handled || !hle)
+  209:         {
+  210:             return emulated;
+  211:         }
+  212:         return hle->handleRpc(request);
+  213:     }
+  214: 
+  215:     void IopSubsystem::onSifTransfer(const SifTransfer &transfer)
+  216:     {
+  217:         for (auto &service : m_impl->coreServices)
+  218:         {
+  219:             if (service && m_impl->serviceActive(*service))
+  220:             {
+  221:                 service->onSifTransfer(transfer);
+  222:             }
+  223:         }
+  224:         m_impl->emulator.onSifTransfer(transfer);
+  225:     }
+  226: 
+  227:     uint32_t IopSubsystem::allocateMemory(uint32_t size, uint32_t alignment)
+  228:     {
+  229:         return m_impl->emulator.allocateMemory(size, alignment);
+  230:     }
+
+===== EXECUTION =====
+Elapsed seconds: 3.146
+READ ONLY — no source modifications.
