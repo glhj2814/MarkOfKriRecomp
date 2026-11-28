@@ -1,0 +1,1467 @@
+MARK OF KRI — STUB HANDLER BINDING DEEP AUDIT
+Generated: 2026-11-27 19:30:44
+MODE: READ ONLY
+CROSSWALK STUB ROWS: 384
+
+=== PS2_STUB_LIST MACRO DEFINITION ===
+MACRO DEFINITIONS FOUND: 1
+UNIQUE STUB HANDLER NAMES: 553
+#define PS2_STUB_LIST(X)                      \
+    /* Std/Libc */                            \
+    X(ret0)                                   \
+    X(ret1)                                   \
+    X(reta0)                                  \
+    X(calloc_r)                               \
+    X(free_r)                                 \
+    X(realloc_r)                              \
+    X(memalign_r)                             \
+    X(malloc_r)                               \
+    X(malloc_extend_top)                      \
+    X(malloc_trim_r)                          \
+    X(mbtowc_r)                               \
+    X(printf_r)                               \
+    X(__malloc_lock)                          \
+    X(__malloc_unlock)                        \
+    X(abs)                                    \
+    X(__ieee754_rem_pio2f)                    \
+    X(__kernel_cosf)                          \
+    X(__kernel_sinf)                          \
+    X(atan)                                   \
+    X(atan2)                                  \
+    X(calloc)                                 \
+    X(ceil)                                   \
+    X(close)                                  \
+    X(cos)                                    \
+    X(exit)                                   \
+    X(exp)                                    \
+    X(fabs)                                   \
+    X(fclose)                                 \
+    X(fflush)                                 \
+    X(floor)                                  \
+    X(fopen)                                  \
+    X(fprintf)                                \
+    X(fread)                                  \
+    X(free)                                   \
+    X(fseek)                                  \
+    X(fstat)                                  \
+    X(ftell)                                  \
+    X(fwrite)                                 \
+    X(getpid)                                 \
+    X(log)                                    \
+    X(log10)                                  \
+    X(lseek)                                  \
+    X(malloc)                                 \
+    X(memalign)                               \
+    X(memclr)                                 \
+    X(memchr)                                 \
+    X(memcmp)                                 \
+    X(memcpy)                                 \
+    X(memmove)                                \
+    X(memset)                                 \
+    X(open)                                   \
+    X(pow)                                    \
+    X(printf)                                 \
+    X(puts)                                   \
+    X(rand)                                   \
+    X(read)                                   \
+    X(realloc)                                \
+    X(sin)                                    \
+    X(snprintf)                               \
+    X(sprintf)                                \
+    X(sqrt)                                   \
+    X(srand)                                  \
+    X(stat)                                   \
+    X(strcasecmp)                             \
+    X(strcat)                                 \
+    X(strchr)                                 \
+    X(strcmp)                                 \
+    X(strcpy)                                 \
+    X(strlen)                                 \
+    X(strncat)                                \
+    X(strncmp)                                \
+    X(strncpy)                                \
+    X(strrchr)                                \
+    X(strstr)                                 \
+    X(tan)                                    \
+    X(vfprintf)                               \
+    X(vsprintf)                               \
+    X(write)                                  \
+    X(__divdi3)                               \
+    /* PS2 native */                          \
+    X(DmaAddr)                                \
+    X(builtin_set_imask)                      \
+    X(sceCdRI)                                \
+    X(sceCdRM)                                \
+    X(sceDevVif0Reset)                        \
+    X(sceDevVu0Reset)                         \
+    X(sceFsDbChk)                             \
+    X(sceFsIntrSigSema)                       \
+    X(sceFsSemExit)                           \
+    X(sceFsSemInit)                           \
+    X(sceFsSigSema)                           \
+    X(sceIDC)                                 \
+    X(sceMpegFlush)                           \
+    X(sceRpcFreePacket)                       \
+    X(sceRpcGetFPacket)                       \
+    X(sceRpcGetFPacket2)                      \
+    X(sceSDC)                                 \
+    X(sceSifCmdIntrHdlr)                      \
+    X(sceSifLoadElfPart)                      \
+    X(sceSifLoadModule)                       \
+    X(sceSifSendCmd)                          \
+    X(sceVu0ecossin)                          \
+    X(mcCallMessageTypeSe)                    \
+    X(mcCheckReadStartConfigFile)             \
+    X(mcCheckReadStartSaveFile)               \
+    X(mcCheckWriteStartConfigFile)            \
+    X(mcCheckWriteStartSaveFile)              \
+    X(mcCreateConfigInit)                     \
+    X(mcCreateFileSelectWindow)               \
+    X(mcCreateIconInit)                       \
+    X(mcCreateSaveFileInit)                   \
+    X(mcDispFileName)                         \
+    X(mcDispFileNumber)                       \
+    X(mcDispWindowCurSol)                     \
+    X(mcDispWindowFoundtion)                  \
+    X(mcDisplayFileSelectWindow)              \
+    X(mcDisplaySelectFileInfo)                \
+    X(mcDisplaySelectFileInfoMesCount)        \
+    X(mcGetConfigCapacitySize)                \
+    X(mcGetFileSelectWindowCursol)            \
+    X(mcGetFreeCapacitySize)                  \
+    X(mcGetIconCapacitySize)                  \
+    X(mcGetIconFileCapacitySize)              \
+    X(mcGetPortSelectDirInfo)                 \
+    X(mcGetSaveFileCapacitySize)              \
+    X(mcGetStringEnd)                         \
+    X(mcMoveFileSelectWindowCursor)           \
+    X(mcNewCreateConfigFile)                  \
+    X(mcNewCreateIcon)                        \
+    X(mcNewCreateSaveFile)                    \
+    X(mcReadIconData)                         \
+    X(mcReadStartConfigFile)                  \
+    X(mcReadStartSaveFile)                    \
+    X(mcSelectFileInfoInit)                   \
+    X(mcSelectSaveFileCheck)                  \
+    X(mcSetFileSelectWindowCursol)            \
+    X(mcSetFileSelectWindowCursolInit)        \
+    X(mcSetStringSaveFile)                    \
+    X(mcSetTyepWriteMode)                     \
+    X(mcWriteIconData)                        \
+    X(mcWriteStartConfigFile)                 \
+    X(mcWriteStartSaveFile)                   \
+    X(mceGetInfoApdx)                         \
+    X(mceIntrReadFixAlign)                    \
+    X(mceStorePwd)                            \
+    X(sceCdApplyNCmd)                         \
+    X(sceCdBreak)                             \
+    X(sceCdCallback)                          \
+    X(sceCdChangeThreadPriority)              \
+    X(sceCdDelayThread)                       \
+    X(sceCdDiskReady)                         \
+    X(sceCdGetDiskType)                       \
+    X(sceCdGetError)                          \
+    X(sceCdGetReadPos)                        \
+    X(sceCdGetToc)                            \
+    X(sceCdInit)                              \
+    X(sceCdInitEeCB)                          \
+    X(sceCdIntToPos)                          \
+    X(sceCdLayerSearchFile)                   \
+    X(sceCdMmode)                             \
+    X(sceCdNcmdDiskReady)                     \
+    X(sceCdPause)                             \
+    X(sceCdPosToInt)                          \
+    X(sceCdRead)                              \
+    X(sceCdReadChain)                         \
+    X(sceCdReadClock)                         \
+    X(sceCdReadIOPm)                          \
+    X(sceCdSearchFile)                        \
+    X(sceCdSeek)                              \
+    X(sceCdStInit)                            \
+    X(sceCdStPause)                           \
+    X(sceCdStRead)                            \
+    X(sceCdStResume)                          \
+    X(sceCdStSeek)                            \
+    X(sceCdStSeekF)                           \
+    X(sceCdStStart)                           \
+    X(sceCdStStat)                            \
+    X(sceCdStStop)                            \
+    X(sceCdStandby)                           \
+    X(sceCdStatus)                            \
+    X(sceCdStop)                              \
+    X(sceCdStream)                            \
+    X(sceCdSync)                              \
+    X(sceCdSyncS)                             \
+    X(sceCdTrayReq)                           \
+    X(sceClose)                               \
+    X(sceDeci2Close)                          \
+    X(sceDeci2ExLock)                         \
+    X(sceDeci2ExRecv)                         \
+    X(sceDeci2ExReqSend)                      \
+    X(sceDeci2ExSend)                         \
+    X(sceDeci2ExUnLock)                       \
+    X(sceDeci2Open)                           \
+    X(sceDeci2Poll)                           \
+    X(sceDeci2ReqSend)                        \
+    X(sceDmaCallback)                         \
+    X(sceDmaDebug)                            \
+    X(sceDmaGetChan)                          \
+    X(sceDmaGetEnv)                           \
+    X(sceDmaLastSyncTime)                     \
+    X(sceDmaPause)                            \
+    X(sceDmaPutEnv)                           \
+    X(sceDmaPutStallAddr)                     \
+    X(sceDmaRecv)                             \
+    X(sceDmaRecvI)                            \
+    X(sceDmaRecvN)                            \
+    X(sceDmaReset)                            \
+    X(sceDmaRestart)                          \
+    X(sceDmaSend)                             \
+    X(sceDmaSendI)                            \
+    X(sceDmaSendM)                            \
+    X(sceDmaSendN)                            \
+    X(sceDmaSync)                             \
+    X(sceDmaSyncN)                            \
+    X(sceDmaWatch)                            \
+    X(sceFsInit)                              \
+    X(sceFsReset)                             \
+    X(sceGifPkAddGsAD)                        \
+    X(sceGifPkAddGsData)                      \
+    X(sceGifPkCloseGifTag)                    \
+    X(sceGifPkCnt)                            \
+    X(sceGifPkEnd)                            \
+    X(sceGifPkInit)                           \
+    X(sceGifPkOpenGifTag)                     \
+    X(sceGifPkRef)                            \
+    X(sceGifPkRefLoadImage)                   \
+    X(sceGifPkReset)                          \
+    X(sceGifPkReserve)                        \
+    X(sceGifPkTerminate)                      \
+    X(sceGsExecLoadImage)                     \
+    X(sceGsExecStoreImage)                    \
+    X(sceGsGetGParam)                         \
+    X(sceGsPutDispEnv)                        \
+    X(sceGsPutDrawEnv)                        \
+    X(sceGsResetGraph)                        \
+    X(sceGsResetPath)                         \
+    X(sceGsSetDefClear)                       \
+    X(sceGsSetDefDBuffDc)                     \
+    X(sceGsSetDefDBuff)                       \
+    X(sceGsSetDefDispEnv)                     \
+    X(sceGsSetDefDrawEnv)                     \
+    X(sceGsSetDefDrawEnv2)                    \
+    X(sceGsSetDefLoadImage)                   \
+    X(sceGsSetDefStoreImage)                  \
+    X(sceGsSwapDBuffDc)                       \
+    X(sceGsSwapDBuff)                         \
+    X(sceGsSyncPath)                          \
+    X(sceGsSyncV)                             \
+    X(sceGsSyncVCallback)                     \
+    X(sceGszbufaddr)                          \
+    X(sceVif1PkAddGsAD)                       \
+    X(sceVif1PkAlign)                         \
+    X(sceVif1PkCall)                          \
+    X(sceVif1PkCloseDirectCode)               \
+    X(sceVif1PkCloseGifTag)                   \
+    X(sceVif1PkCnt)                           \
+    X(sceVif1PkEnd)                           \
+    X(sceVif1PkInit)                          \
+    X(sceVif1PkOpenDirectCode)                \
+    X(sceVif1PkOpenGifTag)                    \
+    X(sceVif1PkReset)                         \
+    X(sceVif1PkReserve)                       \
+    X(sceVif1PkTerminate)                     \
+    X(sceeFontInit)                           \
+    X(sceeFontLoadFont)                       \
+    X(sceeFontPrintfAt)                       \
+    X(sceeFontPrintfAt2)                      \
+    X(sceeFontGenerateString)                 \
+    X(sceeFontClose)                          \
+    X(sceeFontSetColour)                      \
+    X(sceeFontSetMode)                        \
+    X(sceeFontSetFont)                        \
+    X(sceeFontSetScale)                       \
+    X(sceIoctl)                               \
+    X(sceIpuInit)                             \
+    X(sceIpuRestartDMA)                       \
+    X(sceIpuStopDMA)                          \
+    X(sceIpuSync)                             \
+    X(sceLseek)                               \
+    X(sceMcChangeThreadPriority)              \
+    X(sceMcChdir)                             \
+    X(sceMcClose)                             \
+    X(sceMcDelete)                            \
+    X(sceMcEnd)                               \
+    X(sceMcFlush)                             \
+    X(sceMcFormat)                            \
+    X(sceMcGetDir)                            \
+    X(sceMcGetEntSpace)                       \
+    X(sceMcGetInfo)                           \
+    X(sceMcGetSlotMax)                        \
+    X(sceMcInit)                              \
+    X(sceMcMkdir)                             \
+    X(sceMcOpen)                              \
+    X(sceMcRead)                              \
+    X(sceMcRename)                            \
+    X(sceMcSeek)                              \
+    X(sceMcSetFileInfo)                       \
+    X(sceMcSync)                              \
+    X(sceMcUnformat)                          \
+    X(sceMcWrite)                             \
+    X(sceMpegAddBs)                           \
+    X(sceMpegAddCallback)                     \
+    X(sceMpegAddStrCallback)                  \
+    X(sceMpegClearRefBuff)                    \
+    X(sceMpegCreate)                          \
+    X(sceMpegDelete)                          \
+    X(sceMpegDemuxPss)                        \
+    X(sceMpegDemuxPssRing)                    \
+    X(sceMpegDispCenterOffX)                  \
+    X(sceMpegDispCenterOffY)                  \
+    X(sceMpegDispHeight)                      \
+    X(sceMpegDispWidth)                       \
+    X(sceMpegGetDecodeMode)                   \
+    X(sceMpegGetPicture)                      \
+    X(sceMpegGetPictureRAW8)                  \
+    X(sceMpegGetPictureRAW8xy)                \
+    X(sceMpegInit)                            \
+    X(sceMpegIsEnd)                           \
+    X(sceMpegIsRefBuffEmpty)                  \
+    X(sceMpegReset)                           \
+    X(sceMpegResetDefaultPtsGap)              \
+    X(sceMpegSetDecodeMode)                   \
+    X(sceMpegSetDefaultPtsGap)                \
+    X(sceMpegSetImageBuff)                    \
+    X(sceOpen)                                \
+    X(scePad2CreateSocket)                    \
+    X(scePad2DeleteSocket)                    \
+    X(scePad2End)                             \
+    X(scePad2GetButtonProfile)                \
+    X(scePad2GetState)                        \
+    X(scePad2Init)                            \
+    X(scePad2Read)                            \
+    X(scePadEnd)                              \
+    X(scePadEnterPressMode)                   \
+    X(scePadExitPressMode)                    \
+    X(scePadGetButtonMask)                    \
+    X(scePadGetDmaStr)                        \
+    X(scePadGetFrameCount)                    \
+    X(scePadGetModVersion)                    \
+    X(scePadGetPortMax)                       \
+    X(scePadGetReqState)                      \
+    X(scePadGetSlotMax)                       \
+    X(scePadGetState)                         \
+    X(scePadInfoAct)                          \
+    X(scePadInfoComb)                         \
+    X(scePadInfoMode)                         \
+    X(scePadInfoPressMode)                    \
+    X(scePadInit)                             \
+    X(scePadInit2)                            \
+    X(scePadPortClose)                        \
+    X(scePadPortOpen)                         \
+    X(scePadRead)                             \
+    X(scePadReqIntToStr)                      \
+    X(scePadSetActAlign)                      \
+    X(scePadSetActDirect)                     \
+    X(scePadSetButtonInfo)                    \
+    X(scePadSetMainMode)                      \
+    X(scePadSetReqState)                      \
+    X(scePadSetVrefParam)                     \
+    X(scePadSetWarningLevel)                  \
+    X(scePadStateIntToStr)                    \
+    X(scePrintf)                              \
+    X(sceRead)                                \
+    X(sceResetttyinit)                        \
+    X(sceSSyn_BreakAtick)                     \
+    X(sceSSyn_ClearBreakAtick)                \
+    X(sceSSyn_SendExcMsg)                     \
+    X(sceSSyn_SendNrpnMsg)                    \
+    X(sceSSyn_SendRpnMsg)                     \
+    X(sceSSyn_SendShortMsg)                   \
+    X(sceSSyn_SetChPriority)                  \
+    X(sceSSyn_SetMasterVolume)                \
+    X(sceSSyn_SetOutPortVolume)               \
+    X(sceSSyn_SetOutputAssign)                \
+    X(sceSSyn_SetOutputMode)                  \
+    X(sceSSyn_SetPortMaxPoly)                 \
+    X(sceSSyn_SetPortVolume)                  \
+    X(sceSSyn_SetTvaEnvMode)                  \
+    X(sceSdCallBack)                          \
+    X(sceSdRemote)                            \
+    X(sceSdRemoteInit)                        \
+    X(sceSdTransToIOP)                        \
+    X(sceSetBrokenLink)                       \
+    X(sceSetPtm)                              \
+    X(sceSifAddCmdHandler)                    \
+    X(sceSifAllocIopHeap)                     \
+    X(sceSifAllocSysMemory)                   \
+    X(sceSifBindRpc)                          \
+    X(sceSifCheckStatRpc)                     \
+    X(sceSifDmaStat)                          \
+    X(sceSifExecRequest)                      \
+    X(sceSifExitCmd)                          \
+    X(sceSifExitRpc)                          \
+    X(sceSifFreeIopHeap)                      \
+    X(sceSifFreeSysMemory)                    \
+    X(sceSifGetDataTable)                     \
+    X(sceSifGetIopAddr)                       \
+    X(sceSifGetNextRequest)                   \
+    X(sceSifGetOtherData)                     \
+    X(sceSifGetReg)                           \
+    X(sceSifGetSreg)                          \
+    X(sceSifInitCmd)                          \
+    X(sceSifInitIopHeap)                      \
+    X(sceSifInitRpc)                          \
+    X(sceSifIsAliveIop)                       \
+    X(sceSifLoadElf)                          \
+    X(sceSifLoadElfPart)                      \
+    X(sceSifLoadFileReset)                    \
+    X(sceSifLoadIopHeap)                      \
+    X(sceSifLoadModuleBuffer)                 \
+    X(sceSifRebootIop)                        \
+    X(sceSifRegisterRpc)                      \
+    X(sceSifRemoveCmdHandler)                 \
+    X(sceSifRemoveRpc)                        \
+    X(sceSifRemoveRpcQueue)                   \
+    X(sceSifResetIop)                         \
+    X(sceSifRpcLoop)                          \
+    X(sceSifSearchModuleByAddress)            \
+    X(sceSifSetCmdBuffer)                     \
+    X(sceSifSetDChain)                        \
+    X(sceSifSetDma)                           \
+    X(isceSifSetDChain)                       \
+    X(isceSifSetDma)                          \
+    X(sceSifSetIopAddr)                       \
+    X(sceSifSetReg)                           \
+    X(sceSifSetRpcQueue)                      \
+    X(sceSifSetSreg)                          \
+    X(sceSifSetSysCmdBuffer)                  \
+    X(sceSifStopDma)                          \
+    X(sceSifSyncIop)                          \
+    X(sceSifWriteBackDCache)                  \
+    X(sceSynthSizerLfoTriangle)               \
+    X(sceSynthesizerAmpProcI)                 \
+    X(sceSynthesizerAmpProcNI)                \
+    X(sceSynthesizerAssignAllNoteOff)         \
+    X(sceSynthesizerAssignAllSoundOff)        \
+    X(sceSynthesizerAssignHoldChange)         \
+    X(sceSynthesizerAssignNoteOff)            \
+    X(sceSynthesizerAssignNoteOn)             \
+    X(sceSynthesizerCalcEnv)                  \
+    X(sceSynthesizerCalcPortamentPitch)       \
+    X(sceSynthesizerCalcTvfCoefAll)           \
+    X(sceSynthesizerCalcTvfCoefF0)            \
+    X(sceSynthesizerCent2PhaseInc)            \
+    X(sceSynthesizerChangeEffectSend)         \
+    X(sceSynthesizerChangeHsPanpot)           \
+    X(sceSynthesizerChangeNrpnCutOff)         \
+    X(sceSynthesizerChangeNrpnLfoDepth)       \
+    X(sceSynthesizerChangeNrpnLfoRate)        \
+    X(sceSynthesizerChangeOutAttrib)          \
+    X(sceSynthesizerChangeOutVol)             \
+    X(sceSynthesizerChangePanpot)             \
+    X(sceSynthesizerChangePartBendSens)       \
+    X(sceSynthesizerChangePartExpression)     \
+    X(sceSynthesizerChangePartHsExpression)   \
+    X(sceSynthesizerChangePartHsPitchBend)    \
+    X(sceSynthesizerChangePartModuration)     \
+    X(sceSynthesizerChangePartPitchBend)      \
+    X(sceSynthesizerChangePartVolume)         \
+    X(sceSynthesizerChangePortamento)         \
+    X(sceSynthesizerChangePortamentoTime)     \
+    X(sceSynthesizerClearKeyMap)              \
+    X(sceSynthesizerClearSpr)                 \
+    X(sceSynthesizerCopyOutput)               \
+    X(sceSynthesizerDmaFromSPR)               \
+    X(sceSynthesizerDmaSpr)                   \
+    X(sceSynthesizerDmaToSPR)                 \
+    X(sceSynthesizerGetPartOutLevel)          \
+    X(sceSynthesizerGetPartial)               \
+    X(sceSynthesizerGetSampleParam)           \
+    X(sceSynthesizerHsMessage)                \
+    X(sceSynthesizerLfoNone)                  \
+    X(sceSynthesizerLfoProc)                  \
+    X(sceSynthesizerLfoSawDown)               \
+    X(sceSynthesizerLfoSawUp)                 \
+    X(sceSynthesizerLfoSquare)                \
+    X(sceSynthesizerReadNoise)                \
+    X(sceSynthesizerReadNoiseAdd)             \
+    X(sceSynthesizerReadSample16)             \
+    X(sceSynthesizerReadSample16Add)          \
+    X(sceSynthesizerReadSample8)              \
+    X(sceSynthesizerReadSample8Add)           \
+    X(sceSynthesizerResetPart)                \
+    X(sceSynthesizerRestorDma)                \
+    X(sceSynthesizerSelectPatch)              \
+    X(sceSynthesizerSendShortMessage)         \
+    X(sceSynthesizerSetMasterVolume)          \
+    X(sceSynthesizerSetRVoice)                \
+    X(sceSynthesizerSetupDma)                 \
+    X(sceSynthesizerSetupLfo)                 \
+    X(sceSynthesizerSetupMidiModuration)      \
+    X(sceSynthesizerSetupMidiPanpot)          \
+    X(sceSynthesizerSetupNewNoise)            \
+    X(sceSynthesizerSetupReleaseEnv)          \
+    X(sceSynthesizerSetupTruncateTvaEnv)      \
+    X(sceSynthesizerSetupTruncateTvfPitchEnv) \
+    X(sceSynthesizerSetuptEnv)                \
+    X(sceSynthesizerTonegenerator)            \
+    X(sceSynthesizerTransposeMatrix)          \
+    X(sceSynthesizerTvfProcI)                 \
+    X(sceSynthesizerTvfProcNI)                \
+    X(sceSynthesizerWaitDmaFromSPR)           \
+    X(sceSynthesizerWaitDmaToSPR)             \
+    X(sceSynthsizerGetDrumPatch)              \
+    X(sceSynthsizerGetMeloPatch)              \
+    X(sceSynthsizerLfoNoise)                  \
+    X(sceTtyHandler)                          \
+    X(sceTtyInit)                             \
+    X(sceTtyRead)                             \
+    X(sceTtyWrite)                            \
+    X(sceVpu0Reset)                           \
+    X(sceVibGetProfile)                       \
+    X(sceVibSetActParam)                      \
+    X(sceVu0AddVector)                        \
+    X(sceVu0ApplyMatrix)                      \
+    X(sceVu0CameraMatrix)                     \
+    X(sceVu0ClampVector)                      \
+    X(sceVu0ClipAll)                          \
+    X(sceVu0ClipScreen)                       \
+    X(sceVu0ClipScreen3)                      \
+    X(sceVu0CopyMatrix)                       \
+    X(sceVu0CopyVector)                       \
+    X(sceVu0CopyVectorXYZ)                    \
+    X(sceVu0DivVector)                        \
+    X(sceVu0DivVectorXYZ)                     \
+    X(sceVu0DropShadowMatrix)                 \
+    X(sceVu0FTOI0Vector)                      \
+    X(sceVu0FTOI4Vector)                      \
+    X(sceVu0ITOF0Vector)                      \
+    X(sceVu0ITOF12Vector)                     \
+    X(sceVu0ITOF4Vector)                      \
+    X(sceVu0InnerProduct)                     \
+    X(sceVu0InterVector)                      \
+    X(sceVu0InterVectorXYZ)                   \
+    X(sceVu0InversMatrix)                     \
+    X(sceVu0LightColorMatrix)                 \
+    X(sceVu0MulMatrix)                        \
+    X(sceVu0MulVector)                        \
+    X(sceVu0NormalLightMatrix)                \
+    X(sceVu0Normalize)                        \
+    X(sceVu0OuterProduct)                     \
+    X(sceVu0RotMatrix)                        \
+    X(sceVu0RotMatrixX)                       \
+    X(sceVu0RotMatrixY)                       \
+    X(sceVu0RotMatrixZ)                       \
+    X(sceVu0RotTransPers)                     \
+    X(sceVu0RotTransPersN)                    \
+    X(sceVu0ScaleVector)                      \
+    X(sceVu0ScaleVectorXYZ)                   \
+    X(sceVu0SubVector)                        \
+    X(sceVu0TransMatrix)                      \
+    X(sceVu0TransposeMatrix)                  \
+    X(sceVu0UnitMatrix)                       \
+    X(sceVu0ViewScreenMatrix)                 \
+    X(sceWrite)                               \
+    /* Game/middleware */
+
+=== CONFIG STUB SELECTOR SYNTAX ===
+    22: # Functions to stub (only names with runtime syscall/stub handlers)
+    23: stubs = [
+    24:   "_exit@0x001000B8",
+    25:   "sceGsSetDefDBuff@0x00355B48",
+    26:   "sceGsSetDefDBuffDc@0x00355DE0",
+    27:   "sceGsResetGraph@0x00365A70",
+    28:   "sceGsGetGParam@0x00365C00",
+    29:   "sceGsResetPath@0x00365C10",
+    30:   "sceGszbufaddr@0x00365C78",
+    31:   "sceGsSetDefDrawEnv@0x00365D40",
+    32:   "sceGsSetDefClear@0x00365F28",
+    33:   "sceGsSwapDBuff@0x00366030",
+    34:   "sceGsSyncV@0x00366090",
+    35:   "sceGsSyncPath@0x00366128",
+    36:   "sceGsSetDefLoadImage@0x003664A0",
+    37:   "sceGsSetDefStoreImage@0x00366688",
+    38:   "sceGsExecLoadImage@0x003667C8",
+    39:   "sceGsExecStoreImage@0x00366948",
+    40:   "sceGsSyncVCallback@0x00366FD8",
+    41:   "sceGsSetDefDrawEnv2@0x00367100",
+    42:   "sceGsSwapDBuffDc@0x00367368",
+    43:   "sceGsPutDispEnv@0x003673C8",
+    44:   "sceGsPutDrawEnv@0x00367488",
+    45:   "memclr@0x00367570",
+    46:   "sceDmaGetChan@0x003675A8",
+    47:   "sceDmaReset@0x003675D0",
+    48:   "sceDmaDebug@0x003676B0",
+    49:   "sceDmaPutEnv@0x003676C0",
+    50:   "sceDmaGetEnv@0x00367898",
+    51:   "sceDmaPutStallAddr@0x003678D0",
+    52:   "sceDmaSend@0x003678F8",
+    53:   "sceDmaSendN@0x003679D0",
+    54:   "sceDmaSendI@0x00367AB8",
+    55:   "sceDmaRecv@0x00367BA0",
+    56:   "sceDmaRecvN@0x00367C68",
+    57:   "sceDmaRecvI@0x00367D58",
+    58:   "sceDmaSync@0x00367E48",
+    59:   "sceDmaWatch@0x00367F10",
+    60:   "sceDmaPause@0x00367FE0",
+    61:   "sceDmaRestart@0x00368028",
+    62:   "sceDevVif0Reset@0x00368040",
+    63:   "sceGifPkInit@0x00369C48",
+    64:   "sceGifPkReset@0x00369C58",
+    65:   "sceGifPkTerminate@0x00369C68",
+    66:   "sceGifPkCnt@0x00369CC0",
+    67:   "sceGifPkEnd@0x00369D38",
+    68:   "sceGifPkCloseGifTag@0x00369DB0",
+    69:   "sceGifPkAddGsData@0x00369E58",
+    70:   "sceVif1PkInit@0x00369E80",
+    71:   "sceVif1PkReset@0x00369E90",
+    72:   "sceVif1PkTerminate@0x00369EA0",
+    73:   "sceVif1PkCnt@0x00369EF8",
+    74:   "sceVif1PkEnd@0x00369F50",
+    75:   "sceVif1PkOpenDirectCode@0x00369FA8",
+    76:   "sceVif1PkCloseDirectCode@0x0036A000",
+    77:   "sceVif1PkOpenGifTag@0x0036A030",
+    78:   "sceVif1PkCloseGifTag@0x0036A048",
+    79:   "sceVif1PkAlign@0x0036A0F0",
+    80:   "scePadInit@0x0036A2E0",
+    81:   "scePadInit2@0x0036A420",
+    82:   "scePadEnd@0x0036A4C0",
+    83:   "scePadPortOpen@0x0036A540",
+    84:   "scePadPortClose@0x0036A728",
+    85:   "scePadGetDmaStr@0x0036A7E0",
+    86:   "scePadGetFrameCount@0x0036A840",
+    87:   "scePadRead@0x0036A890",
+    88:   "scePadGetState@0x0036A910",
+    89:   "scePadStateIntToStr@0x0036A988",
+    90:   "scePadSetReqState@0x0036A9C0",
+    91:   "scePadGetReqState@0x0036AA28",
+    92:   "scePadReqIntToStr@0x0036AA78",
+    93:   "scePadInfoAct@0x0036AAB0",
+    94:   "scePadInfoComb@0x0036ABD0",
+    95:   "scePadInfoMode@0x0036ACF0",
+    96:   "scePadSetMainMode@0x0036AE28",
+    97:   "scePadSetActDirect@0x0036AEE0",
+    98:   "scePadSetActAlign@0x0036AF98",
+    99:   "scePadGetButtonMask@0x0036B070",
+   100:   "scePadSetButtonInfo@0x0036B128",
+   101:   "scePadInfoPressMode@0x0036B1D8",
+   102:   "scePadEnterPressMode@0x0036B238",
+   103:   "scePadExitPressMode@0x0036B290",
+   104:   "scePadSetVrefParam@0x0036B2E8",
+   105:   "scePadGetPortMax@0x0036B3B8",
+   106:   "scePadGetSlotMax@0x0036B420",
+   107:   "scePadGetModVersion@0x0036B488",
+   108:   "scePadSetWarningLevel@0x0036B4F0",
+   109:   "sceCdDelayThread@0x0036BA50",
+   110:   "sceCdCallback@0x0036BAB8",
+   111:   "sceCdInitEeCB@0x0036BC70",
+   112:   "sceCdSearchFile@0x0036C018",
+   113:   "sceCdNcmdDiskReady@0x0036C488",
+   114:   "sceCdSync@0x0036C520",
+   115:   "sceCdSyncS@0x0036C5C0",
+   116:   "sceCdInit@0x0036C7A0",
+   117:   "sceCdDiskReady@0x0036CA80",
+   118:   "sceCdMmode@0x0036CC78",
+   119:   "sceCdRead@0x0036CD40",
+   120:   "sceCdSeek@0x0036CF20",
+   121:   "sceCdGetDiskType@0x0036CFF0",
+   122:   "sceCdGetError@0x0036D088",
+   123:   "sceCdBreak@0x0036D120",
+   124:   "sceCdStInit@0x0036D1D8",
+   125:   "sceCdStStart@0x0036D208",
+   126:   "sceCdStSeekF@0x0036D240",
+   127:   "sceCdStSeek@0x0036D270",
+   128:   "sceCdStStop@0x0036D2A0",
+   129:   "sceCdStRead@0x0036D2D8",
+   130:   "sceCdStPause@0x0036D460",
+   131:   "sceCdStResume@0x0036D4B0",
+   132:   "sceCdStStat@0x0036D508",
+   133:   "sceCdStream@0x0036D550",
+   134:   "sceMpegDemuxPssRing@0x0036D940",
+   135:   "sceMpegDemuxPss@0x0036DC30",
+   136:   "sceMpegAddStrCallback@0x0036DC50",
+   137:   "sceMpegInit@0x0036E490",
+   138:   "sceMpegCreate@0x0036E530",
+   139:   "sceMpegDelete@0x0036E770",
+   140:   "sceMpegAddBs@0x0036E778",
+   141:   "sceMpegGetPicture@0x0036E7B0",
+   142:   "sceMpegGetPictureRAW8@0x0036E7F8",
+   143:   "sceMpegGetPictureRAW8xy@0x0036E840",
+   144:   "sceMpegSetDecodeMode@0x0036E890",
+   145:   "sceMpegGetDecodeMode@0x0036E8A8",
+   146:   "sceMpegIsEnd@0x0036E8C8",
+   147:   "sceMpegIsRefBuffEmpty@0x0036E8D8",
+   148:   "sceMpegReset@0x0036E8E8",
+   149:   "sceMpegClearRefBuff@0x0036E928",
+   150:   "sceMpegAddCallback@0x0036E990",
+   151:   "sceMpegSetDefaultPtsGap@0x0036EA30",
+   152:   "sceMpegResetDefaultPtsGap@0x0036EA48",
+   153:   "sceMpegSetImageBuff@0x0036EA58",
+   154:   "sceMpegDispWidth@0x0036EA70",
+   155:   "sceMpegDispHeight@0x0036EA80",
+   156:   "sceMpegDispCenterOffX@0x0036EA90",
+   157:   "sceMpegDispCenterOffY@0x0036EAA0",
+   158:   "sceSetBrokenLink@0x0036EAB0",
+   159:   "sceSetPtm@0x0036EAC0",
+   160:   "_sceMpegFlush@0x0036EFF0",
+
+=== CONFIG SELECTOR PARSING AND BINDING (D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp : 880-945) ===
+   880:         m_configManager.setReporter(&m_reporter);
+   881:     }
+   882: 
+   883:     PS2Recompiler::~PS2Recompiler() = default;
+   884: 
+   885:     void PS2Recompiler::printReport() const
+   886:     {
+   887:         m_reporter.printSummary(std::cout);
+   888:     }
+   889: 
+   890:     bool PS2Recompiler::initialize()
+   891:     {
+   892:         try
+   893:         {
+   894:             m_reporter.progress("parsing config");
+   895:             m_config = m_configManager.loadConfig();
+   896:             m_skipFunctions.clear();
+   897:             m_skipFunctionStarts.clear();
+   898:             m_stubFunctions.clear();
+   899:             m_stubFunctionStarts.clear();
+   900:             m_stubHandlerBindingsByStart.clear();
+   901:             m_entryPointHintStarts.clear();
+   902:             m_correctnessCriticalFunctionStarts.clear();
+   903: 
+   904:             for (const auto &name : m_config.skipFunctions)
+   905:             {
+   906:                 const FunctionSelector selector = parseFunctionSelector(name);
+   907:                 if (!selector.name.empty())
+   908:                 {
+   909:                     m_skipFunctions[selector.name] = true;
+   910:                 }
+   911:                 if (selector.start.has_value())
+   912:                 {
+   913:                     m_skipFunctionStarts.insert(*selector.start);
+   914:                 }
+   915:             }
+   916:             for (const auto &name : m_config.stubImplementations)
+   917:             {
+   918:                 const FunctionSelector selector = parseFunctionSelector(name);
+   919:                 if (!selector.name.empty())
+   920:                 {
+   921:                     m_stubFunctions.insert(selector.name);
+   922:                 }
+   923:                 if (selector.start.has_value())
+   924:                 {
+   925:                     m_stubFunctionStarts.insert(*selector.start);
+   926:                     if (!selector.name.empty())
+   927:                     {
+   928:                         auto bindingIt = m_stubHandlerBindingsByStart.find(*selector.start);
+   929:                         if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+   930:                             bindingIt->second != selector.name)
+   931:                         {
+   932:                             std::ostringstream msg;
+   933:                             msg << "Multiple stub handler bindings for 0x"
+   934:                                 << std::hex << *selector.start
+   935:                                 << " (keeping latest '" << selector.name
+   936:                                 << "', previous '" << bindingIt->second << "')";
+   937:                             m_reporter.warning("config", msg.str());
+   938:                         }
+   939:                         m_stubHandlerBindingsByStart[*selector.start] = selector.name;
+   940:                     }
+   941:                 }
+   942:             }
+   943:             for (const auto &hint : m_config.entryPointHints)
+   944:             {
+   945:                 const FunctionSelector selector = parseFunctionSelector(hint);
+
+=== INITIALIZER AND STUB PROCESSING (D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp : 1125-1210) ===
+  1125:             }
+  1126: 
+  1127:             size_t processedCount = 0;
+  1128:             size_t failedCount = 0;
+  1129:             size_t correctnessCriticalFailureCount = 0;
+  1130: 
+  1131:             for (uint32_t initializerStart : m_correctnessCriticalFunctionStarts)
+  1132:             {
+  1133:                 const auto functionIt = std::find_if(
+  1134:                     m_functions.begin(), m_functions.end(),
+  1135:                     [initializerStart](const Function &function)
+  1136:                     { return function.start == initializerStart; });
+  1137:                 if (functionIt == m_functions.end())
+  1138:                 {
+  1139:                     const auto bindingIt = m_stubHandlerBindingsByStart.find(initializerStart);
+  1140:                     if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+  1141:                         resolveStubTarget(bindingIt->second) != StubTarget::Unknown)
+  1142:                     {
+  1143:                         Function manualInitializer{};
+  1144:                         manualInitializer.name = "manual_initializer_" + bindingIt->second;
+  1145:                         manualInitializer.start = initializerStart;
+  1146:                         manualInitializer.end = initializerStart + 4u;
+  1147:                         m_functions.push_back(std::move(manualInitializer));
+  1148:                         m_reporter.info(
+  1149:                             "correctness-critical",
+  1150:                             "Synthesized initializer entry for resolved handler '" +
+  1151:                                 bindingIt->second + "'");
+  1152:                         continue;
+  1153:                     }
+  1154: 
+  1155:                     ++correctnessCriticalFailureCount;
+  1156:                     m_reporter.recordCorrectnessCriticalFailure();
+  1157:                     m_reporter.errorAt(
+  1158:                         "correctness-critical",
+  1159:                         ".ctors/.init_array",
+  1160:                         initializerStart,
+  1161:                         "Initializer table target has no discovered guest function or manual handler");
+  1162:                 }
+  1163:             }
+  1164: 
+  1165:             // A configured stub whose routine was never discovered (e.g. only reached by a tail-call J)
+  1166:             // would otherwise get no wrapper, and any branch to it hits an unregistered address at runtime.
+  1167:             for (const auto &[stubStart, handlerName] : m_stubHandlerBindingsByStart)
+  1168:             {
+  1169:                 if (resolveStubTarget(handlerName) == StubTarget::Unknown)
+  1170:                 {
+  1171:                     continue;
+  1172:                 }
+  1173:                 // Only recompiled guest code can already reach this address; a stubbed owner emits none.
+  1174:                 const bool covered = std::any_of(
+  1175:                     m_functions.begin(), m_functions.end(),
+  1176:                     [&](const Function &function)
+  1177:                     {
+  1178:                         return stubStart >= function.start &&
+  1179:                                stubStart < std::max(function.end, function.start + 4u) &&
+  1180:                                (function.start == stubStart || !isStubFunction(function));
+  1181:                     });
+  1182:                 if (covered)
+  1183:                 {
+  1184:                     continue;
+  1185:                 }
+  1186:                 Function stubEntry{};
+  1187:                 stubEntry.name = handlerName;
+  1188:                 stubEntry.start = stubStart;
+  1189:                 stubEntry.end = stubStart + 4u;
+  1190:                 m_functions.push_back(std::move(stubEntry));
+  1191:                 m_reporter.info("stub", "Synthesized entry for undiscovered stub '" + handlerName + "'");
+  1192:             }
+  1193: 
+  1194:             for (auto &function : m_functions)
+  1195:             {
+  1196:                 m_reporter.recordFunctionProcessed();
+  1197:                 const bool correctnessCritical = isCorrectnessCriticalFunction(function);
+  1198: 
+  1199:                 if (isStubFunction(function))
+  1200:                 {
+  1201:                     if (hasResolvedStubHandler(function))
+  1202:                     {
+  1203:                         function.isStub = true;
+  1204:                         function.isSkipped = false;
+  1205:                         m_reporter.recordFunctionStubbed();
+  1206:                         continue;
+  1207:                     }
+  1208: 
+  1209:                     if (correctnessCritical)
+  1210:                     {
+
+=== GENERATED STUB DISPATCH (D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp : 1435-1470) ===
+  1435:                     stub << "    PS_LOG_ENTRY(\"" << generatedName << "\");\n";
+  1436:                     stub << "#endif\n";
+  1437:                     stub << "    ctx->pc = getRegU32(ctx, 31);\n"
+  1438:                          << "    ";
+  1439: 
+  1440:                     if (function.isSkipped)
+  1441:                     {
+  1442:                         stub << "ps2_stubs::TODO_NAMED(\"" << escapeCStringLiteral(function.name) << "\", rdram, ctx, runtime); ";
+  1443:                     }
+  1444:                     else
+  1445:                     {
+  1446:                         std::string dispatchName = function.name;
+  1447:                         const auto bindingIt = m_stubHandlerBindingsByStart.find(function.start);
+  1448:                         if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+  1449:                             !bindingIt->second.empty())
+  1450:                         {
+  1451:                             dispatchName = bindingIt->second;
+  1452:                         }
+  1453: 
+  1454:                         const std::string_view resolvedSyscallName = ps2_runtime_calls::resolveSyscallName(dispatchName);
+  1455:                         const std::string_view resolvedStubName = ps2_runtime_calls::resolveStubName(dispatchName);
+  1456:                         if (!resolvedSyscallName.empty())
+  1457:                         {
+  1458:                             stub << "ps2_syscalls::" << resolvedSyscallName << "(rdram, ctx, runtime); ";
+  1459:                         }
+  1460:                         else if (!resolvedStubName.empty())
+  1461:                         {
+  1462:                             stub << "ps2_stubs::" << resolvedStubName << "(rdram, ctx, runtime); ";
+  1463:                         }
+  1464:                         else
+  1465:                         {
+  1466:                             if (dispatchName.empty())
+  1467:                             {
+  1468:                                 dispatchName = function.name;
+  1469:                             }
+  1470:                             stub << "ps2_stubs::TODO_NAMED(\"" << escapeCStringLiteral(dispatchName) << "\", rdram, ctx, runtime); ";
+
+=== STUB FUNCTION TABLE GENERATION (D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp : 2065-2095) ===
+  2065:         }
+  2066:     }
+  2067: 
+  2068:     void PS2Recompiler::discoverAdditionalEntryPoints()
+  2069:     {
+  2070:         m_resumeEntryTargetsByOwner.clear();
+  2071:         if (!m_codeGenerator)
+  2072:         {
+  2073:             return;
+  2074:         }
+  2075: 
+  2076:         std::unordered_set<uint32_t> guestFallbackEntryAddresses = m_entryPointHintStarts;
+  2077:         for (uint32_t address : m_stubFunctionStarts)
+  2078:         {
+  2079:             const auto bindingIt = m_stubHandlerBindingsByStart.find(address);
+  2080:             if (bindingIt == m_stubHandlerBindingsByStart.end() ||
+  2081:                 resolveStubTarget(bindingIt->second) == StubTarget::Unknown)
+  2082:             {
+  2083:                 guestFallbackEntryAddresses.insert(address);
+  2084:             }
+  2085:         }
+  2086: 
+  2087:         // Prefer the existing wrapper when a configured entry lies inside a
+  2088:         // decoded function. If Ghidra/analyzer omitted the whole routine,
+  2089:         // synthesize a standalone guest function bounded by the next known
+  2090:         // function instead of leaving a valid executable target unregistered.
+  2091:         collectInternalEntryTargetsImpl(m_functions, m_decodedFunctions, guestFallbackEntryAddresses, m_resumeEntryTargetsByOwner);
+  2092: 
+  2093:         std::unordered_set<uint32_t> coveredEntryAddresses;
+  2094:         coveredEntryAddresses.reserve(m_functions.size() + guestFallbackEntryAddresses.size());
+  2095:         for (const auto &function : m_functions)
+
+=== STUB CLASSIFICATION AND HANDLER RESOLUTION (D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp : 2405-2475) ===
+  2405:         }
+  2406: 
+  2407:         return m_skipFunctions.contains(function.name);
+  2408:     }
+  2409: 
+  2410:     bool PS2Recompiler::isStubFunction(const Function &function) const
+  2411:     {
+  2412:         if (m_stubFunctionStarts.contains(function.start))
+  2413:         {
+  2414:             return true;
+  2415:         }
+  2416: 
+  2417:         if (m_stubFunctions.contains(function.name))
+  2418:         {
+  2419:             return true;
+  2420:         }
+  2421:         return ps2_runtime_calls::isStubName(function.name);
+  2422:     }
+  2423: 
+  2424:     bool PS2Recompiler::IsCorrectnessCriticalFunctionName(const std::string &name)
+  2425:     {
+  2426:         static constexpr const char *kPrefixes[] = {
+  2427:             "__ct__",
+  2428:             "__sinit_",
+  2429:             "_GLOBAL__sub_I_",
+  2430:             "GLOBAL__sub_I_",
+  2431:             "__static_initialization_and_destruction_0",
+  2432:             "__do_global_ctors",
+  2433:         };
+  2434: 
+  2435:         for (const char *prefix : kPrefixes)
+  2436:         {
+  2437:             if (name.rfind(prefix, 0u) == 0u)
+  2438:                 return true;
+  2439:         }
+  2440:         return false;
+  2441:     }
+  2442: 
+  2443:     bool PS2Recompiler::isCorrectnessCriticalFunction(const Function &function) const
+  2444:     {
+  2445:         return IsCorrectnessCriticalFunctionName(function.name) ||
+  2446:                m_correctnessCriticalFunctionStarts.contains(function.start);
+  2447:     }
+  2448: 
+  2449:     bool PS2Recompiler::hasResolvedStubHandler(const Function &function) const
+  2450:     {
+  2451:         std::string handlerName = function.name;
+  2452:         const auto bindingIt = m_stubHandlerBindingsByStart.find(function.start);
+  2453:         if (bindingIt != m_stubHandlerBindingsByStart.end() && !bindingIt->second.empty())
+  2454:             handlerName = bindingIt->second;
+  2455:         return resolveStubTarget(handlerName) != StubTarget::Unknown;
+  2456:     }
+  2457: 
+  2458:     void PS2Recompiler::collectCorrectnessCriticalFunctionStarts()
+  2459:     {
+  2460:         m_correctnessCriticalFunctionStarts.clear();
+  2461:         for (const Section &section : m_sections)
+  2462:         {
+  2463:             if (section.name != ".ctors" &&
+  2464:                 section.name != ".init_array" &&
+  2465:                 section.name != ".preinit_array")
+  2466:             {
+  2467:                 continue;
+  2468:             }
+  2469:             if (section.data == nullptr || section.size < sizeof(uint32_t))
+  2470:                 continue;
+  2471: 
+  2472:             for (uint32_t offset = 0; offset + sizeof(uint32_t) <= section.size; offset += sizeof(uint32_t))
+  2473:             {
+  2474:                 uint32_t target = 0u;
+  2475:                 std::memcpy(&target, section.data + offset, sizeof(target));
+
+=== RECOMPILER BINDING MEMBERS (D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\ps2_recompiler.h : 60-95) ===
+    60:         std::unique_ptr<ElfParser> m_elfParser;
+    61:         std::unique_ptr<R5900Decoder> m_decoder;
+    62:         std::unique_ptr<CodeGenerator> m_codeGenerator;
+    63:         RecompilerConfig m_config;
+    64:         RecompilerReporter m_reporter;
+    65: 
+    66:         std::vector<Function> m_functions;
+    67:         std::vector<Symbol> m_symbols;
+    68:         std::vector<Section> m_sections;
+    69:         std::vector<Relocation> m_relocations;
+    70: 
+    71:         std::unordered_map<uint32_t, std::vector<Instruction>> m_decodedFunctions;
+    72:         std::unordered_map<std::string, bool> m_skipFunctions;
+    73:         std::unordered_set<uint32_t> m_skipFunctionStarts;
+    74:         std::unordered_set<std::string> m_stubFunctions;
+    75:         std::unordered_set<uint32_t> m_stubFunctionStarts;
+    76:         std::unordered_map<uint32_t, std::string> m_stubHandlerBindingsByStart;
+    77:         std::unordered_set<uint32_t> m_entryPointHintStarts;
+    78:         std::unordered_set<uint32_t> m_correctnessCriticalFunctionStarts;
+    79:         std::map<uint32_t, std::string> m_generatedStubs;
+    80:         std::unordered_map<uint32_t, std::string> m_functionRenames;
+    81:         std::unordered_map<uint32_t, std::vector<uint32_t>> m_resumeEntryTargetsByOwner;
+    82:         CodeGenerator::BootstrapInfo m_bootstrapInfo;
+    83: 
+    84:         bool decodeFunction(Function &function);
+    85:         void discoverAdditionalEntryPoints();
+    86:         bool shouldSkipFunction(const Function &function) const;
+    87:         bool isStubFunction(const Function &function) const;
+    88:         bool isCorrectnessCriticalFunction(const Function &function) const;
+    89:         bool hasResolvedStubHandler(const Function &function) const;
+    90:         void collectCorrectnessCriticalFunctionStarts();
+    91:         bool generateFunctionHeader();
+    92:         bool generateStubHeader();
+    93:         bool writeToFile(const std::string &path, const std::string &content);
+    94:         std::filesystem::path getOutputPath(const Function &function) const;
+    95:         static std::string clampFilenameLength(const std::string& baseName, const std::string& extension, std::size_t maxLength);
+
+=== GAME OVERRIDE DECLARATIONS (D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\game_overrides.h : 1-160) ===
+     1: #ifndef PS2_GAME_OVERRIDES_H
+     2: #define PS2_GAME_OVERRIDES_H
+     3: 
+     4: #include <cstdint>
+     5: #include <string>
+     6: #include <string_view>
+     7: 
+     8: class PS2Runtime;
+     9: 
+    10: namespace ps2_game_overrides
+    11: {
+    12:     using ApplyFn = void (*)(PS2Runtime &runtime);
+    13: 
+    14:     struct Descriptor
+    15:     {
+    16:         const char *name = "";
+    17:         const char *elfName = "";
+    18:         uint32_t entry = 0;
+    19:         uint32_t crc32 = 0;
+    20:         ApplyFn apply = nullptr;
+    21:     };
+    22: 
+    23:     class AutoRegister
+    24:     {
+    25:     public:
+    26:         explicit AutoRegister(const Descriptor &descriptor);
+    27:     };
+    28: 
+    29:     void registerDescriptor(const Descriptor &descriptor);
+    30:     void applyMatching(PS2Runtime &runtime, const std::string &elfPath, uint32_t entry, uint32_t crc32, bool crc32Valid);
+    31: 
+    32:     // Runtime helper for game-specific modules:
+    33:     // bind an address to an existing syscall/stub handler by name.
+    34:     bool bindAddressHandler(PS2Runtime &runtime, uint32_t address, std::string_view handlerName);
+    35: }
+    36: 
+    37: #define PS2_GAME_OVERRIDE_JOIN2(a, b) a##b
+    38: #define PS2_GAME_OVERRIDE_JOIN(a, b) PS2_GAME_OVERRIDE_JOIN2(a, b)
+    39: 
+    40: #define PS2_REGISTER_GAME_OVERRIDE(NAME_LITERAL, ELF_NAME_LITERAL, ENTRY_U32, CRC32_U32, APPLY_FN)      \
+    41:     namespace                                                                                             \
+    42:     {                                                                                                     \
+    43:         static const ps2_game_overrides::Descriptor PS2_GAME_OVERRIDE_JOIN(kPs2OverrideDesc_, __LINE__) \
+    44:         {                                                                                                 \
+    45:             NAME_LITERAL,                                                                                 \
+    46:             ELF_NAME_LITERAL,                                                                             \
+    47:             static_cast<uint32_t>(ENTRY_U32),                                                             \
+    48:             static_cast<uint32_t>(CRC32_U32),                                                             \
+    49:             APPLY_FN                                                                                      \
+    50:         };                                                                                                \
+    51:         static const ps2_game_overrides::AutoRegister PS2_GAME_OVERRIDE_JOIN(kPs2OverrideReg_, __LINE__)\
+    52:             (PS2_GAME_OVERRIDE_JOIN(kPs2OverrideDesc_, __LINE__));                                       \
+    53:     }
+    54: 
+    55: #endif // PS2_GAME_OVERRIDES_H
+
+=== GAME OVERRIDE IMPLEMENTATION (D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp : 1-180) ===
+     1: #include "game_overrides.h"
+     2: #include "ps2_runtime.h"
+     3: #include "ps2_runtime_calls.h"
+     4: #include "ps2_stubs.h"
+     5: #include "ps2_syscalls.h"
+     6: #include "ps2_log.h"
+     7: #include <algorithm>
+     8: #include <cctype>
+     9: #include <filesystem>
+    10: #include <iostream>
+    11: #include <mutex>
+    12: #include <optional>
+    13: #include <vector>
+    14: 
+    15: namespace
+    16: {
+    17:     std::mutex &registryMutex()
+    18:     {
+    19:         static std::mutex mutex;
+    20:         return mutex;
+    21:     }
+    22: 
+    23:     std::vector<ps2_game_overrides::Descriptor> &descriptorRegistry()
+    24:     {
+    25:         static std::vector<ps2_game_overrides::Descriptor> registry;
+    26:         return registry;
+    27:     }
+    28: 
+    29:     bool equalsIgnoreCaseAscii(std::string_view lhs, std::string_view rhs)
+    30:     {
+    31:         if (lhs.size() != rhs.size())
+    32:         {
+    33:             return false;
+    34:         }
+    35: 
+    36:         for (size_t i = 0; i < lhs.size(); ++i)
+    37:         {
+    38:             const auto l = static_cast<unsigned char>(lhs[i]);
+    39:             const auto r = static_cast<unsigned char>(rhs[i]);
+    40:             if (std::tolower(l) != std::tolower(r))
+    41:             {
+    42:                 return false;
+    43:             }
+    44:         }
+    45: 
+    46:         return true;
+    47:     }
+    48: 
+    49:     std::string basenameFromPath(const std::string &path)
+    50:     {
+    51:         std::error_code ec;
+    52:         const std::filesystem::path fsPath(path);
+    53:         const std::filesystem::path leaf = fsPath.filename();
+    54:         if (leaf.empty())
+    55:         {
+    56:             return path;
+    57:         }
+    58:         return leaf.string();
+    59:     }
+    60: 
+    61:     std::optional<PS2Runtime::RecompiledFunction> resolveHandlerByName(std::string_view handlerName)
+    62:     {
+    63:         const std::string_view resolvedSyscall = ps2_runtime_calls::resolveSyscallName(handlerName);
+    64:         if (!resolvedSyscall.empty())
+    65:         {
+    66: #define PS2_RESOLVE_SYSCALL(name)                   \
+    67:     if (resolvedSyscall == std::string_view{#name}) \
+    68:     {                                               \
+    69:         return &ps2_syscalls::name;                 \
+    70:     }
+    71:             PS2_SYSCALL_LIST(PS2_RESOLVE_SYSCALL)
+    72: #undef PS2_RESOLVE_SYSCALL
+    73:         }
+    74: 
+    75:         const std::string_view resolvedStub = ps2_runtime_calls::resolveStubName(handlerName);
+    76:         if (!resolvedStub.empty())
+    77:         {
+    78: #define PS2_RESOLVE_STUB(name)                   \
+    79:     if (resolvedStub == std::string_view{#name}) \
+    80:     {                                            \
+    81:         return &ps2_stubs::name;                 \
+    82:     }
+    83:             PS2_STUB_LIST(PS2_RESOLVE_STUB)
+    84: #undef PS2_RESOLVE_STUB
+    85:         }
+    86: 
+    87:         return std::nullopt;
+    88:     }
+    89: }
+    90: namespace ps2_game_overrides
+    91: {
+    92:     AutoRegister::AutoRegister(const Descriptor &descriptor)
+    93:     {
+    94:         registerDescriptor(descriptor);
+    95:     }
+    96: 
+    97:     void registerDescriptor(const Descriptor &descriptor)
+    98:     {
+    99:         if (!descriptor.apply)
+   100:         {
+   101:             std::cerr << "[game_overrides] ignoring descriptor with null apply callback." << std::endl;
+   102:             return;
+   103:         }
+   104: 
+   105:         std::lock_guard<std::mutex> lock(registryMutex());
+   106:         descriptorRegistry().push_back(descriptor);
+   107:     }
+   108: 
+   109:     bool bindAddressHandler(PS2Runtime &runtime, uint32_t address, std::string_view handlerName)
+   110:     {
+   111:         const auto resolved = resolveHandlerByName(handlerName);
+   112:         if (!resolved.has_value())
+   113:         {
+   114:             std::cerr << "[game_overrides] unresolved handler '" << handlerName
+   115:                       << "' for address 0x" << std::hex << address << std::dec << std::endl;
+   116:             return false;
+   117:         }
+   118: 
+   119:         return runtime.replaceFunction(address, resolved.value());
+   120:     }
+   121: 
+   122:     void applyMatching(PS2Runtime &runtime,
+   123:                        const std::string &elfPath,
+   124:                        uint32_t entry,
+   125:                        uint32_t fileCrc32,
+   126:                        bool fileCrcValid)
+   127:     {
+   128: 
+   129:         std::vector<Descriptor> descriptors;
+   130:         {
+   131:             std::lock_guard<std::mutex> lock(registryMutex());
+   132:             descriptors = descriptorRegistry();
+   133:         }
+   134: 
+   135:         if (descriptors.empty())
+   136:         {
+   137:             return;
+   138:         }
+   139: 
+   140:         const std::string elfName = basenameFromPath(elfPath);
+   141:         size_t appliedCount = 0;
+   142:         for (const Descriptor &descriptor : descriptors)
+   143:         {
+   144:             if (!descriptor.apply)
+   145:             {
+   146:                 continue;
+   147:             }
+   148: 
+   149:             if (descriptor.elfName && descriptor.elfName[0] != '\0')
+   150:             {
+   151:                 if (!equalsIgnoreCaseAscii(descriptor.elfName, elfName))
+   152:                 {
+   153:                     continue;
+   154:                 }
+   155:             }
+   156: 
+   157:             if (descriptor.entry != 0u && descriptor.entry != entry)
+   158:             {
+   159:                 continue;
+   160:             }
+   161: 
+   162:             if (descriptor.crc32 != 0u)
+   163:             {
+   164:                 if (!fileCrcValid || fileCrc32 != descriptor.crc32)
+   165:                 {
+   166:                     continue;
+   167:                 }
+   168:             }
+   169: 
+   170:             const char *name = (descriptor.name && descriptor.name[0] != '\0')
+   171:                                    ? descriptor.name
+   172:                                    : "unnamed";
+   173:             RUNTIME_LOG("[game_overrides] applying '" << name << "'");
+   174:             descriptor.apply(runtime);
+   175:             ++appliedCount;
+   176:         }
+   177: 
+   178:         if (appliedCount > 0)
+   179:         {
+   180:             RUNTIME_LOG("[game_overrides] applied " << appliedCount << " matching override(s).");
+
+=== 384-PROCEDURE HANDLER NAME CROSSWALK ===
+STUB PROCEDURES: 384
+SYMBOL NAMES MATCHING PS2_STUB_LIST: 293
+MATCHES REQUIRING LEADING UNDERSCORE NORMALIZATION: 21
+SYMBOL NAMES NOT FOUND IN PS2_STUB_LIST: 91
+
+00355B48	tntGsSetDefDBuff__FP10sceGsDBuffssssss
+00355DE0	tntGsSetDefDBuffDc__FP12sceGsDBuffDcssssss
+0038AA50	ResetEE
+0038AA60	SetGsCrt
+0038AB40	AddIntcHandler
+0038AB50	AddIntcHandler2
+0038AB60	RemoveIntcHandler
+0038AB70	AddDmacHandler
+0038AB80	AddDmacHandler2
+0038AB90	RemoveDmacHandler
+0038ABA0	_EnableIntc
+0038ABB0	_DisableIntc
+0038ABC0	_EnableDmac
+0038ABD0	_DisableDmac
+0038ABE0	SetAlarm
+0038ABF0	ReleaseAlarm
+0038AC00	_iEnableIntc
+0038AC10	_iDisableIntc
+0038AC20	_iEnableDmac
+0038AC30	_iDisableDmac
+0038AC40	iSetAlarm
+0038AC50	iReleaseAlarm
+0038AC60	CreateThread
+0038AC70	DeleteThread
+0038AC80	StartThread
+0038AC90	ExitThread
+0038ACA0	ExitDeleteThread
+0038ACB0	TerminateThread
+0038ACF0	ChangeThreadPriority
+0038AD00	iChangeThreadPriority
+0038AD10	RotateThreadReadyQueue
+0038AD20	_iRotateThreadReadyQueue
+0038AD30	ReleaseWaitThread
+0038AD40	iReleaseWaitThread
+0038AD50	GetThreadId
+0038AD60	ReferThreadStatus
+0038AD70	iReferThreadStatus
+0038AD80	SleepThread
+0038AD90	WakeupThread
+0038ADA0	_iWakeupThread
+0038ADB0	CancelWakeupThread
+0038ADC0	iCancelWakeupThread
+0038ADD0	SuspendThread
+0038ADF0	ResumeThread
+0038AE40	EndOfHeap
+0038AE60	CreateSema
+0038AE70	DeleteSema
+0038AE80	SignalSema
+0038AE90	iSignalSema
+0038AEA0	WaitSema
+0038AEB0	PollSema
+0038AEC0	iPollSema
+0038AED0	ReferSemaStatus
+0038AEE0	iReferSemaStatus
+0038AF00	SetOsdConfigParam
+0038AF10	GetOsdConfigParam
+0038B0B0	EnableCache
+0038B0C0	DisableCache
+0038B0E0	FlushCache
+0038B110	iFlushCache
+0038B160	SetOsdConfigParam2
+0038B170	GetOsdConfigParam2
+0038B180	GsGetIMR
+0038B190	iGsGetIMR
+0038B1A0	GsPutIMR
+0038B1B0	iGsPutIMR
+0038B1D0	SetVSyncFlag
+0038B290	Deci2Call
+0038B2C0	GetMemorySize
+0038B2D0	_InitTLB
+0038B898	DisableIntc
+0038B900	EnableIntc
+0038B968	DisableDmac
+0038B9D0	EnableDmac
+0038BA38	iEnableIntc
+0038BA58	iDisableIntc
+0038BA78	iEnableDmac
+0038BA98	iDisableDmac
+0038BAC8	Copy
+0038BB10	GetEntryAddress
+0038BB20	InitAlarm
+0038BCD0	InitThread
+0038BDA8	iWakeupThread
+0038BE40	iRotateThreadReadyQueue
+0038D700	_sceRpcGetPacket
+0038DD78	sceSifCallRpc
+00392FF0	Copy
+00393038	GetEntryAddress
+00393538	Copy
+00393580	GetEntryAddress
+00393718	InitTLB
+
+=== HANDLER BINDING REFERENCES ACROSS SOURCE ===
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\ps2_recompiler.h:76: std::unordered_map<uint32_t, std::string> m_stubHandlerBindingsByStart;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\ps2_recompiler.h:89: bool hasResolvedStubHandler(const Function &function) const;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:296: const std::string_view handlerName = isSyscall ? resolvedSyscallName : resolvedStubName;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_emitter.cpp:308: << handlerName << "(rdram, ctx, runtime);\n";
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:900: m_stubHandlerBindingsByStart.clear();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:928: auto bindingIt = m_stubHandlerBindingsByStart.find(*selector.start);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:929: if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:933: msg << "Multiple stub handler bindings for 0x"
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:939: m_stubHandlerBindingsByStart[*selector.start] = selector.name;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:1139: const auto bindingIt = m_stubHandlerBindingsByStart.find(initializerStart);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:1140: if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:1141: resolveStubTarget(bindingIt->second) != StubTarget::Unknown)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:1167: for (const auto &[stubStart, handlerName] : m_stubHandlerBindingsByStart)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:1169: if (resolveStubTarget(handlerName) == StubTarget::Unknown)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:1187: stubEntry.name = handlerName;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:1191: m_reporter.info("stub", "Synthesized entry for undiscovered stub '" + handlerName + "'");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:1201: if (hasResolvedStubHandler(function))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:1447: const auto bindingIt = m_stubHandlerBindingsByStart.find(function.start);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:1448: if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:2079: const auto bindingIt = m_stubHandlerBindingsByStart.find(address);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:2080: if (bindingIt == m_stubHandlerBindingsByStart.end() ||
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:2081: resolveStubTarget(bindingIt->second) == StubTarget::Unknown)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:2449: bool PS2Recompiler::hasResolvedStubHandler(const Function &function) const
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:2451: std::string handlerName = function.name;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:2452: const auto bindingIt = m_stubHandlerBindingsByStart.find(function.start);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:2453: if (bindingIt != m_stubHandlerBindingsByStart.end() && !bindingIt->second.empty())
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:2454: handlerName = bindingIt->second;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp:2455: return resolveStubTarget(handlerName) != StubTarget::Unknown;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\game_overrides.h:33: // bind an address to an existing syscall/stub handler by name.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\game_overrides.h:34: bool bindAddressHandler(PS2Runtime &runtime, uint32_t address, std::string_view handlerName);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h:141: #define PS2_STUB_LIST(X)                      \
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_runtime_calls.h:18: PS2_STUB_LIST(PS2_STUB_NAME)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_stubs.h:14: PS2_STUB_LIST(PS2_DECLARE_STUB)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ee_scheduler.h:163: uint32_t handler = 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ee_scheduler.h:173: uint32_t handler = 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:61: std::optional<PS2Runtime::RecompiledFunction> resolveHandlerByName(std::string_view handlerName)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:63: const std::string_view resolvedSyscall = ps2_runtime_calls::resolveSyscallName(handlerName);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:75: const std::string_view resolvedStub = ps2_runtime_calls::resolveStubName(handlerName);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:83: PS2_STUB_LIST(PS2_RESOLVE_STUB)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:109: bool bindAddressHandler(PS2Runtime &runtime, uint32_t address, std::string_view handlerName)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:111: const auto resolved = resolveHandlerByName(handlerName);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp:114: std::cerr << "[game_overrides] unresolved handler '" << handlerName
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:415: using Handler = void (*)(uint8_t *, R5900Context *, PS2Runtime *);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:416: Handler handler = nullptr;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:420: handler = ps2_stubs::sceMcInit;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:423: handler = ps2_stubs::sceMcGetInfo;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:426: handler = ps2_stubs::sceMcOpen;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:429: handler = ps2_stubs::sceMcClose;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:432: handler = ps2_stubs::sceMcSeek;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:435: handler = ps2_stubs::sceMcRead;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:438: handler = ps2_stubs::sceMcWrite;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:441: handler = ps2_stubs::sceMcFlush;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:444: handler = ps2_stubs::sceMcChdir;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:447: handler = ps2_stubs::sceMcGetDir;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:450: handler = ps2_stubs::sceMcSetFileInfo;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:453: handler = ps2_stubs::sceMcDelete;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:456: handler = ps2_stubs::sceMcFormat;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:459: handler = ps2_stubs::sceMcUnformat;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:462: handler = ps2_stubs::sceMcMkdir;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2368: handler = it->second;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2380: if (handler == 0u)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2394: if (handler == 0u)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp:1095: if (handler == 0u || !m_runtime.hasFunction(handler))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:241: const auto handler = g_sifCmdHandlers.find(commandId);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:242: if (handler == g_sifCmdHandlers.end() || handler->second.function == 0u)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:295: const uint32_t handler = getRegU32(ctx, 5);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Deci2.cpp:11: uint32_t handler = 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Deci2.cpp:95: session.handler = handler;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Deci2.cpp:141: const uint32_t handler = args[2];
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:391: uint32_t handler = 0u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:394: handler == 0u)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:465: const uint32_t handler = getRegU32(ctx, 5);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\System.cpp:981: uint32_t handler = 0;
+
+=== SOURCE INTEGRITY ===
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h SHA256: 8A683E6A08AB59FAF51BEB2DB759D944E1B6537E3B7A863FCC0976F4CD35ABEF
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp SHA256: ACA34E519DD8CE7C1BC06CDD0F7363629408F3A675E48F2C220E8A66BC071045
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\ps2_recompiler.h SHA256: 0C55C249D20D6D0F4680078DDFB0EEA7D4E0D6370180EDACDD06AB447264ED97
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\game_overrides.h SHA256: 8B75C01A68DADA1AB3DCF82E697401E9CFFEBB2584FFF6F1B9D88F5BEF97A591
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\game_overrides.cpp SHA256: 26E2DA90E38D26BA18132FAAF465EB89C351F0B7925E479FE8801BC5E5D566E2
+
+TOTAL ELAPSED SECONDS: 0.922
+REPORT: D:\Downloads\MarkOfKri_Audits\ECOFF_STUB_HANDLER_BINDING_DEEP_AUDIT_20261127_193044.log
