@@ -1,0 +1,2975 @@
+MARK OF KRI — SEMAPHORE SIGNAL FAILURE ROOT-CAUSE AUDIT
+GENERATED: 2026-11-27 20:14:45
+MODE: READ-ONLY
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\FileIO.cpp =====
+--- Lines 18-200 ---
+   18:     void sceFsSemExit(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   19:     {
+   20:         TODO_NAMED("sceFsSemExit", rdram, ctx, runtime);
+   21:     }
+   22: 
+   23:     void sceFsSemInit(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   24:     {
+   25:                 // Retail filesystem semaphore ID is stored at 0x0040DBCC.
+   26:         // Retail parameters: initial count=1, maximum count=1, attr=0, option=0.
+   27:         if (rdram == nullptr || ctx == nullptr || runtime == nullptr)
+   28:         {
+   29:             if (ctx != nullptr)
+   30:                 SET_GPR_U32(ctx, 2, static_cast<uint32_t>(-1));
+   31:             return;
+   32:         }
+   33: 
+   34:         constexpr uint32_t kFileSystemSemaphoreIdAddress = 0x0040DBCCu;
+   35:         uint8_t *idAddress = getMemPtr(rdram, kFileSystemSemaphoreIdAddress);
+   36:         if (idAddress == nullptr)
+   37:         {
+   38:             SET_GPR_U32(ctx, 2, static_cast<uint32_t>(-1));
+   39:             return;
+   40:         }
+   41: 
+   42:         int32_t semaphoreId = -1;
+   43:         std::memcpy(&semaphoreId, idAddress, sizeof(semaphoreId));
+   44: 
+   45:         if (semaphoreId == -1)
+   46:         {
+   47:             semaphoreId = runtime->eeScheduler().createSemaphore(1, 1, 0u, 0u);
+   48:             std::memcpy(idAddress, &semaphoreId, sizeof(semaphoreId));
+   49:         }
+   50: 
+   51:         SET_GPR_U32(ctx, 2, static_cast<uint32_t>(semaphoreId));
+   52:     }
+   53: 
+   54:     void sceFsSigSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   55:     {
+   56:                 // Retail trampoline loads the shared filesystem semaphore ID into a0
+   57:         // before invoking the existing EE SignalSema syscall handler.
+   58:         if (rdram == nullptr || ctx == nullptr || runtime == nullptr)
+   59:         {
+   60:             if (ctx != nullptr)
+   61:                 SET_GPR_U32(ctx, 2, static_cast<uint32_t>(-1));
+   62:             return;
+   63:         }
+   64: 
+   65:         constexpr uint32_t kFileSystemSemaphoreIdAddress = 0x0040DBCCu;
+   66:         uint8_t *idAddress = getMemPtr(rdram, kFileSystemSemaphoreIdAddress);
+   67:         if (idAddress == nullptr)
+   68:         {
+   69:             SET_GPR_U32(ctx, 2, static_cast<uint32_t>(-1));
+   70:             return;
+   71:         }
+   72: 
+   73:         int32_t semaphoreId = -1;
+   74:         std::memcpy(&semaphoreId, idAddress, sizeof(semaphoreId));
+   75: 
+   76:         SET_GPR_U32(ctx, 4, static_cast<uint32_t>(semaphoreId));
+   77:         ps2_syscalls::SignalSema(rdram, ctx, runtime);
+   78:     }
+   79: 
+   80:     void close(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   81:     {
+   82:         ps2_syscalls::fioClose(rdram, ctx, runtime);
+   83:     }
+   84: 
+   85:     void fstat(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   86:     {
+   87:         uint32_t statAddr = getRegU32(ctx, 5);
+   88:         if (uint8_t *statBuf = getMemPtr(rdram, statAddr))
+   89:         {
+   90:             std::memset(statBuf, 0, 128);
+   91:             setReturnS32(ctx, 0);
+   92:             return;
+   93:         }
+   94:         setReturnS32(ctx, -1);
+   95:     }
+   96: 
+   97:     void lseek(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   98:     {
+   99:         ps2_syscalls::fioLseek(rdram, ctx, runtime);
+  100:     }
+  101: 
+  102:     void open(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  103:     {
+  104:         ps2_syscalls::fioOpen(rdram, ctx, runtime);
+  105:     }
+  106: 
+  107:     void read(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  108:     {
+  109:         ps2_syscalls::fioRead(rdram, ctx, runtime);
+  110:     }
+  111: 
+  112:     void sceClose(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  113:     {
+  114:         ps2_syscalls::fioClose(rdram, ctx, runtime);
+  115:     }
+  116: 
+  117:     void sceFsInit(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  118:     {
+  119:         setReturnS32(ctx, 0);
+  120:     }
+  121: 
+  122:     void sceFsReset(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  123:     {
+  124:         setReturnS32(ctx, 0);
+  125:     }
+  126: 
+  127:     void sceIoctl(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  128:     {
+  129:         const int32_t cmd = static_cast<int32_t>(getRegU32(ctx, 5));
+  130:         const uint32_t argAddr = getRegU32(ctx, 6);
+  131: 
+  132:         // HTCI wait paths poll sceIoctl(fd, 1, &state) and expect state to move
+  133:         // away from 1 once host-side I/O is no longer busy.
+  134:         if (cmd == 1 && argAddr != 0u)
+  135:         {
+  136:             uint8_t *argPtr = getMemPtr(rdram, argAddr);
+  137:             if (!argPtr)
+  138:             {
+  139:                 setReturnS32(ctx, -1);
+  140:                 return;
+  141:             }
+  142: 
+  143:             const uint32_t ready = 0u;
+  144:             std::memcpy(argPtr, &ready, sizeof(ready));
+  145:         }
+  146: 
+  147:         setReturnS32(ctx, 0);
+  148:     }
+  149: 
+  150:     void sceLseek(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  151:     {
+  152:         ps2_syscalls::fioLseek(rdram, ctx, runtime);
+  153:     }
+  154: 
+  155:     void sceOpen(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  156:     {
+  157:         ps2_syscalls::fioOpen(rdram, ctx, runtime);
+  158:     }
+  159: 
+  160:     void sceRead(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  161:     {
+  162:         ps2_syscalls::fioRead(rdram, ctx, runtime);
+  163:     }
+  164: 
+  165:     void sceWrite(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  166:     {
+  167:         ps2_syscalls::fioWrite(rdram, ctx, runtime);
+  168:     }
+  169: 
+  170:     void stat(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  171:     {
+  172:         const uint32_t statAddr = getRegU32(ctx, 5);
+  173:         uint8_t *statBuf = getMemPtr(rdram, statAddr);
+  174:         if (!statBuf)
+  175:         {
+  176:             setReturnS32(ctx, -1);
+  177:             return;
+  178:         }
+  179: 
+  180:         // Minimal fake stat payload: zeroed structure indicates a valid, readable file.
+  181:         std::memset(statBuf, 0, 128);
+  182:         setReturnS32(ctx, 0);
+  183:     }
+  184: 
+  185:     void write(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  186:     {
+  187:         ps2_syscalls::fioWrite(rdram, ctx, runtime);
+  188:     }
+  189: 
+  190:     void cvFsSetDefDev(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  191:     {
+  192:         static int logCount = 0;
+  193:         if (logCount < 8)
+  194:         {
+  195:             RUNTIME_LOG("ps2_stub cvFsSetDefDev");
+  196:             ++logCount;
+  197:         }
+  198:         setReturnS32(ctx, 0);
+  199:     }
+  200: }
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Sync.cpp =====
+--- Lines 10-374 ---
+   10:         constexpr uint32_t WEF_CLEAR = 0x10u;
+   11:         constexpr uint32_t WEF_CLEAR_ALL = 0x20u;
+   12:         constexpr uint32_t WEF_MODE_MASK = WEF_OR | WEF_CLEAR | WEF_CLEAR_ALL;
+   13:         constexpr uint32_t EA_MULTI = 0x02u;
+   14: 
+   15:         EeScheduler &scheduler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   16:         {
+   17:             EeScheduler &result = runtime->eeScheduler();
+   18:             result.bindMainContextForSyscall(*ctx, rdram);
+   19:             return result;
+   20:         }
+   21: 
+   22:         void deleteSemaphoreImpl(uint8_t *rdram,
+   23:                                  R5900Context *ctx,
+   24:                                  PS2Runtime *runtime,
+   25:                                  bool interruptSafe)
+   26:         {
+   27:             EeScheduler &ee = scheduler(rdram, ctx, runtime);
+   28:             const int result = ee.deleteSemaphore(static_cast<int>(getRegU32(ctx, 4)), interruptSafe);
+   29:             setReturnS32(ctx, result);
+   30:             ee.transferIfRequested(interruptSafe);
+   31:         }
+   32: 
+   33:         void signalSemaphoreImpl(uint8_t *rdram,
+   34:                                  R5900Context *ctx,
+   35:                                  PS2Runtime *runtime,
+   36:                                  bool interruptSafe)
+   37:         {
+   38:             EeScheduler &ee = scheduler(rdram, ctx, runtime);
+   39:             const int result = ee.signalSemaphore(static_cast<int>(getRegU32(ctx, 4)), interruptSafe);
+   40:             setReturnS32(ctx, result);
+   41:             ee.transferIfRequested(interruptSafe);
+   42:         }
+   43: 
+   44:         void deleteEventFlagImpl(uint8_t *rdram,
+   45:                                  R5900Context *ctx,
+   46:                                  PS2Runtime *runtime,
+   47:                                  bool interruptSafe)
+   48:         {
+   49:             EeScheduler &ee = scheduler(rdram, ctx, runtime);
+   50:             const int result = ee.deleteEventFlag(static_cast<int>(getRegU32(ctx, 4)), interruptSafe);
+   51:             setReturnS32(ctx, result);
+   52:             ee.transferIfRequested(interruptSafe);
+   53:         }
+   54: 
+   55:         void setEventFlagImpl(uint8_t *rdram,
+   56:                               R5900Context *ctx,
+   57:                               PS2Runtime *runtime,
+   58:                               bool interruptSafe)
+   59:         {
+   60:             EeScheduler &ee = scheduler(rdram, ctx, runtime);
+   61:             const int result = ee.setEventFlag(static_cast<int>(getRegU32(ctx, 4)),
+   62:                                                getRegU32(ctx, 5),
+   63:                                                interruptSafe);
+   64:             setReturnS32(ctx, result);
+   65:             ee.transferIfRequested(interruptSafe);
+   66:         }
+   67:     }
+   68: 
+   69:     void CreateSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   70:     {
+   71:         const uint32_t address = getRegU32(ctx, 4);
+   72:         const auto *param = address == 0u ? nullptr : getEeGuestStruct<ee_sema_t>(rdram, address);
+   73:         if (!param)
+   74:         {
+   75:             setReturnS32(ctx, KE_ERROR);
+   76:             return;
+   77:         }
+   78: 
+   79:         // ee_sema_t from ps2sdk. The IOP attr/option/init/max ordering is not
+   80:         // accepted by the EE runtime.
+   81:         setReturnS32(ctx,
+   82:                      scheduler(rdram, ctx, runtime)
+   83:                          .createSemaphore(param->init_count,
+   84:                                           param->max_count,
+   85:                                           param->attr,
+   86:                                           param->option));
+   87:     }
+   88: 
+   89:     void DeleteSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   90:     {
+   91:         deleteSemaphoreImpl(rdram, ctx, runtime, false);
+   92:     }
+   93: 
+   94:     void iDeleteSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   95:     {
+   96:         deleteSemaphoreImpl(rdram, ctx, runtime, true);
+   97:     }
+   98: 
+   99:     void SignalSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  100:     {
+  101:         signalSemaphoreImpl(rdram, ctx, runtime, false);
+  102:     }
+  103: 
+  104:     void iSignalSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  105:     {
+  106:         signalSemaphoreImpl(rdram, ctx, runtime, true);
+  107:     }
+  108: 
+  109:     void WaitSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  110:     {
+  111:         scheduler(rdram, ctx, runtime).waitSemaphore(static_cast<int>(getRegU32(ctx, 4)));
+  112:     }
+  113: 
+  114:     void PollSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  115:     {
+  116:         setReturnS32(ctx,
+  117:                      scheduler(rdram, ctx, runtime).pollSemaphore(static_cast<int>(getRegU32(ctx, 4))));
+  118:     }
+  119: 
+  120:     void iPollSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  121:     {
+  122:         PollSema(rdram, ctx, runtime);
+  123:     }
+  124: 
+  125:     void ReferSemaStatus(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  126:     {
+  127:         EeScheduler &ee = scheduler(rdram, ctx, runtime);
+  128:         const EeSemaphore *semaphore = ee.semaphore(static_cast<int>(getRegU32(ctx, 4)));
+  129:         if (!semaphore)
+  130:         {
+  131:             setReturnS32(ctx, KE_UNKNOWN_SEMID);
+  132:             return;
+  133:         }
+  134:         auto *status = getEeGuestStruct<ee_sema_t>(rdram, getRegU32(ctx, 5));
+  135:         if (!status)
+  136:         {
+  137:             setReturnS32(ctx, KE_ERROR);
+  138:             return;
+  139:         }
+  140:         status->count = semaphore->count;
+  141:         status->max_count = semaphore->maxCount;
+  142:         status->init_count = semaphore->initCount;
+  143:         status->wait_threads = static_cast<int>(semaphore->waiters.size());
+  144:         status->attr = semaphore->attr;
+  145:         status->option = semaphore->option;
+  146:         setReturnS32(ctx, KE_OK);
+  147:     }
+  148: 
+  149:     void iReferSemaStatus(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  150:     {
+  151:         ReferSemaStatus(rdram, ctx, runtime);
+  152:     }
+  153: 
+  154:     void CreateEventFlag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  155:     {
+  156:         struct EeEventFlagParam
+  157:         {
+  158:             uint32_t attr;
+  159:             uint32_t option;
+  160:             uint32_t bits;
+  161:         };
+  162:         const uint32_t address = getRegU32(ctx, 4);
+  163:         const auto *param = address == 0u ? nullptr : getEeGuestStruct<EeEventFlagParam>(rdram, address);
+  164:         if (!param)
+  165:         {
+  166:             setReturnS32(ctx, KE_ERROR);
+  167:             return;
+  168:         }
+  169:         setReturnS32(ctx,
+  170:                      scheduler(rdram, ctx, runtime).createEventFlag(param->bits, param->attr, param->option));
+  171:     }
+  172: 
+  173:     void DeleteEventFlag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  174:     {
+  175:         deleteEventFlagImpl(rdram, ctx, runtime, false);
+  176:     }
+  177: 
+  178:     void iDeleteEventFlag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  179:     {
+  180:         deleteEventFlagImpl(rdram, ctx, runtime, true);
+  181:     }
+  182: 
+  183:     void SetEventFlag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  184:     {
+  185:         setEventFlagImpl(rdram, ctx, runtime, false);
+  186:     }
+  187: 
+  188:     void iSetEventFlag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  189:     {
+  190:         setEventFlagImpl(rdram, ctx, runtime, true);
+  191:     }
+  192: 
+  193:     void ClearEventFlag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  194:     {
+  195:         setReturnS32(ctx,
+  196:                      scheduler(rdram, ctx, runtime)
+  197:                          .clearEventFlag(static_cast<int>(getRegU32(ctx, 4)), getRegU32(ctx, 5)));
+  198:     }
+  199: 
+  200:     void iClearEventFlag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  201:     {
+  202:         ClearEventFlag(rdram, ctx, runtime);
+  203:     }
+  204: 
+  205:     void WaitEventFlag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  206:     {
+  207:         const int id = static_cast<int>(getRegU32(ctx, 4));
+  208:         const uint32_t bits = getRegU32(ctx, 5);
+  209:         const uint32_t mode = getRegU32(ctx, 6);
+  210:         if ((mode & ~WEF_MODE_MASK) != 0u)
+  211:         {
+  212:             setReturnS32(ctx, KE_ILLEGAL_MODE);
+  213:             return;
+  214:         }
+  215:         if (bits == 0u)
+  216:         {
+  217:             setReturnS32(ctx, KE_EVF_ILPAT);
+  218:             return;
+  219:         }
+  220:         EeScheduler &ee = scheduler(rdram, ctx, runtime);
+  221:         const EeEventFlag *flag = ee.eventFlag(id);
+  222:         if (!flag)
+  223:         {
+  224:             setReturnS32(ctx, KE_UNKNOWN_EVFID);
+  225:             return;
+  226:         }
+  227:         if ((flag->attr & EA_MULTI) == 0u && !flag->waiters.empty())
+  228:         {
+  229:             setReturnS32(ctx, KE_EVF_MULTI);
+  230:             return;
+  231:         }
+  232:         const uint32_t resultAddress = getRegU32(ctx, 7);
+  233:         if (resultAddress != 0u && !getEeGuestStruct<uint32_t>(rdram, resultAddress))
+  234:         {
+  235:             setReturnS32(ctx, KE_ERROR);
+  236:             return;
+  237:         }
+  238:         ee.waitEventFlag(id, bits, mode, resultAddress);
+  239:     }
+  240: 
+  241:     void PollEventFlag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  242:     {
+  243:         const int id = static_cast<int>(getRegU32(ctx, 4));
+  244:         const uint32_t bits = getRegU32(ctx, 5);
+  245:         const uint32_t mode = getRegU32(ctx, 6);
+  246:         if ((mode & ~WEF_MODE_MASK) != 0u)
+  247:         {
+  248:             setReturnS32(ctx, KE_ILLEGAL_MODE);
+  249:             return;
+  250:         }
+  251:         if (bits == 0u)
+  252:         {
+  253:             setReturnS32(ctx, KE_EVF_ILPAT);
+  254:             return;
+  255:         }
+  256:         EeScheduler &ee = scheduler(rdram, ctx, runtime);
+  257:         const EeEventFlag *flag = ee.eventFlag(id);
+  258:         if (!flag)
+  259:         {
+  260:             setReturnS32(ctx, KE_UNKNOWN_EVFID);
+  261:             return;
+  262:         }
+  263:         if ((flag->attr & EA_MULTI) == 0u && !flag->waiters.empty())
+  264:         {
+  265:             setReturnS32(ctx, KE_EVF_MULTI);
+  266:             return;
+  267:         }
+  268:         uint32_t *output = nullptr;
+  269:         if (getRegU32(ctx, 7) != 0u)
+  270:         {
+  271:             output = getEeGuestStruct<uint32_t>(rdram, getRegU32(ctx, 7));
+  272:             if (!output)
+  273:             {
+  274:                 setReturnS32(ctx, KE_ERROR);
+  275:                 return;
+  276:             }
+  277:         }
+  278:         uint32_t observed = 0;
+  279:         const int result = ee.pollEventFlag(id, bits, mode, observed);
+  280:         if (result == KE_OK && output)
+  281:         {
+  282:             *output = observed;
+  283:         }
+  284:         setReturnS32(ctx, result);
+  285:     }
+  286: 
+  287:     void iPollEventFlag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  288:     {
+  289:         PollEventFlag(rdram, ctx, runtime);
+  290:     }
+  291: 
+  292:     void ReferEventFlagStatus(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  293:     {
+  294:         struct EeEventFlagStatus
+  295:         {
+  296:             uint32_t attr;
+  297:             uint32_t option;
+  298:             uint32_t initBits;
+  299:             uint32_t currentBits;
+  300:             int32_t waitThreads;
+  301:             int32_t reserved1;
+  302:             int32_t reserved2;
+  303:         };
+  304: 
+  305:         EeScheduler &ee = scheduler(rdram, ctx, runtime);
+  306:         const EeEventFlag *flag = ee.eventFlag(static_cast<int>(getRegU32(ctx, 4)));
+  307:         if (!flag)
+  308:         {
+  309:             setReturnS32(ctx, KE_UNKNOWN_EVFID);
+  310:             return;
+  311:         }
+  312:         auto *status = getEeGuestStruct<EeEventFlagStatus>(rdram, getRegU32(ctx, 5));
+  313:         if (!status)
+  314:         {
+  315:             setReturnS32(ctx, KE_ERROR);
+  316:             return;
+  317:         }
+  318:         *status = {flag->attr,
+  319:                    flag->option,
+  320:                    flag->initBits,
+  321:                    flag->bits,
+  322:                    static_cast<int32_t>(flag->waiters.size()),
+  323:                    0,
+  324:                    0};
+  325:         setReturnS32(ctx, KE_OK);
+  326:     }
+  327: 
+  328:     void iReferEventFlagStatus(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  329:     {
+  330:         ReferEventFlagStatus(rdram, ctx, runtime);
+  331:     }
+  332: 
+  333:     void SetAlarm(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  334:     {
+  335:         setReturnS32(ctx,
+  336:                      scheduler(rdram, ctx, runtime)
+  337:                          .setAlarm(static_cast<uint16_t>(getRegU32(ctx, 4)),
+  338:                                    getRegU32(ctx, 5),
+  339:                                    getRegU32(ctx, 6),
+  340:                                    getRegU32(ctx, 28),
+  341:                                    getRegU32(ctx, 29)));
+  342:     }
+  343: 
+  344:     void InitAlarm(uint8_t *, R5900Context *ctx, PS2Runtime *)
+  345:     {
+  346:         setReturnS32(ctx, KE_OK);
+  347:     }
+  348: 
+  349:     void iSetAlarm(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  350:     {
+  351:         SetAlarm(rdram, ctx, runtime);
+  352:     }
+  353: 
+  354:     void CancelAlarm(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  355:     {
+  356:         setReturnS32(ctx,
+  357:                      scheduler(rdram, ctx, runtime).cancelAlarm(static_cast<int>(getRegU32(ctx, 4))));
+  358:     }
+  359: 
+  360:     void iCancelAlarm(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  361:     {
+  362:         CancelAlarm(rdram, ctx, runtime);
+  363:     }
+  364: 
+  365:     void ReleaseAlarm(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  366:     {
+  367:         CancelAlarm(rdram, ctx, runtime);
+  368:     }
+  369: 
+  370:     void iReleaseAlarm(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  371:     {
+  372:         CancelAlarm(rdram, ctx, runtime);
+  373:     }
+  374: }
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp =====
+--- Lines 140-183 ---
+  140:     main.context = mainContext;
+  141:     main.entry = mainContext.pc;
+  142:     // $sp is live execution state, not the stable initial stack descriptor
+  143:     // returned by ReferThreadStatus. SetupThread records that metadata.
+  144:     main.stack = 0u;
+  145:     main.gp = getRegU32(&mainContext, 28);
+  146:     main.initialPriority = 0;
+  147:     main.currentPriority = 0;
+  148:     main.status = EeThreadStatus::Ready;
+  149:     m_threads.emplace(main.id, std::move(main));
+  150:     m_readyQueues[0].push_back(kMainThreadId);
+  151:     scheduleEvent(m_eeCycle + kVBlankPeriodCycles,
+  152:                   std::chrono::steady_clock::now() + kVBlankPeriod,
+  153:                   EeEvent{EeEventType::VBlankStart, 0, 0});
+  154:     publishSnapshot();
+  155: }
+  156: 
+  157: void EeScheduler::run()
+  158: {
+  159:     assertExecutor();
+  160:     m_running.store(true, std::memory_order_release);
+  161: 
+  162:     while (!m_stopRequested.load(std::memory_order_acquire))
+  163:     {
+  164:         processPendingEvents();
+  165:         if (m_stopRequested.load(std::memory_order_acquire))
+  166:         {
+  167:             break;
+  168:         }
+  169: 
+  170:         if (m_currentThreadId == 0)
+  171:         {
+  172:             GuestThread *next = selectReady();
+  173:             if (!next && m_pendingInvocations.empty())
+  174:             {
+  175:                 copyMainContextToRuntime();
+  176:                 publishIdleDebugContext();
+  177:                 publishSnapshot();
+  178:                 waitForEvent();
+  179:                 continue;
+  180:             }
+  181:             if (next)
+  182:             {
+  183:                 makeRunning(*next);
+--- Lines 188-217 ---
+  188:                 GuestInvocation invocation = std::move(m_pendingInvocations.front());
+  189:                 m_pendingInvocations.pop_front();
+  190:                 owner->status = EeThreadStatus::Running;
+  191:                 m_currentThreadId = owner->id;
+  192:                 renewTimeSlice();
+  193:                 if (getRegU32(&invocation.context, 29) == 0u)
+  194:                 {
+  195:                     SET_GPR_U32(&invocation.context, 29, invocationStackTop());
+  196:                 }
+  197:                 owner->invocations.push_back(std::move(invocation));
+  198:             }
+  199:         }
+  200: 
+  201:         GuestThread *running = currentThread();
+  202:         assert(running != nullptr);
+  203:         if (running->resumeCompletion)
+  204:         {
+  205:             auto completion = std::move(running->resumeCompletion);
+  206:             running->resumeCompletion = {};
+  207:             try
+  208:             {
+  209:                 completion(running->activeContext());
+  210:             }
+  211:             catch (const EeDispatcherTransfer &)
+  212:             {
+  213:             }
+  214:             if (m_currentThreadId == 0)
+  215:             {
+  216:                 continue;
+  217:             }
+--- Lines 249-292 ---
+  249:                 continue;
+  250:             }
+  251:             // Returning from the entry point is a normal exit, but a null call or corrupt $ra lands here too.
+  252:             if (running->id > 0)
+  253:                 std::cerr << "[EeScheduler] thread " << running->id << " reached pc=0 from branch_pc=0x" << std::hex
+  254:                       << context.branch_pc << " ra=0x" << getRegU32(&context, 31) << std::dec
+  255:                       << "; treating as thread exit" << std::endl;
+  256:             makeDormant(*running);
+  257:             m_currentThreadId = 0;
+  258:             copyMainContextToRuntime();
+  259:             publishIdleDebugContext();
+  260:             publishSnapshot();
+  261:             continue;
+  262:         }
+  263: 
+  264:         if (!m_pendingInvocations.empty() && running->invocations.empty())
+  265:         {
+  266:             GuestInvocation invocation = std::move(m_pendingInvocations.front());
+  267:             m_pendingInvocations.pop_front();
+  268:             if (getRegU32(&invocation.context, 29) == 0u)
+  269:             {
+  270:                 SET_GPR_U32(&invocation.context, 29, invocationStackTop());
+  271:             }
+  272:             running->invocations.push_back(std::move(invocation));
+  273:             continue;
+  274:         }
+  275: 
+  276:         if (!m_runtime.hasFunction(context.pc))
+  277:         {
+  278:             if (!running->invocations.empty())
+  279:             {
+  280:                 context.pc = 0u;
+  281:             }
+  282:             else
+  283:             {
+  284:                 m_runtime.reportMissingFunction(m_rdram,
+  285:                                                 &context,
+  286:                                                 context.pc,
+  287:                                                 context.pc,
+  288:                                                 PS2Runtime::GuestBranchKind::DirectJump,
+  289:                                                 "EE scheduler");
+  290:                 makeDormant(*running);
+  291:                 m_currentThreadId = 0;
+  292:             }
+--- Lines 433-614 ---
+  433:     return m_guestExecuting.load(std::memory_order_acquire);
+  434: }
+  435: 
+  436: void EeScheduler::setupCurrentThread(uint32_t stack, uint32_t stackSize, uint32_t gp)
+  437: {
+  438:     assertExecutor();
+  439:     GuestThread *target = currentThread();
+  440:     if (!target)
+  441:     {
+  442:         return;
+  443:     }
+  444: 
+  445:     target->stack = stack;
+  446:     target->stackSize = stackSize;
+  447:     target->gp = gp;
+  448:     publishSnapshot();
+  449: }
+  450: 
+  451: int EeScheduler::createThread(const EeThreadCreateParams &params)
+  452: {
+  453:     assertExecutor();
+  454:     if (params.priority < 1 || params.priority >= kPriorityCount)
+  455:     {
+  456:         return KE_ILLEGAL_PRIORITY;
+  457:     }
+  458: 
+  459:     const int id = allocateThreadId();
+  460:     if (id == 0)
+  461:     {
+  462:         return KE_ERROR;
+  463:     }
+  464: 
+  465:     GuestThread thread{};
+  466:     thread.id = id;
+  467:     thread.entry = params.entry;
+  468:     thread.stack = params.stack;
+  469:     thread.stackSize = params.stackSize;
+  470:     thread.gp = params.gp;
+  471:     thread.attr = params.attr;
+  472:     thread.option = params.option;
+  473:     thread.initialPriority = params.priority;
+  474:     thread.currentPriority = params.priority;
+  475:     thread.status = EeThreadStatus::Dormant;
+  476:     m_threads.emplace(id, std::move(thread));
+  477:     publishSnapshot();
+  478:     return id;
+  479: }
+  480: 
+  481: int EeScheduler::deleteThread(int id, uint32_t &ownedStack)
+  482: {
+  483:     assertExecutor();
+  484:     ownedStack = 0;
+  485:     if (id <= kMainThreadId)
+  486:     {
+  487:         return KE_ILLEGAL_THID;
+  488:     }
+  489:     auto it = m_threads.find(id);
+  490:     if (it == m_threads.end())
+  491:     {
+  492:         return KE_UNKNOWN_THID;
+  493:     }
+  494:     if (it->second.status != EeThreadStatus::Dormant)
+  495:     {
+  496:         return KE_NOT_DORMANT;
+  497:     }
+  498:     if (it->second.ownsStack)
+  499:     {
+  500:         ownedStack = it->second.stack;
+  501:     }
+  502:     m_threads.erase(it);
+  503:     publishSnapshot();
+  504:     return KE_OK;
+  505: }
+  506: 
+  507: int EeScheduler::startThread(int id, uint32_t arg, const R5900Context &caller, bool interruptSafe)
+  508: {
+  509:     assertExecutor();
+  510:     GuestThread *target = thread(id);
+  511:     if (!target)
+  512:     {
+  513:         return KE_UNKNOWN_THID;
+  514:     }
+  515:     if (target->status != EeThreadStatus::Dormant)
+  516:     {
+  517:         return KE_NOT_DORMANT;
+  518:     }
+  519: 
+  520:     target->context = R5900Context{};
+  521:     target->context.pc = target->entry;
+  522:     target->arg = arg;
+  523:     target->suspendCount = 0;
+  524:     target->wakeupCount = 0;
+  525:     target->wait = {};
+  526:     SET_GPR_U32(&target->context, 4, arg);
+  527:     SET_GPR_U32(&target->context, 28, target->gp != 0u ? target->gp : getRegU32(&caller, 28));
+  528:     const uint32_t stackTop = target->stack != 0u
+  529:                                   ? (target->stack + target->stackSize) & ~0xFu
+  530:                                   : getRegU32(&caller, 29);
+  531:     SET_GPR_U32(&target->context, 29, stackTop);
+  532:     SET_GPR_U32(&target->context, 31, 0u);
+  533:     enqueueReady(*target);
+  534:     requestPreemptionIfHigher(*target, interruptSafe);
+  535:     publishSnapshot();
+  536:     return KE_OK;
+  537: }
+  538: 
+  539: [[noreturn]] void EeScheduler::exitCurrent(bool deleteThreadRecord)
+  540: {
+  541:     assertExecutor();
+  542:     GuestThread *exiting = currentThread();
+  543:     assert(exiting != nullptr);
+  544:     const int id = exiting->id;
+  545:     const uint32_t ownedStack = deleteThreadRecord && exiting->ownsStack ? exiting->stack : 0u;
+  546:     makeDormant(*exiting);
+  547:     m_currentThreadId = 0;
+  548:     if (deleteThreadRecord && id != kMainThreadId)
+  549:     {
+  550:         m_threads.erase(id);
+  551:     }
+  552:     if (ownedStack != 0u)
+  553:     {
+  554:         m_runtime.guestFree(ownedStack);
+  555:     }
+  556:     publishSnapshot();
+  557:     throw EeDispatcherTransfer{};
+  558: }
+  559: 
+  560: int EeScheduler::terminateThread(int id, uint32_t &ownedStack, bool interruptSafe)
+  561: {
+  562:     assertExecutor();
+  563:     ownedStack = 0;
+  564:     if (id == 0 || id == m_currentThreadId)
+  565:     {
+  566:         return KE_ILLEGAL_THID;
+  567:     }
+  568:     GuestThread *target = thread(id);
+  569:     if (!target)
+  570:     {
+  571:         return KE_UNKNOWN_THID;
+  572:     }
+  573:     if (target->status == EeThreadStatus::Dormant)
+  574:     {
+  575:         return KE_DORMANT;
+  576:     }
+  577:     if (target->ownsStack)
+  578:     {
+  579:         ownedStack = target->stack;
+  580:         target->ownsStack = false;
+  581:     }
+  582:     makeDormant(*target);
+  583:     (void)interruptSafe;
+  584:     publishSnapshot();
+  585:     return KE_OK;
+  586: }
+  587: 
+  588: int EeScheduler::suspendThread(int id, bool interruptSafe)
+  589: {
+  590:     assertExecutor();
+  591:     if (id == 0)
+  592:     {
+  593:         id = m_currentThreadId;
+  594:     }
+  595:     GuestThread *target = thread(id);
+  596:     if (!target)
+  597:     {
+  598:         return KE_UNKNOWN_THID;
+  599:     }
+  600:     if (target->status == EeThreadStatus::Dormant)
+  601:     {
+  602:         return KE_DORMANT;
+  603:     }
+  604: 
+  605:     ++target->suspendCount;
+  606:     switch (target->status)
+  607:     {
+  608:     case EeThreadStatus::Running:
+  609:         target->status = EeThreadStatus::Suspended;
+  610:         m_currentThreadId = 0;
+  611:         m_rescheduleRequested = true;
+  612:         break;
+  613:     case EeThreadStatus::Ready:
+  614:         removeReady(*target);
+--- Lines 631-660 ---
+  631:     return KE_OK;
+  632: }
+  633: 
+  634: int EeScheduler::resumeThread(int id, bool interruptSafe)
+  635: {
+  636:     assertExecutor();
+  637:     if (id == 0)
+  638:     {
+  639:         return KE_ILLEGAL_THID;
+  640:     }
+  641:     GuestThread *target = thread(id);
+  642:     if (!target)
+  643:     {
+  644:         return KE_UNKNOWN_THID;
+  645:     }
+  646:     if (target->suspendCount == 0)
+  647:     {
+  648:         return KE_NOT_SUSPEND;
+  649:     }
+  650:     --target->suspendCount;
+  651:     if (target->suspendCount != 0)
+  652:     {
+  653:         return KE_OK;
+  654:     }
+  655:     if (target->status == EeThreadStatus::WaitingSuspended)
+  656:     {
+  657:         target->status = EeThreadStatus::Waiting;
+  658:     }
+  659:     else if (target->status == EeThreadStatus::Suspended)
+  660:     {
+--- Lines 665-755 ---
+  665:     return KE_OK;
+  666: }
+  667: 
+  668: void EeScheduler::sleepCurrent()
+  669: {
+  670:     assertExecutor();
+  671:     GuestThread *self = currentThread();
+  672:     assert(self != nullptr);
+  673:     if (self->wakeupCount != 0u)
+  674:     {
+  675:         --self->wakeupCount;
+  676:         setReturnS32(&self->activeContext(), KE_OK);
+  677:         return;
+  678:     }
+  679:     blockCurrent(EeWaitState{EeWaitReason::Sleep, std::monostate{}});
+  680: }
+  681: 
+  682: int EeScheduler::wakeupThread(int id, bool interruptSafe)
+  683: {
+  684:     assertExecutor();
+  685:     if (id == 0 || id == m_currentThreadId)
+  686:     {
+  687:         return KE_ILLEGAL_THID;
+  688:     }
+  689:     GuestThread *target = thread(id);
+  690:     if (!target)
+  691:     {
+  692:         return KE_UNKNOWN_THID;
+  693:     }
+  694:     if (target->status == EeThreadStatus::Dormant)
+  695:     {
+  696:         return KE_DORMANT;
+  697:     }
+  698:     if ((target->status == EeThreadStatus::Waiting || target->status == EeThreadStatus::WaitingSuspended) &&
+  699:         target->wait.reason == EeWaitReason::Sleep)
+  700:     {
+  701:         makeReady(*target, KE_OK, interruptSafe);
+  702:     }
+  703:     else
+  704:     {
+  705:         ++target->wakeupCount;
+  706:     }
+  707:     publishSnapshot();
+  708:     return KE_OK;
+  709: }
+  710: 
+  711: int EeScheduler::cancelWakeup(int id)
+  712: {
+  713:     assertExecutor();
+  714:     if (id == 0)
+  715:     {
+  716:         id = m_currentThreadId;
+  717:     }
+  718:     GuestThread *target = thread(id);
+  719:     if (!target)
+  720:     {
+  721:         return KE_UNKNOWN_THID;
+  722:     }
+  723:     const int old = static_cast<int>(target->wakeupCount);
+  724:     target->wakeupCount = 0;
+  725:     publishSnapshot();
+  726:     return old;
+  727: }
+  728: 
+  729: int EeScheduler::changePriority(int id, int priority, bool interruptSafe, int &oldPriority)
+  730: {
+  731:     assertExecutor();
+  732:     if (priority < 1 || priority >= kPriorityCount)
+  733:     {
+  734:         return KE_ILLEGAL_PRIORITY;
+  735:     }
+  736:     if (id == 0)
+  737:     {
+  738:         id = m_currentThreadId;
+  739:     }
+  740:     GuestThread *target = thread(id);
+  741:     if (!target)
+  742:     {
+  743:         return KE_UNKNOWN_THID;
+  744:     }
+  745:     oldPriority = target->currentPriority;
+  746:     if (target->status == EeThreadStatus::Ready)
+  747:     {
+  748:         removeReady(*target);
+  749:         target->currentPriority = priority;
+  750:         enqueueReady(*target);
+  751:         requestPreemptionIfHigher(*target, interruptSafe);
+  752:     }
+  753:     else
+  754:     {
+  755:         target->currentPriority = priority;
+--- Lines 769-798 ---
+  769:     return KE_OK;
+  770: }
+  771: 
+  772: int EeScheduler::rotateReadyQueue(int priority, bool interruptSafe)
+  773: {
+  774:     assertExecutor();
+  775:     if (priority == 0)
+  776:     {
+  777:         const GuestThread *self = currentThread();
+  778:         priority = self ? self->currentPriority : 0;
+  779:     }
+  780:     if (priority < 0 || priority >= kPriorityCount)
+  781:     {
+  782:         return KE_ILLEGAL_PRIORITY;
+  783:     }
+  784: 
+  785:     GuestThread *self = currentThread();
+  786:     if (self && self->currentPriority == priority)
+  787:     {
+  788:         enqueueReady(*self);
+  789:         m_currentThreadId = 0;
+  790:         m_rescheduleRequested = true;
+  791:     }
+  792:     else
+  793:     {
+  794:         auto &queue = m_readyQueues[priority];
+  795:         if (queue.size() > 1u)
+  796:         {
+  797:             const int head = queue.front();
+  798:             queue.pop_front();
+--- Lines 804-1211 ---
+  804:     return KE_OK;
+  805: }
+  806: 
+  807: int EeScheduler::releaseWait(int id, bool interruptSafe)
+  808: {
+  809:     assertExecutor();
+  810:     if (id == 0)
+  811:     {
+  812:         return KE_ILLEGAL_THID;
+  813:     }
+  814:     GuestThread *target = thread(id);
+  815:     if (!target)
+  816:     {
+  817:         return KE_UNKNOWN_THID;
+  818:     }
+  819:     if (target->status != EeThreadStatus::Waiting && target->status != EeThreadStatus::WaitingSuspended)
+  820:     {
+  821:         return KE_NOT_WAIT;
+  822:     }
+  823:     removeFromWaitObject(*target);
+  824:     makeReady(*target, KE_RELEASE_WAIT, interruptSafe);
+  825:     publishSnapshot();
+  826:     return KE_OK;
+  827: }
+  828: 
+  829: void EeScheduler::transferIfRequested(bool interruptSafe)
+  830: {
+  831:     assertExecutor();
+  832:     if (interruptSafe || m_insideInterrupt || !m_rescheduleRequested)
+  833:     {
+  834:         return;
+  835:     }
+  836:     if (m_currentThreadId != 0)
+  837:     {
+  838:         GuestThread *self = currentThread();
+  839:         assert(self != nullptr);
+  840:         enqueueReady(*self, true);
+  841:         m_currentThreadId = 0;
+  842:     }
+  843:     m_rescheduleRequested = false;
+  844:     m_timeSliceExpired = false;
+  845:     publishSnapshot();
+  846:     throw EeDispatcherTransfer{};
+  847: }
+  848: 
+  849: int EeScheduler::createSemaphore(int initCount, int maxCount, uint32_t attr, uint32_t option)
+  850: {
+  851:     assertExecutor();
+  852:     if (maxCount <= 0 || initCount < 0 || initCount > maxCount)
+  853:     {
+  854:         return KE_ERROR;
+  855:     }
+  856:     const int id = allocatePositiveId(m_nextSemaphoreId, m_semaphores);
+  857:     if (id == 0)
+  858:     {
+  859:         return KE_ERROR;
+  860:     }
+  861:     EeSemaphore semaphore{};
+  862:     semaphore.id = id;
+  863:     semaphore.count = initCount;
+  864:     semaphore.maxCount = maxCount;
+  865:     semaphore.initCount = initCount;
+  866:     semaphore.attr = attr;
+  867:     semaphore.option = option;
+  868:     m_semaphores.emplace(id, std::move(semaphore));
+  869:     publishSnapshot();
+  870:     return id;
+  871: }
+  872: 
+  873: int EeScheduler::deleteSemaphore(int id, bool interruptSafe)
+  874: {
+  875:     assertExecutor();
+  876:     auto it = m_semaphores.find(id);
+  877:     if (it == m_semaphores.end())
+  878:     {
+  879:         return KE_UNKNOWN_SEMID;
+  880:     }
+  881:     std::deque<int> waiters = std::move(it->second.waiters);
+  882:     m_semaphores.erase(it);
+  883:     for (const int threadId : waiters)
+  884:     {
+  885:         if (GuestThread *waiter = thread(threadId))
+  886:         {
+  887:             makeReady(*waiter, KE_WAIT_DELETE, interruptSafe);
+  888:         }
+  889:     }
+  890:     publishSnapshot();
+  891:     return id;
+  892: }
+  893: 
+  894: int EeScheduler::signalSemaphore(int id, bool interruptSafe)
+  895: {
+  896:     assertExecutor();
+  897:     EeSemaphore *object = semaphore(id);
+  898:     if (!object)
+  899:     {
+  900:         return KE_UNKNOWN_SEMID;
+  901:     }
+  902:     if (!object->waiters.empty())
+  903:     {
+  904:         const int waiterId = object->waiters.front();
+  905:         object->waiters.pop_front();
+  906:         GuestThread *waiter = thread(waiterId);
+  907:         assert(waiter != nullptr);
+  908:         makeReady(*waiter, id, interruptSafe);
+  909:         publishSnapshot();
+  910:         return id;
+  911:     }
+  912:     if (object->count == object->maxCount)
+  913:     {
+  914:         return KE_SEMA_OVF;
+  915:     }
+  916:     ++object->count;
+  917:     publishSnapshot();
+  918:     return id;
+  919: }
+  920: 
+  921: int EeScheduler::pollSemaphore(int id)
+  922: {
+  923:     assertExecutor();
+  924:     EeSemaphore *object = semaphore(id);
+  925:     if (!object)
+  926:     {
+  927:         return KE_UNKNOWN_SEMID;
+  928:     }
+  929:     if (object->count == 0)
+  930:     {
+  931:         return KE_SEMA_ZERO;
+  932:     }
+  933:     --object->count;
+  934:     publishSnapshot();
+  935:     return id;
+  936: }
+  937: 
+  938: void EeScheduler::waitSemaphore(int id)
+  939: {
+  940:     assertExecutor();
+  941:     EeSemaphore *object = semaphore(id);
+  942:     if (!object)
+  943:     {
+  944:         GuestThread *self = currentThread();
+  945:         assert(self != nullptr);
+  946:         setReturnS32(&self->activeContext(), KE_UNKNOWN_SEMID);
+  947:         return;
+  948:     }
+  949:     if (object->count != 0)
+  950:     {
+  951:         --object->count;
+  952:         GuestThread *self = currentThread();
+  953:         assert(self != nullptr);
+  954:         setReturnS32(&self->activeContext(), id);
+  955:         publishSnapshot();
+  956:         return;
+  957:     }
+  958:     GuestThread *self = currentThread();
+  959:     assert(self != nullptr);
+  960:     object->waiters.push_back(self->id);
+  961:     blockCurrent(EeWaitState{EeWaitReason::Semaphore, EeSemaphoreWait{id}});
+  962: }
+  963: 
+  964: int EeScheduler::createEventFlag(uint32_t initialBits, uint32_t attr, uint32_t option)
+  965: {
+  966:     assertExecutor();
+  967:     const int id = allocatePositiveId(m_nextEventFlagId, m_eventFlags);
+  968:     if (id == 0)
+  969:     {
+  970:         return KE_ERROR;
+  971:     }
+  972:     EeEventFlag flag{};
+  973:     flag.id = id;
+  974:     flag.attr = attr;
+  975:     flag.option = option;
+  976:     flag.initBits = initialBits;
+  977:     flag.bits = initialBits;
+  978:     m_eventFlags.emplace(id, std::move(flag));
+  979:     publishSnapshot();
+  980:     return id;
+  981: }
+  982: 
+  983: int EeScheduler::deleteEventFlag(int id, bool interruptSafe)
+  984: {
+  985:     assertExecutor();
+  986:     auto it = m_eventFlags.find(id);
+  987:     if (it == m_eventFlags.end())
+  988:     {
+  989:         return KE_UNKNOWN_EVFID;
+  990:     }
+  991:     std::deque<int> waiters = std::move(it->second.waiters);
+  992:     m_eventFlags.erase(it);
+  993:     for (const int threadId : waiters)
+  994:     {
+  995:         if (GuestThread *waiter = thread(threadId))
+  996:         {
+  997:             makeReady(*waiter, KE_WAIT_DELETE, interruptSafe);
+  998:         }
+  999:     }
+ 1000:     publishSnapshot();
+ 1001:     return KE_OK;
+ 1002: }
+ 1003: 
+ 1004: int EeScheduler::setEventFlag(int id, uint32_t bits, bool interruptSafe)
+ 1005: {
+ 1006:     assertExecutor();
+ 1007:     EeEventFlag *flag = eventFlag(id);
+ 1008:     if (!flag)
+ 1009:     {
+ 1010:         return KE_UNKNOWN_EVFID;
+ 1011:     }
+ 1012:     flag->bits |= bits;
+ 1013:     finishEventWaiters(*flag, interruptSafe);
+ 1014:     publishSnapshot();
+ 1015:     return KE_OK;
+ 1016: }
+ 1017: 
+ 1018: int EeScheduler::clearEventFlag(int id, uint32_t mask)
+ 1019: {
+ 1020:     assertExecutor();
+ 1021:     EeEventFlag *flag = eventFlag(id);
+ 1022:     if (!flag)
+ 1023:     {
+ 1024:         return KE_UNKNOWN_EVFID;
+ 1025:     }
+ 1026:     flag->bits &= mask;
+ 1027:     publishSnapshot();
+ 1028:     return KE_OK;
+ 1029: }
+ 1030: 
+ 1031: int EeScheduler::pollEventFlag(int id, uint32_t bits, uint32_t mode, uint32_t &observedBits)
+ 1032: {
+ 1033:     assertExecutor();
+ 1034:     EeEventFlag *flag = eventFlag(id);
+ 1035:     if (!flag)
+ 1036:     {
+ 1037:         return KE_UNKNOWN_EVFID;
+ 1038:     }
+ 1039:     if (!eventCondition(flag->bits, bits, mode))
+ 1040:     {
+ 1041:         return KE_EVF_COND;
+ 1042:     }
+ 1043:     observedBits = flag->bits;
+ 1044:     if ((mode & WEF_CLEAR_ALL) != 0u)
+ 1045:     {
+ 1046:         flag->bits = 0;
+ 1047:     }
+ 1048:     else if ((mode & WEF_CLEAR) != 0u)
+ 1049:     {
+ 1050:         flag->bits &= ~bits;
+ 1051:     }
+ 1052:     publishSnapshot();
+ 1053:     return KE_OK;
+ 1054: }
+ 1055: 
+ 1056: void EeScheduler::waitEventFlag(int id, uint32_t bits, uint32_t mode, uint32_t resultAddress)
+ 1057: {
+ 1058:     assertExecutor();
+ 1059:     EeEventFlag *flag = eventFlag(id);
+ 1060:     GuestThread *self = currentThread();
+ 1061:     assert(self != nullptr);
+ 1062:     if (!flag)
+ 1063:     {
+ 1064:         setReturnS32(&self->activeContext(), KE_UNKNOWN_EVFID);
+ 1065:         return;
+ 1066:     }
+ 1067:     if (eventCondition(flag->bits, bits, mode))
+ 1068:     {
+ 1069:         const uint32_t observed = flag->bits;
+ 1070:         writeGuestU32(resultAddress, observed);
+ 1071:         if ((mode & WEF_CLEAR_ALL) != 0u)
+ 1072:         {
+ 1073:             flag->bits = 0;
+ 1074:         }
+ 1075:         else if ((mode & WEF_CLEAR) != 0u)
+ 1076:         {
+ 1077:             flag->bits &= ~bits;
+ 1078:         }
+ 1079:         setReturnS32(&self->activeContext(), KE_OK);
+ 1080:         publishSnapshot();
+ 1081:         return;
+ 1082:     }
+ 1083:     flag->waiters.push_back(self->id);
+ 1084:     blockCurrent(EeWaitState{EeWaitReason::EventFlag,
+ 1085:                              EeEventFlagWait{id, bits, mode, resultAddress}});
+ 1086: }
+ 1087: 
+ 1088: int EeScheduler::setAlarm(uint16_t ticks,
+ 1089:                           uint32_t handler,
+ 1090:                           uint32_t argument,
+ 1091:                           uint32_t gp,
+ 1092:                           uint32_t sp)
+ 1093: {
+ 1094:     assertExecutor();
+ 1095:     if (handler == 0u || !m_runtime.hasFunction(handler))
+ 1096:     {
+ 1097:         return KE_ERROR;
+ 1098:     }
+ 1099:     const int id = allocatePositiveId(m_nextAlarmId, m_alarms);
+ 1100:     if (id == 0)
+ 1101:     {
+ 1102:         return KE_ERROR;
+ 1103:     }
+ 1104:     m_alarms.emplace(id, EeAlarm{id, ticks, handler, argument, gp, sp});
+ 1105:     const uint64_t tickCount = ticks == 0u ? 1u : static_cast<uint64_t>(ticks);
+ 1106:     scheduleEvent(m_eeCycle + tickCount * kAlarmTickCycles,
+ 1107:                   std::chrono::steady_clock::now() + std::chrono::microseconds(tickCount * kAlarmTickMicroseconds),
+ 1108:                   EeEvent{EeEventType::Alarm, static_cast<uint32_t>(id), 0});
+ 1109:     return id;
+ 1110: }
+ 1111: 
+ 1112: int EeScheduler::cancelAlarm(int id)
+ 1113: {
+ 1114:     assertExecutor();
+ 1115:     if (m_alarms.erase(id) == 0u)
+ 1116:     {
+ 1117:         return KE_ERROR;
+ 1118:     }
+ 1119:     {
+ 1120:         std::lock_guard lock(m_eventMutex);
+ 1121:         std::erase_if(m_deadlines, [id](const ScheduledEvent &scheduled)
+ 1122:                       { return scheduled.event.type == EeEventType::Alarm &&
+ 1123:                                scheduled.event.id == static_cast<uint32_t>(id); });
+ 1124:         updateNextDeadline();
+ 1125:     }
+ 1126:     return KE_OK;
+ 1127: }
+ 1128: 
+ 1129: void EeScheduler::queueInvocation(GuestInvocation invocation)
+ 1130: {
+ 1131:     assertExecutor();
+ 1132:     invocation.sequence = ++m_invocationSequence;
+ 1133:     m_pendingInvocations.push_back(std::move(invocation));
+ 1134:     m_checkpointPending.store(true, std::memory_order_release);
+ 1135: }
+ 1136: 
+ 1137: [[noreturn]] void EeScheduler::invokeCurrent(GuestInvocation invocation)
+ 1138: {
+ 1139:     assertExecutor();
+ 1140:     GuestThread *owner = currentThread();
+ 1141:     assert(owner != nullptr);
+ 1142:     if (getRegU32(&invocation.context, 29) == 0u)
+ 1143:     {
+ 1144:         SET_GPR_U32(&invocation.context, 29, invocationStackTop());
+ 1145:     }
+ 1146:     invocation.sequence = ++m_invocationSequence;
+ 1147:     owner->invocations.push_back(std::move(invocation));
+ 1148:     publishSnapshot();
+ 1149:     throw EeDispatcherTransfer{};
+ 1150: }
+ 1151: 
+ 1152: [[noreturn]] void EeScheduler::invokeCurrentSequence(std::vector<GuestInvocation> invocations)
+ 1153: {
+ 1154:     assertExecutor();
+ 1155:     GuestThread *owner = currentThread();
+ 1156:     assert(owner != nullptr);
+ 1157:     assert(!invocations.empty());
+ 1158:     for (auto it = invocations.rbegin(); it != invocations.rend(); ++it)
+ 1159:     {
+ 1160:         if (getRegU32(&it->context, 29) == 0u)
+ 1161:         {
+ 1162:             SET_GPR_U32(&it->context, 29, invocationStackTop());
+ 1163:         }
+ 1164:         it->sequence = ++m_invocationSequence;
+ 1165:         owner->invocations.push_back(std::move(*it));
+ 1166:     }
+ 1167:     publishSnapshot();
+ 1168:     throw EeDispatcherTransfer{};
+ 1169: }
+ 1170: 
+ 1171: bool EeScheduler::hasInvocation(GuestInvocationKind kind, uint64_t tag) const
+ 1172: {
+ 1173:     const GuestThread *owner = currentThread();
+ 1174:     if (!owner)
+ 1175:     {
+ 1176:         return false;
+ 1177:     }
+ 1178:     return std::any_of(owner->invocations.begin(), owner->invocations.end(),
+ 1179:                        [kind, tag](const GuestInvocation &invocation)
+ 1180:                        {
+ 1181:                            return invocation.kind == kind && invocation.tag == tag;
+ 1182:                        });
+ 1183: }
+ 1184: 
+ 1185: uint32_t EeScheduler::invocationStackTop()
+ 1186: {
+ 1187:     assertExecutor();
+ 1188:     const GuestThread *owner = currentThread();
+ 1189:     if (!owner)
+ 1190:     {
+ 1191:         throw std::logic_error("EE invocation stack requested without a current guest context");
+ 1192:     }
+ 1193:     const size_t depth = owner ? owner->invocations.size() : 0u;
+ 1194:     const uint64_t key = (static_cast<uint64_t>(static_cast<uint32_t>(owner->id)) << 32u) |
+ 1195:                          static_cast<uint32_t>(depth);
+ 1196:     const auto existing = m_invocationStackTops.find(key);
+ 1197:     if (existing != m_invocationStackTops.end())
+ 1198:     {
+ 1199:         return existing->second;
+ 1200:     }
+ 1201:     constexpr uint32_t kInvocationStackSize = 0x4000u;
+ 1202:     const uint32_t top = m_runtime.reserveAsyncCallbackStack(kInvocationStackSize, 16u);
+ 1203:     if (top == 0u)
+ 1204:     {
+ 1205:         throw std::runtime_error("EE invocation stack space exhausted");
+ 1206:     }
+ 1207:     m_invocationStackTops.emplace(key, top);
+ 1208:     return top;
+ 1209: }
+ 1210: 
+ 1211: int EeScheduler::addIrqHandler(bool dmac,
+--- Lines 1214-1309 ---
+ 1214:                                bool append,
+ 1215:                                uint32_t argument,
+ 1216:                                uint32_t gp,
+ 1217:                                uint32_t sp)
+ 1218: {
+ 1219:     assertExecutor();
+ 1220:     auto &handlers = dmac ? m_dmacHandlers : m_intcHandlers;
+ 1221:     int &nextId = dmac ? m_nextDmacHandlerId : m_nextIntcHandlerId;
+ 1222:     const int id = allocatePositiveId(nextId, handlers);
+ 1223:     if (id == 0)
+ 1224:     {
+ 1225:         return KE_ERROR;
+ 1226:     }
+ 1227:     int &head = dmac ? m_dmacHeadOrder : m_intcHeadOrder;
+ 1228:     int &tail = dmac ? m_dmacTailOrder : m_intcTailOrder;
+ 1229:     handlers.emplace(id,
+ 1230:                      EeIrqHandler{id,
+ 1231:                                   cause,
+ 1232:                                   handler,
+ 1233:                                   argument,
+ 1234:                                   gp,
+ 1235:                                   sp,
+ 1236:                                   true,
+ 1237:                                   append ? ++tail : --head});
+ 1238:     return id;
+ 1239: }
+ 1240: 
+ 1241: int EeScheduler::removeIrqHandler(bool dmac, uint32_t cause, int id)
+ 1242: {
+ 1243:     assertExecutor();
+ 1244:     auto &handlers = dmac ? m_dmacHandlers : m_intcHandlers;
+ 1245:     auto it = handlers.find(id);
+ 1246:     if (it != handlers.end() && it->second.cause == cause)
+ 1247:     {
+ 1248:         handlers.erase(it);
+ 1249:     }
+ 1250:     return KE_OK;
+ 1251: }
+ 1252: 
+ 1253: int EeScheduler::setIrqHandlerEnabled(bool dmac, int id, bool enabled)
+ 1254: {
+ 1255:     assertExecutor();
+ 1256:     auto &handlers = dmac ? m_dmacHandlers : m_intcHandlers;
+ 1257:     auto it = handlers.find(id);
+ 1258:     if (it != handlers.end())
+ 1259:     {
+ 1260:         it->second.enabled = enabled;
+ 1261:     }
+ 1262:     return KE_OK;
+ 1263: }
+ 1264: 
+ 1265: int EeScheduler::setIrqCauseEnabled(bool dmac, uint32_t cause, bool enabled)
+ 1266: {
+ 1267:     assertExecutor();
+ 1268:     if (cause < 32u)
+ 1269:     {
+ 1270:         uint32_t &mask = dmac ? m_enabledDmacMask : m_enabledIntcMask;
+ 1271:         if (enabled)
+ 1272:         {
+ 1273:             mask |= 1u << cause;
+ 1274:         }
+ 1275:         else
+ 1276:         {
+ 1277:             mask &= ~(1u << cause);
+ 1278:         }
+ 1279:     }
+ 1280:     return KE_OK;
+ 1281: }
+ 1282: 
+ 1283: void EeScheduler::dispatchIrq(bool dmac, uint32_t cause)
+ 1284: {
+ 1285:     assertExecutor();
+ 1286:     const uint32_t mask = dmac ? m_enabledDmacMask : m_enabledIntcMask;
+ 1287:     if (cause < 32u && (mask & (1u << cause)) == 0u)
+ 1288:     {
+ 1289:         return;
+ 1290:     }
+ 1291:     const auto &handlers = dmac ? m_dmacHandlers : m_intcHandlers;
+ 1292:     std::vector<EeIrqHandler> matching;
+ 1293:     for (const auto &[id, handler] : handlers)
+ 1294:     {
+ 1295:         (void)id;
+ 1296:         if (handler.enabled && handler.cause == cause && handler.handler != 0u &&
+ 1297:             m_runtime.hasFunction(handler.handler))
+ 1298:         {
+ 1299:             matching.push_back(handler);
+ 1300:         }
+ 1301:     }
+ 1302:     std::sort(matching.begin(), matching.end(), [](const EeIrqHandler &left, const EeIrqHandler &right)
+ 1303:               { return left.order < right.order; });
+ 1304:     for (const EeIrqHandler &handler : matching)
+ 1305:     {
+ 1306:         GuestInvocation invocation{};
+ 1307:         invocation.kind = GuestInvocationKind::Interrupt;
+ 1308:         invocation.context.pc = handler.handler;
+ 1309:         SET_GPR_U32(&invocation.context, 4, cause);
+--- Lines 1315-1412 ---
+ 1315:     }
+ 1316: }
+ 1317: 
+ 1318: void EeScheduler::setVSyncFlag(uint32_t flagAddress, uint32_t tickAddress)
+ 1319: {
+ 1320:     assertExecutor();
+ 1321:     m_vsyncFlagAddress = flagAddress;
+ 1322:     m_vsyncTickAddress = tickAddress;
+ 1323:     writeGuestU32(flagAddress, 0u);
+ 1324:     if (tickAddress != 0u)
+ 1325:     {
+ 1326:         const uint32_t physical = tickAddress & 0x1FFFFFFFu;
+ 1327:         if (m_rdram && physical <= PS2_RAM_SIZE - sizeof(uint64_t))
+ 1328:         {
+ 1329:             const uint64_t zero = 0u;
+ 1330:             std::memcpy(m_rdram + physical, &zero, sizeof(zero));
+ 1331:         }
+ 1332:     }
+ 1333: }
+ 1334: 
+ 1335: uint64_t EeScheduler::currentVSyncTick() const noexcept
+ 1336: {
+ 1337:     return m_vsyncTick;
+ 1338: }
+ 1339: 
+ 1340: uint32_t EeScheduler::setGsVSyncCallback(uint32_t callback, uint32_t gp, uint32_t sp)
+ 1341: {
+ 1342:     assertExecutor();
+ 1343:     (void)sp;
+ 1344:     const uint32_t previous = m_gsVSyncCallback;
+ 1345:     m_gsVSyncCallback = callback;
+ 1346:     m_gsVSyncCallbackGp = gp;
+ 1347:     m_gsVSyncCallbackSp = 0u;
+ 1348:     return previous;
+ 1349: }
+ 1350: 
+ 1351: [[noreturn]] void EeScheduler::waitVSync(uint64_t afterTick, int fixedResult, std::function<void(R5900Context &)> completion)
+ 1352: {
+ 1353:     blockCurrent(EeWaitState{
+ 1354:         EeWaitReason::VSync,
+ 1355:         EeVSyncWait{afterTick, fixedResult},
+ 1356:         std::move(completion)});
+ 1357: }
+ 1358: 
+ 1359: void EeScheduler::completeVSync(uint64_t tick)
+ 1360: {
+ 1361:     assertExecutor();
+ 1362:     std::vector<int> completed;
+ 1363:     for (const auto &[id, candidate] : m_threads)
+ 1364:     {
+ 1365:         if ((candidate.status == EeThreadStatus::Waiting || candidate.status == EeThreadStatus::WaitingSuspended) &&
+ 1366:             candidate.wait.reason == EeWaitReason::VSync &&
+ 1367:             std::get<EeVSyncWait>(candidate.wait.payload).afterTick < tick)
+ 1368:         {
+ 1369:             completed.push_back(id);
+ 1370:         }
+ 1371:     }
+ 1372:     std::sort(completed.begin(), completed.end());
+ 1373:     for (const int id : completed)
+ 1374:     {
+ 1375:         GuestThread *waiter = thread(id);
+ 1376:         assert(waiter != nullptr);
+ 1377:         const EeVSyncWait wait = std::get<EeVSyncWait>(waiter->wait.payload);
+ 1378:         const int result = wait.fixedResult >= 0
+ 1379:                                ? wait.fixedResult
+ 1380:                                : static_cast<int>((tick - 1u) & 1u);
+ 1381:         makeReady(*waiter, result, false);
+ 1382:     }
+ 1383:     publishSnapshot();
+ 1384: }
+ 1385: 
+ 1386: void EeScheduler::completeExternalWait(uint32_t type, uint64_t token, int result)
+ 1387: {
+ 1388:     assertExecutor();
+ 1389:     std::vector<int> completed;
+ 1390:     for (const auto &[id, candidate] : m_threads)
+ 1391:     {
+ 1392:         if ((candidate.status != EeThreadStatus::Waiting && candidate.status != EeThreadStatus::WaitingSuspended) ||
+ 1393:             (candidate.wait.reason != EeWaitReason::External &&
+ 1394:              candidate.wait.reason != EeWaitReason::Mpeg))
+ 1395:         {
+ 1396:             continue;
+ 1397:         }
+ 1398:         const auto &external = std::get<EeExternalWait>(candidate.wait.payload);
+ 1399:         if (external.type == type && external.token == token)
+ 1400:         {
+ 1401:             completed.push_back(id);
+ 1402:         }
+ 1403:     }
+ 1404:     std::sort(completed.begin(), completed.end());
+ 1405:     for (const int id : completed)
+ 1406:     {
+ 1407:         GuestThread *waiter = thread(id);
+ 1408:         assert(waiter != nullptr);
+ 1409:         makeReady(*waiter, result, false);
+ 1410:     }
+ 1411:     publishSnapshot();
+ 1412: }
+--- Lines 1490-1519 ---
+ 1490:         GuestThread *main = selectReady();
+ 1491:         assert(main != nullptr);
+ 1492:         makeRunning(*main);
+ 1493:         return;
+ 1494:     }
+ 1495:     assertExecutor();
+ 1496:     m_rdram = rdram;
+ 1497:     if (m_currentThreadId == 0)
+ 1498:     {
+ 1499:         GuestThread *main = thread(kMainThreadId);
+ 1500:         assert(main != nullptr);
+ 1501:         assert(main->status == EeThreadStatus::Ready);
+ 1502:         removeReady(*main);
+ 1503:         makeRunning(*main);
+ 1504:     }
+ 1505: }
+ 1506: 
+ 1507: EeKernelSnapshot EeScheduler::snapshot() const
+ 1508: {
+ 1509:     std::lock_guard lock(m_snapshotMutex);
+ 1510:     return m_snapshot;
+ 1511: }
+ 1512: 
+ 1513: void EeScheduler::publishSnapshot()
+ 1514: {
+ 1515:     EeKernelSnapshot next{};
+ 1516:     next.sequence = ++m_snapshotSequence;
+ 1517:     next.eeCycle = m_eeCycle;
+ 1518:     next.sliceEndCycle = m_sliceEndCycle;
+ 1519:     next.nextEventCycle = m_nextDeadlineCycle.load(std::memory_order_acquire);
+--- Lines 1527-1558 ---
+ 1527:         }
+ 1528:         EeThreadSnapshot snapshot{};
+ 1529:         snapshot.id = id;
+ 1530:         const R5900Context &context = item.activeContext();
+ 1531:         snapshot.pc = context.pc;
+ 1532:         snapshot.ra = getRegU32(&context, 31);
+ 1533:         snapshot.sp = getRegU32(&context, 29);
+ 1534:         snapshot.contextGp = getRegU32(&context, 28);
+ 1535:         snapshot.entry = item.entry;
+ 1536:         snapshot.stack = item.stack;
+ 1537:         snapshot.stackSize = item.stackSize;
+ 1538:         snapshot.gp = item.gp;
+ 1539:         snapshot.initialPriority = item.initialPriority;
+ 1540:         snapshot.currentPriority = item.currentPriority;
+ 1541:         snapshot.status = item.status;
+ 1542:         snapshot.waitReason = item.wait.reason;
+ 1543:         snapshot.waitId = waitObjectId(item.wait);
+ 1544:         snapshot.suspendCount = item.suspendCount;
+ 1545:         snapshot.wakeupCount = item.wakeupCount;
+ 1546:         snapshot.invocationDepth = static_cast<uint32_t>(item.invocations.size());
+ 1547:         next.threads.push_back(snapshot);
+ 1548:     }
+ 1549:     std::sort(next.threads.begin(), next.threads.end(), [](const auto &left, const auto &right)
+ 1550:               { return left.id < right.id; });
+ 1551:     next.semaphores.reserve(m_semaphores.size());
+ 1552:     for (const auto &[id, item] : m_semaphores)
+ 1553:     {
+ 1554:         next.semaphores.push_back(EeSemaphoreSnapshot{id,
+ 1555:                                                       item.count,
+ 1556:                                                       item.maxCount,
+ 1557:                                                       static_cast<uint32_t>(item.waiters.size())});
+ 1558:     }
+--- Lines 1573-1602 ---
+ 1573:         std::lock_guard lock(m_snapshotMutex);
+ 1574:         m_snapshot = std::move(next);
+ 1575:     }
+ 1576: }
+ 1577: 
+ 1578: void EeScheduler::assertExecutor() const
+ 1579: {
+ 1580:     assert(m_executorThread == std::this_thread::get_id());
+ 1581: }
+ 1582: 
+ 1583: int EeScheduler::allocateThreadId()
+ 1584: {
+ 1585:     for (int attempts = 0; attempts <= kLastThreadId - kFirstThreadId; ++attempts)
+ 1586:     {
+ 1587:         const int candidate = m_nextThreadId;
+ 1588:         m_nextThreadId = candidate == kLastThreadId ? kFirstThreadId : candidate + 1;
+ 1589:         if (!m_threads.contains(candidate))
+ 1590:         {
+ 1591:             return candidate;
+ 1592:         }
+ 1593:     }
+ 1594:     return 0;
+ 1595: }
+ 1596: 
+ 1597: GuestThread &EeScheduler::acquireInvocationThread()
+ 1598: {
+ 1599:     for (auto &[id, candidate] : m_threads)
+ 1600:     {
+ 1601:         if (id < 0 && candidate.status == EeThreadStatus::Dormant && candidate.invocations.empty())
+ 1602:         {
+--- Lines 1721-1750 ---
+ 1721: 
+ 1722: void EeScheduler::makeReady(GuestThread &item, int result, bool interruptSafe)
+ 1723: {
+ 1724:     auto completion = std::move(item.wait.completion);
+ 1725:     item.wait = {};
+ 1726:     setReturnS32(&item.activeContext(), result);
+ 1727:     item.resumeCompletion = std::move(completion);
+ 1728:     if (item.suspendCount != 0)
+ 1729:     {
+ 1730:         item.status = EeThreadStatus::Suspended;
+ 1731:         return;
+ 1732:     }
+ 1733:     enqueueReady(item);
+ 1734:     requestPreemptionIfHigher(item, interruptSafe);
+ 1735: }
+ 1736: 
+ 1737: void EeScheduler::requestPreemptionIfHigher(const GuestThread &readyThread, bool interruptSafe)
+ 1738: {
+ 1739:     const GuestThread *running = currentThread();
+ 1740:     if (!running || readyThread.currentPriority >= running->currentPriority)
+ 1741:     {
+ 1742:         return;
+ 1743:     }
+ 1744:     m_rescheduleRequested = true;
+ 1745:     if (interruptSafe || m_insideInterrupt)
+ 1746:     {
+ 1747:         m_checkpointPending.store(true, std::memory_order_release);
+ 1748:     }
+ 1749: }
+ 1750: 
+--- Lines 1768-1797 ---
+ 1768:     m_timeSliceExpired = false;
+ 1769: }
+ 1770: 
+ 1771: void EeScheduler::processPendingEvents()
+ 1772: {
+ 1773:     assertExecutor();
+ 1774:     processDueDeadlines();
+ 1775:     const uint32_t timerInterrupts = m_pendingEeTimerInterrupts;
+ 1776:     m_pendingEeTimerInterrupts = 0u;
+ 1777:     for (uint32_t timer = 0u; timer < 4u; ++timer)
+ 1778:     {
+ 1779:         if ((timerInterrupts & (1u << timer)) != 0u)
+ 1780:         {
+ 1781:             dispatchIrq(false, 9u + timer);
+ 1782:         }
+ 1783:     }
+ 1784:     std::deque<EeEvent> pending;
+ 1785:     {
+ 1786:         std::lock_guard lock(m_eventMutex);
+ 1787:         pending.swap(m_events);
+ 1788:     }
+ 1789:     for (const EeEvent &event : pending)
+ 1790:     {
+ 1791:         processEvent(event);
+ 1792:     }
+ 1793: 
+ 1794:     {
+ 1795:         std::lock_guard lock(m_eventMutex);
+ 1796:         const uint64_t nextEventCycle = m_nextDeadlineCycle.load(std::memory_order_acquire);
+ 1797:         const bool cycleEventDue = nextEventCycle != 0u && m_eeCycle >= nextEventCycle;
+--- Lines 2148-2179 ---
+ 2148: }
+ 2149: 
+ 2150: void EeScheduler::publishDebugContext(const R5900Context &context)
+ 2151: {
+ 2152:     m_runtime.m_debugPc.store(context.pc, std::memory_order_relaxed);
+ 2153:     m_runtime.m_debugRa.store(getRegU32(&context, 31), std::memory_order_relaxed);
+ 2154:     m_runtime.m_debugSp.store(getRegU32(&context, 29), std::memory_order_relaxed);
+ 2155:     m_runtime.m_debugGp.store(getRegU32(&context, 28), std::memory_order_relaxed);
+ 2156: }
+ 2157: 
+ 2158: void EeScheduler::publishIdleDebugContext()
+ 2159: {
+ 2160:     // Temporary IRQ/RPC/alarm invocations deliberately return to PC=0. Once
+ 2161:     // the scheduler is idle, show a real EE thread context instead of leaving
+ 2162:     // the debugger pinned to that completed dispatcher frame.
+ 2163:     const GuestThread *selected = thread(kMainThreadId);
+ 2164:     if (!selected)
+ 2165:     {
+ 2166:         for (const auto &[id, candidate] : m_threads)
+ 2167:         {
+ 2168:             if (id > 0 && candidate.status != EeThreadStatus::Dormant)
+ 2169:             {
+ 2170:                 selected = &candidate;
+ 2171:                 break;
+ 2172:             }
+ 2173:         }
+ 2174:     }
+ 2175: 
+ 2176:     if (selected)
+ 2177:     {
+ 2178:         publishDebugContext(selected->activeContext());
+ 2179:     }
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\runtime\ee_scheduler.h =====
+--- Lines 305-334 ---
+  305:     int releaseWait(int id, bool interruptSafe);
+  306:     void transferIfRequested(bool interruptSafe);
+  307: 
+  308:     int createSemaphore(int initCount, int maxCount, uint32_t attr, uint32_t option);
+  309:     int deleteSemaphore(int id, bool interruptSafe);
+  310:     int signalSemaphore(int id, bool interruptSafe);
+  311:     int pollSemaphore(int id);
+  312:     void waitSemaphore(int id);
+  313: 
+  314:     int createEventFlag(uint32_t initialBits, uint32_t attr, uint32_t option);
+  315:     int deleteEventFlag(int id, bool interruptSafe);
+  316:     int setEventFlag(int id, uint32_t bits, bool interruptSafe);
+  317:     int clearEventFlag(int id, uint32_t mask);
+  318:     int pollEventFlag(int id, uint32_t bits, uint32_t mode, uint32_t &observedBits);
+  319:     void waitEventFlag(int id, uint32_t bits, uint32_t mode, uint32_t resultAddress);
+  320: 
+  321:     int setAlarm(uint16_t ticks, uint32_t handler, uint32_t argument, uint32_t gp, uint32_t sp);
+  322:     int cancelAlarm(int id);
+  323:     void queueInvocation(GuestInvocation invocation);
+  324:     [[noreturn]] void invokeCurrent(GuestInvocation invocation);
+  325:     [[noreturn]] void invokeCurrentSequence(std::vector<GuestInvocation> invocations);
+  326:     [[nodiscard]] bool hasInvocation(GuestInvocationKind kind, uint64_t tag) const;
+  327:     [[nodiscard]] uint32_t invocationStackTop();
+  328: 
+  329:     int addIrqHandler(bool dmac,
+  330:                       uint32_t cause,
+  331:                       uint32_t handler,
+  332:                       bool append,
+  333:                       uint32_t argument,
+  334:                       uint32_t gp,
+--- Lines 372-401 ---
+  372:         std::chrono::steady_clock::time_point hostDeadline{};
+  373:         EeEvent event{};
+  374:         uint64_t sequence = 0;
+  375:     };
+  376: 
+  377:     void assertExecutor() const;
+  378:     void advanceGuestCycles(uint32_t cycles) noexcept;
+  379:     void flushIopCycles() noexcept;
+  380:     [[nodiscard]] int allocateThreadId();
+  381:     GuestThread &acquireInvocationThread();
+  382:     void enqueueReady(GuestThread &thread, bool front = false);
+  383:     void removeReady(GuestThread &thread);
+  384:     [[nodiscard]] GuestThread *selectReady();
+  385:     void makeRunning(GuestThread &thread);
+  386:     void makeDormant(GuestThread &thread);
+  387:     void removeFromWaitObject(GuestThread &thread);
+  388:     [[noreturn]] void blockCurrent(EeWaitState wait);
+  389:     void makeReady(GuestThread &thread, int result, bool interruptSafe);
+  390:     void requestPreemptionIfHigher(const GuestThread &readyThread, bool interruptSafe);
+  391:     void applyPendingPreemption();
+  392:     void processPendingEvents();
+  393:     void processDueDeadlines();
+  394:     void processEvent(const EeEvent &event);
+  395:     void finishEventWaiters(EeEventFlag &flag, bool interruptSafe);
+  396:     [[nodiscard]] static bool eventCondition(uint32_t current, uint32_t requested, uint32_t mode);
+  397:     static int waitObjectId(const EeWaitState &wait);
+  398:     void writeGuestU32(uint32_t address, uint32_t value);
+  399:     void waitForEvent();
+  400:     void scheduleEvent(uint64_t deadlineCycle, std::chrono::steady_clock::time_point hostDeadline, EeEvent event);
+  401:     void updateNextDeadline();
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\Common.h =====
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_kernel_tests.cpp =====
+--- Lines 85-196 ---
+   85:     void setRegU32(R5900Context &ctx, int reg, uint32_t value)
+   86:     {
+   87:         SET_GPR_U32(&ctx, reg, value);
+   88:     }
+   89: 
+   90:     int32_t getRegS32(const R5900Context &ctx, int reg)
+   91:     {
+   92:         return static_cast<int32_t>(::getRegU32(&ctx, reg));
+   93:     }
+   94: 
+   95:     void writeGuestU32(uint8_t *rdram, uint32_t addr, uint32_t value)
+   96:     {
+   97:         std::memcpy(rdram + addr, &value, sizeof(value));
+   98:     }
+   99: 
+  100:     void writeGuestWords(uint8_t *rdram, uint32_t addr, const uint32_t *words, size_t count)
+  101:     {
+  102:         for (size_t i = 0; i < count; ++i)
+  103:         {
+  104:             writeGuestU32(rdram, addr + static_cast<uint32_t>(i * sizeof(uint32_t)), words[i]);
+  105:         }
+  106:     }
+  107: 
+  108:     uint32_t readGuestU32(const uint8_t *rdram, uint32_t addr)
+  109:     {
+  110:         uint32_t value = 0;
+  111:         std::memcpy(&value, rdram + addr, sizeof(value));
+  112:         return value;
+  113:     }
+  114: 
+  115:     bool callSyscall(uint32_t syscallNumber, uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  116:     {
+  117:         return dispatchNumericSyscall(syscallNumber, rdram, ctx, runtime);
+  118:     }
+  119: 
+  120:     void overrideReturnHandler(uint8_t *, R5900Context *ctx, PS2Runtime *)
+  121:     {
+  122:         setReturnU32(ctx, ::getRegU32(ctx, 4) + ::getRegU32(ctx, 5));
+  123:         ctx->pc = ::getRegU32(ctx, 31);
+  124:     }
+  125: 
+  126:     void overrideBrokenHandler(uint8_t *, R5900Context *ctx, PS2Runtime *)
+  127:     {
+  128:         setReturnU32(ctx, 0xDEADBEEFu);
+  129:         ctx->pc = 0x12345678u;
+  130:     }
+  131: 
+  132:     void overrideRecursiveFindAddressHandler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  133:     {
+  134:         runtime->handleSyscall(rdram, ctx, 0x83u);
+  135:         ctx->pc = ::getRegU32(ctx, 31);
+  136:     }
+  137: 
+  138:     void overrideKsegCompareHandler(uint8_t *, R5900Context *ctx, PS2Runtime *)
+  139:     {
+  140:         auto getLowU64 = [](const R5900Context *cpu, int reg) -> uint64_t
+  141:         {
+  142:             return (reg == 0) ? 0u : static_cast<uint64_t>(_mm_extract_epi64(cpu->r[reg], 0));
+  143:         };
+  144:         auto setLowS32 = [](R5900Context *cpu, int reg, uint32_t value)
+  145:         {
+  146:             SET_GPR_S32(cpu, reg, value);
+  147:         };
+  148:         auto setLowU64 = [](R5900Context *cpu, int reg, uint64_t value)
+  149:         {
+  150:             SET_GPR_U64(cpu, reg, value);
+  151:         };
+  152: 
+  153:         const uint32_t nextA0 = static_cast<uint32_t>(::getRegU32(ctx, 4) + 4u);
+  154:         setLowS32(ctx, 4, nextA0);
+  155:         setLowU64(ctx, 2, (getLowU64(ctx, 4) < getLowU64(ctx, 5)) ? 1u : 0u);
+  156:         if (getLowU64(ctx, 2) == 0u)
+  157:         {
+  158:             ctx->r[4] = _mm_setzero_si128();
+  159:         }
+  160:         setLowU64(ctx, 2, getLowU64(ctx, 4));
+  161:         ctx->pc = ::getRegU32(ctx, 31);
+  162:     }
+  163: 
+  164:     constexpr uint64_t K_EXPECTED_UPPER64 = 0x1122334455667788ull;
+  165: 
+  166:     void overridePreserveUpper64Handler(uint8_t *, R5900Context *ctx, PS2Runtime *)
+  167:     {
+  168:         const uint64_t hi = static_cast<uint64_t>(_mm_extract_epi64(ctx->r[4], 1));
+  169:         const uint64_t low = static_cast<uint64_t>(_mm_extract_epi64(ctx->r[4], 0));
+  170:         const uint64_t expectedLow = static_cast<uint64_t>(static_cast<int64_t>(static_cast<int32_t>(0x80000000u)));
+  171:         setReturnU32(ctx, (hi == K_EXPECTED_UPPER64 && low == expectedLow) ? 1u : 0u);
+  172:         ctx->pc = ::getRegU32(ctx, 31);
+  173:     }
+  174: 
+  175:     constexpr uint32_t K_OVERRIDE_ENTRY = 0x300500u;
+  176:     constexpr uint32_t K_OVERRIDE_RESUME = 0x300504u;
+  177:     constexpr uint32_t K_OVERRIDE_BLOCK_ENTRY = 0x300510u;
+  178:     constexpr uint32_t K_OVERRIDE_BLOCK_HANDLER = 0x300520u;
+  179:     constexpr uint32_t K_OVERRIDE_BLOCK_HANDLER_RESUME = 0x300524u;
+  180:     constexpr uint32_t K_OVERRIDE_BLOCK_DRIVER = 0x300530u;
+  181:     constexpr uint32_t K_OVERRIDE_BLOCK_BASE_RESUME = 0x300540u;
+  182:     constexpr uint32_t K_EXIT_MAIN = 0x300600u;
+  183:     constexpr uint32_t K_EXIT_HANDLER_A = 0x300610u;
+  184:     constexpr uint32_t K_EXIT_HANDLER_B = 0x300620u;
+  185:     constexpr uint32_t K_EXIT_OBSERVER = 0x300630u;
+  186:     uint32_t gOverrideSyscall = 0u;
+  187:     R5900Context gOverrideResult{};
+  188:     std::vector<int> gInvocationTrace;
+  189: 
+  190:     void schedulerOverrideEntry(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  191:     {
+  192:         ctx->pc = K_OVERRIDE_RESUME;
+  193:         runtime->handleSyscall(rdram, ctx, gOverrideSyscall);
+  194:     }
+  195: 
+  196:     void schedulerOverrideResume(uint8_t *, R5900Context *ctx, PS2Runtime *runtime)
+--- Lines 244-279 ---
+  244:         runtime->requestStop();
+  245:     }
+  246: 
+  247:     void schedulerExitHandlerA(uint8_t *, R5900Context *ctx, PS2Runtime *)
+  248:     {
+  249:         gInvocationTrace.push_back(getRegS32(*ctx, 4));
+  250:         ctx->pc = 0u;
+  251:     }
+  252: 
+  253:     void schedulerExitHandlerB(uint8_t *, R5900Context *ctx, PS2Runtime *)
+  254:     {
+  255:         gInvocationTrace.push_back(getRegS32(*ctx, 4));
+  256:         ctx->pc = 0u;
+  257:     }
+  258: 
+  259:     void schedulerExitObserver(uint8_t *, R5900Context *ctx, PS2Runtime *runtime)
+  260:     {
+  261:         const GuestThread *main = runtime->eeScheduler().thread(EeScheduler::kMainThreadId);
+  262:         gInvocationTrace.push_back(main && main->status == EeThreadStatus::Dormant ? 40 : -40);
+  263:         ctx->pc = 0u;
+  264:         runtime->requestStop();
+  265:     }
+  266: 
+  267:     void schedulerExitMain(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  268:     {
+  269:         gInvocationTrace.push_back(10);
+  270:         EeThreadCreateParams observer{};
+  271:         observer.entry = K_EXIT_OBSERVER;
+  272:         observer.stack = 0x1F000u;
+  273:         observer.stackSize = 0x1000u;
+  274:         observer.priority = 10;
+  275:         const int observerId = runtime->eeScheduler().createThread(observer);
+  276:         runtime->eeScheduler().startThread(observerId, 0u, *ctx, false);
+  277:         runtime->addEeExitHandler(EeScheduler::kMainThreadId, K_EXIT_HANDLER_A, 20u);
+  278:         runtime->addEeExitHandler(EeScheduler::kMainThreadId, K_EXIT_HANDLER_B, 30u);
+  279:         ExitThread(rdram, ctx, runtime);
+--- Lines 407-469 ---
+  407:             ctx->pc = K_SCHED_A_RESUME;
+  408:             setRegU32(*ctx, 4, static_cast<uint32_t>(gSchedulerSemaphoreId));
+  409:             WaitSema(rdram, ctx, runtime);
+  410:             return;
+  411:         }
+  412:         gSchedulerWaitResultA = getRegS32(*ctx, 2);
+  413:         gSchedulerTrace->push_back(11);
+  414:         ctx->pc = 0u;
+  415:     }
+  416: 
+  417:     void schedulerWaitB(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  418:     {
+  419:         if (ctx->pc == K_SCHED_B)
+  420:         {
+  421:             gSchedulerTrace->push_back(20);
+  422:             ctx->pc = K_SCHED_B_RESUME;
+  423:             setRegU32(*ctx, 4, static_cast<uint32_t>(gSchedulerSemaphoreId));
+  424:             WaitSema(rdram, ctx, runtime);
+  425:             return;
+  426:         }
+  427:         gSchedulerWaitResultB = getRegS32(*ctx, 2);
+  428:         gSchedulerTrace->push_back(21);
+  429:         ctx->pc = 0u;
+  430:         runtime->requestStop();
+  431:     }
+  432: 
+  433:     void schedulerSignalTwice(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  434:     {
+  435:         if (ctx->pc == K_SCHED_SIGNAL)
+  436:         {
+  437:             gSchedulerTrace->push_back(30);
+  438:             ctx->pc = K_SCHED_SIGNAL_RESUME;
+  439:             setRegU32(*ctx, 4, static_cast<uint32_t>(gSchedulerSemaphoreId));
+  440:             SignalSema(rdram, ctx, runtime);
+  441:             return;
+  442:         }
+  443:         gSchedulerTrace->push_back(31);
+  444:         setRegU32(*ctx, 4, static_cast<uint32_t>(gSchedulerSemaphoreId));
+  445:         SignalSema(rdram, ctx, runtime);
+  446:         ctx->pc = 0u;
+  447:         runtime->requestStop();
+  448:     }
+  449: 
+  450:     constexpr uint32_t K_EVENT_FIFO_MAIN = 0x301000u;
+  451:     constexpr uint32_t K_EVENT_FIFO_A = 0x301010u;
+  452:     constexpr uint32_t K_EVENT_FIFO_A_RESUME = 0x301014u;
+  453:     constexpr uint32_t K_EVENT_FIFO_B = 0x301020u;
+  454:     constexpr uint32_t K_EVENT_FIFO_B_RESUME = 0x301024u;
+  455:     constexpr uint32_t K_EVENT_FIFO_SIGNAL = 0x301030u;
+  456:     constexpr uint32_t K_EVENT_FIFO_SIGNAL_AGAIN = 0x301034u;
+  457:     constexpr uint32_t K_EVENT_FIFO_DONE = 0x301038u;
+  458:     constexpr uint32_t K_EVENT_FIFO_RESULT_A = 0x1A00u;
+  459:     constexpr uint32_t K_EVENT_FIFO_RESULT_B = 0x1A04u;
+  460:     constexpr uint32_t WEF_OR = 0x01u;
+  461:     constexpr uint32_t WEF_CLEAR = 0x10u;
+  462:     constexpr uint32_t WEF_CLEAR_ALL = 0x20u;
+  463:     int gEventFifoId = 0;
+  464:     std::vector<int> gEventFifoTrace;
+  465: 
+  466:     void schedulerEventFifoWaitA(uint8_t *, R5900Context *ctx, PS2Runtime *runtime)
+  467:     {
+  468:         if (ctx->pc == K_EVENT_FIFO_A)
+  469:         {
+--- Lines 512-559 ---
+  512:         runtime->requestStop();
+  513:     }
+  514: 
+  515:     void schedulerEventFifoMain(uint8_t *, R5900Context *ctx, PS2Runtime *runtime)
+  516:     {
+  517:         EeScheduler &scheduler = runtime->eeScheduler();
+  518:         gEventFifoId = scheduler.createEventFlag(0u, 0x02u, 0u);
+  519:         const auto create = [&](uint32_t entry, uint32_t stack, int priority)
+  520:         {
+  521:             EeThreadCreateParams params{};
+  522:             params.entry = entry;
+  523:             params.stack = stack;
+  524:             params.stackSize = 0x800u;
+  525:             params.priority = priority;
+  526:             const int id = scheduler.createThread(params);
+  527:             scheduler.startThread(id, 0u, *ctx, false);
+  528:         };
+  529:         create(K_EVENT_FIFO_A, 0x21000u, 5);
+  530:         create(K_EVENT_FIFO_B, 0x22000u, 5);
+  531:         create(K_EVENT_FIFO_SIGNAL, 0x23000u, 10);
+  532:         ctx->pc = 0u;
+  533:     }
+  534: 
+  535:     struct TestEnv
+  536:     {
+  537:         std::vector<uint8_t> rdram;
+  538:         R5900Context ctx{};
+  539:         PS2Runtime runtime;
+  540: 
+  541:         TestEnv() : rdram(PS2_RAM_SIZE, 0)
+  542:         {
+  543:             std::memset(&ctx, 0, sizeof(ctx));
+  544:         }
+  545:     };
+  546: }
+  547: 
+  548: void register_ps2_runtime_kernel_tests()
+  549: {
+  550:     MiniTest::Case("PS2RuntimeKernel", [](TestCase &tc)
+  551:     {
+  552:         tc.Run("unsigned loads and ABI word writes extend independently", [](TestCase &t)
+  553:         {
+  554:             constexpr uint64_t kUpper = 0x1122334455667788ull;
+  555:             R5900Context ctx{};
+  556:             ctx.r[2] = _mm_set_epi64x(static_cast<int64_t>(kUpper), 0);
+  557: 
+  558:             SET_GPR_ZE32(&ctx, 2, 0x80000000u);
+  559:             t.Equals(static_cast<uint64_t>(_mm_extract_epi64(ctx.r[2], 0)),
+--- Lines 587-726 ---
+  587:             threadParam.option = 0x10203040u;
+  588:             std::memcpy(env.rdram.data() + K_PARAM_ADDR, &threadParam, sizeof(threadParam));
+  589: 
+  590:             setRegU32(env.ctx, 4, K_PARAM_ADDR);
+  591:             CreateThread(env.rdram.data(), &env.ctx, &env.runtime);
+  592:             const int threadId = getRegS32(env.ctx, 2);
+  593:             const GuestThread *thread = env.runtime.eeScheduler().thread(threadId);
+  594:             t.IsTrue(threadId >= 2 && thread != nullptr, "the EE descriptor should create a guest thread");
+  595:             t.Equals(thread->entry, threadParam.func, "func must be decoded from offset 0x04");
+  596:             t.Equals(thread->stack, threadParam.stack, "stack must be decoded from offset 0x08");
+  597:             t.Equals(thread->stackSize, static_cast<uint32_t>(threadParam.stack_size),
+  598:                      "stack_size must be decoded from offset 0x0C");
+  599:             t.Equals(thread->gp, threadParam.gp_reg, "gp_reg must be decoded from offset 0x10");
+  600:             t.Equals(thread->initialPriority, threadParam.initial_priority,
+  601:                      "initial_priority must be decoded from offset 0x14");
+  602:             t.Equals(thread->currentPriority, threadParam.initial_priority,
+  603:                      "a new thread starts at its initial priority, not the status-only current_priority field");
+  604:             t.Equals(thread->attr, threadParam.attr, "attr must be decoded from offset 0x1C");
+  605:             t.Equals(thread->option, threadParam.option, "option must be decoded from offset 0x20");
+  606:             t.IsTrue(thread->status == EeThreadStatus::Dormant, "a newly created EE thread must be dormant");
+  607: 
+  608:             setRegU32(env.ctx, 4, PS2_RAM_SIZE - static_cast<uint32_t>(sizeof(EeThreadCreateAbi)) + 4u);
+  609:             CreateThread(env.rdram.data(), &env.ctx, &env.runtime);
+  610:             t.Equals(getRegS32(env.ctx, 2), KE_ERROR,
+  611:                      "the entire EE descriptor must fit in a valid guest range");
+  612: 
+  613:             EeSemaStatus semaParam{};
+  614:             semaParam.count = 91;
+  615:             semaParam.max_count = 7;
+  616:             semaParam.init_count = 3;
+  617:             semaParam.wait_threads = 82;
+  618:             semaParam.attr = 0x55667788u;
+  619:             semaParam.option = 0x99AABBCCu;
+  620:             std::memcpy(env.rdram.data() + K_PARAM_ADDR, &semaParam, sizeof(semaParam));
+  621:             setRegU32(env.ctx, 4, K_PARAM_ADDR);
+  622:             CreateSema(env.rdram.data(), &env.ctx, &env.runtime);
+  623:             const int semaId = getRegS32(env.ctx, 2);
+  624:             const EeSemaphore *semaphore = env.runtime.eeScheduler().semaphore(semaId);
+  625:             t.IsTrue(semaId > 0 && semaphore != nullptr, "the EE semaphore descriptor should create an object");
+  626:             t.Equals(semaphore->count, semaParam.init_count,
+  627:                      "CreateSema must use init_count at offset 0x08, not the status count field");
+  628:             t.Equals(semaphore->maxCount, semaParam.max_count, "max_count must be decoded from offset 0x04");
+  629:             t.Equals(semaphore->attr, semaParam.attr, "semaphore attr must be decoded from offset 0x10");
+  630:             t.Equals(semaphore->option, semaParam.option, "semaphore option must be decoded from offset 0x14");
+  631:         });
+  632: 
+  633:         tc.Run("FileIO sceFsSemInit creates and reuses the filesystem semaphore", [](TestCase &t)
+  634:         {
+  635:             TestEnv env;
+  636:             constexpr uint32_t kFsSemaphoreIdAddr = 0x0040DBCCu;
+  637:             const int32_t uninitialized = -1;
+  638:             std::memcpy(env.rdram.data() + kFsSemaphoreIdAddr, &uninitialized, sizeof(uninitialized));
+  639: 
+  640:             ps2_stubs::sceFsSemInit(env.rdram.data(), &env.ctx, &env.runtime);
+  641:             const int firstId = getRegS32(env.ctx, 2);
+  642:             const EeSemaphore *first = env.runtime.eeScheduler().semaphore(firstId);
+  643: 
+  644:             t.IsTrue(firstId > 0 && first != nullptr,
+  645:                      "sceFsSemInit should create a valid EE semaphore");
+  646:             if (first)
+  647:             {
+  648:                 t.Equals(first->count, 1, "filesystem semaphore should start with one token");
+  649:                 t.Equals(first->maxCount, 1, "filesystem semaphore maximum should be one");
+  650:                 t.Equals(first->attr, 0u, "filesystem semaphore attributes should be zero");
+  651:                 t.Equals(first->option, 0u, "filesystem semaphore options should be zero");
+  652:             }
+  653: 
+  654:             int32_t storedId = 0;
+  655:             std::memcpy(&storedId, env.rdram.data() + kFsSemaphoreIdAddr, sizeof(storedId));
+  656:             t.Equals(storedId, firstId, "sceFsSemInit should store its semaphore ID at 0x0040DBCC");
+  657: 
+  658:             ps2_stubs::sceFsSemInit(env.rdram.data(), &env.ctx, &env.runtime);
+  659:             const int secondId = getRegS32(env.ctx, 2);
+  660:             t.Equals(secondId, firstId, "repeated initialization should return the existing ID");
+  661:             t.IsTrue(env.runtime.eeScheduler().semaphore(secondId) != nullptr,
+  662:                      "repeated initialization should preserve the existing semaphore");
+  663:         });
+  664: 
+  665:         tc.Run("FileIO sceFsSigSema signals the stored filesystem semaphore", [](TestCase &t)
+  666:         {
+  667:             TestEnv env;
+  668:             constexpr uint32_t kFsSemaphoreIdAddr = 0x0040DBCCu;
+  669:             const int32_t uninitialized = -1;
+  670:             std::memcpy(env.rdram.data() + kFsSemaphoreIdAddr, &uninitialized, sizeof(uninitialized));
+  671: 
+  672:             ps2_stubs::sceFsSemInit(env.rdram.data(), &env.ctx, &env.runtime);
+  673:             const int semaId = getRegS32(env.ctx, 2);
+  674:             EeScheduler &ee = env.runtime.eeScheduler();
+  675:             EeSemaphore *semaphore = ee.semaphore(semaId);
+  676: 
+  677:             t.IsTrue(semaphore != nullptr, "initialization should provide a semaphore for signaling");
+  678:             if (semaphore)
+  679:             {
+  680:                 t.Equals(ee.pollSemaphore(semaId), semaId,
+  681:                          "test should consume the initial semaphore token");
+  682:                 t.Equals(semaphore->count, 0, "consuming the token should reduce the count to zero");
+  683: 
+  684:                 ps2_stubs::sceFsSigSema(env.rdram.data(), &env.ctx, &env.runtime);
+  685: 
+  686:                 t.Equals(getRegS32(env.ctx, 2), semaId,
+  687:                          "sceFsSigSema should return the SignalSema result");
+  688:                 t.Equals(semaphore->count, 1,
+  689:                          "sceFsSigSema should restore the available semaphore token");
+  690:             }
+  691:         });
+  692: 
+  693:         tc.Run("FileIO sceFsSigSema propagates an invalid semaphore ID error", [](TestCase &t)
+  694:         {
+  695:             TestEnv env;
+  696:             constexpr uint32_t kFsSemaphoreIdAddr = 0x0040DBCCu;
+  697:             const int32_t invalidId = 0x7FFFFFFF;
+  698:             std::memcpy(env.rdram.data() + kFsSemaphoreIdAddr, &invalidId, sizeof(invalidId));
+  699: 
+  700:             ps2_stubs::sceFsSigSema(env.rdram.data(), &env.ctx, &env.runtime);
+  701: 
+  702:             t.IsTrue(getRegS32(env.ctx, 2) < 0,
+  703:                      "signaling an invalid semaphore ID should return a kernel error");
+  704:         });
+  705:         tc.Run("EE scheduler selects absolute priority then FIFO", [](TestCase &t)
+  706:         {
+  707:             TestEnv env;
+  708:             std::vector<int> trace;
+  709:             gSchedulerTrace = &trace;
+  710:             gGuestActive.store(0, std::memory_order_release);
+  711:             gGuestMaxActive.store(0, std::memory_order_release);
+  712:             gGuestExecutorHash.store(0u, std::memory_order_release);
+  713:             gGuestExecutorMismatch.store(false, std::memory_order_release);
+  714:             gGuestExecutingFlagMissing.store(false, std::memory_order_release);
+  715:             env.runtime.registerFunction(K_SCHED_MAIN, schedulerMainExit);
+  716:             env.runtime.registerFunction(K_SCHED_A, schedulerTraceA);
+  717:             env.runtime.registerFunction(K_SCHED_B, schedulerTraceB);
+  718: 
+  719:             env.ctx.pc = K_SCHED_MAIN;
+  720:             EeScheduler &ee = env.runtime.eeScheduler();
+  721:             ee.reset(env.rdram.data(), env.ctx);
+  722:             const int lowA = ee.createThread(EeThreadCreateParams{0, K_SCHED_A, 0x20000u, 0x800u, 0, 20, 0});
+  723:             const int highA = ee.createThread(EeThreadCreateParams{0, K_SCHED_A, 0x21000u, 0x800u, 0, 5, 0});
+  724:             const int highB = ee.createThread(EeThreadCreateParams{0, K_SCHED_B, 0x22000u, 0x800u, 0, 5, 0});
+  725:             ee.startThread(lowA, 0, env.ctx, false);
+  726:             ee.startThread(highA, 0, env.ctx, false);
+--- Lines 810-934 ---
+  810:             constexpr uint32_t kStack = 0x01FC0000u;
+  811:             setRegU32(env.ctx, 4, 0x00BAE3F0u);
+  812:             setRegU32(env.ctx, 5, kStack);
+  813:             setRegU32(env.ctx, 6, 0x40000u);
+  814:             ps2_syscalls::SetupThread(env.rdram.data(), &env.ctx, &env.runtime);
+  815:             t.Equals(static_cast<uint32_t>(getRegS32(env.ctx, 2)), PS2_RAM_SIZE,
+  816:                      "SetupThread should still return the top of the requested stack");
+  817: 
+  818:             const uint32_t callbackTop = env.runtime.reserveAsyncCallbackStack(0x4000u, 16u);
+  819:             t.IsTrue(callbackTop != 0u && callbackTop <= kStack,
+  820:                      "callback stacks must be carved below the main thread stack");
+  821:         });
+  822: 
+  823:         tc.Run("ChangeThreadPriority returns the previous priority", [](TestCase &t)
+  824:         {
+  825:             TestEnv env;
+  826:             EeScheduler &ee = env.runtime.eeScheduler();
+  827:             ee.reset(env.rdram.data(), env.ctx);
+  828:             ee.bindMainContextForSyscall(env.ctx, env.rdram.data());
+  829: 
+  830:             // CRI ADX locks with old = ChangeThreadPriority(self, 1) and unlocks with ChangeThreadPriority(self, old).
+  831:             const int id = ee.createThread(EeThreadCreateParams{0u, K_SCHED_HIGH, 0x24000u, 0x800u, 0u, 20, 0u});
+  832:             ee.startThread(id, 0u, env.ctx, false);
+  833:             setRegU32(env.ctx, 4, static_cast<uint32_t>(id));
+  834:             setRegU32(env.ctx, 5, 30u);
+  835:             ps2_syscalls::ChangeThreadPriority(env.rdram.data(), &env.ctx, &env.runtime);
+  836:             t.Equals(getRegS32(env.ctx, 2), 20, "ChangeThreadPriority should return the priority it replaced");
+  837:             setRegU32(env.ctx, 4, static_cast<uint32_t>(id));
+  838:             setRegU32(env.ctx, 5, 25u);
+  839:             ps2_syscalls::ChangeThreadPriority(env.rdram.data(), &env.ctx, &env.runtime);
+  840:             t.Equals(getRegS32(env.ctx, 2), 30, "a second change should return the first change's priority");
+  841:             t.Equals(ee.thread(id)->currentPriority, 25, "the new priority should still be applied");
+  842:             setRegU32(env.ctx, 4, 0x7FFFu);
+  843:             setRegU32(env.ctx, 5, 25u);
+  844:             ps2_syscalls::ChangeThreadPriority(env.rdram.data(), &env.ctx, &env.runtime);
+  845:             t.Equals(getRegS32(env.ctx, 2), KE_UNKNOWN_THID, "an unknown thread should still return an error code");
+  846:         });
+  847: 
+  848:         tc.Run("SuspendThread and ResumeThread return the thread id on success", [](TestCase &t)
+  849:         {
+  850:             TestEnv env;
+  851:             EeScheduler &ee = env.runtime.eeScheduler();
+  852:             ee.reset(env.rdram.data(), env.ctx);
+  853:             ee.bindMainContextForSyscall(env.ctx, env.rdram.data());
+  854: 
+  855:             const int id = ee.createThread(EeThreadCreateParams{0u, K_SCHED_HIGH, 0x24000u, 0x800u, 0u, 40, 0u});
+  856:             ee.startThread(id, 0u, env.ctx, false);
+  857:             setRegU32(env.ctx, 4, static_cast<uint32_t>(id));
+  858:             ps2_syscalls::SuspendThread(env.rdram.data(), &env.ctx, &env.runtime);
+  859:             t.Equals(getRegS32(env.ctx, 2), id, "SuspendThread should return the suspended thread's id");
+  860:             setRegU32(env.ctx, 4, static_cast<uint32_t>(id));
+  861:             ps2_syscalls::ResumeThread(env.rdram.data(), &env.ctx, &env.runtime);
+  862:             t.Equals(getRegS32(env.ctx, 2), id, "ResumeThread should return the resumed thread's id");
+  863:             setRegU32(env.ctx, 4, static_cast<uint32_t>(id));
+  864:             ps2_syscalls::ResumeThread(env.rdram.data(), &env.ctx, &env.runtime);
+  865:             t.Equals(getRegS32(env.ctx, 2), -415, "resuming a running thread should still report KE_NOT_SUSPEND");
+  866:         });
+  867: 
+  868:         tc.Run("semaphore signal, delete, and release complete blocked contexts with exact results", [](TestCase &t)
+  869:         {
+  870:             const auto blockMain = [](TestEnv &env, int &semaId)
+  871:             {
+  872:                 EeScheduler &ee = env.runtime.eeScheduler();
+  873:                 ee.reset(env.rdram.data(), env.ctx);
+  874:                 ee.bindMainContextForSyscall(env.ctx, env.rdram.data());
+  875:                 semaId = ee.createSemaphore(0, 1, 0u, 0u);
+  876:                 try
+  877:                 {
+  878:                     ee.waitSemaphore(semaId);
+  879:                 }
+  880:                 catch (const EeDispatcherTransfer &)
+  881:                 {
+  882:                 }
+  883:             };
+  884: 
+  885:             TestEnv signaled;
+  886:             int signalId = 0;
+  887:             blockMain(signaled, signalId);
+  888:             t.Equals(signaled.runtime.eeScheduler().signalSemaphore(signalId, false), signalId,
+  889:                      "SignalSema should transfer directly to the FIFO waiter");
+  890:             t.Equals(getRegS32(signaled.runtime.eeScheduler().thread(1)->context, 2), signalId,
+  891:                      "the resumed semaphore waiter should receive the semaphore id");
+  892:             t.Equals(signaled.runtime.eeScheduler().semaphore(signalId)->count, 0,
+  893:                      "direct semaphore handoff must not increment count");
+  894: 
+  895:             TestEnv deleted;
+  896:             int deleteId = 0;
+  897:             blockMain(deleted, deleteId);
+  898:             t.Equals(deleted.runtime.eeScheduler().deleteSemaphore(deleteId, false), deleteId,
+  899:                      "DeleteSema should remove the semaphore object");
+  900:             t.Equals(getRegS32(deleted.runtime.eeScheduler().thread(1)->context, 2), KE_WAIT_DELETE,
+  901:                      "DeleteSema should resume its waiter with KE_WAIT_DELETE");
+  902:             t.IsTrue(deleted.runtime.eeScheduler().semaphore(deleteId) == nullptr,
+  903:                      "deleted semaphore must no longer own a waiter queue");
+  904: 
+  905:             TestEnv released;
+  906:             int releaseId = 0;
+  907:             blockMain(released, releaseId);
+  908:             t.Equals(released.runtime.eeScheduler().releaseWait(EeScheduler::kMainThreadId, false), KE_OK,
+  909:                      "ReleaseWaitThread should detach the context from its wait object");
+  910:             t.Equals(getRegS32(released.runtime.eeScheduler().thread(1)->context, 2), KE_RELEASE_WAIT,
+  911:                      "released waiter should resume with KE_RELEASE_WAIT");
+  912:             t.Equals(released.runtime.eeScheduler().semaphore(releaseId)->waiters.size(), size_t{0},
+  913:                      "ReleaseWaitThread must remove the exact semaphore waiter");
+  914:         });
+  915: 
+  916:         tc.Run("event waiters are FIFO and clear modes apply before testing the next waiter", [](TestCase &t)
+  917:         {
+  918:             TestEnv env;
+  919:             env.runtime.registerFunction(K_EVENT_FIFO_MAIN, schedulerEventFifoMain);
+  920:             env.runtime.registerFunction(K_EVENT_FIFO_A, schedulerEventFifoWaitA);
+  921:             env.runtime.registerFunction(K_EVENT_FIFO_A_RESUME, schedulerEventFifoWaitA);
+  922:             env.runtime.registerFunction(K_EVENT_FIFO_B, schedulerEventFifoWaitB);
+  923:             env.runtime.registerFunction(K_EVENT_FIFO_B_RESUME, schedulerEventFifoWaitB);
+  924:             env.runtime.registerFunction(K_EVENT_FIFO_SIGNAL, schedulerEventFifoSignal);
+  925:             env.runtime.registerFunction(K_EVENT_FIFO_SIGNAL_AGAIN, schedulerEventFifoSignalAgain);
+  926:             env.runtime.registerFunction(K_EVENT_FIFO_DONE, schedulerEventFifoDone);
+  927:             gEventFifoTrace.clear();
+  928:             env.ctx.pc = K_EVENT_FIFO_MAIN;
+  929:             env.runtime.eeScheduler().reset(env.rdram.data(), env.ctx);
+  930:             env.runtime.eeScheduler().run();
+  931: 
+  932:             const std::vector<int> expected{1, 2, 3, 4, 5, 6, 7};
+  933:             t.IsTrue(gEventFifoTrace == expected,
+  934:                      "the first clear waiter must consume the first signal before the second FIFO waiter is tested");
+--- Lines 1032-1270 ---
+ 1032:             TestEnv env;
+ 1033: 
+ 1034:             setRegU32(env.ctx, 4, 0x00180010u);
+ 1035:             setRegU32(env.ctx, 5, 0x00001000u);
+ 1036:             t.IsTrue(callSyscall(0x3Du, env.rdram.data(), &env.ctx, &env.runtime), "SetupHeap syscall should dispatch");
+ 1037:             const uint32_t heapBase = static_cast<uint32_t>(getRegS32(env.ctx, 2));
+ 1038:             t.Equals(heapBase, 0x00180010u, "SetupHeap should return configured base");
+ 1039: 
+ 1040:             t.IsTrue(callSyscall(0x3Eu, env.rdram.data(), &env.ctx, &env.runtime), "EndOfHeap syscall should dispatch");
+ 1041:             const uint32_t heapLimit = static_cast<uint32_t>(getRegS32(env.ctx, 2));
+ 1042:             t.Equals(heapLimit, 0x00181010u, "EndOfHeap should report the upper limit of the configured heap");
+ 1043: 
+ 1044:             const uint32_t alignedAlloc = env.runtime.guestMalloc(0x20u, 64u);
+ 1045:             t.IsTrue(alignedAlloc != 0u, "guestMalloc should allocate inside configured heap");
+ 1046:             t.Equals(alignedAlloc & 0x3Fu, 0u, "guestMalloc should honor 64-byte alignment");
+ 1047: 
+ 1048:             env.runtime.guestFree(alignedAlloc);
+ 1049: 
+ 1050:             const uint32_t a = env.runtime.guestMalloc(0x100u, 16u);
+ 1051:             const uint32_t b = env.runtime.guestMalloc(0x100u, 16u);
+ 1052:             t.IsTrue(a != 0u && b != 0u, "guestMalloc should provide two adjacent blocks in this heap window");
+ 1053:             env.runtime.guestFree(b);
+ 1054: 
+ 1055:             const uint32_t grown = env.runtime.guestRealloc(a, 0x180u, 16u);
+ 1056:             t.Equals(grown, a, "guestRealloc should grow in place when adjacent free space is available");
+ 1057: 
+ 1058:             env.runtime.guestFree(grown);
+ 1059:             const uint32_t reused = env.runtime.guestMalloc(0x80u, 16u);
+ 1060:             t.Equals(reused, heapBase, "guestFree should make the head block reusable");
+ 1061:         });
+ 1062: 
+ 1063:         tc.Run("memalign stubs allocate aligned guest memory", [](TestCase &t)
+ 1064:         {
+ 1065:             TestEnv env;
+ 1066: 
+ 1067:             env.runtime.configureGuestHeap(0x00180010u, 0x00182010u);
+ 1068: 
+ 1069:             setRegU32(env.ctx, 4, 128u);
+ 1070:             setRegU32(env.ctx, 5, 0x40u);
+ 1071:             ps2_stubs::memalign(env.rdram.data(), &env.ctx, &env.runtime);
+ 1072:             const uint32_t direct = ::getRegU32(&env.ctx, 2);
+ 1073:             t.IsTrue(direct != 0u, "memalign should return a guest address");
+ 1074:             t.Equals(direct & 0x7Fu, 0u, "memalign should honor 128-byte alignment");
+ 1075: 
+ 1076:             setRegU32(env.ctx, 5, 64u);
+ 1077:             setRegU32(env.ctx, 6, 0x40u);
+ 1078:             ps2_stubs::memalign_r(env.rdram.data(), &env.ctx, &env.runtime);
+ 1079:             const uint32_t reent = ::getRegU32(&env.ctx, 2);
+ 1080:             t.IsTrue(reent != 0u, "_memalign_r should return a guest address");
+ 1081:             t.Equals(reent & 0x3Fu, 0u, "_memalign_r should honor 64-byte alignment");
+ 1082:             t.IsTrue(reent != direct, "_memalign_r should allocate a distinct block");
+ 1083:         });
+ 1084: 
+ 1085:         tc.Run("allocator compatibility stubs use the runtime guest heap", [](TestCase &t)
+ 1086:         {
+ 1087:             TestEnv env;
+ 1088: 
+ 1089:             env.runtime.configureGuestHeap(0x00180010u, 0x00183010u);
+ 1090: 
+ 1091:             setRegU32(env.ctx, 5, 0x20u);
+ 1092:             ps2_stubs::malloc_r(env.rdram.data(), &env.ctx, &env.runtime);
+ 1093:             const uint32_t initial = ::getRegU32(&env.ctx, 2);
+ 1094:             t.IsTrue(initial != 0u, "_malloc_r should allocate guest memory");
+ 1095: 
+ 1096:             writeGuestU32(env.rdram.data(), initial, 0xAABBCCDDu);
+ 1097: 
+ 1098:             setRegU32(env.ctx, 5, initial);
+ 1099:             setRegU32(env.ctx, 6, 0x80u);
+ 1100:             ps2_stubs::realloc_r(env.rdram.data(), &env.ctx, &env.runtime);
+ 1101:             const uint32_t grown = ::getRegU32(&env.ctx, 2);
+ 1102:             t.IsTrue(grown != 0u, "_realloc_r should return a guest block");
+ 1103:             t.Equals(readGuestU32(env.rdram.data(), grown), 0xAABBCCDDu,
+ 1104:                      "_realloc_r should preserve existing guest bytes");
+ 1105: 
+ 1106:             setRegU32(env.ctx, 5, grown);
+ 1107:             ps2_stubs::free_r(env.rdram.data(), &env.ctx, &env.runtime);
+ 1108: 
+ 1109:             setRegU32(env.ctx, 5, 0x100u);
+ 1110:             ps2_stubs::malloc_extend_top(env.rdram.data(), &env.ctx, &env.runtime);
+ 1111:             t.Equals(::getRegU32(&env.ctx, 2), 0u,
+ 1112:                      "malloc_extend_top should be a safe runtime-owned heap no-op");
+ 1113: 
+ 1114:             ps2_stubs::__malloc_lock(env.rdram.data(), &env.ctx, &env.runtime);
+ 1115:             ps2_stubs::__malloc_unlock(env.rdram.data(), &env.ctx, &env.runtime);
+ 1116:         });
+ 1117: 
+ 1118:         tc.Run("libc helper stubs cover memclr and libgcc div", [](TestCase &t)
+ 1119:         {
+ 1120:             TestEnv env;
+ 1121: 
+ 1122:             constexpr uint32_t kBuf = 0x5000u;
+ 1123:             std::memset(env.rdram.data() + kBuf, 0xCD, 16u);
+ 1124:             setRegU32(env.ctx, 4, kBuf);
+ 1125:             setRegU32(env.ctx, 5, 12u);
+ 1126:             ps2_stubs::memclr(env.rdram.data(), &env.ctx, &env.runtime);
+ 1127:             for (uint32_t i = 0; i < 12u; ++i)
+ 1128:             {
+ 1129:                 t.Equals(env.rdram[kBuf + i], static_cast<uint8_t>(0),
+ 1130:                          "memclr should zero the requested byte range");
+ 1131:             }
+ 1132:             t.Equals(env.rdram[kBuf + 12u], static_cast<uint8_t>(0xCD),
+ 1133:                      "memclr should not write past the requested byte range");
+ 1134: 
+ 1135:             SET_GPR_S64(&env.ctx, 4, -9);
+ 1136:             SET_GPR_S64(&env.ctx, 5, 2);
+ 1137:             ps2_stubs::__divdi3(env.rdram.data(), &env.ctx, &env.runtime);
+ 1138:             t.Equals(getRegS32(env.ctx, 2), -4, "__divdi3 should divide signed 64-bit values");
+ 1139:         });
+ 1140: 
+ 1141:         tc.Run("ReleaseAlarm aliases CancelAlarm and cache syscalls succeed", [](TestCase &t)
+ 1142:         {
+ 1143:             TestEnv env;
+ 1144: 
+ 1145:             constexpr uint32_t kAlarmHandlerAddr = 0x00270000u;
+ 1146:             env.runtime.registerFunction(kAlarmHandlerAddr, &alarmNoopHandler);
+ 1147: 
+ 1148:             setRegU32(env.ctx, 4, 0xFFFFu);
+ 1149:             setRegU32(env.ctx, 5, kAlarmHandlerAddr);
+ 1150:             setRegU32(env.ctx, 6, 0u);
+ 1151:             SetAlarm(env.rdram.data(), &env.ctx, &env.runtime);
+ 1152:             const int32_t alarmId = getRegS32(env.ctx, 2);
+ 1153:             t.IsTrue(alarmId > 0, "SetAlarm should create a cancellable alarm");
+ 1154: 
+ 1155:             setRegU32(env.ctx, 4, static_cast<uint32_t>(alarmId));
+ 1156:             ReleaseAlarm(env.rdram.data(), &env.ctx, &env.runtime);
+ 1157:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "ReleaseAlarm should cancel active alarms");
+ 1158: 
+ 1159:             setRegU32(env.ctx, 4, static_cast<uint32_t>(alarmId));
+ 1160:             CancelAlarm(env.rdram.data(), &env.ctx, &env.runtime);
+ 1161:             t.Equals(getRegS32(env.ctx, 2), KE_ERROR,
+ 1162:                      "CancelAlarm should report missing alarms after ReleaseAlarm consumes them");
+ 1163: 
+ 1164:             EnableCache(env.rdram.data(), &env.ctx, &env.runtime);
+ 1165:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "EnableCache should succeed as a no-op");
+ 1166: 
+ 1167:             DisableCache(env.rdram.data(), &env.ctx, &env.runtime);
+ 1168:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "DisableCache should succeed as a no-op");
+ 1169: 
+ 1170:             setRegU32(env.ctx, 2, 0xDEADBEEFu);
+ 1171:             setRegU32(env.ctx, 4, 0u); // PS2SDK WRITEBACK_DCACHE
+ 1172:             t.IsTrue(callSyscall(static_cast<uint32_t>(-0x68), env.rdram.data(), &env.ctx, &env.runtime),
+ 1173:                      "-0x68 should dispatch iFlushCache");
+ 1174:             t.Equals(getRegS32(env.ctx, 2), KE_OK,
+ 1175:                      "iFlushCache should succeed when guest and host memory are coherent");
+ 1176:         });
+ 1177: 
+ 1178:         tc.Run("setup heap and thread invalid ids use documented kernel errors", [](TestCase &t)
+ 1179:         {
+ 1180:             TestEnv env;
+ 1181: 
+ 1182:             setRegU32(env.ctx, 4, 0u);
+ 1183:             CreateThread(env.rdram.data(), &env.ctx, &env.runtime);
+ 1184:             t.Equals(getRegS32(env.ctx, 2), KE_ERROR, "CreateThread with null param should fail");
+ 1185: 
+ 1186:             setRegU32(env.ctx, 4, 0u);
+ 1187:             DeleteThread(env.rdram.data(), &env.ctx, &env.runtime);
+ 1188:             t.Equals(getRegS32(env.ctx, 2), KE_ILLEGAL_THID, "DeleteThread(0) should be KE_ILLEGAL_THID");
+ 1189: 
+ 1190:             setRegU32(env.ctx, 4, 0x7FFFu);
+ 1191:             StartThread(env.rdram.data(), &env.ctx, &env.runtime);
+ 1192:             t.Equals(getRegS32(env.ctx, 2), KE_UNKNOWN_THID, "StartThread should reject unknown thread ids");
+ 1193: 
+ 1194:             setRegU32(env.ctx, 4, 0x7FFFu);
+ 1195:             WakeupThread(env.rdram.data(), &env.ctx, &env.runtime);
+ 1196:             t.Equals(getRegS32(env.ctx, 2), KE_UNKNOWN_THID, "WakeupThread should reject unknown thread ids");
+ 1197: 
+ 1198:             setRegU32(env.ctx, 4, 0x7FFFu);
+ 1199:             PollSema(env.rdram.data(), &env.ctx, &env.runtime);
+ 1200:             t.Equals(getRegS32(env.ctx, 2), KE_UNKNOWN_SEMID, "PollSema should reject unknown semaphore ids");
+ 1201: 
+ 1202:             setRegU32(env.ctx, 4, 0xFFFFFFFFu);
+ 1203:             t.IsTrue(callSyscall(0x3Du, env.rdram.data(), &env.ctx, &env.runtime), "SetupHeap syscall should dispatch");
+ 1204:             const uint32_t clampedBase = static_cast<uint32_t>(getRegS32(env.ctx, 2));
+ 1205:             t.IsTrue(clampedBase < PS2_RAM_SIZE, "SetupHeap should normalize out-of-range base into guest RAM");
+ 1206: 
+ 1207:             t.IsTrue(callSyscall(0x3Eu, env.rdram.data(), &env.ctx, &env.runtime), "EndOfHeap syscall should dispatch");
+ 1208:             const uint32_t heapEnd = static_cast<uint32_t>(getRegS32(env.ctx, 2));
+ 1209:             t.IsTrue(heapEnd >= clampedBase, "EndOfHeap should be at or above normalized heap base");
+ 1210: 
+ 1211:             setRegU32(env.ctx, 4, 1u);
+ 1212:             setRegU32(env.ctx, 5, 0u);
+ 1213:             setRegU32(env.ctx, 6, 0u);
+ 1214:             setRegU32(env.ctx, 29, 0x0010FFF0u);
+ 1215:             t.IsTrue(callSyscall(0x3Cu, env.rdram.data(), &env.ctx, &env.runtime), "SetupThread syscall should dispatch");
+ 1216:             const uint32_t setupSp = static_cast<uint32_t>(getRegS32(env.ctx, 2));
+ 1217:             t.Equals(setupSp & 0xFu, 0u, "SetupThread should always return a 16-byte aligned stack pointer");
+ 1218:         });
+ 1219: 
+ 1220:         tc.Run("SetupThread exposes stable main stack metadata through ReferThreadStatus", [](TestCase &t)
+ 1221:         {
+ 1222:             TestEnv env;
+ 1223:             constexpr uint32_t kInitialLoaderSp = PS2_RAM_SIZE - 0x10u;
+ 1224:             constexpr uint32_t kMainStackSize = 0x00020000u;
+ 1225:             constexpr uint32_t kExpectedStack = PS2_RAM_SIZE - kMainStackSize;
+ 1226:             constexpr uint32_t kMainGp = 0x0036A7F0u;
+ 1227: 
+ 1228:             env.ctx.pc = 0x00100000u;
+ 1229:             setRegU32(env.ctx, 29, kInitialLoaderSp);
+ 1230:             setRegU32(env.ctx, 4, kMainGp);
+ 1231:             setRegU32(env.ctx, 5, 0xFFFFFFFFu);
+ 1232:             setRegU32(env.ctx, 6, kMainStackSize);
+ 1233:             t.IsTrue(callSyscall(0x3Cu, env.rdram.data(), &env.ctx, &env.runtime),
+ 1234:                      "SetupThread syscall should dispatch");
+ 1235:             t.Equals(::getRegU32(&env.ctx, 2), kExpectedStack,
+ 1236:                      "automatic main stack should start below the reserved top-of-RDRAM area");
+ 1237: 
+ 1238:             // ReferThreadStatus can be called after many nested frames have moved $sp.
+ 1239:             // It must report the initial stack recorded by SetupThread, not this live snapshot.
+ 1240:             constexpr uint32_t kTransientSp = kExpectedStack - 0x80u;
+ 1241:             setRegU32(env.ctx, 29, kTransientSp);
+ 1242:             setRegU32(env.ctx, 4, 0u);
+ 1243:             setRegU32(env.ctx, 5, K_STATUS_ADDR);
+ 1244:             t.IsTrue(callSyscall(0x30u, env.rdram.data(), &env.ctx, &env.runtime),
+ 1245:                      "ReferThreadStatus syscall should dispatch");
+ 1246:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "ReferThreadStatus should accept the current-thread id alias");
+ 1247: 
+ 1248:             EeThreadStatusAbi status{};
+ 1249:             std::memcpy(&status, env.rdram.data() + K_STATUS_ADDR, sizeof(status));
+ 1250:             t.Equals(status.stack, kExpectedStack,
+ 1251:                      "main thread status must expose SetupThread's stable initial stack");
+ 1252:             t.Equals(status.stack_size, static_cast<int32_t>(kMainStackSize),
+ 1253:                      "main thread status must preserve SetupThread's stack size");
+ 1254:             t.Equals(status.gp_reg, kMainGp,
+ 1255:                      "main thread status must preserve SetupThread's global pointer");
+ 1256:             t.IsTrue(status.stack != kInitialLoaderSp && status.stack != kTransientSp,
+ 1257:                      "main thread status must never expose a live stack-pointer snapshot");
+ 1258:         });
+ 1259: 
+ 1260:         tc.Run("OSD config2 syscalls round-trip extended config", [](TestCase &t)
+ 1261:         {
+ 1262:             TestEnv env;
+ 1263:             constexpr uint32_t kConfig2Addr = 0x00005000u;
+ 1264:             constexpr uint32_t kConfig2OutAddr = 0x00005010u;
+ 1265:             constexpr uint32_t kConfig1OutAddr = 0x00005020u;
+ 1266:             constexpr uint32_t kInitialConfig1 =
+ 1267:                 (1u << 0) |  // SPDIF disabled
+ 1268:                 (1u << 4) |  // non-Japanese language flag
+ 1269:                 (1u << 13) | // OSD2
+ 1270:                 (1u << 16);  // English
+--- Lines 1276-1396 ---
+ 1276: 
+ 1277:             writeGuestU32(env.rdram.data(), K_PARAM_ADDR, kInitialConfig1);
+ 1278:             setRegU32(env.ctx, 4, K_PARAM_ADDR);
+ 1279:             t.IsTrue(callSyscall(0x4Au, env.rdram.data(), &env.ctx, &env.runtime),
+ 1280:                      "SetOsdConfigParam syscall should dispatch");
+ 1281:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SetOsdConfigParam should seed base OSD state");
+ 1282: 
+ 1283:             writeGuestU32(env.rdram.data(), kConfig2Addr, kConfig2Raw);
+ 1284:             setRegU32(env.ctx, 4, kConfig2Addr);
+ 1285:             setRegU32(env.ctx, 5, 4u);
+ 1286:             setRegU32(env.ctx, 6, 0u);
+ 1287:             t.IsTrue(callSyscall(0x6Eu, env.rdram.data(), &env.ctx, &env.runtime),
+ 1288:                      "SetOsdConfigParam2 syscall should dispatch");
+ 1289:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SetOsdConfigParam2 should succeed");
+ 1290: 
+ 1291:             writeGuestU32(env.rdram.data(), kConfig2OutAddr, 0xFFFFFFFFu);
+ 1292:             setRegU32(env.ctx, 4, kConfig2OutAddr);
+ 1293:             setRegU32(env.ctx, 5, 4u);
+ 1294:             setRegU32(env.ctx, 6, 0u);
+ 1295:             t.IsTrue(callSyscall(0x6Fu, env.rdram.data(), &env.ctx, &env.runtime),
+ 1296:                      "GetOsdConfigParam2 syscall should dispatch");
+ 1297:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "GetOsdConfigParam2 should succeed");
+ 1298:             const uint32_t readConfig2 = readGuestU32(env.rdram.data(), kConfig2OutAddr);
+ 1299:             t.Equals(readConfig2, kConfig2Raw, "GetOsdConfigParam2 should round-trip the sanitized Config2Param bytes");
+ 1300:             t.Equals((readConfig2 >> 12) & 1u, 1u, "Config2 daylightSaving should live at bit 12 for libosd callers");
+ 1301: 
+ 1302:             setRegU32(env.ctx, 4, kConfig1OutAddr);
+ 1303:             t.IsTrue(callSyscall(0x4Bu, env.rdram.data(), &env.ctx, &env.runtime),
+ 1304:                      "GetOsdConfigParam syscall should dispatch after Config2 update");
+ 1305:             const uint32_t readConfig1 = readGuestU32(env.rdram.data(), kConfig1OutAddr);
+ 1306:             t.Equals((readConfig1 >> 13) & 0x7u, 2u, "SetOsdConfigParam2 should sync ConfigParam.version");
+ 1307:             t.Equals((readConfig1 >> 16) & 0x1Fu, 10u, "SetOsdConfigParam2 should sync ConfigParam.language");
+ 1308:         });
+ 1309: 
+ 1310:         tc.Run("numeric syscall 0x83 finds matching table entry", [](TestCase &t)
+ 1311:         {
+ 1312:             TestEnv env;
+ 1313:             constexpr uint32_t kTableBase = 0x00002000u;
+ 1314:             constexpr uint32_t kValues[] = {
+ 1315:                 0x11111111u,
+ 1316:                 0x11223344u,
+ 1317:                 0x55555555u,
+ 1318:                 0x89ABCDEFu
+ 1319:             };
+ 1320: 
+ 1321:             writeGuestWords(env.rdram.data(), kTableBase, kValues, std::size(kValues));
+ 1322:             setRegU32(env.ctx, 4, kTableBase);
+ 1323:             setRegU32(env.ctx, 5, kTableBase + static_cast<uint32_t>(sizeof(kValues)));
+ 1324:             setRegU32(env.ctx, 6, 0x11223344u);
+ 1325: 
+ 1326:             t.IsTrue(callSyscall(0x83u, env.rdram.data(), &env.ctx, &env.runtime),
+ 1327:                      "syscall 0x83 should dispatch");
+ 1328:             t.Equals(static_cast<uint32_t>(getRegS32(env.ctx, 2)),
+ 1329:                      kTableBase + 4u,
+ 1330:                      "FindAddress should return address of first matching word");
+ 1331:         });
+ 1332: 
+ 1333:         tc.Run("numeric syscall 0x83 supports KSEG aliases", [](TestCase &t)
+ 1334:         {
+ 1335:             TestEnv env;
+ 1336:             constexpr uint32_t kTableBasePhys = 0x00003000u;
+ 1337:             constexpr uint32_t kTableBaseKseg = 0x80003000u;
+ 1338:             constexpr uint32_t kValues[] = {
+ 1339:                 0x00123456u,
+ 1340:                 0x8000AAAAu
+ 1341:             };
+ 1342: 
+ 1343:             writeGuestWords(env.rdram.data(), kTableBasePhys, kValues, std::size(kValues));
+ 1344:             setRegU32(env.ctx, 4, kTableBaseKseg);
+ 1345:             setRegU32(env.ctx, 5, kTableBaseKseg + static_cast<uint32_t>(sizeof(kValues)));
+ 1346:             setRegU32(env.ctx, 6, 0x80123456u); // Alias of first table value
+ 1347: 
+ 1348:             t.IsTrue(callSyscall(0x83u, env.rdram.data(), &env.ctx, &env.runtime),
+ 1349:                      "syscall 0x83 should dispatch");
+ 1350:             t.Equals(static_cast<uint32_t>(getRegS32(env.ctx, 2)),
+ 1351:                      kTableBaseKseg,
+ 1352:                      "FindAddress should match KSEG aliases and preserve guest segment in return value");
+ 1353:         });
+ 1354: 
+ 1355:         tc.Run("numeric syscall 0x83 returns 0 when entry is absent", [](TestCase &t)
+ 1356:         {
+ 1357:             TestEnv env;
+ 1358:             constexpr uint32_t kTableBase = 0x00004000u;
+ 1359:             constexpr uint32_t kValues[] = {
+ 1360:                 0x00000001u,
+ 1361:                 0x00000002u,
+ 1362:                 0x00000003u
+ 1363:             };
+ 1364: 
+ 1365:             writeGuestWords(env.rdram.data(), kTableBase, kValues, std::size(kValues));
+ 1366:             setRegU32(env.ctx, 4, kTableBase);
+ 1367:             setRegU32(env.ctx, 5, kTableBase + static_cast<uint32_t>(sizeof(kValues)));
+ 1368:             setRegU32(env.ctx, 6, 0xDEADBEEFu);
+ 1369: 
+ 1370:             t.IsTrue(callSyscall(0x83u, env.rdram.data(), &env.ctx, &env.runtime),
+ 1371:                      "syscall 0x83 should dispatch");
+ 1372:             t.Equals(static_cast<uint32_t>(getRegS32(env.ctx, 2)),
+ 1373:                      0u,
+ 1374:                      "FindAddress should return 0 when no matching word exists");
+ 1375:         });
+ 1376: 
+ 1377:         tc.Run("SetSyscall mirrors guest kernel table entries into low memory", [](TestCase &t)
+ 1378:         {
+ 1379:             TestEnv env;
+ 1380:             initializeGuestKernelState(env.rdram.data(), &env.runtime);
+ 1381: 
+ 1382:             constexpr uint32_t kGuestSyscallTableGuestBase = 0x80011F80u;
+ 1383:             constexpr uint32_t kSyscallIndex = 0x82u;
+ 1384:             constexpr uint32_t kHandler = 0x00383548u;
+ 1385:             constexpr uint32_t kExpectedGuestAddr = kGuestSyscallTableGuestBase + (kSyscallIndex * 4u);
+ 1386:             constexpr uint32_t kExpectedPhysAddr = kExpectedGuestAddr & 0x1FFFFFFFu;
+ 1387: 
+ 1388:             setRegU32(env.ctx, 4, kSyscallIndex);
+ 1389:             setRegU32(env.ctx, 5, kHandler);
+ 1390:             t.IsTrue(callSyscall(0x74u, env.rdram.data(), &env.ctx, &env.runtime),
+ 1391:                      "SetSyscall syscall should dispatch");
+ 1392: 
+ 1393:             uint32_t mirrored = 0u;
+ 1394:             std::memcpy(&mirrored, env.rdram.data() + kExpectedPhysAddr, sizeof(mirrored));
+ 1395:             t.Equals(mirrored,
+ 1396:                      kHandler,
+--- Lines 1399-1428 ---
+ 1399:             setRegU32(env.ctx, 4, 0x80000000u);
+ 1400:             setRegU32(env.ctx, 5, 0x80080000u);
+ 1401:             setRegU32(env.ctx, 6, kHandler);
+ 1402:             t.IsTrue(callSyscall(0x83u, env.rdram.data(), &env.ctx, &env.runtime),
+ 1403:                      "FindAddress syscall should dispatch");
+ 1404:             t.Equals(static_cast<uint32_t>(getRegS32(env.ctx, 2)),
+ 1405:                      kExpectedGuestAddr,
+ 1406:                      "FindAddress should discover mirrored SetSyscall entries in low guest memory");
+ 1407:         });
+ 1408: 
+ 1409:         tc.Run("SetSyscall honors signed kernel-table offsets", [](TestCase &t)
+ 1410:         {
+ 1411:             TestEnv env;
+ 1412:             initializeGuestKernelState(env.rdram.data(), &env.runtime);
+ 1413: 
+ 1414:             constexpr uint32_t kPatchIndex = 0xFFFFC402u;
+ 1415:             constexpr uint32_t kHandler = 0xDEADBEEFu;
+ 1416:             constexpr uint32_t kExpectedGuestAddr = 0x80002F88u;
+ 1417:             constexpr uint32_t kExpectedPhysAddr = kExpectedGuestAddr & 0x1FFFFFFFu;
+ 1418: 
+ 1419:             setRegU32(env.ctx, 4, kPatchIndex);
+ 1420:             setRegU32(env.ctx, 5, kHandler);
+ 1421:             t.IsTrue(callSyscall(0x74u, env.rdram.data(), &env.ctx, &env.runtime),
+ 1422:                      "SetSyscall syscall should dispatch for signed offsets");
+ 1423: 
+ 1424:             uint32_t mirrored = 0u;
+ 1425:             std::memcpy(&mirrored, env.rdram.data() + kExpectedPhysAddr, sizeof(mirrored));
+ 1426:             t.Equals(mirrored,
+ 1427:                      kHandler,
+ 1428:                      "SetSyscall should treat the syscall index as a signed offset from the kernel table base");
+--- Lines 1500-1655 ---
+ 1500:             setRegU32(mainContext, 4, 7u);
+ 1501:             setRegU32(mainContext, 5, 5u);
+ 1502:             env.runtime.eeScheduler().reset(env.rdram.data(), mainContext);
+ 1503:             env.runtime.eeScheduler().run();
+ 1504: 
+ 1505:             t.Equals(static_cast<uint32_t>(getRegS32(gOverrideResult, 2)),
+ 1506:                      12u,
+ 1507:                      "the completed invocation should propagate the guest handler return value");
+ 1508:         });
+ 1509: 
+ 1510:         tc.Run("SetSyscall override preserves KSEG argument sign extension", [](TestCase &t)
+ 1511:         {
+ 1512:             TestEnv env;
+ 1513:             constexpr uint32_t kSyscallIndex = 0x92u;
+ 1514:             constexpr uint32_t kHandler = 0x00200030u;
+ 1515: 
+ 1516:             env.runtime.registerFunction(kHandler, overrideKsegCompareHandler);
+ 1517:             env.runtime.registerFunction(K_OVERRIDE_ENTRY, schedulerOverrideEntry);
+ 1518:             env.runtime.registerFunction(K_OVERRIDE_RESUME, schedulerOverrideResume);
+ 1519:             env.runtime.setEeSyscallOverride(env.rdram.data(), kSyscallIndex, kHandler);
+ 1520: 
+ 1521:             gOverrideSyscall = kSyscallIndex;
+ 1522:             R5900Context mainContext{};
+ 1523:             mainContext.pc = K_OVERRIDE_ENTRY;
+ 1524:             setRegU32(mainContext, 4, 0x80000000u);
+ 1525:             setRegU32(mainContext, 5, 0x80080000u);
+ 1526:             env.runtime.eeScheduler().reset(env.rdram.data(), mainContext);
+ 1527:             env.runtime.eeScheduler().run();
+ 1528: 
+ 1529:             t.Equals(static_cast<uint32_t>(getRegS32(gOverrideResult, 2)),
+ 1530:                      0x80000004u,
+ 1531:                      "Override invocation should preserve KSEG ordering after 32-bit guest writes");
+ 1532:         });
+ 1533: 
+ 1534:         tc.Run("SetSyscall override preserves upper 64 bits when writing 32-bit args", [](TestCase &t)
+ 1535:         {
+ 1536:             TestEnv env;
+ 1537:             constexpr uint32_t kSyscallIndex = 0x93u;
+ 1538:             constexpr uint32_t kHandler = 0x00200040u;
+ 1539: 
+ 1540:             env.runtime.registerFunction(kHandler, overridePreserveUpper64Handler);
+ 1541:             env.runtime.registerFunction(K_OVERRIDE_ENTRY, schedulerOverrideEntry);
+ 1542:             env.runtime.registerFunction(K_OVERRIDE_RESUME, schedulerOverrideResume);
+ 1543:             env.runtime.setEeSyscallOverride(env.rdram.data(), kSyscallIndex, kHandler);
+ 1544: 
+ 1545:             gOverrideSyscall = kSyscallIndex;
+ 1546:             R5900Context mainContext{};
+ 1547:             mainContext.pc = K_OVERRIDE_ENTRY;
+ 1548:             mainContext.r[4] = _mm_set_epi64x(static_cast<int64_t>(K_EXPECTED_UPPER64),
+ 1549:                                                static_cast<int64_t>(static_cast<int32_t>(0x80000000u)));
+ 1550:             env.runtime.eeScheduler().reset(env.rdram.data(), mainContext);
+ 1551:             env.runtime.eeScheduler().run();
+ 1552: 
+ 1553:             t.Equals(static_cast<uint32_t>(getRegS32(gOverrideResult, 2)),
+ 1554:                      1u,
+ 1555:                      "Override invocation should preserve the upper 64 bits of 128-bit GPRs when setting 32-bit args");
+ 1556:         });
+ 1557: 
+ 1558:         tc.Run("an override that branches to an invalid PC completes without builtin fallback", [](TestCase &t)
+ 1559:         {
+ 1560:             TestEnv env;
+ 1561:             constexpr uint32_t kHandler = 0x00200010u;
+ 1562: 
+ 1563:             env.runtime.registerFunction(kHandler, overrideBrokenHandler);
+ 1564:             env.runtime.registerFunction(K_OVERRIDE_ENTRY, schedulerOverrideEntry);
+ 1565:             env.runtime.registerFunction(K_OVERRIDE_RESUME, schedulerOverrideResume);
+ 1566:             env.runtime.setEeSyscallOverride(env.rdram.data(), 0x83u, kHandler);
+ 1567: 
+ 1568:             gOverrideSyscall = 0x83u;
+ 1569:             R5900Context mainContext{};
+ 1570:             mainContext.pc = K_OVERRIDE_ENTRY;
+ 1571:             env.runtime.eeScheduler().reset(env.rdram.data(), mainContext);
+ 1572:             env.runtime.eeScheduler().run();
+ 1573: 
+ 1574:             t.Equals(static_cast<uint32_t>(getRegS32(gOverrideResult, 2)),
+ 1575:                      0xDEADBEEFu,
+ 1576:                      "the dispatcher should preserve the invocation result and never call the builtin as a fallback");
+ 1577:         });
+ 1578: 
+ 1579:         tc.Run("reentrant override invokes the underlying builtin inside its invocation frame", [](TestCase &t)
+ 1580:         {
+ 1581:             TestEnv env;
+ 1582:             constexpr uint32_t kHandler = 0x00200020u;
+ 1583:             constexpr uint32_t kTableBase = 0x00003000u;
+ 1584:             constexpr uint32_t kValues[] = {
+ 1585:                 0xCAFEBABEu,
+ 1586:                 0x11223344u,
+ 1587:                 0x55667788u
+ 1588:             };
+ 1589: 
+ 1590:             env.runtime.registerFunction(kHandler, overrideRecursiveFindAddressHandler);
+ 1591:             env.runtime.registerFunction(K_OVERRIDE_ENTRY, schedulerOverrideEntry);
+ 1592:             env.runtime.registerFunction(K_OVERRIDE_RESUME, schedulerOverrideResume);
+ 1593:             env.runtime.setEeSyscallOverride(env.rdram.data(), 0x83u, kHandler);
+ 1594: 
+ 1595:             writeGuestWords(env.rdram.data(), kTableBase, kValues, std::size(kValues));
+ 1596:             gOverrideSyscall = 0x83u;
+ 1597:             R5900Context mainContext{};
+ 1598:             mainContext.pc = K_OVERRIDE_ENTRY;
+ 1599:             setRegU32(mainContext, 4, kTableBase);
+ 1600:             setRegU32(mainContext, 5, kTableBase + static_cast<uint32_t>(sizeof(kValues)));
+ 1601:             setRegU32(mainContext, 6, 0x11223344u);
+ 1602:             env.runtime.eeScheduler().reset(env.rdram.data(), mainContext);
+ 1603:             env.runtime.eeScheduler().run();
+ 1604: 
+ 1605:             t.Equals(static_cast<uint32_t>(getRegS32(gOverrideResult, 2)),
+ 1606:                      kTableBase + 4u,
+ 1607:                      "only the recursive call should bypass the active override frame and reach the builtin");
+ 1608:         });
+ 1609: 
+ 1610:         tc.Run("a syscall invocation can block and resume without losing its base context", [](TestCase &t)
+ 1611:         {
+ 1612:             TestEnv env;
+ 1613:             constexpr uint32_t kSyscallIndex = 0x94u;
+ 1614:             env.runtime.registerFunction(K_OVERRIDE_BLOCK_ENTRY, schedulerBlockingOverrideEntry);
+ 1615:             env.runtime.registerFunction(K_OVERRIDE_BLOCK_HANDLER, schedulerBlockingOverrideHandler);
+ 1616:             env.runtime.registerFunction(K_OVERRIDE_BLOCK_HANDLER_RESUME, schedulerBlockingOverrideHandlerResume);
+ 1617:             env.runtime.registerFunction(K_OVERRIDE_BLOCK_DRIVER, schedulerBlockingOverrideDriver);
+ 1618:             env.runtime.registerFunction(K_OVERRIDE_BLOCK_BASE_RESUME, schedulerBlockingOverrideBaseResume);
+ 1619:             env.runtime.setEeSyscallOverride(env.rdram.data(), kSyscallIndex, K_OVERRIDE_BLOCK_HANDLER);
+ 1620: 
+ 1621:             gOverrideSyscall = kSyscallIndex;
+ 1622:             gInvocationTrace.clear();
+ 1623:             R5900Context mainContext{};
+ 1624:             mainContext.pc = K_OVERRIDE_BLOCK_ENTRY;
+ 1625:             env.runtime.eeScheduler().reset(env.rdram.data(), mainContext);
+ 1626:             env.runtime.eeScheduler().run();
+ 1627: 
+ 1628:             const std::vector<int> expected{1, 2, 3, 4, 5};
+ 1629:             t.IsTrue(gInvocationTrace == expected,
+ 1630:                      "the sleeping invocation should yield to the driver, resume its own frame, then restore the base frame");
+ 1631:             t.Equals(static_cast<uint32_t>(getRegS32(gOverrideResult, 2)), 0xB10C0EDu,
+ 1632:                      "the invocation result should reach the preserved base context after the wait");
+ 1633:         });
+ 1634: 
+ 1635:         tc.Run("exit handlers run as ordered invocation frames before the thread becomes dormant", [](TestCase &t)
+ 1636:         {
+ 1637:             TestEnv env;
+ 1638:             env.runtime.registerFunction(K_EXIT_MAIN, schedulerExitMain);
+ 1639:             env.runtime.registerFunction(K_EXIT_HANDLER_A, schedulerExitHandlerA);
+ 1640:             env.runtime.registerFunction(K_EXIT_HANDLER_B, schedulerExitHandlerB);
+ 1641:             env.runtime.registerFunction(K_EXIT_OBSERVER, schedulerExitObserver);
+ 1642: 
+ 1643:             gInvocationTrace.clear();
+ 1644:             R5900Context mainContext{};
+ 1645:             mainContext.pc = K_EXIT_MAIN;
+ 1646:             env.runtime.eeScheduler().reset(env.rdram.data(), mainContext);
+ 1647:             env.runtime.eeScheduler().run();
+ 1648: 
+ 1649:             const std::vector<int> expected{10, 20, 30, 40};
+ 1650:             t.IsTrue(gInvocationTrace == expected,
+ 1651:                      "exit handlers should retain registration order and complete before another guest thread observes dormancy");
+ 1652:         });
+ 1653: 
+ 1654:         tc.Run("Copy syscall (0x5A) performs a memory copy", [](TestCase &t)
+ 1655:         {
+--- Lines 1695-1705 ---
+ 1695:             setRegU32(env.ctx, 4, kSyscallIndex);
+ 1696: 
+ 1697:             t.IsTrue(callSyscall(0x5Bu, env.rdram.data(), &env.ctx, &env.runtime),
+ 1698:                      "GetEntryAddress syscall should dispatch");
+ 1699:             
+ 1700:             t.Equals(static_cast<uint32_t>(getRegS32(env.ctx, 2)),
+ 1701:                      kExpectedHandler,
+ 1702:                      "GetEntryAddress should read and return the handler address from the table");
+ 1703:         });
+ 1704:     });
+ 1705: }
+
+ELAPSED SECONDS: 0.051
+SAFETY: NO FILES MODIFIED
