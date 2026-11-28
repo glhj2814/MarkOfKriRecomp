@@ -1,0 +1,1701 @@
+MARK OF KRI — ENTRY POINT HINT / BOOTSTRAP PIPELINE AUDIT
+Generated: 2026-11-28 00:13:08
+Mode: STRICT TARGETED READ-ONLY
+
+===== INITIALIZE — CONFIG / ELF / ENTRY POINT / BOOTSTRAP =====
+PATH: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+LINES: 890-1085
+L890:     bool PS2Recompiler::initialize()
+L891:     {
+L892:         try
+L893:         {
+L894:             m_reporter.progress("parsing config");
+L895:             m_config = m_configManager.loadConfig();
+L896:             m_skipFunctions.clear();
+L897:             m_skipFunctionStarts.clear();
+L898:             m_stubFunctions.clear();
+L899:             m_stubFunctionStarts.clear();
+L900:             m_stubHandlerBindingsByStart.clear();
+L901:             m_entryPointHintStarts.clear();
+L902:             m_correctnessCriticalFunctionStarts.clear();
+L903: 
+L904:             for (const auto &name : m_config.skipFunctions)
+L905:             {
+L906:                 const FunctionSelector selector = parseFunctionSelector(name);
+L907:                 if (!selector.name.empty())
+L908:                 {
+L909:                     m_skipFunctions[selector.name] = true;
+L910:                 }
+L911:                 if (selector.start.has_value())
+L912:                 {
+L913:                     m_skipFunctionStarts.insert(*selector.start);
+L914:                 }
+L915:             }
+L916:             for (const auto &name : m_config.stubImplementations)
+L917:             {
+L918:                 const FunctionSelector selector = parseFunctionSelector(name);
+L919:                 if (!selector.name.empty())
+L920:                 {
+L921:                     m_stubFunctions.insert(selector.name);
+L922:                 }
+L923:                 if (selector.start.has_value())
+L924:                 {
+L925:                     m_stubFunctionStarts.insert(*selector.start);
+L926:                     if (!selector.name.empty())
+L927:                     {
+L928:                         auto bindingIt = m_stubHandlerBindingsByStart.find(*selector.start);
+L929:                         if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+L930:                             bindingIt->second != selector.name)
+L931:                         {
+L932:                             std::ostringstream msg;
+L933:                             msg << "Multiple stub handler bindings for 0x"
+L934:                                 << std::hex << *selector.start
+L935:                                 << " (keeping latest '" << selector.name
+L936:                                 << "', previous '" << bindingIt->second << "')";
+L937:                             m_reporter.warning("config", msg.str());
+L938:                         }
+L939:                         m_stubHandlerBindingsByStart[*selector.start] = selector.name;
+L940:                     }
+L941:                 }
+L942:             }
+L943:             for (const auto &hint : m_config.entryPointHints)
+L944:             {
+L945:                 const FunctionSelector selector = parseFunctionSelector(hint);
+L946:                 if (selector.start.has_value())
+L947:                 {
+L948:                     m_entryPointHintStarts.insert(*selector.start);
+L949:                 }
+L950:             }
+L951: 
+L952:             m_reporter.progress("parsing ELF");
+L953:             m_elfParser = std::make_unique<ElfParser>(m_config.inputPath);
+L954:             m_elfParser->setReporter(&m_reporter);
+L955:             if (!m_elfParser->parse())
+L956:             {
+L957:                 m_reporter.error("elf", "Failed to parse ELF file: " + m_config.inputPath);
+L958:                 return false;
+L959:             }
+L960: 
+L961:             if (!m_config.ghidraMapPath.empty())
+L962:             {
+L963:                 m_elfParser->loadGhidraFunctionMap(m_config.ghidraMapPath);
+L964:             }
+L965: 
+L966:             m_functions = m_elfParser->extractFunctions();
+L967: 
+L968: {
+L969:     std::ofstream auditFile(
+L970:         "D:\\Downloads\\MarkOfKri_Audits\\ECOFF_MFUNCTIONS_RUNTIME_TIMESTAMP.tsv",
+L971:         std::ios::trunc);
+L972: 
+L973:     if (auditFile)
+L974:     {
+L975:         auditFile << "INDEX\tNAME\tSTART\tEND\tIS_STUB\tIS_SKIPPED\tIS_RECOMPILED\n";
+L976: 
+L977:         for (std::size_t auditIndex = 0;
+L978:              auditIndex < m_functions.size();
+L979:              ++auditIndex)
+L980:         {
+L981:             const auto &auditFunction = m_functions[auditIndex];
+L982: 
+L983:             auditFile
+L984:                 << auditIndex << "\t"
+L985:                 << auditFunction.name << "\t"
+L986:                 << "0x" << std::hex << std::uppercase << auditFunction.start << "\t"
+L987:                 << "0x" << auditFunction.end << std::dec << "\t"
+L988:                 << (auditFunction.isStub ? 1 : 0) << "\t"
+L989:                 << (auditFunction.isSkipped ? 1 : 0) << "\t"
+L990:                 << (auditFunction.isRecompiled ? 1 : 0)
+L991:                 << "\n";
+L992:         }
+L993: 
+L994:         auditFile << "COUNT\t" << m_functions.size() << "\n";
+L995:     }
+L996: }
+L997:             m_symbols = m_elfParser->extractSymbols();
+L998:             m_sections = m_elfParser->getSections();
+L999:             m_relocations = m_elfParser->getRelocations();
+L1000:             collectCorrectnessCriticalFunctionStarts();
+L1001: 
+L1002:             if (m_functions.empty())
+L1003:             {
+L1004:                 m_reporter.error("elf", "No functions found in ELF file.");
+L1005:                 return false;
+L1006:             }
+L1007: 
+L1008:             {
+L1009:                 m_bootstrapInfo = {};
+L1010:                 uint32_t entry = m_elfParser->getEntryPoint();
+L1011:                 {
+L1012:                     std::ostringstream msg;
+L1013:                     msg << "ELF entry point: 0x" << std::hex << entry;
+L1014:                     m_reporter.info("elf", msg.str());
+L1015:                 }
+L1016:                 uint32_t bssStart = std::numeric_limits<uint32_t>::max();
+L1017:                 uint32_t bssEnd = 0;
+L1018:                 for (const auto &sec : m_sections)
+L1019:                 {
+L1020:                     if (sec.isBSS && sec.size > 0)
+L1021:                     {
+L1022:                         bssStart = std::min(bssStart, sec.address);
+L1023:                         bssEnd = std::max(bssEnd, sec.address + sec.size);
+L1024:                     }
+L1025:                 }
+L1026: 
+L1027:                 uint32_t gp = 0;
+L1028:                 for (const auto &sym : m_symbols)
+L1029:                 {
+L1030:                     if (sym.name == "_gp")
+L1031:                     {
+L1032:                         gp = sym.address;
+L1033:                         break;
+L1034:                     }
+L1035:                 }
+L1036: 
+L1037:                 if (bssStart != std::numeric_limits<uint32_t>::max())
+L1038:                 {
+L1039:                     std::ostringstream msg;
+L1040:                     msg << "BSS range: 0x" << std::hex << bssStart << " - 0x" << bssEnd
+L1041:                         << " (size 0x" << (bssEnd - bssStart) << "), gp=0x" << gp;
+L1042:                     m_reporter.info("elf", msg.str());
+L1043:                 }
+L1044:                 else
+L1045:                 {
+L1046:                     std::ostringstream msg;
+L1047:                     msg << "No BSS found, gp=0x" << std::hex << gp;
+L1048:                     m_reporter.info("elf", msg.str());
+L1049:                 }
+L1050: 
+L1051:                 if (entry != 0)
+L1052:                 {
+L1053:                     m_bootstrapInfo.valid = true;
+L1054:                     m_bootstrapInfo.entry = entry;
+L1055:                     if (bssStart != std::numeric_limits<uint32_t>::max() && bssEnd > bssStart)
+L1056:                     {
+L1057:                         m_bootstrapInfo.bssStart = bssStart;
+L1058:                         m_bootstrapInfo.bssEnd = bssEnd;
+L1059:                     }
+L1060:                     else
+L1061:                     {
+L1062:                         m_bootstrapInfo.bssStart = 0;
+L1063:                         m_bootstrapInfo.bssEnd = 0;
+L1064:                     }
+L1065:                     m_bootstrapInfo.gp = gp;
+L1066:                 }
+L1067:             }
+L1068: 
+L1069:             m_reporter.recordDiscovered(m_functions.size(), m_symbols.size(), m_sections.size(), m_relocations.size());
+L1070:             {
+L1071:                 std::ostringstream msg;
+L1072:                 msg << "extracted " << m_functions.size() << " functions, "
+L1073:                     << m_symbols.size() << " symbols, "
+L1074:                     << m_sections.size() << " sections, "
+L1075:                     << m_relocations.size() << " relocations";
+L1076:                 m_reporter.progress(msg.str());
+L1077:             }
+L1078: 
+L1079:             m_decoder = std::make_unique<R5900Decoder>();
+L1080:             m_codeGenerator = std::make_unique<CodeGenerator>(m_symbols, m_sections);
+L1081:             m_codeGenerator->setReporter(&m_reporter);
+L1082:             std::unordered_map<uint32_t, std::string> relocationCallNames;
+L1083:             relocationCallNames.reserve(m_relocations.size());
+L1084:             for (const auto &reloc : m_relocations)
+L1085:             {
+
+===== RECOMPILE — FUNCTION EXTRACTION / DECODE / ENTRY DISCOVERY ORDER =====
+PATH: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+LINES: 1080-1360
+L1080:             m_codeGenerator = std::make_unique<CodeGenerator>(m_symbols, m_sections);
+L1081:             m_codeGenerator->setReporter(&m_reporter);
+L1082:             std::unordered_map<uint32_t, std::string> relocationCallNames;
+L1083:             relocationCallNames.reserve(m_relocations.size());
+L1084:             for (const auto &reloc : m_relocations)
+L1085:             {
+L1086:                 if (reloc.symbolName.empty())
+L1087:                 {
+L1088:                     continue;
+L1089:                 }
+L1090: 
+L1091:                 auto inserted = relocationCallNames.emplace(reloc.offset, reloc.symbolName);
+L1092:                 if (!inserted.second && inserted.first->second != reloc.symbolName)
+L1093:                 {
+L1094:                     std::ostringstream msg;
+L1095:                     msg << "multiple relocation symbols at 0x" << std::hex << reloc.offset
+L1096:                         << " (keeping '" << inserted.first->second
+L1097:                         << "', ignoring '" << reloc.symbolName << "')";
+L1098:                     m_reporter.warning("relocation", msg.str());
+L1099:                 }
+L1100:             }
+L1101:             m_codeGenerator->setRelocationCallNames(relocationCallNames);
+L1102:             m_codeGenerator->setBootstrapInfo(m_bootstrapInfo);
+L1103:             m_codeGenerator->setConfiguredJumpTables(m_config.jumpTables);
+L1104:             m_codeGenerator->setEmitInstructionComments(true);
+L1105: 
+L1106:             fs::create_directories(m_config.outputPath);
+L1107: 
+L1108:             return true;
+L1109:         }
+L1110:         catch (const std::exception &e)
+L1111:         {
+L1112:             m_reporter.error("initialize", e.what());
+L1113:             return false;
+L1114:         }
+L1115:     }
+L1116: 
+L1117:     bool PS2Recompiler::recompile()
+L1118:     {
+L1119:         try
+L1120:         {
+L1121:             {
+L1122:                 std::ostringstream msg;
+L1123:                 msg << "recompiling " << m_functions.size() << " functions";
+L1124:                 m_reporter.progress(msg.str());
+L1125:             }
+L1126: 
+L1127:             size_t processedCount = 0;
+L1128:             size_t failedCount = 0;
+L1129:             size_t correctnessCriticalFailureCount = 0;
+L1130: 
+L1131:             for (uint32_t initializerStart : m_correctnessCriticalFunctionStarts)
+L1132:             {
+L1133:                 const auto functionIt = std::find_if(
+L1134:                     m_functions.begin(), m_functions.end(),
+L1135:                     [initializerStart](const Function &function)
+L1136:                     { return function.start == initializerStart; });
+L1137:                 if (functionIt == m_functions.end())
+L1138:                 {
+L1139:                     const auto bindingIt = m_stubHandlerBindingsByStart.find(initializerStart);
+L1140:                     if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+L1141:                         resolveStubTarget(bindingIt->second) != StubTarget::Unknown)
+L1142:                     {
+L1143:                         Function manualInitializer{};
+L1144:                         manualInitializer.name = "manual_initializer_" + bindingIt->second;
+L1145:                         manualInitializer.start = initializerStart;
+L1146:                         manualInitializer.end = initializerStart + 4u;
+L1147:                         m_functions.push_back(std::move(manualInitializer));
+L1148:                         m_reporter.info(
+L1149:                             "correctness-critical",
+L1150:                             "Synthesized initializer entry for resolved handler '" +
+L1151:                                 bindingIt->second + "'");
+L1152:                         continue;
+L1153:                     }
+L1154: 
+L1155:                     ++correctnessCriticalFailureCount;
+L1156:                     m_reporter.recordCorrectnessCriticalFailure();
+L1157:                     m_reporter.errorAt(
+L1158:                         "correctness-critical",
+L1159:                         ".ctors/.init_array",
+L1160:                         initializerStart,
+L1161:                         "Initializer table target has no discovered guest function or manual handler");
+L1162:                 }
+L1163:             }
+L1164: 
+L1165:             // A configured stub whose routine was never discovered (e.g. only reached by a tail-call J)
+L1166:             // would otherwise get no wrapper, and any branch to it hits an unregistered address at runtime.
+L1167:             for (const auto &[stubStart, handlerName] : m_stubHandlerBindingsByStart)
+L1168:             {
+L1169:                 if (resolveStubTarget(handlerName) == StubTarget::Unknown)
+L1170:                 {
+L1171:                     continue;
+L1172:                 }
+L1173:                 // Only recompiled guest code can already reach this address; a stubbed owner emits none.
+L1174:                 const bool covered = std::any_of(
+L1175:                     m_functions.begin(), m_functions.end(),
+L1176:                     [&](const Function &function)
+L1177:                     {
+L1178:                         return stubStart >= function.start &&
+L1179:                                stubStart < std::max(function.end, function.start + 4u) &&
+L1180:                                (function.start == stubStart || !isStubFunction(function));
+L1181:                     });
+L1182:                 if (covered)
+L1183:                 {
+L1184:                     continue;
+L1185:                 }
+L1186:                 Function stubEntry{};
+L1187:                 stubEntry.name = handlerName;
+L1188:                 stubEntry.start = stubStart;
+L1189:                 stubEntry.end = stubStart + 4u;
+L1190:                 m_functions.push_back(std::move(stubEntry));
+L1191:                 m_reporter.info("stub", "Synthesized entry for undiscovered stub '" + handlerName + "'");
+L1192:             }
+L1193: 
+L1194:             for (auto &function : m_functions)
+L1195:             {
+L1196:                 m_reporter.recordFunctionProcessed();
+L1197:                 const bool correctnessCritical = isCorrectnessCriticalFunction(function);
+L1198: 
+L1199:                 if (isStubFunction(function))
+L1200:                 {
+L1201:                     if (hasResolvedStubHandler(function))
+L1202:                     {
+L1203:                         function.isStub = true;
+L1204:                         function.isSkipped = false;
+L1205:                         m_reporter.recordFunctionStubbed();
+L1206:                         continue;
+L1207:                     }
+L1208: 
+L1209:                     if (correctnessCritical)
+L1210:                     {
+L1211:                         m_reporter.recordCorrectnessCriticalGuestFallback();
+L1212:                     }
+L1213:                     m_reporter.warningAt(
+L1214:                         "stub",
+L1215:                         function.name,
+L1216:                         function.start,
+L1217:                         "Configured stub has no runtime handler; recompiling the original guest function");
+L1218:                 }
+L1219: 
+L1220:                 if (shouldSkipFunction(function))
+L1221:                 {
+L1222:                     if (!correctnessCritical)
+L1223:                     {
+L1224:                         function.isSkipped = true;
+L1225:                         function.isStub = false;
+L1226:                         m_reporter.recordFunctionSkipped();
+L1227:                         continue;
+L1228:                     }
+L1229: 
+L1230:                     m_reporter.recordCorrectnessCriticalGuestFallback();
+L1231:                     m_reporter.warningAt(
+L1232:                         "correctness-critical",
+L1233:                         function.name,
+L1234:                         function.start,
+L1235:                         "Initializer skip ignored; recompiling the original guest function");
+L1236:                 }
+L1237: 
+L1238:                 if (!decodeFunction(function))
+L1239:                 {
+L1240:                     ++failedCount;
+L1241:                     m_reporter.recordDecodeFailure();
+L1242:                     m_reporter.recordFunctionSkipped();
+L1243:                     function.isSkipped = true;
+L1244:                     if (correctnessCritical)
+L1245:                     {
+L1246:                         ++correctnessCriticalFailureCount;
+L1247:                         m_reporter.recordCorrectnessCriticalFailure();
+L1248:                         m_reporter.errorAt(
+L1249:                             "correctness-critical",
+L1250:                             function.name,
+L1251:                             function.start,
+L1252:                             "Initializer could not be recompiled and has no resolved manual handler");
+L1253:                     }
+L1254:                     else
+L1255:                     {
+L1256:                         m_reporter.warningAt("decode", function.name, function.start, "Skipping function due decode failure");
+L1257:                     }
+L1258:                     continue;
+L1259:                 }
+L1260: 
+L1261:                 function.isStub = false;
+L1262:                 function.isSkipped = false;
+L1263:                 function.isRecompiled = true;
+L1264:                 m_reporter.recordFunctionRecompiled();
+L1265: 
+L1266: {
+L1267:     static bool auditFinalStateWritten = false;
+L1268: 
+L1269:     if (!auditFinalStateWritten)
+L1270:     {
+L1271:         auditFinalStateWritten = true;
+L1272: 
+L1273:         std::ofstream finalAudit(
+L1274:             "D:\\Downloads\\MarkOfKri_Audits\\ECOFF_FUNCTION_FINAL_STATE_TIMESTAMP.tsv",
+L1275:             std::ios::trunc);
+L1276: 
+L1277:         if (finalAudit)
+L1278:         {
+L1279:             std::size_t auditRecompiled = 0;
+L1280:             std::size_t auditStub = 0;
+L1281:             std::size_t auditSkipped = 0;
+L1282:             std::size_t auditNeither = 0;
+L1283: 
+L1284:             finalAudit
+L1285:                 << "INDEX\tNAME\tSTART\tEND\tIS_STUB\tIS_SKIPPED\tIS_RECOMPILED\n";
+L1286: 
+L1287:             for (std::size_t auditIndex = 0;
+L1288:                  auditIndex < m_functions.size();
+L1289:                  ++auditIndex)
+L1290:             {
+L1291:                 const auto &auditFunction = m_functions[auditIndex];
+L1292: 
+L1293:                 if (auditFunction.isRecompiled)
+L1294:                     ++auditRecompiled;
+L1295: 
+L1296:                 if (auditFunction.isStub)
+L1297:                     ++auditStub;
+L1298: 
+L1299:                 if (auditFunction.isSkipped)
+L1300:                     ++auditSkipped;
+L1301: 
+L1302:                 if (!auditFunction.isRecompiled &&
+L1303:                     !auditFunction.isStub &&
+L1304:                     !auditFunction.isSkipped)
+L1305:                 {
+L1306:                     ++auditNeither;
+L1307:                 }
+L1308: 
+L1309:                 finalAudit
+L1310:                     << auditIndex << "\t"
+L1311:                     << auditFunction.name << "\t"
+L1312:                     << "0x" << std::hex << std::uppercase << auditFunction.start << "\t"
+L1313:                     << "0x" << auditFunction.end << std::dec << "\t"
+L1314:                     << (auditFunction.isStub ? 1 : 0) << "\t"
+L1315:                     << (auditFunction.isSkipped ? 1 : 0) << "\t"
+L1316:                     << (auditFunction.isRecompiled ? 1 : 0)
+L1317:                     << "\n";
+L1318:             }
+L1319: 
+L1320:             finalAudit << "COUNT\t" << m_functions.size() << "\n";
+L1321:             finalAudit << "RECOMPILED\t" << auditRecompiled << "\n";
+L1322:             finalAudit << "STUB\t" << auditStub << "\n";
+L1323:             finalAudit << "SKIPPED\t" << auditSkipped << "\n";
+L1324:             finalAudit << "NEITHER\t" << auditNeither << "\n";
+L1325:         }
+L1326:     }
+L1327: }
+L1328: #if _DEBUG
+L1329:                 processedCount++;
+L1330:                 if (processedCount % 100 == 0)
+L1331:                 {
+L1332:                     {
+L1333:                         std::ostringstream msg;
+L1334:                         msg << "processed " << processedCount << " functions";
+L1335:                         m_reporter.progress(msg.str());
+L1336:                     }
+L1337:                 }
+L1338: #endif
+L1339:             }
+L1340: 
+L1341:             discoverAdditionalEntryPoints();
+L1342: 
+L1343:             if (failedCount > 0)
+L1344:             {
+L1345:                 std::ostringstream msg;
+L1346:                 msg << "Recompile completed with " << failedCount << " function(s) skipped due decode issues.";
+L1347:                 m_reporter.warning("decode", msg.str());
+L1348:             }
+L1349: 
+L1350:             m_reporter.progress("recompilation pass completed");
+L1351:             return correctnessCriticalFailureCount == 0u;
+L1352:         }
+L1353:         catch (const std::exception &e)
+L1354:         {
+L1355:             m_reporter.error("recompile", e.what());
+L1356:             return false;
+L1357:         }
+L1358:     }
+L1359: 
+L1360:     void PS2Recompiler::generateOutput()
+
+===== DISCOVER ADDITIONAL ENTRY POINTS — FULL IMPLEMENTATION =====
+PATH: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+LINES: 2060-2295
+L2060:         }
+L2061:         catch (const std::exception &e)
+L2062:         {
+L2063:             m_reporter.error("function-header", e.what());
+L2064:             return false;
+L2065:         }
+L2066:     }
+L2067: 
+L2068:     void PS2Recompiler::discoverAdditionalEntryPoints()
+L2069:     {
+L2070:         m_resumeEntryTargetsByOwner.clear();
+L2071:         if (!m_codeGenerator)
+L2072:         {
+L2073:             return;
+L2074:         }
+L2075: 
+L2076:         std::unordered_set<uint32_t> guestFallbackEntryAddresses = m_entryPointHintStarts;
+L2077:         for (uint32_t address : m_stubFunctionStarts)
+L2078:         {
+L2079:             const auto bindingIt = m_stubHandlerBindingsByStart.find(address);
+L2080:             if (bindingIt == m_stubHandlerBindingsByStart.end() ||
+L2081:                 resolveStubTarget(bindingIt->second) == StubTarget::Unknown)
+L2082:             {
+L2083:                 guestFallbackEntryAddresses.insert(address);
+L2084:             }
+L2085:         }
+L2086: 
+L2087:         // Prefer the existing wrapper when a configured entry lies inside a
+L2088:         // decoded function. If Ghidra/analyzer omitted the whole routine,
+L2089:         // synthesize a standalone guest function bounded by the next known
+L2090:         // function instead of leaving a valid executable target unregistered.
+L2091:         collectInternalEntryTargetsImpl(m_functions, m_decodedFunctions, guestFallbackEntryAddresses, m_resumeEntryTargetsByOwner);
+L2092: 
+L2093:         std::unordered_set<uint32_t> coveredEntryAddresses;
+L2094:         coveredEntryAddresses.reserve(m_functions.size() + guestFallbackEntryAddresses.size());
+L2095:         for (const auto &function : m_functions)
+L2096:         {
+L2097:             coveredEntryAddresses.insert(function.start);
+L2098:         }
+L2099:         for (const auto &[owner, targets] : m_resumeEntryTargetsByOwner)
+L2100:         {
+L2101:             coveredEntryAddresses.insert(targets.begin(), targets.end());
+L2102:         }
+L2103: 
+L2104:         std::unordered_set<uint32_t> standaloneEntryAddresses;
+L2105:         for (uint32_t address : guestFallbackEntryAddresses)
+L2106:         {
+L2107:             if (!coveredEntryAddresses.contains(address))
+L2108:             {
+L2109:                 standaloneEntryAddresses.insert(address);
+L2110:             }
+L2111:         }
+L2112: 
+L2113:         if (!standaloneEntryAddresses.empty())
+L2114:         {
+L2115:             const EntryDiscoveryStats configuredStats = discoverAdditionalEntryPointsImpl(
+L2116:                 m_functions,
+L2117:                 m_decodedFunctions,
+L2118:                 m_sections,
+L2119:                 nullptr,
+L2120:                 [this](Function &function)
+L2121:                 { return decodeFunction(function); },
+L2122:                 standaloneEntryAddresses);
+L2123:             if (configuredStats.discoveredCount > 0u)
+L2124:             {
+L2125:                 m_reporter.recordAdditionalEntryPoints(configuredStats.discoveredCount);
+L2126:                 std::ostringstream msg;
+L2127:                 msg << "synthesized " << configuredStats.discoveredCount
+L2128:                     << " standalone configured guest entry point(s)";
+L2129:                 m_reporter.progress(msg.str());
+L2130:             }
+L2131:         }
+L2132: 
+L2133:         auto findContainingFunction = [&](uint32_t address) -> const Function *
+L2134:         {
+L2135:             const Function *best = nullptr;
+L2136:             for (const auto &function : m_functions)
+L2137:             {
+L2138:                 if (!function.isRecompiled || function.isStub || function.isSkipped)
+L2139:                 {
+L2140:                     continue;
+L2141:                 }
+L2142: 
+L2143:                 if (isEntryFunctionName(function.name))
+L2144:                 {
+L2145:                     continue;
+L2146:                 }
+L2147: 
+L2148:                 if (address < function.start || address >= function.end)
+L2149:                 {
+L2150:                     continue;
+L2151:                 }
+L2152: 
+L2153:                 auto decodedIt = m_decodedFunctions.find(function.start);
+L2154:                 if (decodedIt == m_decodedFunctions.end())
+L2155:                 {
+L2156:                     continue;
+L2157:                 }
+L2158: 
+L2159:                 const auto &decoded = decodedIt->second;
+L2160:                 const bool hasAddress = std::any_of(decoded.begin(), decoded.end(),
+L2161:                                                     [&](const Instruction &candidate)
+L2162:                                                     { return candidate.address == address; });
+L2163:                 if (!hasAddress)
+L2164:                 {
+L2165:                     continue;
+L2166:                 }
+L2167: 
+L2168:                 if (!best || function.start > best->start)
+L2169:                 {
+L2170:                     best = &function;
+L2171:                 }
+L2172:             }
+L2173:             return best;
+L2174:         };
+L2175: 
+L2176:         // Ghidra exports standalone code blocks (static initializers, thunks, ...) as entry_* labels. Only entry_*
+L2177:         // blocks nested inside a real function are synthetic wrappers; standalone ones need their own resume
+L2178:         // points, otherwise a thread switched out inside a call from them cannot be resumed.
+L2179:         std::vector<std::pair<uint32_t, uint32_t>> ownerRanges;
+L2180:         for (const auto &function : m_functions)
+L2181:         {
+L2182:             if (function.isRecompiled && !function.isStub && !function.isSkipped &&
+L2183:                 !isEntryFunctionName(function.name) && function.end > function.start)
+L2184:             {
+L2185:                 ownerRanges.emplace_back(function.start, function.end);
+L2186:             }
+L2187:         }
+L2188:         std::sort(ownerRanges.begin(), ownerRanges.end());
+L2189:         uint32_t maxEnd = 0u;
+L2190:         std::vector<uint32_t> prefixMaxEnd;
+L2191:         prefixMaxEnd.reserve(ownerRanges.size());
+L2192:         for (const auto &range : ownerRanges)
+L2193:         {
+L2194:             maxEnd = std::max(maxEnd, range.second);
+L2195:             prefixMaxEnd.push_back(maxEnd);
+L2196:         }
+L2197:         auto nestedInRealFunction = [&](uint32_t address) -> bool
+L2198:         {
+L2199:             auto it = std::upper_bound(ownerRanges.begin(), ownerRanges.end(), std::make_pair(address, UINT32_MAX));
+L2200:             if (it == ownerRanges.begin())
+L2201:             {
+L2202:                 return false;
+L2203:             }
+L2204:             const size_t idx = static_cast<size_t>(std::distance(ownerRanges.begin(), it)) - 1u;
+L2205:             return prefixMaxEnd[idx] > address;
+L2206:         };
+L2207: 
+L2208:         for (const auto &function : m_functions)
+L2209:         {
+L2210:             if (!function.isRecompiled || function.isStub || function.isSkipped)
+L2211:             {
+L2212:                 continue;
+L2213:             }
+L2214: 
+L2215:             if (isEntryFunctionName(function.name) && nestedInRealFunction(function.start))
+L2216:             {
+L2217:                 continue;
+L2218:             }
+L2219: 
+L2220:             auto decodedIt = m_decodedFunctions.find(function.start);
+L2221:             if (decodedIt == m_decodedFunctions.end())
+L2222:             {
+L2223:                 continue;
+L2224:             }
+L2225: 
+L2226:             const auto &instructions = decodedIt->second;
+L2227:             CodeGenerator::AnalysisResult analysisResult =
+L2228:                 m_codeGenerator->collectInternalBranchTargets(function, instructions, &m_functions);
+L2229: 
+L2230:             auto &ownerTargets = m_resumeEntryTargetsByOwner[function.start];
+L2231:             ownerTargets.insert(ownerTargets.end(),
+L2232:                                 analysisResult.resumeEntryPoints.begin(),
+L2233:                                 analysisResult.resumeEntryPoints.end());
+L2234:             ownerTargets.insert(ownerTargets.end(),
+L2235:                                 analysisResult.indirectFallbackEntryPoints.begin(),
+L2236:                                 analysisResult.indirectFallbackEntryPoints.end());
+L2237: 
+L2238:             for (uint32_t target : analysisResult.externalEntryPoints)
+L2239:             {
+L2240:                 const Function *owner = findContainingFunction(target);
+L2241:                 if (!owner)
+L2242:                 {
+L2243:                     continue;
+L2244:                 }
+L2245: 
+L2246:                 if (owner->start == target)
+L2247:                 {
+L2248:                     continue;
+L2249:                 }
+L2250: 
+L2251:                 auto &targets = m_resumeEntryTargetsByOwner[owner->start];
+L2252:                 targets.push_back(target);
+L2253:             }
+L2254:         }
+L2255: 
+L2256:         const size_t postTransferTargets =
+L2257:             collectPostTransferEntryTargetsImpl(m_functions, m_decodedFunctions, m_resumeEntryTargetsByOwner);
+L2258:         if (postTransferTargets > 0u)
+L2259:         {
+L2260:             std::ostringstream msg;
+L2261:             msg << "registered " << postTransferTargets << " block start(s) after unconditional transfers as resume entries";
+L2262:             m_reporter.progress(msg.str());
+L2263:         }
+L2264: 
+L2265:         size_t totalTargets = 0u;
+L2266:         for (auto it = m_resumeEntryTargetsByOwner.begin(); it != m_resumeEntryTargetsByOwner.end();)
+L2267:         {
+L2268:             auto &targets = it->second;
+L2269:             std::sort(targets.begin(), targets.end());
+L2270:             targets.erase(std::unique(targets.begin(), targets.end()), targets.end());
+L2271:             if (targets.empty())
+L2272:             {
+L2273:                 it = m_resumeEntryTargetsByOwner.erase(it);
+L2274:                 continue;
+L2275:             }
+L2276: 
+L2277:             totalTargets += targets.size();
+L2278:             ++it;
+L2279:         }
+L2280: 
+L2281:         m_codeGenerator->setResumeEntryTargets(m_resumeEntryTargetsByOwner);
+L2282: 
+L2283:         if (totalTargets > 0u)
+L2284:         {
+L2285:             m_reporter.recordAdditionalEntryPoints(totalTargets);
+L2286:             std::ostringstream msg;
+L2287:             msg << "collected " << totalTargets
+L2288:                 << " resumable entry point(s) across "
+L2289:                 << m_resumeEntryTargetsByOwner.size()
+L2290:                 << " owner function(s)";
+L2291:             m_reporter.progress(msg.str());
+L2292:         }
+L2293:     }
+L2294: 
+L2295:     bool PS2Recompiler::decodeFunction(Function &function)
+
+===== CONFIG HEADER — ENTRY POINT HINT STRUCTURE =====
+PATH: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\config_manager.h
+LINES: 1-220
+L1: #ifndef PS2RECOMP_CONFIG_MANAGER_H
+L2: #define PS2RECOMP_CONFIG_MANAGER_H
+L3: 
+L4: #include "ps2recomp/types.h"
+L5: #include <string>
+L6: 
+L7: namespace ps2recomp
+L8: {
+L9:     class RecompilerReporter;
+L10: 
+L11:     class ConfigManager
+L12:     {
+L13:     public:
+L14:         explicit ConfigManager(const std::string &configPath);
+L15:         ~ConfigManager();
+L16: 
+L17:         RecompilerConfig loadConfig() const;
+L18:         void saveConfig(const RecompilerConfig &config) const;
+L19:         void setReporter(RecompilerReporter *reporter);
+L20: 
+L21:     private:
+L22:         std::string m_configPath;
+L23:         RecompilerReporter *m_reporter = nullptr;
+L24:     };
+L25: 
+L26: }
+L27: 
+L28: #endif // PS2RECOMP_CONFIG_MANAGER_H
+
+===== CONFIG PARSER — ENTRY POINT HINT PARSING =====
+PATH: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\config_manager.cpp
+LINES: 1-420
+L1: #include "ps2recomp/config_manager.h"
+L2: #include "ps2recomp/recompiler_reporter.h"
+L3: #include <toml.hpp>
+L4: #include <fstream>
+L5: #include <iostream>
+L6: #include <stdexcept>
+L7: #include <sstream>
+L8: #include <algorithm>
+L9: #include <limits>
+L10: #include <thread>
+L11: 
+L12: namespace ps2recomp
+L13: {
+L14: 
+L15:     ConfigManager::ConfigManager(const std::string &configPath)
+L16:         : m_configPath(configPath)
+L17:     {
+L18:     }
+L19: 
+L20:     ConfigManager::~ConfigManager() = default;
+L21: 
+L22:     void ConfigManager::setReporter(RecompilerReporter *reporter)
+L23:     {
+L24:         m_reporter = reporter;
+L25:     }
+L26: 
+L27:     RecompilerConfig ConfigManager::loadConfig() const
+L28:     {
+L29:         RecompilerConfig config;
+L30: 
+L31:         try
+L32:         {
+L33:             if (m_reporter)
+L34:             {
+L35:                 m_reporter->info("config", "Parsing toml file: " + m_configPath);
+L36:             }
+L37:             auto data = toml::parse(m_configPath);
+L38:             const auto &general = toml::find(data, "general");
+L39: 
+L40:             config.inputPath = toml::find<std::string>(general, "input");
+L41:             config.ghidraMapPath = toml::find_or<std::string>(general, "ghidra_output", "");
+L42:             config.outputPath = toml::find<std::string>(general, "output");
+L43:             config.singleFileOutput = toml::find_or<bool>(general, "single_file_output", false);
+L44:             config.lowMemoryMode = toml::find_or<bool>(general, "low_memory_mode", config.lowMemoryMode);
+L45:             const int64_t configuredOutputWorkers = toml::find_or<int64_t>(
+L46:                 general,
+L47:                 "output_worker_threads",
+L48:                 toml::find_or<int64_t>(general, "output_worker_thread", config.outputWorkerThreads));
+L49:             const int64_t clampedOutputWorkers = std::clamp<int64_t>(
+L50:                 configuredOutputWorkers,
+L51:                 0,
+L52:                 std::thread::hardware_concurrency() * 2);
+L53:             if (configuredOutputWorkers != clampedOutputWorkers)
+L54:             {
+L55:                 if (m_reporter)
+L56:                 {
+L57:                     std::ostringstream msg;
+L58:                     msg << "output_worker_threads value " << configuredOutputWorkers
+L59:                         << " is out of range; clamped to " << clampedOutputWorkers << ".";
+L60:                     m_reporter->warning("config", msg.str());
+L61:                 }
+L62:             }
+L63:             config.outputWorkerThreads = static_cast<uint32_t>(clampedOutputWorkers);
+L64:             config.patchSyscalls = toml::find_or<bool>(general, "patch_syscalls", config.patchSyscalls);
+L65:             config.patchCop0 = toml::find_or<bool>(general, "patch_cop0", config.patchCop0);
+L66:             config.patchCache = toml::find_or<bool>(general, "patch_cache", config.patchCache);
+L67: 
+L68:             if (general.contains("stubs") && general.at("stubs").is_array())
+L69:             {
+L70:                 config.stubImplementations = toml::find<std::vector<std::string>>(general, "stubs");
+L71:             }
+L72:             else if (data.contains("stubs") && data.at("stubs").is_array())
+L73:             {
+L74:                 config.stubImplementations = toml::find<std::vector<std::string>>(data, "stubs");
+L75:             }
+L76: 
+L77:             auto appendEntryPointHints = [&](const toml::value &table, const char *key)
+L78:             {
+L79:                 if (!table.contains(key) || !table.at(key).is_array())
+L80:                 {
+L81:                     return;
+L82:                 }
+L83:                 const auto values = toml::find<std::vector<std::string>>(table, key);
+L84:                 config.entryPointHints.insert(
+L85:                     config.entryPointHints.end(), values.begin(), values.end());
+L86:             };
+L87:             appendEntryPointHints(general, "entry_points");
+L88:             appendEntryPointHints(data, "entry_points");
+L89:             // Backward compatibility
+L90:             appendEntryPointHints(general, "untracked_stubs");
+L91:             appendEntryPointHints(data, "untracked_stubs");
+L92: 
+L93:             std::sort(config.entryPointHints.begin(), config.entryPointHints.end());
+L94:             config.entryPointHints.erase(
+L95:                 std::unique(config.entryPointHints.begin(), config.entryPointHints.end()),
+L96:                 config.entryPointHints.end());
+L97: 
+L98:             if (general.contains("skip") && general.at("skip").is_array())
+L99:             {
+L100:                 config.skipFunctions = toml::find<std::vector<std::string>>(general, "skip");
+L101:             }
+L102:             else if (data.contains("skip") && data.at("skip").is_array())
+L103:             {
+L104:                 config.skipFunctions = toml::find<std::vector<std::string>>(data, "skip");
+L105:             }
+L106: 
+L107:             if (data.contains("patches") && data.at("patches").is_table())
+L108:             {
+L109:                 const auto &patches = toml::find(data, "patches");
+L110: 
+L111:                 if (patches.contains("instructions") && patches.at("instructions").is_array())
+L112:                 {
+L113:                     const auto &instPatches = toml::find(patches, "instructions").as_array();
+L114:                     for (const auto &patch : instPatches)
+L115:                     {
+L116:                         if (patch.contains("address") && patch.contains("value"))
+L117:                         {
+L118:                             uint32_t address = 0;
+L119:                             const auto &addressValue = patch.at("address");
+L120:                             if (addressValue.is_string())
+L121:                             {
+L122:                                 address = std::stoul(toml::find<std::string>(patch, "address"), nullptr, 0);
+L123:                             }
+L124:                             else if (addressValue.is_integer())
+L125:                             {
+L126:                                 address = static_cast<uint32_t>(toml::find<int64_t>(patch, "address"));
+L127:                             }
+L128:                             else
+L129:                             {
+L130:                                 continue;
+L131:                             }
+L132: 
+L133:                             const auto &valueField = patch.at("value");
+L134:                             if (valueField.is_string())
+L135:                             {
+L136:                                 config.patches[address] = toml::find<std::string>(patch, "value");
+L137:                             }
+L138:                             else if (valueField.is_integer())
+L139:                             {
+L140:                                 std::ostringstream valueStream;
+L141:                                 valueStream << "0x" << std::hex
+L142:                                             << static_cast<uint32_t>(toml::find<int64_t>(patch, "value"));
+L143:                                 config.patches[address] = valueStream.str();
+L144:                             }
+L145:                         }
+L146:                     }
+L147:                 }
+L148:             }
+L149: 
+L150:             if (data.contains("mmio") && data.at("mmio").is_table())
+L151:             {
+L152:                 const auto &mmioTable = toml::find(data, "mmio").as_table();
+L153:                 for (const auto &[key, value] : mmioTable)
+L154:                 {
+L155:                     uint32_t instAddr = std::stoul(key, nullptr, 0);
+L156:                     uint32_t mmioAddr = 0;
+L157:                     if (value.is_string())
+L158:                     {
+L159:                         mmioAddr = std::stoul(value.as_string(), nullptr, 0);
+L160:                     }
+L161:                     else if (value.is_integer())
+L162:                     {
+L163:                         mmioAddr = static_cast<uint32_t>(value.as_integer());
+L164:                     }
+L165:                     config.mmioByInstructionAddress[instAddr] = mmioAddr;
+L166:                 }
+L167:             }
+L168: 
+L169:             if (data.contains("jump_tables") && data.at("jump_tables").is_table())
+L170:             {
+L171:                 const auto &jumpTablesNode = data.at("jump_tables");
+L172:                 if (jumpTablesNode.contains("table") && jumpTablesNode.at("table").is_array())
+L173:                 {
+L174:                     const auto &tables = jumpTablesNode.at("table").as_array();
+L175:                     for (const auto &tableNode : tables)
+L176:                     {
+L177:                         if (!tableNode.is_table())
+L178:                         {
+L179:                             continue;
+L180:                         }
+L181: 
+L182:                         JumpTable table{};
+L183: 
+L184:                         if (tableNode.contains("address"))
+L185:                         {
+L186:                             const auto &addressValue = tableNode.at("address");
+L187:                             if (addressValue.is_string())
+L188:                             {
+L189:                                 table.address = std::stoul(addressValue.as_string(), nullptr, 0);
+L190:                             }
+L191:                             else if (addressValue.is_integer())
+L192:                             {
+L193:                                 table.address = static_cast<uint32_t>(addressValue.as_integer());
+L194:                             }
+L195:                         }
+L196: 
+L197:                         if (tableNode.contains("base_register"))
+L198:                         {
+L199:                             const auto &baseRegisterValue = tableNode.at("base_register");
+L200:                             if (baseRegisterValue.is_string())
+L201:                             {
+L202:                                 table.baseRegister = std::stoul(baseRegisterValue.as_string(), nullptr, 0);
+L203:                             }
+L204:                             else if (baseRegisterValue.is_integer())
+L205:                             {
+L206:                                 table.baseRegister = static_cast<uint32_t>(baseRegisterValue.as_integer());
+L207:                             }
+L208:                         }
+L209: 
+L210:                         if (table.address == 0u || !tableNode.contains("entries") || !tableNode.at("entries").is_array())
+L211:                         {
+L212:                             continue;
+L213:                         }
+L214: 
+L215:                         const auto &entries = tableNode.at("entries").as_array();
+L216:                         uint32_t fallbackIndex = 0u;
+L217:                         for (const auto &entryNode : entries)
+L218:                         {
+L219:                             if (!entryNode.is_table())
+L220:                             {
+L221:                                 ++fallbackIndex;
+L222:                                 continue;
+L223:                             }
+L224: 
+L225:                             JumpTableEntry entry{};
+L226:                             entry.index = fallbackIndex;
+L227: 
+L228:                             if (entryNode.contains("index"))
+L229:                             {
+L230:                                 const auto &indexValue = entryNode.at("index");
+L231:                                 if (indexValue.is_string())
+L232:                                 {
+L233:                                     entry.index = std::stoul(indexValue.as_string(), nullptr, 0);
+L234:                                 }
+L235:                                 else if (indexValue.is_integer())
+L236:                                 {
+L237:                                     entry.index = static_cast<uint32_t>(indexValue.as_integer());
+L238:                                 }
+L239:                             }
+L240: 
+L241:                             bool hasTarget = false;
+L242:                             if (entryNode.contains("target"))
+L243:                             {
+L244:                                 const auto &targetValue = entryNode.at("target");
+L245:                                 if (targetValue.is_string())
+L246:                                 {
+L247:                                     entry.target = std::stoul(targetValue.as_string(), nullptr, 0);
+L248:                                     hasTarget = true;
+L249:                                 }
+L250:                                 else if (targetValue.is_integer())
+L251:                                 {
+L252:                                     entry.target = static_cast<uint32_t>(targetValue.as_integer());
+L253:                                     hasTarget = true;
+L254:                                 }
+L255:                             }
+L256: 
+L257:                             if (hasTarget)
+L258:                             {
+L259:                                 table.entries.push_back(entry);
+L260:                             }
+L261:                             ++fallbackIndex;
+L262:                         }
+L263: 
+L264:                         if (!table.entries.empty())
+L265:                         {
+L266:                             config.jumpTables.push_back(std::move(table));
+L267:                         }
+L268:                     }
+L269:                 }
+L270:             }
+L271:         }
+L272:         catch (const std::exception &e)
+L273:         {
+L274:             if (m_reporter)
+L275:             {
+L276:                 m_reporter->error("config", std::string("Error parsing configuration file: ") + e.what());
+L277:             }
+L278:             throw;
+L279:         }
+L280: 
+L281:         return config;
+L282:     }
+L283: 
+L284:     void ConfigManager::saveConfig(const RecompilerConfig &config) const
+L285:     {
+L286:         toml::value data;
+L287: 
+L288:         toml::table general;
+L289:         general["input"] = config.inputPath;
+L290:         general["ghidra_output"] = config.ghidraMapPath;
+L291:         general["output"] = config.outputPath;
+L292:         general["single_file_output"] = config.singleFileOutput;
+L293:         general["low_memory_mode"] = config.lowMemoryMode;
+L294:         general["output_worker_threads"] = static_cast<int64_t>(config.outputWorkerThreads);
+L295:         general["patch_syscalls"] = config.patchSyscalls;
+L296:         general["patch_cop0"] = config.patchCop0;
+L297:         general["patch_cache"] = config.patchCache;
+L298:         general["skip"] = config.skipFunctions;
+L299:         general["stubs"] = config.stubImplementations;
+L300:         general["entry_points"] = config.entryPointHints;
+L301:         data["general"] = general;
+L302: 
+L303:         if (!config.mmioByInstructionAddress.empty())
+L304:         {
+L305:             toml::table mmioTable;
+L306:             for (const auto &[instAddr, mmioAddr] : config.mmioByInstructionAddress)
+L307:             {
+L308:                 std::ostringstream keyStream;
+L309:                 keyStream << "0x" << std::hex << instAddr;
+L310:                 std::ostringstream valStream;
+L311:                 valStream << "0x" << std::hex << mmioAddr;
+L312:                 mmioTable[keyStream.str()] = valStream.str();
+L313:             }
+L314:             data["mmio"] = mmioTable;
+L315:         }
+L316: 
+L317:         if (!config.jumpTables.empty())
+L318:         {
+L319:             toml::table jumpTables;
+L320:             toml::array tableArray;
+L321:             for (const auto &table : config.jumpTables)
+L322:             {
+L323:                 toml::table tableNode;
+L324:                 std::ostringstream addressStream;
+L325:                 addressStream << "0x" << std::hex << table.address;
+L326:                 tableNode["address"] = addressStream.str();
+L327:                 tableNode["base_register"] = static_cast<int64_t>(table.baseRegister);
+L328: 
+L329:                 toml::array entries;
+L330:                 for (const auto &entry : table.entries)
+L331:                 {
+L332:                     toml::table entryNode;
+L333:                     entryNode["index"] = static_cast<int64_t>(entry.index);
+L334:                     std::ostringstream targetStream;
+L335:                     targetStream << "0x" << std::hex << entry.target;
+L336:                     entryNode["target"] = targetStream.str();
+L337:                     entries.push_back(entryNode);
+L338:                 }
+L339:                 tableNode["entries"] = entries;
+L340:                 tableArray.push_back(tableNode);
+L341:             }
+L342:             jumpTables["table"] = tableArray;
+L343:             data["jump_tables"] = jumpTables;
+L344:         }
+L345: 
+L346:         toml::table patches;
+L347:         toml::array instPatches;
+L348:         for (const auto &[addr, value] : config.patches)
+L349:         {
+L350:             std::ostringstream addrStream;
+L351:             addrStream << "0x" << std::hex << addr;
+L352: 
+L353:             toml::table p;
+L354:             p["address"] = addrStream.str();
+L355:             p["value"] = value;
+L356:             instPatches.push_back(p);
+L357:         }
+L358:         patches["instructions"] = instPatches;
+L359:         data["patches"] = patches;
+L360: 
+L361:         std::ofstream file(m_configPath);
+L362:         if (!file)
+L363:         {
+L364:             throw std::runtime_error("Failed to open file for writing: " + m_configPath);
+L365:         }
+L366: 
+L367:         file << data;
+L368:     }
+L369: 
+L370: } // namespace ps2recomp
+
+===== ELF PARSER HEADER — ENTRY API =====
+PATH: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\elf_parser.h
+LINES: 1-180
+L1: #ifndef PS2RECOMP_ELF_PARSER_H
+L2: #define PS2RECOMP_ELF_PARSER_H
+L3: 
+L4: #include <cstdint>
+L5: #include <elfio/elfio.hpp>
+L6: #include <string>
+L7: #include <vector>
+L8: #include <memory>
+L9: #include <unordered_set>
+L10: 
+L11: namespace ps2recomp
+L12: {
+L13:         struct Relocation;
+L14:         struct Section;
+L15:         struct Function;
+L16:         struct Symbol;
+L17:         class RecompilerReporter;
+L18: 
+L19:         class ElfParser
+L20:         {
+L21:         public:
+L22:                 explicit ElfParser(const std::string &filePath);
+L23:                 ~ElfParser();
+L24: 
+L25:                 bool parse();
+L26: 
+L27:                 bool loadGhidraFunctionMap(const std::string &mapPath);
+L28:                 std::vector<Function> extractFunctions() const;
+L29:                 std::vector<Function> extractExtraFunctions() const;
+L30:                 std::vector<Symbol> extractSymbols();
+L31:                 std::vector<Section> getSections();
+L32:                 std::vector<Relocation> getRelocations();
+L33: 
+L34:                 // Helper methods
+L35:                 bool isValidAddress(uint32_t address) const;
+L36:                 uint32_t readWord(uint32_t address) const;
+L37:                 uint8_t *getSectionData(const std::string &sectionName) const;
+L38:                 uint32_t getSectionAddress(const std::string &sectionName) const;
+L39:                 uint32_t getSectionSize(const std::string &sectionName) const;
+L40:                 uint32_t getEntryPoint() const;
+L41:                 void setReporter(RecompilerReporter *reporter);
+L42:                 void debugAddress(uint32_t address) const;
+L43: 
+L44:         private:
+L45:                 std::string m_filePath;
+L46:                 std::unique_ptr<ELFIO::elfio> m_elf;
+L47: 
+L48:                 std::vector<Section> m_sections;
+L49:                 std::vector<Symbol> m_symbols;
+L50:                 std::vector<Relocation> m_relocations;
+L51:                 std::vector<Function> m_extraFunctions;
+L52:                 bool m_hasLoadedGhidraMap = false;
+L53:                 RecompilerReporter *m_reporter = nullptr;
+L54:                 std::unordered_set<uint32_t> m_ghidraMapStarts;
+L55: 
+L56:                 void loadSections();
+L57:                 void loadSymbols();
+L58:                 void loadRelocations();
+L59:                 void loadDebugFunctions();
+L60:                 bool isExecutableSection(const ELFIO::section *section) const;
+L61:                 bool isDataSection(const ELFIO::section *section) const;
+L62:         };
+L63: 
+L64: } // namespace ps2recomp
+L65: 
+L66: #endif // PS2RECOMP_ELF_PARSER_H
+
+===== ELF PARSER — ENTRY POINT / FUNCTION EXTRACTION =====
+PATH: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp
+LINES: 1-420
+L1: #include "ps2recomp/elf_parser.h"
+L2: #include "ps2recomp/instructions.h"
+L3: #include "ps2recomp/recompiler_reporter.h"
+L4: #include "ps2recomp/types.h"
+L5: #include <iostream>
+L6: #include <stdexcept>
+L7: #include <unordered_map>
+L8: #include <unordered_set>
+L9: #define NOMINMAX
+L10: 
+L11: #include <fcntl.h>
+L12: 
+L13: #if defined(_WIN32)
+L14: #include <io.h>
+L15: #include <direct.h>
+L16: #include <windows.h>
+L17: #else
+L18: #include <unistd.h>
+L19: #endif
+L20: #include "libdwarf_private.h"
+L21: #include <libdwarf.h>
+L22: #include <dwarf.h>
+L23: #include <fstream>
+L24: #include <sstream>
+L25: #include <algorithm>
+L26: #include <cstring>
+L27: #include <limits>
+L28: 
+L29: namespace
+L30: {
+L31:     bool IsAutoGeneratedName(const std::string &name)
+L32:     {
+L33:         return name.rfind("sub_", 0) == 0 ||
+L34:                name.rfind("FUN_", 0) == 0 ||
+L35:                name.rfind("LAB_", 0) == 0 ||
+L36:                name.rfind("DAT_", 0) == 0;
+L37:     }
+L38: 
+L39:     void AppendLoadSegmentsAsSections(const ELFIO::elfio &elf, std::vector<ps2recomp::Section> &sections)
+L40:     {
+L41:         const ELFIO::Elf_Half segCount = elf.segments.size();
+L42:         if (segCount == 0)
+L43:         {
+L44:             return;
+L45:         }
+L46: 
+L47:         for (ELFIO::Elf_Half i = 0; i < segCount; ++i)
+L48:         {
+L49:             ELFIO::segment *segment = elf.segments[i];
+L50:             if (!segment || segment->get_type() != ELFIO::PT_LOAD)
+L51:             {
+L52:                 continue;
+L53:             }
+L54: 
+L55:             const ELFIO::Elf64_Addr vaddr = segment->get_virtual_address();
+L56:             const ELFIO::Elf_Xword fileSize = segment->get_file_size();
+L57:             const ELFIO::Elf_Xword memSize = segment->get_memory_size();
+L58:             const ELFIO::Elf_Word flags = segment->get_flags();
+L59: 
+L60:             if (vaddr > 0xFFFFFFFFu || fileSize > 0xFFFFFFFFu || memSize > 0xFFFFFFFFu)
+L61:             {
+L62:                 continue;
+L63:             }
+L64: 
+L65:             if (fileSize > 0)
+L66:             {
+L67:                 ps2recomp::Section load{};
+L68:                 load.name = "LOAD" + std::to_string(i);
+L69:                 load.address = static_cast<uint32_t>(vaddr);
+L70:                 load.size = static_cast<uint32_t>(fileSize);
+L71:                 load.offset = static_cast<uint32_t>(segment->get_offset());
+L72:                 load.isCode = (flags & ELFIO::PF_X) != 0;
+L73:                 load.isData = (flags & ELFIO::PF_W) != 0 || (flags & ELFIO::PF_R) != 0;
+L74:                 load.isBSS = false;
+L75:                 load.isReadOnly = (flags & ELFIO::PF_W) == 0;
+L76:                 load.data = const_cast<uint8_t *>(
+L77:                     reinterpret_cast<const uint8_t *>(segment->get_data()));
+L78: 
+L79:                 sections.push_back(load);
+L80:             }
+L81: 
+L82:             if (memSize > fileSize)
+L83:             {
+L84:                 ps2recomp::Section bss{};
+L85:                 bss.name = "LOAD" + std::to_string(i) + ".bss";
+L86:                 bss.address = static_cast<uint32_t>(vaddr + fileSize);
+L87:                 bss.size = static_cast<uint32_t>(memSize - fileSize);
+L88:                 bss.offset = static_cast<uint32_t>(segment->get_offset() + fileSize);
+L89:                 bss.isCode = false;
+L90:                 bss.isData = true;
+L91:                 bss.isBSS = true;
+L92:                 bss.isReadOnly = false;
+L93:                 bss.data = nullptr;
+L94: 
+L95:                 sections.push_back(bss);
+L96:             }
+L97:         }
+L98: 
+L99:         if (!sections.empty())
+L100:         {
+L101:             std::sort(sections.begin(), sections.end(),
+L102:                       [](const ps2recomp::Section &a, const ps2recomp::Section &b)
+L103:                       { return a.address < b.address; });
+L104:         }
+L105:     }
+L106: 
+L107:     const ps2recomp::Section *FindSectionByAddress(const std::vector<ps2recomp::Section> &sections, uint32_t address)
+L108:     {
+L109:         for (const auto &section : sections)
+L110:         {
+L111:             if (address >= section.address && address < (section.address + section.size))
+L112:             {
+L113:                 return &section;
+L114:             }
+L115:         }
+L116:         return nullptr;
+L117:     }
+L118: 
+L119: 
+L120:     // Decode the ELF32 little-endian ECOFF HDRR tables used by retail PS2 ELFs.
+L121:     // ECOFF table offsets are absolute file offsets, not offsets relative to .mdebug.
+L122:     bool ReadEcoffU16(const std::vector<uint8_t> &bytes, uint64_t offset, uint16_t &value)
+L123:     {
+L124:         if (offset > bytes.size() || bytes.size() - static_cast<size_t>(offset) < 2)
+L125:             return false;
+L126:         value = static_cast<uint16_t>(bytes[static_cast<size_t>(offset)]) |
+L127:                 (static_cast<uint16_t>(bytes[static_cast<size_t>(offset) + 1]) << 8);
+L128:         return true;
+L129:     }
+L130: 
+L131:     bool ReadEcoffU32(const std::vector<uint8_t> &bytes, uint64_t offset, uint32_t &value)
+L132:     {
+L133:         if (offset > bytes.size() || bytes.size() - static_cast<size_t>(offset) < 4)
+L134:             return false;
+L135:         const size_t at = static_cast<size_t>(offset);
+L136:         value = static_cast<uint32_t>(bytes[at]) |
+L137:                 (static_cast<uint32_t>(bytes[at + 1]) << 8) |
+L138:                 (static_cast<uint32_t>(bytes[at + 2]) << 16) |
+L139:                 (static_cast<uint32_t>(bytes[at + 3]) << 24);
+L140:         return true;
+L141:     }
+L142: 
+L143:     bool EcoffRangeInMdebug(uint64_t offset, uint64_t count, uint64_t recordSize,
+L144:                             uint64_t fileSize, uint64_t sectionStart, uint64_t sectionSize)
+L145:     {
+L146:         if (recordSize != 0 && count > std::numeric_limits<uint64_t>::max() / recordSize)
+L147:             return false;
+L148:         const uint64_t byteCount = count * recordSize;
+L149:         if (offset < sectionStart + 96 || offset > fileSize || byteCount > fileSize - offset ||
+L150:             offset > sectionStart + sectionSize)
+L151:             return false;
+L152:         return byteCount <= sectionStart + sectionSize - offset;
+L153:     }
+L154: 
+L155:     bool IsEcoffEeTextSection(const ELFIO::section *section)
+L156:     {
+L157:         if (!section || (section->get_flags() & ELFIO::SHF_EXECINSTR) == 0)
+L158:             return false;
+L159:         const std::string name = section->get_name();
+L160:         return name != ".vutext" && name.rfind(".vutext.", 0) != 0 &&
+L161:                name != ".DVP.overlay" && name.rfind(".DVP.overlay.", 0) != 0;
+L162:     }
+L163: 
+L164:     std::vector<ps2recomp::Function> LoadEcoffMdebugFunctions(
+L165:         const ELFIO::elfio &elf, const std::string &filePath)
+L166:     {
+L167:         using ps2recomp::Function;
+L168:         std::vector<Function> functions;
+L169:         const ELFIO::section *mdebug = nullptr;
+L170:         for (ELFIO::Elf_Half i = 0; i < elf.sections.size(); ++i)
+L171:         {
+L172:             const ELFIO::section *section = elf.sections[i];
+L173:             if (section && section->get_name() == ".mdebug")
+L174:             {
+L175:                 mdebug = section;
+L176:                 break;
+L177:             }
+L178:         }
+L179:         if (!mdebug || mdebug->get_size() < 96 || mdebug->get_type() == ELFIO::SHT_NOBITS)
+L180:             return functions;
+L181: 
+L182:         std::ifstream input(filePath, std::ios::binary);
+L183:         if (!input)
+L184:             return functions;
+L185:         input.seekg(0, std::ios::end);
+L186:         const std::streamoff length = input.tellg();
+L187:         if (length < 0)
+L188:             return functions;
+L189:         std::vector<uint8_t> bytes(static_cast<size_t>(length));
+L190:         input.seekg(0, std::ios::beg);
+L191:         if (!bytes.empty())
+L192:             input.read(reinterpret_cast<char *>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+L193:         if (!input && !bytes.empty())
+L194:             return functions;
+L195: 
+L196:         // ECOFF MIPS structures in this format are 32-bit little-endian.
+L197:         if (bytes.size() < 6 || bytes[0] != 0x7F || bytes[1] != 'E' ||
+L198:             bytes[2] != 'L' || bytes[3] != 'F' || bytes[4] != 1 || bytes[5] != 1)
+L199:             return functions;
+L200: 
+L201:         const uint64_t sectionStart = mdebug->get_offset();
+L202:         const uint64_t sectionSize = mdebug->get_size();
+L203:         if (sectionStart > bytes.size() || sectionSize > bytes.size() - sectionStart || sectionSize < 96)
+L204:             return functions;
+L205: 
+L206:         uint16_t magic = 0;
+L207:         uint16_t vstamp = 0;
+L208:         if (!ReadEcoffU16(bytes, sectionStart, magic) ||
+L209:             !ReadEcoffU16(bytes, sectionStart + 2, vstamp) ||
+L210:             magic != 0x7009)
+L211:             return functions;
+L212: 
+L213:         // HDRR offsets: counts and absolute file offsets, in 32-bit words after magic/vstamp.
+L214:         uint32_t ipdMax = 0, cbPdOffset = 0, isymMax = 0, cbSymOffset = 0;
+L215:         uint32_t issMax = 0, cbSsOffset = 0, ifdMax = 0, cbFdOffset = 0;
+L216:         if (!ReadEcoffU32(bytes, sectionStart + 24, ipdMax) ||
+L217:             !ReadEcoffU32(bytes, sectionStart + 28, cbPdOffset) ||
+L218:             !ReadEcoffU32(bytes, sectionStart + 32, isymMax) ||
+L219:             !ReadEcoffU32(bytes, sectionStart + 36, cbSymOffset) ||
+L220:             !ReadEcoffU32(bytes, sectionStart + 56, issMax) ||
+L221:             !ReadEcoffU32(bytes, sectionStart + 60, cbSsOffset) ||
+L222:             !ReadEcoffU32(bytes, sectionStart + 72, ifdMax) ||
+L223:             !ReadEcoffU32(bytes, sectionStart + 76, cbFdOffset))
+L224:             return functions;
+L225: 
+L226:         constexpr uint64_t PdrSize = 52;
+L227:         constexpr uint64_t SymrSize = 12;
+L228:         constexpr uint64_t FdrSize = 72;
+L229:         if (ipdMax == 0 || isymMax == 0 || ifdMax == 0 || issMax == 0 ||
+L230:             !EcoffRangeInMdebug(cbPdOffset, ipdMax, PdrSize, bytes.size(), sectionStart, sectionSize) ||
+L231:             !EcoffRangeInMdebug(cbSymOffset, isymMax, SymrSize, bytes.size(), sectionStart, sectionSize) ||
+L232:             !EcoffRangeInMdebug(cbFdOffset, ifdMax, FdrSize, bytes.size(), sectionStart, sectionSize) ||
+L233:             !EcoffRangeInMdebug(cbSsOffset, issMax, 1, bytes.size(), sectionStart, sectionSize))
+L234:             return functions;
+L235: 
+L236:         struct EcoffFdr
+L237:         {
+L238:             uint32_t address = 0;
+L239:             uint32_t symbolBase = 0;
+L240:             uint32_t symbolCount = 0;
+L241:             uint32_t procedureFirst = 0;
+L242:             uint32_t procedureCount = 0;
+L243:         };
+L244:         std::vector<EcoffFdr> fdrs;
+L245:         fdrs.reserve(ifdMax);
+L246:         for (uint32_t i = 0; i < ifdMax; ++i)
+L247:         {
+L248:             const uint64_t at = static_cast<uint64_t>(cbFdOffset) + static_cast<uint64_t>(i) * FdrSize;
+L249:             uint32_t address = 0, symbolBase = 0, symbolCount = 0, packedProcedures = 0;
+L250:             if (!ReadEcoffU32(bytes, at, address) ||
+L251:                 !ReadEcoffU32(bytes, at + 16, symbolBase) ||
+L252:                 !ReadEcoffU32(bytes, at + 20, symbolCount) ||
+L253:                 !ReadEcoffU32(bytes, at + 40, packedProcedures))
+L254:                 return {};
+L255:             EcoffFdr fdr;
+L256:             fdr.address = address;
+L257:             fdr.symbolBase = symbolBase;
+L258:             fdr.symbolCount = symbolCount;
+L259:             fdr.procedureFirst = packedProcedures & 0xFFFFu;
+L260:             fdr.procedureCount = packedProcedures >> 16;
+L261:             if (fdr.symbolBase > isymMax || fdr.symbolCount > isymMax - fdr.symbolBase ||
+L262:                 fdr.procedureFirst > ipdMax || fdr.procedureCount > ipdMax - fdr.procedureFirst)
+L263:                 return {};
+L264:             fdrs.push_back(fdr);
+L265:         }
+L266: 
+L267:         struct EcoffCandidate
+L268:         {
+L269:             uint32_t address = 0;
+L270:             std::string name;
+L271:             const ELFIO::section *section = nullptr;
+L272:         };
+L273:         std::vector<EcoffCandidate> candidates;
+L274:         for (uint32_t symbolIndex = 0; symbolIndex < isymMax; ++symbolIndex)
+L275:         {
+L276:             const uint64_t symAt = static_cast<uint64_t>(cbSymOffset) + static_cast<uint64_t>(symbolIndex) * SymrSize;
+L277:             uint32_t stringIndex = 0, packed = 0;
+L278:             if (!ReadEcoffU32(bytes, symAt, stringIndex) ||
+L279:                 !ReadEcoffU32(bytes, symAt + 8, packed))
+L280:                 return {};
+L281: 
+L282:             const uint32_t storageType = packed & 0x3Fu;
+L283:             const uint32_t storageClass = (packed >> 6) & 0x1Fu;
+L284:             if ((storageType != 6 && storageType != 14) || storageClass != 1)
+L285:                 continue;
+L286: 
+L287:             const EcoffFdr *owner = nullptr;
+L288:             for (const auto &fdr : fdrs)
+L289:             {
+L290:                 if (symbolIndex >= fdr.symbolBase && symbolIndex - fdr.symbolBase < fdr.symbolCount)
+L291:                 {
+L292:                     if (owner)
+L293:                         return {};
+L294:                     owner = &fdr;
+L295:                 }
+L296:             }
+L297:             if (!owner)
+L298:                 continue;
+L299: 
+L300:             const uint32_t localSymbolIndex = symbolIndex - owner->symbolBase;
+L301:             uint32_t matchedPdr = UINT32_MAX;
+L302:             for (uint32_t p = owner->procedureFirst; p < owner->procedureFirst + owner->procedureCount; ++p)
+L303:             {
+L304:                 uint32_t pdrSymbolIndex = 0;
+L305:                 const uint64_t pdrAt = static_cast<uint64_t>(cbPdOffset) + static_cast<uint64_t>(p) * PdrSize;
+L306:                 if (!ReadEcoffU32(bytes, pdrAt + 4, pdrSymbolIndex))
+L307:                     return {};
+L308:                 if (pdrSymbolIndex == localSymbolIndex)
+L309:                 {
+L310:                     if (matchedPdr != UINT32_MAX)
+L311:                         return {};
+L312:                     matchedPdr = p;
+L313:                 }
+L314:             }
+L315:             if (matchedPdr == UINT32_MAX)
+L316:                 continue;
+L317: 
+L318:             uint32_t pdrAddress = 0;
+L319:             const uint64_t pdrAt = static_cast<uint64_t>(cbPdOffset) + static_cast<uint64_t>(matchedPdr) * PdrSize;
+L320:             if (!ReadEcoffU32(bytes, pdrAt, pdrAddress) ||
+L321:                 owner->address > UINT32_MAX - pdrAddress)
+L322:                 continue;
+L323:             const uint32_t address = owner->address + pdrAddress;
+L324: 
+L325:             if (stringIndex >= issMax)
+L326:                 continue;
+L327:             const uint64_t nameAt = static_cast<uint64_t>(cbSsOffset) + stringIndex;
+L328:             const uint64_t stringEnd = static_cast<uint64_t>(cbSsOffset) + issMax;
+L329:             const auto terminator = std::find(bytes.begin() + static_cast<size_t>(nameAt),
+L330:                                               bytes.begin() + static_cast<size_t>(stringEnd), uint8_t{0});
+L331:             if (terminator == bytes.begin() + static_cast<size_t>(stringEnd) || terminator == bytes.begin() + static_cast<size_t>(nameAt))
+L332:                 continue;
+L333:             std::string name(reinterpret_cast<const char *>(bytes.data() + static_cast<size_t>(nameAt)),
+L334:                              static_cast<size_t>(terminator - (bytes.begin() + static_cast<size_t>(nameAt))));
+L335: 
+L336:             const ELFIO::section *codeSection = nullptr;
+L337:             for (ELFIO::Elf_Half sectionIndex = 0; sectionIndex < elf.sections.size(); ++sectionIndex)
+L338:             {
+L339:                 const ELFIO::section *section = elf.sections[sectionIndex];
+L340:                 const uint64_t start = section->get_address();
+L341:                 const uint64_t end = start + section->get_size();
+L342:                 if (IsEcoffEeTextSection(section) && address >= start && address < end)
+L343:                 {
+L344:                     if (codeSection)
+L345:                         return {};
+L346:                     codeSection = section;
+L347:                 }
+L348:             }
+L349:             if (codeSection)
+L350:                 candidates.push_back({address, std::move(name), codeSection});
+L351:         }
+L352: 
+L353:         std::sort(candidates.begin(), candidates.end(),
+L354:                   [](const EcoffCandidate &a, const EcoffCandidate &b) { return a.address < b.address; });
+L355:         for (size_t i = 0; i < candidates.size(); ++i)
+L356:         {
+L357:             if (i > 0 && candidates[i - 1].address == candidates[i].address)
+L358:                 continue;
+L359:             Function function{};
+L360:             function.name = candidates[i].name;
+L361:             function.start = candidates[i].address;
+L362:             function.end = 0; // Existing function-boundary logic caps this at the next discovered start.
+L363:             function.isRecompiled = false;
+L364:             function.isStub = false;
+L365:             function.isSkipped = false;
+L366:             functions.push_back(std::move(function));
+L367:         }
+L368:         return functions;
+L369:     }
+L370: }
+L371: 
+L372: namespace
+L373: {
+L374:     using namespace ps2recomp;
+L375: 
+L376:     bool HasDwarfSections(const ELFIO::elfio &elf)
+L377:     {
+L378:         for (ELFIO::Elf_Half i = 0; i < elf.sections.size(); ++i)
+L379:         {
+L380:             const ELFIO::section *section = elf.sections[i];
+L381:             const std::string &name = section->get_name();
+L382:             if (name.rfind(".debug_", 0) == 0 || name.rfind(".zdebug_", 0) == 0)
+L383:             {
+L384:                 return true;
+L385:             }
+L386:         }
+L387:         return false;
+L388:     }
+L389: 
+L390:     const ps2recomp::Section *FindCodeSectionByAddress(const std::vector<ps2recomp::Section> &sections, uint32_t address)
+L391:     {
+L392:         for (const auto &section : sections)
+L393:         {
+L394:             if (!section.isCode)
+L395:             {
+L396:                 continue;
+L397:             }
+L398: 
+L399:             if (address >= section.address && address < (section.address + section.size))
+L400:             {
+L401:                 return &section;
+L402:             }
+L403:         }
+L404:         return nullptr;
+L405:     }
+L406: 
+L407:     bool HasAnyExecutableSection(const std::vector<ps2recomp::Section> &sections)
+L408:     {
+L409:         for (const auto &section : sections)
+L410:         {
+L411:             if (section.isCode)
+L412:             {
+L413:                 return true;
+L414:             }
+L415:         }
+L416:         return false;
+L417:     }
+L418: 
+L419:     const ps2recomp::Section *FindFunctionSectionByAddress(const std::vector<ps2recomp::Section> &sections, uint32_t address)
+L420:     {
+
+===== ENTRY / BOOTSTRAP REFERENCE INDEX =====
+
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+L286:         EntryDiscoveryStats discoverAdditionalEntryPointsImpl(
+L292:             const std::unordered_set<uint32_t> &seedEntryAddresses = {})
+L416:                     for (uint32_t target : seedEntryAddresses)
+L449:                         analysisResult.resumeEntryPoints.clear();
+L450:                         analysisResult.externalEntryPoints.clear();
+L453:                     for (uint32_t target : analysisResult.externalEntryPoints)
+L458:                     for (uint32_t target : analysisResult.resumeEntryPoints)
+L901:             m_entryPointHintStarts.clear();
+L943:             for (const auto &hint : m_config.entryPointHints)
+L948:                     m_entryPointHintStarts.insert(*selector.start);
+L1009:                 m_bootstrapInfo = {};
+L1010:                 uint32_t entry = m_elfParser->getEntryPoint();
+L1053:                     m_bootstrapInfo.valid = true;
+L1054:                     m_bootstrapInfo.entry = entry;
+L1057:                         m_bootstrapInfo.bssStart = bssStart;
+L1058:                         m_bootstrapInfo.bssEnd = bssEnd;
+L1062:                         m_bootstrapInfo.bssStart = 0;
+L1063:                         m_bootstrapInfo.bssEnd = 0;
+L1065:                     m_bootstrapInfo.gp = gp;
+L1102:             m_codeGenerator->setBootstrapInfo(m_bootstrapInfo);
+L1341:             discoverAdditionalEntryPoints();
+L1404:             if (m_bootstrapInfo.valid && m_codeGenerator)
+L1408:                                             { return fn.start == m_bootstrapInfo.entry; });
+L1414:                         m_bootstrapInfo.entryName = renameIt->second;
+L1418:                         m_bootstrapInfo.entryName = sanitizeFunctionName(entryIt->name);
+L1422:                 m_codeGenerator->setBootstrapInfo(m_bootstrapInfo);
+L2068:     void PS2Recompiler::discoverAdditionalEntryPoints()
+L2076:         std::unordered_set<uint32_t> guestFallbackEntryAddresses = m_entryPointHintStarts;
+L2115:             const EntryDiscoveryStats configuredStats = discoverAdditionalEntryPointsImpl(
+L2125:                 m_reporter.recordAdditionalEntryPoints(configuredStats.discoveredCount);
+L2232:                                 analysisResult.resumeEntryPoints.begin(),
+L2233:                                 analysisResult.resumeEntryPoints.end());
+L2235:                                 analysisResult.indirectFallbackEntryPoints.begin(),
+L2236:                                 analysisResult.indirectFallbackEntryPoints.end());
+L2238:             for (uint32_t target : analysisResult.externalEntryPoints)
+L2285:             m_reporter.recordAdditionalEntryPoints(totalTargets);
+L2598:     size_t PS2Recompiler::DiscoverAdditionalEntryPoints(
+L2604:         const EntryDiscoveryStats stats = discoverAdditionalEntryPointsImpl(
+
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\config_manager.h
+
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\config_manager.cpp
+L77:             auto appendEntryPointHints = [&](const toml::value &table, const char *key)
+L84:                 config.entryPointHints.insert(
+L85:                     config.entryPointHints.end(), values.begin(), values.end());
+L87:             appendEntryPointHints(general, "entry_points");
+L88:             appendEntryPointHints(data, "entry_points");
+L90:             appendEntryPointHints(general, "untracked_stubs");
+L91:             appendEntryPointHints(data, "untracked_stubs");
+L93:             std::sort(config.entryPointHints.begin(), config.entryPointHints.end());
+L94:             config.entryPointHints.erase(
+L95:                 std::unique(config.entryPointHints.begin(), config.entryPointHints.end()),
+L96:                 config.entryPointHints.end());
+L300:         general["entry_points"] = config.entryPointHints;
+
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\elf_parser.h
+L40:                 uint32_t getEntryPoint() const;
+
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp
+L2140:         const uint32_t entry = parser->getEntryPoint();
+L2636:     uint32_t ElfParser::getEntryPoint() const
+
+===== MARK OF KRI CONFIG FILE CANDIDATES =====
+No standard config candidate found in bounded locations.
+
+===== AUDIT RESULT =====
+Elapsed seconds: 0.170
+Source/build modifications: NONE
+PowerShell session remains open.
