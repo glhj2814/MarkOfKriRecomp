@@ -1,0 +1,1860 @@
+MARK OF KRI — ECOFF DOWNSTREAM FUNCTION FLOW AUDIT
+
+PARSER SHA256: A0B2911D29B5798859215E2D203C6782F65E990EECFD2AF77B10F32B6F00E036
+CLEAN HASH MATCH: True
+
+=== PS2RECOMPILER FUNCTION CONSUMPTION ===
+
+SOURCE REGION AROUND LINE 105:
+  103:         {
+  104:             output << "#include <stdexcept>\n";
+  105:             output << "#include <ps2_recompiled_functions.h>\n\n";
+  106:             output << "#include \"ps2_runtime_macros.h\"\n";
+  107:             output << "#include \"ps2_runtime.h\"\n";
+  108:             output << "#include <ps2_recompiled_stubs.h>\n";
+
+SOURCE REGION AROUND LINE 297:
+  295:             for (const auto &function : functions)
+  296:             {
+  297:                 existingStarts.insert(function.start);
+  298:             }
+  299: 
+  300:             auto isExecutableAddress = [&](uint32_t address) -> bool
+
+SOURCE REGION AROUND LINE 341:
+  339:                 for (const auto &function : functions)
+  340:                 {
+  341:                     if (address < function.start || address >= function.end)
+  342:                     {
+  343:                         continue;
+  344:                     }
+
+SOURCE REGION AROUND LINE 351:
+  349:                     }
+  350: 
+  351:                     auto decodedIt = decodedFunctions.find(function.start);
+  352:                     if (decodedIt == decodedFunctions.end())
+  353:                     {
+  354:                         continue;
+
+SOURCE REGION AROUND LINE 352:
+  350: 
+  351:                     auto decodedIt = decodedFunctions.find(function.start);
+  352:                     if (decodedIt == decodedFunctions.end())
+  353:                     {
+  354:                         continue;
+  355:                     }
+
+SOURCE REGION AROUND LINE 366:
+  364:                     }
+  365: 
+  366:                     if (!best || function.start > best->start)
+  367:                     {
+  368:                         best = &function;
+  369:                     }
+
+SOURCE REGION AROUND LINE 406:
+  404:                     if (const Function *containingFunction = findContainingFunction(target))
+  405:                     {
+  406:                         pending.containingStart = containingFunction->start;
+  407:                         pending.containingEnd = containingFunction->end;
+  408:                     }
+  409: 
+
+SOURCE REGION AROUND LINE 434:
+  432:                     }
+  433: 
+  434:                     auto decodedIt = decodedFunctions.find(function.start);
+  435:                     if (decodedIt == decodedFunctions.end())
+  436:                     {
+  437:                         continue;
+
+SOURCE REGION AROUND LINE 435:
+  433: 
+  434:                     auto decodedIt = decodedFunctions.find(function.start);
+  435:                     if (decodedIt == decodedFunctions.end())
+  436:                     {
+  437:                         continue;
+  438:                     }
+
+SOURCE REGION AROUND LINE 500:
+  498:                     name << "entry_" << std::hex << target;
+  499:                     entryFunction.name = name.str();
+  500:                     entryFunction.start = target;
+  501:                     entryFunction.isStub = false;
+  502:                     entryFunction.isSkipped = false;
+  503:                     entryFunction.isRecompiled = true;
+
+SOURCE REGION AROUND LINE 507:
+  505:                     if (pending.containingStart.has_value())
+  506:                     {
+  507:                         auto containingDecodedIt = decodedFunctions.find(*pending.containingStart);
+  508:                         if (containingDecodedIt == decodedFunctions.end())
+  509:                         {
+  510:                             continue;
+
+SOURCE REGION AROUND LINE 508:
+  506:                     {
+  507:                         auto containingDecodedIt = decodedFunctions.find(*pending.containingStart);
+  508:                         if (containingDecodedIt == decodedFunctions.end())
+  509:                         {
+  510:                             continue;
+  511:                         }
+
+SOURCE REGION AROUND LINE 593:
+  591: 
+  592:                 stats.discoveredCount += newEntries.size();
+  593:                 functions.insert(functions.end(), newEntries.begin(), newEntries.end());
+  594:                 existingStarts.insert(successfulStarts.begin(), successfulStarts.end());
+  595:                 std::sort(functions.begin(), functions.end(),
+  596:                           [](const Function &a, const Function &b)
+
+SOURCE REGION AROUND LINE 595:
+  593:                 functions.insert(functions.end(), newEntries.begin(), newEntries.end());
+  594:                 existingStarts.insert(successfulStarts.begin(), successfulStarts.end());
+  595:                 std::sort(functions.begin(), functions.end(),
+  596:                           [](const Function &a, const Function &b)
+  597:                           { return a.start < b.start; });
+  598:             }
+
+SOURCE REGION AROUND LINE 607:
+  605:         {
+  606:             std::vector<uint32_t> boundaryStarts;
+  607:             boundaryStarts.reserve(functions.size());
+  608:             for (const auto &function : functions)
+  609:             {
+  610:                 if (!function.isRecompiled || function.isStub || function.isSkipped)
+
+SOURCE REGION AROUND LINE 614:
+  612:                     continue;
+  613:                 }
+  614:                 boundaryStarts.push_back(function.start);
+  615:             }
+  616: 
+  617:             std::sort(boundaryStarts.begin(), boundaryStarts.end());
+
+SOURCE REGION AROUND LINE 635:
+  633:                     }
+  634: 
+  635:                     if (address < function.start || address >= function.end)
+  636:                     {
+  637:                         continue;
+  638:                     }
+
+SOURCE REGION AROUND LINE 640:
+  638:                     }
+  639: 
+  640:                     auto decodedIt = decodedFunctions.find(function.start);
+  641:                     if (decodedIt == decodedFunctions.end())
+  642:                     {
+  643:                         continue;
+
+SOURCE REGION AROUND LINE 641:
+  639: 
+  640:                     auto decodedIt = decodedFunctions.find(function.start);
+  641:                     if (decodedIt == decodedFunctions.end())
+  642:                     {
+  643:                         continue;
+  644:                     }
+
+SOURCE REGION AROUND LINE 655:
+  653:                     }
+  654: 
+  655:                     if (!best || function.start > best->start)
+  656:                     {
+  657:                         best = &function;
+  658:                     }
+
+SOURCE REGION AROUND LINE 677:
+  675:                 }
+  676: 
+  677:                 const Function *containingFunction = findContainingFunction(function.start);
+  678:                 uint32_t sliceEndAddress = containingFunction ? containingFunction->end : function.end;
+  679:                 auto nextIt = std::upper_bound(boundaryStarts.begin(), boundaryStarts.end(), function.start);
+  680:                 if (nextIt != boundaryStarts.end() && *nextIt < sliceEndAddress)
+
+SOURCE REGION AROUND LINE 679:
+  677:                 const Function *containingFunction = findContainingFunction(function.start);
+  678:                 uint32_t sliceEndAddress = containingFunction ? containingFunction->end : function.end;
+  679:                 auto nextIt = std::upper_bound(boundaryStarts.begin(), boundaryStarts.end(), function.start);
+  680:                 if (nextIt != boundaryStarts.end() && *nextIt < sliceEndAddress)
+  681:                 {
+  682:                     sliceEndAddress = *nextIt;
+
+SOURCE REGION AROUND LINE 685:
+  683:                 }
+  684: 
+  685:                 if (sliceEndAddress <= function.start)
+  686:                 {
+  687:                     continue;
+  688:                 }
+
+SOURCE REGION AROUND LINE 693:
+  691:                 if (containingFunction)
+  692:                 {
+  693:                     auto containingDecodedIt = decodedFunctions.find(containingFunction->start);
+  694:                     if (containingDecodedIt == decodedFunctions.end())
+  695:                     {
+  696:                         continue;
+
+SOURCE REGION AROUND LINE 694:
+  692:                 {
+  693:                     auto containingDecodedIt = decodedFunctions.find(containingFunction->start);
+  694:                     if (containingDecodedIt == decodedFunctions.end())
+  695:                     {
+  696:                         continue;
+  697:                     }
+
+SOURCE REGION AROUND LINE 702:
+  700:                 else
+  701:                 {
+  702:                     auto entryDecodedIt = decodedFunctions.find(function.start);
+  703:                     if (entryDecodedIt == decodedFunctions.end())
+  704:                     {
+  705:                         continue;
+
+SOURCE REGION AROUND LINE 703:
+  701:                 {
+  702:                     auto entryDecodedIt = decodedFunctions.find(function.start);
+  703:                     if (entryDecodedIt == decodedFunctions.end())
+  704:                     {
+  705:                         continue;
+  706:                     }
+
+SOURCE REGION AROUND LINE 712:
+  710:                 auto sliceBeginIt = std::find_if(sourceInstructions->begin(), sourceInstructions->end(),
+  711:                                                  [&](const Instruction &candidate)
+  712:                                                  { return candidate.address == function.start; });
+  713:                 if (sliceBeginIt == sourceInstructions->end())
+  714:                 {
+  715:                     continue;
+
+SOURCE REGION AROUND LINE 728:
+  726:                 std::vector<Instruction> slicedInstructions(sliceBeginIt, sliceEndIt);
+  727:                 bool changed = (function.end != sliceEndAddress);
+  728:                 auto existingIt = decodedFunctions.find(function.start);
+  729:                 if (existingIt == decodedFunctions.end())
+  730:                 {
+  731:                     changed = true;
+
+SOURCE REGION AROUND LINE 729:
+  727:                 bool changed = (function.end != sliceEndAddress);
+  728:                 auto existingIt = decodedFunctions.find(function.start);
+  729:                 if (existingIt == decodedFunctions.end())
+  730:                 {
+  731:                     changed = true;
+  732:                 }
+
+SOURCE REGION AROUND LINE 751:
+  749: 
+  750:                 function.end = sliceEndAddress;
+  751:                 decodedFunctions[function.start] = std::move(slicedInstructions);
+  752: 
+  753:                 if (changed)
+  754:                 {
+
+SOURCE REGION AROUND LINE 768:
+  766:             std::unordered_map<uint32_t, std::vector<uint32_t>> &targetsByOwner)
+  767:         {
+  768:             std::unordered_set<uint32_t> functionStarts;
+  769:             functionStarts.reserve(functions.size());
+  770:             for (const auto &function : functions)
+  771:             {
+
+SOURCE REGION AROUND LINE 769:
+  767:         {
+  768:             std::unordered_set<uint32_t> functionStarts;
+  769:             functionStarts.reserve(functions.size());
+  770:             for (const auto &function : functions)
+  771:             {
+  772:                 functionStarts.insert(function.start);
+
+SOURCE REGION AROUND LINE 772:
+  770:             for (const auto &function : functions)
+  771:             {
+  772:                 functionStarts.insert(function.start);
+  773:             }
+  774: 
+  775:             size_t addedCount = 0u;
+
+SOURCE REGION AROUND LINE 778:
+  776:             for (uint32_t entryAddress : entryAddresses)
+  777:             {
+  778:                 if (functionStarts.contains(entryAddress))
+  779:                 {
+  780:                     continue;
+  781:                 }
+
+SOURCE REGION AROUND LINE 787:
+  785:                 {
+  786:                     if (!function.isRecompiled || function.isStub || function.isSkipped ||
+  787:                         entryAddress <= function.start || entryAddress >= function.end)
+  788:                     {
+  789:                         continue;
+  790:                     }
+
+SOURCE REGION AROUND LINE 792:
+  790:                     }
+  791: 
+  792:                     const auto decodedIt = decodedFunctions.find(function.start);
+  793:                     if (decodedIt == decodedFunctions.end())
+  794:                     {
+  795:                         continue;
+
+SOURCE REGION AROUND LINE 793:
+  791: 
+  792:                     const auto decodedIt = decodedFunctions.find(function.start);
+  793:                     if (decodedIt == decodedFunctions.end())
+  794:                     {
+  795:                         continue;
+  796:                     }
+
+SOURCE REGION AROUND LINE 805:
+  803:                     }
+  804: 
+  805:                     if (!owner || function.start > owner->start)
+  806:                     {
+  807:                         owner = &function;
+  808:                     }
+
+SOURCE REGION AROUND LINE 852:
+  850:             if (!function.isRecompiled || function.isStub || function.isSkipped)
+  851:                 continue;
+  852:             const auto decodedIt = decodedFunctions.find(function.start);
+  853:             if (decodedIt == decodedFunctions.end())
+  854:                 continue;
+  855:             const auto &instructions = decodedIt->second;
+
+SOURCE REGION AROUND LINE 853:
+  851:                 continue;
+  852:             const auto decodedIt = decodedFunctions.find(function.start);
+  853:             if (decodedIt == decodedFunctions.end())
+  854:                 continue;
+  855:             const auto &instructions = decodedIt->second;
+  856:             std::vector<uint32_t> *targets = nullptr;
+
+SOURCE REGION AROUND LINE 862:
+  860:                     continue;
+  861:                 const Instruction &candidate = instructions[i + 2];
+  862:                 // Padding between functions is zero words; a routine never starts with one.
+  863:                 if (candidate.raw == 0u || candidate.address == function.start)
+  864:                     continue;
+  865:                 if (!targets)
+
+SOURCE REGION AROUND LINE 863:
+  861:                 const Instruction &candidate = instructions[i + 2];
+  862:                 // Padding between functions is zero words; a routine never starts with one.
+  863:                 if (candidate.raw == 0u || candidate.address == function.start)
+  864:                     continue;
+  865:                 if (!targets)
+  866:                     targets = &targetsByOwner[function.start];
+
+SOURCE REGION AROUND LINE 866:
+  864:                     continue;
+  865:                 if (!targets)
+  866:                     targets = &targetsByOwner[function.start];
+  867:                 if (std::find(targets->begin(), targets->end(), candidate.address) == targets->end())
+  868:                 {
+  869:                     targets->push_back(candidate.address);
+
+SOURCE REGION AROUND LINE 896:
+  894:             m_reporter.progress("parsing config");
+  895:             m_config = m_configManager.loadConfig();
+  896:             m_skipFunctions.clear();
+  897:             m_skipFunctionStarts.clear();
+  898:             m_stubFunctions.clear();
+  899:             m_stubFunctionStarts.clear();
+
+SOURCE REGION AROUND LINE 897:
+  895:             m_config = m_configManager.loadConfig();
+  896:             m_skipFunctions.clear();
+  897:             m_skipFunctionStarts.clear();
+  898:             m_stubFunctions.clear();
+  899:             m_stubFunctionStarts.clear();
+  900:             m_stubHandlerBindingsByStart.clear();
+
+SOURCE REGION AROUND LINE 898:
+  896:             m_skipFunctions.clear();
+  897:             m_skipFunctionStarts.clear();
+  898:             m_stubFunctions.clear();
+  899:             m_stubFunctionStarts.clear();
+  900:             m_stubHandlerBindingsByStart.clear();
+  901:             m_entryPointHintStarts.clear();
+
+SOURCE REGION AROUND LINE 899:
+  897:             m_skipFunctionStarts.clear();
+  898:             m_stubFunctions.clear();
+  899:             m_stubFunctionStarts.clear();
+  900:             m_stubHandlerBindingsByStart.clear();
+  901:             m_entryPointHintStarts.clear();
+  902:             m_correctnessCriticalFunctionStarts.clear();
+
+SOURCE REGION AROUND LINE 902:
+  900:             m_stubHandlerBindingsByStart.clear();
+  901:             m_entryPointHintStarts.clear();
+  902:             m_correctnessCriticalFunctionStarts.clear();
+  903: 
+  904:             for (const auto &name : m_config.skipFunctions)
+  905:             {
+
+SOURCE REGION AROUND LINE 913:
+  911:                 if (selector.start.has_value())
+  912:                 {
+  913:                     m_skipFunctionStarts.insert(*selector.start);
+  914:                 }
+  915:             }
+  916:             for (const auto &name : m_config.stubImplementations)
+
+SOURCE REGION AROUND LINE 921:
+  919:                 if (!selector.name.empty())
+  920:                 {
+  921:                     m_stubFunctions.insert(selector.name);
+  922:                 }
+  923:                 if (selector.start.has_value())
+  924:                 {
+
+SOURCE REGION AROUND LINE 925:
+  923:                 if (selector.start.has_value())
+  924:                 {
+  925:                     m_stubFunctionStarts.insert(*selector.start);
+  926:                     if (!selector.name.empty())
+  927:                     {
+  928:                         auto bindingIt = m_stubHandlerBindingsByStart.find(*selector.start);
+
+SOURCE REGION AROUND LINE 966:
+  964:             }
+  965: 
+  966:             m_functions = m_elfParser->extractFunctions();
+  967:             m_symbols = m_elfParser->extractSymbols();
+  968:             m_sections = m_elfParser->getSections();
+  969:             m_relocations = m_elfParser->getRelocations();
+
+SOURCE REGION AROUND LINE 970:
+  968:             m_sections = m_elfParser->getSections();
+  969:             m_relocations = m_elfParser->getRelocations();
+  970:             collectCorrectnessCriticalFunctionStarts();
+  971: 
+  972:             if (m_functions.empty())
+  973:             {
+
+SOURCE REGION AROUND LINE 972:
+  970:             collectCorrectnessCriticalFunctionStarts();
+  971: 
+  972:             if (m_functions.empty())
+  973:             {
+  974:                 m_reporter.error("elf", "No functions found in ELF file.");
+  975:                 return false;
+
+SOURCE REGION AROUND LINE 1039:
+ 1037:             }
+ 1038: 
+ 1039:             m_reporter.recordDiscovered(m_functions.size(), m_symbols.size(), m_sections.size(), m_relocations.size());
+ 1040:             {
+ 1041:                 std::ostringstream msg;
+ 1042:                 msg << "extracted " << m_functions.size() << " functions, "
+
+SOURCE REGION AROUND LINE 1042:
+ 1040:             {
+ 1041:                 std::ostringstream msg;
+ 1042:                 msg << "extracted " << m_functions.size() << " functions, "
+ 1043:                     << m_symbols.size() << " symbols, "
+ 1044:                     << m_sections.size() << " sections, "
+ 1045:                     << m_relocations.size() << " relocations";
+
+SOURCE REGION AROUND LINE 1093:
+ 1091:             {
+ 1092:                 std::ostringstream msg;
+ 1093:                 msg << "recompiling " << m_functions.size() << " functions";
+ 1094:                 m_reporter.progress(msg.str());
+ 1095:             }
+ 1096: 
+
+SOURCE REGION AROUND LINE 1101:
+ 1099:             size_t correctnessCriticalFailureCount = 0;
+ 1100: 
+ 1101:             for (uint32_t initializerStart : m_correctnessCriticalFunctionStarts)
+ 1102:             {
+ 1103:                 const auto functionIt = std::find_if(
+ 1104:                     m_functions.begin(), m_functions.end(),
+
+SOURCE REGION AROUND LINE 1104:
+ 1102:             {
+ 1103:                 const auto functionIt = std::find_if(
+ 1104:                     m_functions.begin(), m_functions.end(),
+ 1105:                     [initializerStart](const Function &function)
+ 1106:                     { return function.start == initializerStart; });
+ 1107:                 if (functionIt == m_functions.end())
+
+SOURCE REGION AROUND LINE 1106:
+ 1104:                     m_functions.begin(), m_functions.end(),
+ 1105:                     [initializerStart](const Function &function)
+ 1106:                     { return function.start == initializerStart; });
+ 1107:                 if (functionIt == m_functions.end())
+ 1108:                 {
+ 1109:                     const auto bindingIt = m_stubHandlerBindingsByStart.find(initializerStart);
+
+SOURCE REGION AROUND LINE 1107:
+ 1105:                     [initializerStart](const Function &function)
+ 1106:                     { return function.start == initializerStart; });
+ 1107:                 if (functionIt == m_functions.end())
+ 1108:                 {
+ 1109:                     const auto bindingIt = m_stubHandlerBindingsByStart.find(initializerStart);
+ 1110:                     if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+
+SOURCE REGION AROUND LINE 1117:
+ 1115:                         manualInitializer.start = initializerStart;
+ 1116:                         manualInitializer.end = initializerStart + 4u;
+ 1117:                         m_functions.push_back(std::move(manualInitializer));
+ 1118:                         m_reporter.info(
+ 1119:                             "correctness-critical",
+ 1120:                             "Synthesized initializer entry for resolved handler '" +
+
+SOURCE REGION AROUND LINE 1145:
+ 1143:                 // Only recompiled guest code can already reach this address; a stubbed owner emits none.
+ 1144:                 const bool covered = std::any_of(
+ 1145:                     m_functions.begin(), m_functions.end(),
+ 1146:                     [&](const Function &function)
+ 1147:                     {
+ 1148:                         return stubStart >= function.start &&
+
+SOURCE REGION AROUND LINE 1148:
+ 1146:                     [&](const Function &function)
+ 1147:                     {
+ 1148:                         return stubStart >= function.start &&
+ 1149:                                stubStart < std::max(function.end, function.start + 4u) &&
+ 1150:                                (function.start == stubStart || !isStubFunction(function));
+ 1151:                     });
+
+SOURCE REGION AROUND LINE 1149:
+ 1147:                     {
+ 1148:                         return stubStart >= function.start &&
+ 1149:                                stubStart < std::max(function.end, function.start + 4u) &&
+ 1150:                                (function.start == stubStart || !isStubFunction(function));
+ 1151:                     });
+ 1152:                 if (covered)
+
+SOURCE REGION AROUND LINE 1150:
+ 1148:                         return stubStart >= function.start &&
+ 1149:                                stubStart < std::max(function.end, function.start + 4u) &&
+ 1150:                                (function.start == stubStart || !isStubFunction(function));
+ 1151:                     });
+ 1152:                 if (covered)
+ 1153:                 {
+
+SOURCE REGION AROUND LINE 1160:
+ 1158:                 stubEntry.start = stubStart;
+ 1159:                 stubEntry.end = stubStart + 4u;
+ 1160:                 m_functions.push_back(std::move(stubEntry));
+ 1161:                 m_reporter.info("stub", "Synthesized entry for undiscovered stub '" + handlerName + "'");
+ 1162:             }
+ 1163: 
+
+SOURCE REGION AROUND LINE 1164:
+ 1162:             }
+ 1163: 
+ 1164:             for (auto &function : m_functions)
+ 1165:             {
+ 1166:                 m_reporter.recordFunctionProcessed();
+ 1167:                 const bool correctnessCritical = isCorrectnessCriticalFunction(function);
+
+SOURCE REGION AROUND LINE 1186:
+ 1184:                         "stub",
+ 1185:                         function.name,
+ 1186:                         function.start,
+ 1187:                         "Configured stub has no runtime handler; recompiling the original guest function");
+ 1188:                 }
+ 1189: 
+
+SOURCE REGION AROUND LINE 1204:
+ 1202:                         "correctness-critical",
+ 1203:                         function.name,
+ 1204:                         function.start,
+ 1205:                         "Initializer skip ignored; recompiling the original guest function");
+ 1206:                 }
+ 1207: 
+
+SOURCE REGION AROUND LINE 1221:
+ 1219:                             "correctness-critical",
+ 1220:                             function.name,
+ 1221:                             function.start,
+ 1222:                             "Initializer could not be recompiled and has no resolved manual handler");
+ 1223:                     }
+ 1224:                     else
+
+SOURCE REGION AROUND LINE 1226:
+ 1224:                     else
+ 1225:                     {
+ 1226:                         m_reporter.warningAt("decode", function.name, function.start, "Skipping function due decode failure");
+ 1227:                     }
+ 1228:                     continue;
+ 1229:                 }
+
+SOURCE REGION AROUND LINE 1284:
+ 1282:                 {
+ 1283:                     std::stringstream expectedStartName;
+ 1284:                     expectedStartName << "entry_" << std::hex << function.start;
+ 1285:                     if (sanitized == expectedStartName.str())
+ 1286:                     {
+ 1287:                         std::stringstream entryName;
+
+SOURCE REGION AROUND LINE 1294:
+ 1292: 
+ 1293:                 std::stringstream ss;
+ 1294:                 ss << sanitized << "_0x" << std::hex << function.start;
+ 1295:                 return ss.str();
+ 1296:             };
+ 1297: 
+
+SOURCE REGION AROUND LINE 1298:
+ 1296:             };
+ 1297: 
+ 1298:             for (const auto &function : m_functions)
+ 1299:             {
+ 1300:                 if (!shouldGenerateCodeForFunction(function))
+ 1301:                     continue;
+
+SOURCE REGION AROUND LINE 1303:
+ 1301:                     continue;
+ 1302: 
+ 1303:                 m_functionRenames[function.start] = makeName(function);
+ 1304:             }
+ 1305: 
+ 1306:             if (m_codeGenerator)
+
+SOURCE REGION AROUND LINE 1313:
+ 1311:             if (m_bootstrapInfo.valid && m_codeGenerator)
+ 1312:             {
+ 1313:                 auto entryIt = std::find_if(m_functions.begin(), m_functions.end(),
+ 1314:                                             [&](const Function &fn)
+ 1315:                                             { return fn.start == m_bootstrapInfo.entry; });
+ 1316:                 if (entryIt != m_functions.end())
+
+SOURCE REGION AROUND LINE 1316:
+ 1314:                                             [&](const Function &fn)
+ 1315:                                             { return fn.start == m_bootstrapInfo.entry; });
+ 1316:                 if (entryIt != m_functions.end())
+ 1317:                 {
+ 1318:                     auto renameIt = m_functionRenames.find(entryIt->start);
+ 1319:                     if (renameIt != m_functionRenames.end())
+
+SOURCE REGION AROUND LINE 1318:
+ 1316:                 if (entryIt != m_functions.end())
+ 1317:                 {
+ 1318:                     auto renameIt = m_functionRenames.find(entryIt->start);
+ 1319:                     if (renameIt != m_functionRenames.end())
+ 1320:                     {
+ 1321:                         m_bootstrapInfo.entryName = renameIt->second;
+
+SOURCE REGION AROUND LINE 1333:
+ 1331: 
+ 1332:             m_generatedStubs.clear();
+ 1333:             for (const auto &function : m_functions)
+ 1334:             {
+ 1335:                 if (function.isStub || function.isSkipped)
+ 1336:                 {
+
+SOURCE REGION AROUND LINE 1337:
+ 1335:                 if (function.isStub || function.isSkipped)
+ 1336:                 {
+ 1337:                     std::string generatedName = m_codeGenerator->getFunctionName(function.start);
+ 1338:                     std::stringstream stub;
+ 1339:                     stub << "void " << generatedName
+ 1340:                          << "(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {\n";
+
+SOURCE REGION AROUND LINE 1354:
+ 1352:                     {
+ 1353:                         std::string dispatchName = function.name;
+ 1354:                         const auto bindingIt = m_stubHandlerBindingsByStart.find(function.start);
+ 1355:                         if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+ 1356:                             !bindingIt->second.empty())
+ 1357:                         {
+
+SOURCE REGION AROUND LINE 1382:
+ 1380: 
+ 1381:                     stub << "\n}";
+ 1382:                     m_generatedStubs[function.start] = stub.str();
+ 1383:                 }
+ 1384:             }
+ 1385: 
+
+SOURCE REGION AROUND LINE 1392:
+ 1390: 
+ 1391:             std::vector<const Function *> outputFunctions;
+ 1392:             outputFunctions.reserve(m_functions.size());
+ 1393:             for (const auto &function : m_functions)
+ 1394:             {
+ 1395:                 if (shouldGenerateCodeForFunction(function))
+
+SOURCE REGION AROUND LINE 1393:
+ 1391:             std::vector<const Function *> outputFunctions;
+ 1392:             outputFunctions.reserve(m_functions.size());
+ 1393:             for (const auto &function : m_functions)
+ 1394:             {
+ 1395:                 if (shouldGenerateCodeForFunction(function))
+ 1396:                 {
+
+SOURCE REGION AROUND LINE 1397:
+ 1395:                 if (shouldGenerateCodeForFunction(function))
+ 1396:                 {
+ 1397:                     outputFunctions.push_back(&function);
+ 1398:                 }
+ 1399:             }
+ 1400: 
+
+SOURCE REGION AROUND LINE 1401:
+ 1399:             }
+ 1400: 
+ 1401:             m_reporter.recordGeneratedFunctions(outputFunctions.size());
+ 1402: 
+ 1403:             const size_t outputWorkerCount = m_config.lowMemoryMode ? 1 : resolveOutputWorkerCount(m_config.outputWorkerThreads);
+ 1404:             if (outputFunctions.size() > 1 && outputWorkerCount > 1)
+
+SOURCE REGION AROUND LINE 1404:
+ 1402: 
+ 1403:             const size_t outputWorkerCount = m_config.lowMemoryMode ? 1 : resolveOutputWorkerCount(m_config.outputWorkerThreads);
+ 1404:             if (outputFunctions.size() > 1 && outputWorkerCount > 1)
+ 1405:             {
+ 1406:                 {
+ 1407:                     std::ostringstream msg;
+
+SOURCE REGION AROUND LINE 1424:
+ 1422:                         if (!useHeaders)
+ 1423:                         {
+ 1424:                             return generatedStubs.at(function.start);
+ 1425:                         }
+ 1426: 
+ 1427:                         std::stringstream stubFile;
+
+SOURCE REGION AROUND LINE 1435:
+ 1433:                         stubFile << "#endif\n";
+ 1434:                         stubFile << "\n";
+ 1435:                         stubFile << generatedStubs.at(function.start) << "\n";
+ 1436:                         return stubFile.str();
+ 1437:                     }
+ 1438: 
+
+SOURCE REGION AROUND LINE 1439:
+ 1437:                     }
+ 1438: 
+ 1439:                     const auto &instructions = decodedFunctions.at(function.start);
+ 1440:                     return codeGenerator.generateFunction(function, instructions, useHeaders);
+ 1441:                 }
+ 1442:                 catch (const std::exception &e)
+
+SOURCE REGION AROUND LINE 1447:
+ 1445:                         std::ostringstream msg;
+ 1446:                         msg << "Error generating code: " << e.what();
+ 1447:                         m_reporter.errorAt("codegen", function.name, function.start, msg.str());
+ 1448:                     }
+ 1449:                     throw;
+ 1450:                 }
+
+SOURCE REGION AROUND LINE 1455:
+ 1453:             if (m_config.singleFileOutput)
+ 1454:             {
+ 1455:                 fs::path outputPath = fs::path(m_config.outputPath) / "ps2_recompiled_functions.cpp";
+ 1456:                 std::ofstream combinedOutput(outputPath);
+ 1457:                 if (!combinedOutput)
+ 1458:                 {
+
+SOURCE REGION AROUND LINE 1567:
+ 1565:                         {
+ 1566:                             std::lock_guard<std::mutex> lock(outputMutex);
+ 1567:                             while (nextFunction < outputFunctions.size() &&
+ 1568:                                    outstandingWork + completedCode.size() < maxBufferedOutput &&
+ 1569:                                    !stopWorkers)
+ 1570:                             {
+
+SOURCE REGION AROUND LINE 1608:
+ 1606:                         scheduleAvailableWork();
+ 1607: 
+ 1608:                         while (nextOutputIndex < outputFunctions.size())
+ 1609:                         {
+ 1610:                             std::unique_lock<std::mutex> lock(outputMutex);
+ 1611:                             resultAvailable.wait(lock, [&]()
+
+SOURCE REGION AROUND LINE 1612:
+ 1610:                             std::unique_lock<std::mutex> lock(outputMutex);
+ 1611:                             resultAvailable.wait(lock, [&]()
+ 1612:                                                  { return workerException || !readyCode.empty() || (outstandingWork == 0 && nextFunction >= outputFunctions.size()); });
+ 1613: 
+ 1614:                             if (workerException)
+ 1615:                             {
+
+SOURCE REGION AROUND LINE 1632:
+ 1630:                             scheduleAvailableWork();
+ 1631: 
+ 1632:                             if (nextOutputIndex >= outputFunctions.size())
+ 1633:                             {
+ 1634:                                 break;
+ 1635:                             }
+
+SOURCE REGION AROUND LINE 1638:
+ 1636: 
+ 1637:                             std::lock_guard<std::mutex> finalLock(outputMutex);
+ 1638:                             if (outstandingWork == 0 && nextFunction >= outputFunctions.size() && completedCode.empty())
+ 1639:                             {
+ 1640:                                 throw std::runtime_error("Internal error: combined output completion queue is missing index " + std::to_string(nextOutputIndex));
+ 1641:                             }
+
+SOURCE REGION AROUND LINE 1674:
+ 1672: 
+ 1673:                 std::vector<fs::path> outputPaths;
+ 1674:                 outputPaths.reserve(outputFunctions.size());
+ 1675:                 for (const Function *function : outputFunctions)
+ 1676:                 {
+ 1677:                     outputPaths.push_back(getOutputPath(*function));
+
+SOURCE REGION AROUND LINE 1696:
+ 1694:                 if (outputWorkerCount <= 1)
+ 1695:                 {
+ 1696:                     for (size_t outputIndex = 0; outputIndex < outputFunctions.size(); ++outputIndex)
+ 1697:                     {
+ 1698:                         writeGeneratedFile(generateFile(*m_codeGenerator, outputIndex));
+ 1699:                     }
+
+SOURCE REGION AROUND LINE 1788:
+ 1786:                         {
+ 1787:                             std::lock_guard<std::mutex> lock(outputMutex);
+ 1788:                             while (nextFunction < outputFunctions.size() &&
+ 1789:                                    outstandingWork < maxBufferedOutput &&
+ 1790:                                    !stopWorkers)
+ 1791:                             {
+
+SOURCE REGION AROUND LINE 1804:
+ 1802: 
+ 1803:                         size_t writtenCount = 0;
+ 1804:                         while (writtenCount < outputFunctions.size())
+ 1805:                         {
+ 1806:                             std::unique_lock<std::mutex> lock(outputMutex);
+ 1807:                             resultAvailable.wait(lock, [&]()
+
+SOURCE REGION AROUND LINE 1808:
+ 1806:                             std::unique_lock<std::mutex> lock(outputMutex);
+ 1807:                             resultAvailable.wait(lock, [&]()
+ 1808:                                                  { return workerException || !readyFiles.empty() || (outstandingWork == 0 && nextFunction >= outputFunctions.size()); });
+ 1809: 
+ 1810:                             if (workerException)
+ 1811:                             {
+
+SOURCE REGION AROUND LINE 1847:
+ 1845:             }
+ 1846: 
+ 1847:             m_decodedFunctions.clear();
+ 1848: 
+ 1849:             std::string registerFunctions = m_codeGenerator->generateFunctionRegistration(m_functions, m_generatedStubs);
+ 1850:             m_generatedStubs.clear();
+
+SOURCE REGION AROUND LINE 1849:
+ 1847:             m_decodedFunctions.clear();
+ 1848: 
+ 1849:             std::string registerFunctions = m_codeGenerator->generateFunctionRegistration(m_functions, m_generatedStubs);
+ 1850:             m_generatedStubs.clear();
+ 1851: 
+ 1852:             fs::path registerPath = fs::path(m_config.outputPath) / "register_functions.cpp";
+
+SOURCE REGION AROUND LINE 1852:
+ 1850:             m_generatedStubs.clear();
+ 1851: 
+ 1852:             fs::path registerPath = fs::path(m_config.outputPath) / "register_functions.cpp";
+ 1853:             if (!writeToFile(registerPath.string(), registerFunctions))
+ 1854:             {
+ 1855:                 throw std::runtime_error("Failed to write function registration file: " + registerPath.string());
+
+SOURCE REGION AROUND LINE 1890:
+ 1888: 
+ 1889:             std::unordered_set<std::string> stubNames;
+ 1890:             for (const auto &function : m_functions)
+ 1891:             {
+ 1892:                 if (!function.isStub && !function.isSkipped)
+ 1893:                 {
+
+SOURCE REGION AROUND LINE 1897:
+ 1895:                 }
+ 1896: 
+ 1897:                 const std::string generatedName = m_codeGenerator->getFunctionName(function.start);
+ 1898:                 if (generatedName.empty())
+ 1899:                 {
+ 1900:                     continue;
+
+SOURCE REGION AROUND LINE 1944:
+ 1942:             ss << "class PS2Runtime;\n\n";
+ 1943: 
+ 1944:             for (const auto &function : m_functions)
+ 1945:             {
+ 1946:                 if (!shouldGenerateCodeForFunction(function))
+ 1947:                 {
+
+SOURCE REGION AROUND LINE 1951:
+ 1949:                 }
+ 1950: 
+ 1951:                 std::string finalName = m_codeGenerator->getFunctionName(function.start);
+ 1952: 
+ 1953:                 ss << "void " << finalName << "(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);\n";
+ 1954:             }
+
+SOURCE REGION AROUND LINE 1958:
+ 1956:             ss << "\n#endif // PS2_RECOMPILED_FUNCTIONS_H\n";
+ 1957: 
+ 1958:             fs::path headerPath = fs::path(m_config.outputPath) / "ps2_recompiled_functions.h";
+ 1959:             writeToFile(headerPath.string(), ss.str());
+ 1960: 
+ 1961:             {
+
+SOURCE REGION AROUND LINE 1984:
+ 1982: 
+ 1983:         std::unordered_set<uint32_t> guestFallbackEntryAddresses = m_entryPointHintStarts;
+ 1984:         for (uint32_t address : m_stubFunctionStarts)
+ 1985:         {
+ 1986:             const auto bindingIt = m_stubHandlerBindingsByStart.find(address);
+ 1987:             if (bindingIt == m_stubHandlerBindingsByStart.end() ||
+
+SOURCE REGION AROUND LINE 1998:
+ 1996:         // synthesize a standalone guest function bounded by the next known
+ 1997:         // function instead of leaving a valid executable target unregistered.
+ 1998:         collectInternalEntryTargetsImpl(m_functions, m_decodedFunctions, guestFallbackEntryAddresses, m_resumeEntryTargetsByOwner);
+ 1999: 
+ 2000:         std::unordered_set<uint32_t> coveredEntryAddresses;
+ 2001:         coveredEntryAddresses.reserve(m_functions.size() + guestFallbackEntryAddresses.size());
+
+SOURCE REGION AROUND LINE 2001:
+ 1999: 
+ 2000:         std::unordered_set<uint32_t> coveredEntryAddresses;
+ 2001:         coveredEntryAddresses.reserve(m_functions.size() + guestFallbackEntryAddresses.size());
+ 2002:         for (const auto &function : m_functions)
+ 2003:         {
+ 2004:             coveredEntryAddresses.insert(function.start);
+
+SOURCE REGION AROUND LINE 2002:
+ 2000:         std::unordered_set<uint32_t> coveredEntryAddresses;
+ 2001:         coveredEntryAddresses.reserve(m_functions.size() + guestFallbackEntryAddresses.size());
+ 2002:         for (const auto &function : m_functions)
+ 2003:         {
+ 2004:             coveredEntryAddresses.insert(function.start);
+ 2005:         }
+
+SOURCE REGION AROUND LINE 2004:
+ 2002:         for (const auto &function : m_functions)
+ 2003:         {
+ 2004:             coveredEntryAddresses.insert(function.start);
+ 2005:         }
+ 2006:         for (const auto &[owner, targets] : m_resumeEntryTargetsByOwner)
+ 2007:         {
+
+SOURCE REGION AROUND LINE 2023:
+ 2021:         {
+ 2022:             const EntryDiscoveryStats configuredStats = discoverAdditionalEntryPointsImpl(
+ 2023:                 m_functions,
+ 2024:                 m_decodedFunctions,
+ 2025:                 m_sections,
+ 2026:                 nullptr,
+
+SOURCE REGION AROUND LINE 2043:
+ 2041:         {
+ 2042:             const Function *best = nullptr;
+ 2043:             for (const auto &function : m_functions)
+ 2044:             {
+ 2045:                 if (!function.isRecompiled || function.isStub || function.isSkipped)
+ 2046:                 {
+
+SOURCE REGION AROUND LINE 2055:
+ 2053:                 }
+ 2054: 
+ 2055:                 if (address < function.start || address >= function.end)
+ 2056:                 {
+ 2057:                     continue;
+ 2058:                 }
+
+SOURCE REGION AROUND LINE 2060:
+ 2058:                 }
+ 2059: 
+ 2060:                 auto decodedIt = m_decodedFunctions.find(function.start);
+ 2061:                 if (decodedIt == m_decodedFunctions.end())
+ 2062:                 {
+ 2063:                     continue;
+
+SOURCE REGION AROUND LINE 2061:
+ 2059: 
+ 2060:                 auto decodedIt = m_decodedFunctions.find(function.start);
+ 2061:                 if (decodedIt == m_decodedFunctions.end())
+ 2062:                 {
+ 2063:                     continue;
+ 2064:                 }
+
+SOURCE REGION AROUND LINE 2075:
+ 2073:                 }
+ 2074: 
+ 2075:                 if (!best || function.start > best->start)
+ 2076:                 {
+ 2077:                     best = &function;
+ 2078:                 }
+
+SOURCE REGION AROUND LINE 2087:
+ 2085:         // points, otherwise a thread switched out inside a call from them cannot be resumed.
+ 2086:         std::vector<std::pair<uint32_t, uint32_t>> ownerRanges;
+ 2087:         for (const auto &function : m_functions)
+ 2088:         {
+ 2089:             if (function.isRecompiled && !function.isStub && !function.isSkipped &&
+ 2090:                 !isEntryFunctionName(function.name) && function.end > function.start)
+
+SOURCE REGION AROUND LINE 2090:
+ 2088:         {
+ 2089:             if (function.isRecompiled && !function.isStub && !function.isSkipped &&
+ 2090:                 !isEntryFunctionName(function.name) && function.end > function.start)
+ 2091:             {
+ 2092:                 ownerRanges.emplace_back(function.start, function.end);
+ 2093:             }
+
+SOURCE REGION AROUND LINE 2092:
+ 2090:                 !isEntryFunctionName(function.name) && function.end > function.start)
+ 2091:             {
+ 2092:                 ownerRanges.emplace_back(function.start, function.end);
+ 2093:             }
+ 2094:         }
+ 2095:         std::sort(ownerRanges.begin(), ownerRanges.end());
+
+SOURCE REGION AROUND LINE 2115:
+ 2113:         };
+ 2114: 
+ 2115:         for (const auto &function : m_functions)
+ 2116:         {
+ 2117:             if (!function.isRecompiled || function.isStub || function.isSkipped)
+ 2118:             {
+
+SOURCE REGION AROUND LINE 2122:
+ 2120:             }
+ 2121: 
+ 2122:             if (isEntryFunctionName(function.name) && nestedInRealFunction(function.start))
+ 2123:             {
+ 2124:                 continue;
+ 2125:             }
+
+SOURCE REGION AROUND LINE 2127:
+ 2125:             }
+ 2126: 
+ 2127:             auto decodedIt = m_decodedFunctions.find(function.start);
+ 2128:             if (decodedIt == m_decodedFunctions.end())
+ 2129:             {
+ 2130:                 continue;
+
+SOURCE REGION AROUND LINE 2128:
+ 2126: 
+ 2127:             auto decodedIt = m_decodedFunctions.find(function.start);
+ 2128:             if (decodedIt == m_decodedFunctions.end())
+ 2129:             {
+ 2130:                 continue;
+ 2131:             }
+
+SOURCE REGION AROUND LINE 2135:
+ 2133:             const auto &instructions = decodedIt->second;
+ 2134:             CodeGenerator::AnalysisResult analysisResult =
+ 2135:                 m_codeGenerator->collectInternalBranchTargets(function, instructions, &m_functions);
+ 2136: 
+ 2137:             auto &ownerTargets = m_resumeEntryTargetsByOwner[function.start];
+ 2138:             ownerTargets.insert(ownerTargets.end(),
+
+SOURCE REGION AROUND LINE 2137:
+ 2135:                 m_codeGenerator->collectInternalBranchTargets(function, instructions, &m_functions);
+ 2136: 
+ 2137:             auto &ownerTargets = m_resumeEntryTargetsByOwner[function.start];
+ 2138:             ownerTargets.insert(ownerTargets.end(),
+ 2139:                                 analysisResult.resumeEntryPoints.begin(),
+ 2140:                                 analysisResult.resumeEntryPoints.end());
+
+SOURCE REGION AROUND LINE 2164:
+ 2162: 
+ 2163:         const size_t postTransferTargets =
+ 2164:             collectPostTransferEntryTargetsImpl(m_functions, m_decodedFunctions, m_resumeEntryTargetsByOwner);
+ 2165:         if (postTransferTargets > 0u)
+ 2166:         {
+ 2167:             std::ostringstream msg;
+
+SOURCE REGION AROUND LINE 2207:
+ 2205:         bool truncated = false;
+ 2206: 
+ 2207:         uint32_t start = function.start;
+ 2208:         uint32_t end = function.end;
+ 2209: 
+ 2210:         // A branch in the last word still owns the word after it: when the next function starts on that delay
+
+SOURCE REGION AROUND LINE 2210:
+ 2208:         uint32_t end = function.end;
+ 2209: 
+ 2210:         // A branch in the last word still owns the word after it: when the next function starts on that delay
+ 2211:         // slot, decode it here too so the branch executes the real instruction instead of a NOP.
+ 2212:         auto endsInBranch = [&](uint32_t address)
+ 2213:         {
+
+SOURCE REGION AROUND LINE 2291:
+ 2289:             {
+ 2290:                 std::ostringstream msg;
+ 2291:                 msg << "No decodable instructions found at 0x" << std::hex << function.start;
+ 2292:                 m_reporter.warningAt("decode", function.name, function.start, msg.str());
+ 2293:             }
+ 2294:             return false;
+
+SOURCE REGION AROUND LINE 2292:
+ 2290:                 std::ostringstream msg;
+ 2291:                 msg << "No decodable instructions found at 0x" << std::hex << function.start;
+ 2292:                 m_reporter.warningAt("decode", function.name, function.start, msg.str());
+ 2293:             }
+ 2294:             return false;
+ 2295:         }
+
+SOURCE REGION AROUND LINE 2302:
+ 2300:         }
+ 2301: 
+ 2302:         m_decodedFunctions.insert_or_assign(function.start, std::move(instructions));
+ 2303: 
+ 2304:         return true;
+ 2305:     }
+
+SOURCE REGION AROUND LINE 2309:
+ 2307:     bool PS2Recompiler::shouldSkipFunction(const Function &function) const
+ 2308:     {
+ 2309:         if (m_skipFunctionStarts.contains(function.start))
+ 2310:         {
+ 2311:             return true;
+ 2312:         }
+
+SOURCE REGION AROUND LINE 2314:
+ 2312:         }
+ 2313: 
+ 2314:         return m_skipFunctions.contains(function.name);
+ 2315:     }
+ 2316: 
+ 2317:     bool PS2Recompiler::isStubFunction(const Function &function) const
+
+SOURCE REGION AROUND LINE 2319:
+ 2317:     bool PS2Recompiler::isStubFunction(const Function &function) const
+ 2318:     {
+ 2319:         if (m_stubFunctionStarts.contains(function.start))
+ 2320:         {
+ 2321:             return true;
+ 2322:         }
+
+SOURCE REGION AROUND LINE 2324:
+ 2322:         }
+ 2323: 
+ 2324:         if (m_stubFunctions.contains(function.name))
+ 2325:         {
+ 2326:             return true;
+ 2327:         }
+
+SOURCE REGION AROUND LINE 2353:
+ 2351:     {
+ 2352:         return IsCorrectnessCriticalFunctionName(function.name) ||
+ 2353:                m_correctnessCriticalFunctionStarts.contains(function.start);
+ 2354:     }
+ 2355: 
+ 2356:     bool PS2Recompiler::hasResolvedStubHandler(const Function &function) const
+
+SOURCE REGION AROUND LINE 2359:
+ 2357:     {
+ 2358:         std::string handlerName = function.name;
+ 2359:         const auto bindingIt = m_stubHandlerBindingsByStart.find(function.start);
+ 2360:         if (bindingIt != m_stubHandlerBindingsByStart.end() && !bindingIt->second.empty())
+ 2361:             handlerName = bindingIt->second;
+ 2362:         return resolveStubTarget(handlerName) != StubTarget::Unknown;
+
+SOURCE REGION AROUND LINE 2365:
+ 2363:     }
+ 2364: 
+ 2365:     void PS2Recompiler::collectCorrectnessCriticalFunctionStarts()
+ 2366:     {
+ 2367:         m_correctnessCriticalFunctionStarts.clear();
+ 2368:         for (const Section &section : m_sections)
+
+SOURCE REGION AROUND LINE 2367:
+ 2365:     void PS2Recompiler::collectCorrectnessCriticalFunctionStarts()
+ 2366:     {
+ 2367:         m_correctnessCriticalFunctionStarts.clear();
+ 2368:         for (const Section &section : m_sections)
+ 2369:         {
+ 2370:             if (section.name != ".ctors" &&
+
+SOURCE REGION AROUND LINE 2384:
+ 2382:                 std::memcpy(&target, section.data + offset, sizeof(target));
+ 2383:                 if (target != 0u && target != 0xFFFFFFFFu)
+ 2384:                     m_correctnessCriticalFunctionStarts.insert(target);
+ 2385:             }
+ 2386:         }
+ 2387:     }
+
+SOURCE REGION AROUND LINE 2408:
+ 2406:         std::string safeName;
+ 2407:         bool usedRenamedName = false;
+ 2408:         auto renameIt = m_functionRenames.find(function.start);
+ 2409:         if (renameIt != m_functionRenames.end() && !renameIt->second.empty())
+ 2410:         {
+ 2411:             safeName = renameIt->second;
+
+SOURCE REGION AROUND LINE 2427:
+ 2425:         {
+ 2426:             std::stringstream ss;
+ 2427:             ss << "func_" << std::hex << function.start;
+ 2428:             safeName = ss.str();
+ 2429:         }
+ 2430: 
+
+SOURCE REGION AROUND LINE 2434:
+ 2432:         {
+ 2433:             std::stringstream suffix;
+ 2434:             suffix << "_0x" << std::hex << function.start;
+ 2435:             const std::string suffixText = suffix.str();
+ 2436:             if (safeName.size() < suffixText.size() ||
+ 2437:                 safeName.compare(safeName.size() - suffixText.size(), suffixText.size(), suffixText) != 0)
+
+=== PARSER OUTPUT / DOWNSTREAM REFERENCES ===
+
+PATTERN: extractFunctions\(
+  966: m_functions = m_elfParser->extractFunctions();
+MATCH COUNT SHOWN: 1
+
+PATTERN: m_functions
+  966: m_functions = m_elfParser->extractFunctions();
+  972: if (m_functions.empty())
+ 1039: m_reporter.recordDiscovered(m_functions.size(), m_symbols.size(), m_sections.size(), m_relocations.size());
+ 1042: msg << "extracted " << m_functions.size() << " functions, "
+ 1093: msg << "recompiling " << m_functions.size() << " functions";
+ 1104: m_functions.begin(), m_functions.end(),
+ 1107: if (functionIt == m_functions.end())
+ 1117: m_functions.push_back(std::move(manualInitializer));
+ 1145: m_functions.begin(), m_functions.end(),
+ 1160: m_functions.push_back(std::move(stubEntry));
+ 1164: for (auto &function : m_functions)
+ 1298: for (const auto &function : m_functions)
+ 1313: auto entryIt = std::find_if(m_functions.begin(), m_functions.end(),
+ 1316: if (entryIt != m_functions.end())
+ 1333: for (const auto &function : m_functions)
+ 1392: outputFunctions.reserve(m_functions.size());
+ 1393: for (const auto &function : m_functions)
+ 1849: std::string registerFunctions = m_codeGenerator->generateFunctionRegistration(m_functions, m_generatedStubs);
+ 1890: for (const auto &function : m_functions)
+ 1944: for (const auto &function : m_functions)
+ 1998: collectInternalEntryTargetsImpl(m_functions, m_decodedFunctions, guestFallbackEntryAddresses, m_resumeEntryTargetsByOwner);
+ 2001: coveredEntryAddresses.reserve(m_functions.size() + guestFallbackEntryAddresses.size());
+ 2002: for (const auto &function : m_functions)
+ 2023: m_functions,
+ 2043: for (const auto &function : m_functions)
+ 2087: for (const auto &function : m_functions)
+ 2115: for (const auto &function : m_functions)
+ 2135: m_codeGenerator->collectInternalBranchTargets(function, instructions, &m_functions);
+ 2164: collectPostTransferEntryTargetsImpl(m_functions, m_decodedFunctions, m_resumeEntryTargetsByOwner);
+MATCH COUNT SHOWN: 29
+
+PATTERN: collectCorrectnessCriticalFunctionStarts
+  970: collectCorrectnessCriticalFunctionStarts();
+ 2365: void PS2Recompiler::collectCorrectnessCriticalFunctionStarts()
+MATCH COUNT SHOWN: 2
+
+PATTERN: Function &
+   81: bool shouldGenerateCodeForFunction(const Function &function)
+  291: const std::function<bool(Function &)> &decodeExternalFunction,
+  596: [](const Function &a, const Function &b)
+ 1105: [initializerStart](const Function &function)
+ 1146: [&](const Function &function)
+ 1273: auto makeName = [&](const Function &function) -> std::string
+ 1314: [&](const Function &fn)
+ 1416: auto generateFunctionCode = [&](CodeGenerator &codeGenerator, const Function &function, bool useHeaders) -> std::string
+ 2027: [this](Function &function)
+ 2202: bool PS2Recompiler::decodeFunction(Function &function)
+ 2307: bool PS2Recompiler::shouldSkipFunction(const Function &function) const
+ 2317: bool PS2Recompiler::isStubFunction(const Function &function) const
+ 2350: bool PS2Recompiler::isCorrectnessCriticalFunction(const Function &function) const
+ 2356: bool PS2Recompiler::hasResolvedStubHandler(const Function &function) const
+ 2404: std::filesystem::path PS2Recompiler::getOutputPath(const Function &function) const
+ 2516: [](Function &)
+MATCH COUNT SHOWN: 16
+
+PATTERN: const Function &
+   81: bool shouldGenerateCodeForFunction(const Function &function)
+  596: [](const Function &a, const Function &b)
+ 1105: [initializerStart](const Function &function)
+ 1146: [&](const Function &function)
+ 1273: auto makeName = [&](const Function &function) -> std::string
+ 1314: [&](const Function &fn)
+ 1416: auto generateFunctionCode = [&](CodeGenerator &codeGenerator, const Function &function, bool useHeaders) -> std::string
+ 2307: bool PS2Recompiler::shouldSkipFunction(const Function &function) const
+ 2317: bool PS2Recompiler::isStubFunction(const Function &function) const
+ 2350: bool PS2Recompiler::isCorrectnessCriticalFunction(const Function &function) const
+ 2356: bool PS2Recompiler::hasResolvedStubHandler(const Function &function) const
+ 2404: std::filesystem::path PS2Recompiler::getOutputPath(const Function &function) const
+MATCH COUNT SHOWN: 12
+
+PATTERN: \.start
+  255: selector.start = parsedAddress;
+  267: selector.start = parsedAddress;
+  297: existingStarts.insert(function.start);
+  341: if (address < function.start || address >= function.end)
+  351: auto decodedIt = decodedFunctions.find(function.start);
+  366: if (!best || function.start > best->start)
+  434: auto decodedIt = decodedFunctions.find(function.start);
+  500: entryFunction.start = target;
+  597: { return a.start < b.start; });
+  614: boundaryStarts.push_back(function.start);
+  635: if (address < function.start || address >= function.end)
+  640: auto decodedIt = decodedFunctions.find(function.start);
+  655: if (!best || function.start > best->start)
+  677: const Function *containingFunction = findContainingFunction(function.start);
+  679: auto nextIt = std::upper_bound(boundaryStarts.begin(), boundaryStarts.end(), function.start);
+  685: if (sliceEndAddress <= function.start)
+  702: auto entryDecodedIt = decodedFunctions.find(function.start);
+  712: { return candidate.address == function.start; });
+  728: auto existingIt = decodedFunctions.find(function.start);
+  751: decodedFunctions[function.start] = std::move(slicedInstructions);
+  772: functionStarts.insert(function.start);
+  787: entryAddress <= function.start || entryAddress >= function.end)
+  792: const auto decodedIt = decodedFunctions.find(function.start);
+  805: if (!owner || function.start > owner->start)
+  852: const auto decodedIt = decodedFunctions.find(function.start);
+  863: if (candidate.raw == 0u || candidate.address == function.start)
+  866: targets = &targetsByOwner[function.start];
+  911: if (selector.start.has_value())
+  913: m_skipFunctionStarts.insert(*selector.start);
+  923: if (selector.start.has_value())
+  925: m_stubFunctionStarts.insert(*selector.start);
+  928: auto bindingIt = m_stubHandlerBindingsByStart.find(*selector.start);
+  934: << std::hex << *selector.start
+  939: m_stubHandlerBindingsByStart[*selector.start] = selector.name;
+  946: if (selector.start.has_value())
+  948: m_entryPointHintStarts.insert(*selector.start);
+ 1106: { return function.start == initializerStart; });
+ 1115: manualInitializer.start = initializerStart;
+ 1148: return stubStart >= function.start &&
+ 1149: stubStart < std::max(function.end, function.start + 4u) &&
+ 1150: (function.start == stubStart || !isStubFunction(function));
+ 1158: stubEntry.start = stubStart;
+ 1186: function.start,
+ 1204: function.start,
+ 1221: function.start,
+ 1226: m_reporter.warningAt("decode", function.name, function.start, "Skipping function due decode failure");
+ 1284: expectedStartName << "entry_" << std::hex << function.start;
+ 1294: ss << sanitized << "_0x" << std::hex << function.start;
+ 1303: m_functionRenames[function.start] = makeName(function);
+ 1315: { return fn.start == m_bootstrapInfo.entry; });
+ 1337: std::string generatedName = m_codeGenerator->getFunctionName(function.start);
+ 1354: const auto bindingIt = m_stubHandlerBindingsByStart.find(function.start);
+ 1382: m_generatedStubs[function.start] = stub.str();
+ 1424: return generatedStubs.at(function.start);
+ 1435: stubFile << generatedStubs.at(function.start) << "\n";
+ 1439: const auto &instructions = decodedFunctions.at(function.start);
+ 1447: m_reporter.errorAt("codegen", function.name, function.start, msg.str());
+ 1897: const std::string generatedName = m_codeGenerator->getFunctionName(function.start);
+ 1951: std::string finalName = m_codeGenerator->getFunctionName(function.start);
+ 2004: coveredEntryAddresses.insert(function.start);
+ 2055: if (address < function.start || address >= function.end)
+ 2060: auto decodedIt = m_decodedFunctions.find(function.start);
+ 2075: if (!best || function.start > best->start)
+ 2090: !isEntryFunctionName(function.name) && function.end > function.start)
+ 2092: ownerRanges.emplace_back(function.start, function.end);
+ 2122: if (isEntryFunctionName(function.name) && nestedInRealFunction(function.start))
+ 2127: auto decodedIt = m_decodedFunctions.find(function.start);
+ 2137: auto &ownerTargets = m_resumeEntryTargetsByOwner[function.start];
+ 2207: uint32_t start = function.start;
+ 2291: msg << "No decodable instructions found at 0x" << std::hex << function.start;
+ 2292: m_reporter.warningAt("decode", function.name, function.start, msg.str());
+ 2302: m_decodedFunctions.insert_or_assign(function.start, std::move(instructions));
+ 2309: if (m_skipFunctionStarts.contains(function.start))
+ 2319: if (m_stubFunctionStarts.contains(function.start))
+ 2353: m_correctnessCriticalFunctionStarts.contains(function.start);
+ 2359: const auto bindingIt = m_stubHandlerBindingsByStart.find(function.start);
+ 2408: auto renameIt = m_functionRenames.find(function.start);
+ 2427: ss << "func_" << std::hex << function.start;
+ 2434: suffix << "_0x" << std::hex << function.start;
+MATCH COUNT SHOWN: 79
+
+PATTERN: \.end
+  191: const auto first = std::find_if_not(value.begin(), value.end(),
+  194: if (first == value.end())
+  341: if (address < function.start || address >= function.end)
+  352: if (decodedIt == decodedFunctions.end())
+  358: const bool hasAddress = std::any_of(decoded.begin(), decoded.end(),
+  435: if (decodedIt == decodedFunctions.end())
+  469: std::sort(pendingEntries.begin(), pendingEntries.end(),
+  475: boundaryStarts.insert(boundaryStarts.end(), existingStarts.begin(), existingStarts.end());
+  476: boundaryStarts.insert(boundaryStarts.end(), pendingStarts.begin(), pendingStarts.end());
+  477: std::sort(boundaryStarts.begin(), boundaryStarts.end());
+  478: boundaryStarts.erase(std::unique(boundaryStarts.begin(), boundaryStarts.end()), boundaryStarts.end());
+  482: auto it = std::upper_bound(boundaryStarts.begin(), boundaryStarts.end(), address);
+  483: if (it == boundaryStarts.end())
+  508: if (containingDecodedIt == decodedFunctions.end())
+  514: auto sliceIt = std::find_if(containingInstructions.begin(), containingInstructions.end(),
+  518: if (sliceIt == containingInstructions.end())
+  545: auto sliceEndIt = std::find_if(sliceIt, containingInstructions.end(),
+  555: entryFunction.end = sliceEndAddress;
+  576: entryFunction.end = entryEnd;
+  593: functions.insert(functions.end(), newEntries.begin(), newEntries.end());
+  594: existingStarts.insert(successfulStarts.begin(), successfulStarts.end());
+  595: std::sort(functions.begin(), functions.end(),
+  617: std::sort(boundaryStarts.begin(), boundaryStarts.end());
+  618: boundaryStarts.erase(std::unique(boundaryStarts.begin(), boundaryStarts.end()), boundaryStarts.end());
+  635: if (address < function.start || address >= function.end)
+  641: if (decodedIt == decodedFunctions.end())
+  647: const bool hasAddress = std::any_of(decoded.begin(), decoded.end(),
+  678: uint32_t sliceEndAddress = containingFunction ? containingFunction->end : function.end;
+  679: auto nextIt = std::upper_bound(boundaryStarts.begin(), boundaryStarts.end(), function.start);
+  680: if (nextIt != boundaryStarts.end() && *nextIt < sliceEndAddress)
+  694: if (containingDecodedIt == decodedFunctions.end())
+  703: if (entryDecodedIt == decodedFunctions.end())
+  727: bool changed = (function.end != sliceEndAddress);
+  729: if (existingIt == decodedFunctions.end())
+  750: function.end = sliceEndAddress;
+  787: entryAddress <= function.start || entryAddress >= function.end)
+  793: if (decodedIt == decodedFunctions.end())
+  798: const bool containsInstruction = std::any_of(decodedIt->second.begin(), decodedIt->second.end(), [entryAddress](const Instruction &instruction)
+  817: if (std::find(targets.begin(), targets.end(), entryAddress) == targets.end())
+  853: if (decodedIt == decodedFunctions.end())
+  929: if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+ 1104: m_functions.begin(), m_functions.end(),
+ 1107: if (functionIt == m_functions.end())
+ 1110: if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+ 1116: manualInitializer.end = initializerStart + 4u;
+ 1145: m_functions.begin(), m_functions.end(),
+ 1149: stubStart < std::max(function.end, function.start + 4u) &&
+ 1159: stubEntry.end = stubStart + 4u;
+ 1288: entryName << sanitized << "_0x" << std::hex << function.end;
+ 1313: auto entryIt = std::find_if(m_functions.begin(), m_functions.end(),
+ 1316: if (entryIt != m_functions.end())
+ 1319: if (renameIt != m_functionRenames.end())
+ 1355: if (bindingIt != m_stubHandlerBindingsByStart.end() &&
+ 1588: if (completedIt == completedCode.end())
+ 1987: if (bindingIt == m_stubHandlerBindingsByStart.end() ||
+ 2008: coveredEntryAddresses.insert(targets.begin(), targets.end());
+ 2055: if (address < function.start || address >= function.end)
+ 2061: if (decodedIt == m_decodedFunctions.end())
+ 2067: const bool hasAddress = std::any_of(decoded.begin(), decoded.end(),
+ 2090: !isEntryFunctionName(function.name) && function.end > function.start)
+ 2092: ownerRanges.emplace_back(function.start, function.end);
+ 2095: std::sort(ownerRanges.begin(), ownerRanges.end());
+ 2106: auto it = std::upper_bound(ownerRanges.begin(), ownerRanges.end(), std::make_pair(address, UINT32_MAX));
+ 2128: if (decodedIt == m_decodedFunctions.end())
+ 2138: ownerTargets.insert(ownerTargets.end(),
+ 2140: analysisResult.resumeEntryPoints.end());
+ 2141: ownerTargets.insert(ownerTargets.end(),
+ 2143: analysisResult.indirectFallbackEntryPoints.end());
+ 2173: for (auto it = m_resumeEntryTargetsByOwner.begin(); it != m_resumeEntryTargetsByOwner.end();)
+ 2176: std::sort(targets.begin(), targets.end());
+ 2177: targets.erase(std::unique(targets.begin(), targets.end()), targets.end());
+ 2208: uint32_t end = function.end;
+ 2237: if (patchIt != m_config.patches.end())
+ 2267: if (mmioIt != m_config.mmioByInstructionAddress.end())
+ 2299: function.end = instructions.back().address + 4;
+ 2360: if (bindingIt != m_stubHandlerBindingsByStart.end() && !bindingIt->second.empty())
+ 2409: if (renameIt != m_functionRenames.end() && !renameIt->second.empty())
+ 2419: std::replace_if(safeName.begin(), safeName.end(), [](char c)
+MATCH COUNT SHOWN: 78
+
+PATTERN: \.name
+  249: selector.name = trimAsciiWhitespace(trimmed.substr(0, at));
+  260: selector.name = trimmed;
+  271: selector.name = trimmed;
+  429: if (isEntryFunctionName(function.name))
+  499: entryFunction.name = name.str();
+  630: if (isEntryFunctionName(function.name))
+  672: if (!isEntryFunctionName(function.name))
+  907: if (!selector.name.empty())
+  909: m_skipFunctions[selector.name] = true;
+  919: if (!selector.name.empty())
+  921: m_stubFunctions.insert(selector.name);
+  926: if (!selector.name.empty())
+  930: bindingIt->second != selector.name)
+  935: << " (keeping latest '" << selector.name
+  939: m_stubHandlerBindingsByStart[*selector.start] = selector.name;
+ 1000: if (sym.name == "_gp")
+ 1114: manualInitializer.name = "manual_initializer_" + bindingIt->second;
+ 1157: stubEntry.name = handlerName;
+ 1185: function.name,
+ 1203: function.name,
+ 1220: function.name,
+ 1226: m_reporter.warningAt("decode", function.name, function.start, "Skipping function due decode failure");
+ 1275: std::string sanitized = sanitizeFunctionName(function.name);
+ 1349: stub << "ps2_stubs::TODO_NAMED(\"" << escapeCStringLiteral(function.name) << "\", rdram, ctx, runtime); ";
+ 1353: std::string dispatchName = function.name;
+ 1375: dispatchName = function.name;
+ 1447: m_reporter.errorAt("codegen", function.name, function.start, msg.str());
+ 2050: if (isEntryFunctionName(function.name))
+ 2090: !isEntryFunctionName(function.name) && function.end > function.start)
+ 2122: if (isEntryFunctionName(function.name) && nestedInRealFunction(function.start))
+ 2227: m_reporter.warningAt("decode", function.name, address, msg.str());
+ 2258: m_reporter.warningAt("patch", function.name, address, msg.str());
+ 2280: m_reporter.warningAt("decode", function.name, address, msg.str());
+ 2292: m_reporter.warningAt("decode", function.name, function.start, msg.str());
+ 2314: return m_skipFunctions.contains(function.name);
+ 2324: if (m_stubFunctions.contains(function.name))
+ 2328: return ps2_runtime_calls::isStubName(function.name);
+ 2352: return IsCorrectnessCriticalFunctionName(function.name) ||
+ 2358: std::string handlerName = function.name;
+ 2370: if (section.name != ".ctors" &&
+ 2371: section.name != ".init_array" &&
+ 2372: section.name != ".preinit_array")
+ 2416: safeName = sanitizeFunctionName(function.name);
+MATCH COUNT SHOWN: 43
+
+=== FUNCTION FILTERING / SKIP CONDITIONS ===
+
+FILTER PATTERN: empty\(\)
+   67: if (sanitized.empty())
+  208: if (literal.empty())
+  241: if (trimmed.empty())
+  464: if (pendingEntries.empty())
+  587: if (newEntries.empty())
+  740: else if (!existing.empty())
+  907: if (!selector.name.empty())
+  919: if (!selector.name.empty())
+  926: if (!selector.name.empty())
+  961: if (!m_config.ghidraMapPath.empty())
+  972: if (m_functions.empty())
+ 1056: if (reloc.symbolName.empty())
+ 1276: if (sanitized.empty())
+ 1356: !bindingIt->second.empty())
+ 1363: if (!resolvedSyscallName.empty())
+ 1367: else if (!resolvedStubName.empty())
+ 1373: if (dispatchName.empty())
+ 1501: { return stopWorkers || !pendingWork.empty(); });
+ 1612: { return workerException || !readyCode.empty() || (outstandingWork == 0 && nextFunction >= outputFunctions.size()); });
+ 1621: while (!readyCode.empty())
+ 1638: if (outstandingWork == 0 && nextFunction >= outputFunctions.size() && completedCode.empty())
+ 1723: { return stopWorkers || !pendingWork.empty(); });
+ 1808: { return workerException || !readyFiles.empty() || (outstandingWork == 0 && nextFunction >= outputFunctions.size()); });
+ 1817: if (readyFiles.empty())
+ 1898: if (generatedName.empty())
+ 2020: if (!standaloneEntryAddresses.empty())
+ 2178: if (targets.empty())
+ 2214: return address == end && !instructions.empty() && instructions.back().hasDelaySlot &&
+ 2287: if (instructions.empty())
+ 2360: if (bindingIt != m_stubHandlerBindingsByStart.end() && !bindingIt->second.empty())
+ 2409: if (renameIt != m_functionRenames.end() && !renameIt->second.empty())
+ 2424: if (safeName.empty())
+ 2487: if (sanitized.empty())
+ 2545: if (!ps2_runtime_calls::resolveSyscallName(name).empty())
+ 2549: if (!ps2_runtime_calls::resolveStubName(name).empty())
+
+FILTER PATTERN: isSkipped
+   83: return function.isRecompiled || function.isStub || function.isSkipped;
+  346: if (!function.isRecompiled || function.isStub || function.isSkipped)
+  424: if (!function.isRecompiled || function.isStub || function.isSkipped)
+  502: entryFunction.isSkipped = false;
+  610: if (!function.isRecompiled || function.isStub || function.isSkipped)
+  625: if (!function.isRecompiled || function.isStub || function.isSkipped)
+  667: if (!function.isRecompiled || function.isStub || function.isSkipped)
+  786: if (!function.isRecompiled || function.isStub || function.isSkipped ||
+  850: if (!function.isRecompiled || function.isStub || function.isSkipped)
+ 1174: function.isSkipped = false;
+ 1194: function.isSkipped = true;
+ 1213: function.isSkipped = true;
+ 1232: function.isSkipped = false;
+ 1335: if (function.isStub || function.isSkipped)
+ 1347: if (function.isSkipped)
+ 1420: if (function.isStub || function.isSkipped)
+ 1892: if (!function.isStub && !function.isSkipped)
+ 2045: if (!function.isRecompiled || function.isStub || function.isSkipped)
+ 2089: if (function.isRecompiled && !function.isStub && !function.isSkipped &&
+ 2117: if (!function.isRecompiled || function.isStub || function.isSkipped)
+
+FILTER PATTERN: isStub
+   83: return function.isRecompiled || function.isStub || function.isSkipped;
+  346: if (!function.isRecompiled || function.isStub || function.isSkipped)
+  424: if (!function.isRecompiled || function.isStub || function.isSkipped)
+  501: entryFunction.isStub = false;
+  610: if (!function.isRecompiled || function.isStub || function.isSkipped)
+  625: if (!function.isRecompiled || function.isStub || function.isSkipped)
+  667: if (!function.isRecompiled || function.isStub || function.isSkipped)
+  786: if (!function.isRecompiled || function.isStub || function.isSkipped ||
+  850: if (!function.isRecompiled || function.isStub || function.isSkipped)
+ 1150: (function.start == stubStart || !isStubFunction(function));
+ 1169: if (isStubFunction(function))
+ 1173: function.isStub = true;
+ 1195: function.isStub = false;
+ 1231: function.isStub = false;
+ 1335: if (function.isStub || function.isSkipped)
+ 1420: if (function.isStub || function.isSkipped)
+ 1892: if (!function.isStub && !function.isSkipped)
+ 2045: if (!function.isRecompiled || function.isStub || function.isSkipped)
+ 2089: if (function.isRecompiled && !function.isStub && !function.isSkipped &&
+ 2117: if (!function.isRecompiled || function.isStub || function.isSkipped)
+ 2317: bool PS2Recompiler::isStubFunction(const Function &function) const
+ 2328: return ps2_runtime_calls::isStubName(function.name);
+
+FILTER PATTERN: IsAutoGeneratedName
+
+FILTER PATTERN: address
+   31: uint32_t decodeAbsoluteJumpTarget(uint32_t address, uint32_t target)
+   33: return ((address + 4) & 0xF0000000u) | (target << 2);
+  206: bool tryParseU32AddressLiteral(const std::string &literal, uint32_t &outAddress)
+  222: outAddress = static_cast<uint32_t>(parsed);
+  251: uint32_t parsedAddress = 0;
+  252: const std::string addressLiteral = trimAsciiWhitespace(trimmed.substr(at + 1));
+  253: if (tryParseU32AddressLiteral(addressLiteral, parsedAddress))
+  255: selector.start = parsedAddress;
+  264: uint32_t parsedAddress = 0;
+  265: if (tryParseU32AddressLiteral(trimmed, parsedAddress))
+  267: selector.start = parsedAddress;
+  292: const std::unordered_set<uint32_t> &seedEntryAddresses = {})
+  300: auto isExecutableAddress = [&](uint32_t address) -> bool
+  308: if (address >= section.address && address < (section.address + section.size))
+  316: auto executableSectionEnd = [&](uint32_t address) -> std::optional<uint32_t>
+  320: if (!section.isCode || address < section.address || address >= section.address + section.size)
+  324: return section.address + section.size;
+  336: auto findContainingFunction = [&](uint32_t address) -> const Function *
+  341: if (address < function.start || address >= function.end)
+  358: const bool hasAddress = std::any_of(decoded.begin(), decoded.end(),
+  360: { return candidate.address == address; });
+  361: if (!hasAddress)
+  392: if (!isExecutableAddress(target))
+  416: for (uint32_t target : seedEntryAddresses)
+  480: auto findNextBoundaryStart = [&](uint32_t address) -> std::optional<uint32_t>
+  482: auto it = std::upper_bound(boundaryStarts.begin(), boundaryStarts.end(), address);
+  516: { return candidate.address == target; });
+  523: uint32_t sliceEndAddress = pending.containingEnd;
+  525: if (nextStartOpt.has_value() && nextStartOpt.value() < sliceEndAddress)
+  527: sliceEndAddress = nextStartOpt.value();
+  534: if (returnThunkEnd < sliceEndAddress)
+  536: sliceEndAddress = returnThunkEnd;
+  540: if (sliceEndAddress <= target)
+  547: { return candidate.address >= sliceEndAddress; });
+  555: entryFunction.end = sliceEndAddress;
+  620: auto findContainingFunction = [&](uint32_t address) -> const Function *
+  635: if (address < function.start || address >= function.end)
+  647: const bool hasAddress = std::any_of(decoded.begin(), decoded.end(),
+  649: { return candidate.address == address; });
+  650: if (!hasAddress)
+  678: uint32_t sliceEndAddress = containingFunction ? containingFunction->end : function.end;
+  680: if (nextIt != boundaryStarts.end() && *nextIt < sliceEndAddress)
+  682: sliceEndAddress = *nextIt;
+  685: if (sliceEndAddress <= function.start)
+  712: { return candidate.address == function.start; });
+  720: { return candidate.address >= sliceEndAddress; });
+  727: bool changed = (function.end != sliceEndAddress);
+  742: if (existing.front().address != slicedInstructions.front().address ||
+  743: existing.back().address != slicedInstructions.back().address)
+  750: function.end = sliceEndAddress;
+  765: const std::unordered_set<uint32_t> &entryAddresses,
+  776: for (uint32_t entryAddress : entryAddresses)
+  778: if (functionStarts.contains(entryAddress))
+  787: entryAddress <= function.start || entryAddress >= function.end)
+  798: const bool containsInstruction = std::any_of(decodedIt->second.begin(), decodedIt->second.end(), [entryAddress](const Instruction &instruction)
+  799: { return instruction.address == entryAddress; });
+  817: if (std::find(targets.begin(), targets.end(), entryAddress) == targets.end())
+  819: targets.push_back(entryAddress);
+  863: if (candidate.raw == 0u || candidate.address == function.start)
+  867: if (std::find(targets->begin(), targets->end(), candidate.address) == targets->end())
+... output capped at 60 matches ...
+
+FILTER PATTERN: start
+  234: std::optional<uint32_t> start;
+  255: selector.start = parsedAddress;
+  267: selector.start = parsedAddress;
+  294: std::unordered_set<uint32_t> existingStarts;
+  297: existingStarts.insert(function.start);
+  329: auto isSimpleReturnThunkStart = [](const Instruction &inst) -> bool
+  341: if (address < function.start || address >= function.end)
+  351: auto decodedIt = decodedFunctions.find(function.start);
+  366: if (!best || function.start > best->start)
+  382: std::optional<uint32_t> containingStart;
+  388: std::unordered_set<uint32_t> pendingStarts;
+  397: if (existingStarts.contains(target) || pendingStarts.contains(target))
+  406: pending.containingStart = containingFunction->start;
+  411: pendingStarts.insert(target);
+  434: auto decodedIt = decodedFunctions.find(function.start);
+  473: std::vector<uint32_t> boundaryStarts;
+  474: boundaryStarts.reserve(existingStarts.size() + pendingStarts.size());
+  475: boundaryStarts.insert(boundaryStarts.end(), existingStarts.begin(), existingStarts.end());
+  476: boundaryStarts.insert(boundaryStarts.end(), pendingStarts.begin(), pendingStarts.end());
+  477: std::sort(boundaryStarts.begin(), boundaryStarts.end());
+  478: boundaryStarts.erase(std::unique(boundaryStarts.begin(), boundaryStarts.end()), boundaryStarts.end());
+  480: auto findNextBoundaryStart = [&](uint32_t address) -> std::optional<uint32_t>
+  482: auto it = std::upper_bound(boundaryStarts.begin(), boundaryStarts.end(), address);
+  483: if (it == boundaryStarts.end())
+  490: std::unordered_set<uint32_t> successfulStarts;
+  500: entryFunction.start = target;
+  505: if (pending.containingStart.has_value())
+  507: auto containingDecodedIt = decodedFunctions.find(*pending.containingStart);
+  524: auto nextStartOpt = findNextBoundaryStart(target);
+  525: if (nextStartOpt.has_value() && nextStartOpt.value() < sliceEndAddress)
+  527: sliceEndAddress = nextStartOpt.value();
+  530: if (isSimpleReturnThunkStart(*sliceIt) &&
+  566: auto nextStartOpt = findNextBoundaryStart(target);
+  567: if (nextStartOpt.has_value() && nextStartOpt.value() < entryEnd)
+  569: entryEnd = nextStartOpt.value();
+  584: successfulStarts.insert(target);
+  594: existingStarts.insert(successfulStarts.begin(), successfulStarts.end());
+  597: { return a.start < b.start; });
+  606: std::vector<uint32_t> boundaryStarts;
+  607: boundaryStarts.reserve(functions.size());
+  614: boundaryStarts.push_back(function.start);
+  617: std::sort(boundaryStarts.begin(), boundaryStarts.end());
+  618: boundaryStarts.erase(std::unique(boundaryStarts.begin(), boundaryStarts.end()), boundaryStarts.end());
+  635: if (address < function.start || address >= function.end)
+  640: auto decodedIt = decodedFunctions.find(function.start);
+  655: if (!best || function.start > best->start)
+  677: const Function *containingFunction = findContainingFunction(function.start);
+  679: auto nextIt = std::upper_bound(boundaryStarts.begin(), boundaryStarts.end(), function.start);
+  680: if (nextIt != boundaryStarts.end() && *nextIt < sliceEndAddress)
+  685: if (sliceEndAddress <= function.start)
+  693: auto containingDecodedIt = decodedFunctions.find(containingFunction->start);
+  702: auto entryDecodedIt = decodedFunctions.find(function.start);
+  712: { return candidate.address == function.start; });
+  728: auto existingIt = decodedFunctions.find(function.start);
+  751: decodedFunctions[function.start] = std::move(slicedInstructions);
+  768: std::unordered_set<uint32_t> functionStarts;
+  769: functionStarts.reserve(functions.size());
+  772: functionStarts.insert(function.start);
+  778: if (functionStarts.contains(entryAddress))
+  787: entryAddress <= function.start || entryAddress >= function.end)
+... output capped at 60 matches ...
+
+FILTER PATTERN: end
+  113: output << "#endif\n";
+  191: const auto first = std::find_if_not(value.begin(), value.end(),
+  194: if (first == value.end())
+  199: const auto last = std::find_if_not(value.rbegin(), value.rend(),
+  316: auto executableSectionEnd = [&](uint32_t address) -> std::optional<uint32_t>
+  341: if (address < function.start || address >= function.end)
+  352: if (decodedIt == decodedFunctions.end())
+  358: const bool hasAddress = std::any_of(decoded.begin(), decoded.end(),
+  379: struct PendingEntry
+  383: uint32_t containingEnd = 0;
+  386: std::vector<PendingEntry> pendingEntries;
+  388: std::unordered_set<uint32_t> pendingStarts;
+  390: auto queuePendingEntry = [&](uint32_t target)
+  397: if (existingStarts.contains(target) || pendingStarts.contains(target))
+  402: PendingEntry pending{};
+  403: pending.target = target;
+  406: pending.containingStart = containingFunction->start;
+  407: pending.containingEnd = containingFunction->end;
+  410: pendingEntries.push_back(pending);
+  411: pendingStarts.insert(target);
+  418: queuePendingEntry(target);
+  435: if (decodedIt == decodedFunctions.end())
+  455: queuePendingEntry(target);
+  460: queuePendingEntry(target);
+  464: if (pendingEntries.empty())
+  469: std::sort(pendingEntries.begin(), pendingEntries.end(),
+  470: [](const PendingEntry &a, const PendingEntry &b)
+  474: boundaryStarts.reserve(existingStarts.size() + pendingStarts.size());
+  475: boundaryStarts.insert(boundaryStarts.end(), existingStarts.begin(), existingStarts.end());
+  476: boundaryStarts.insert(boundaryStarts.end(), pendingStarts.begin(), pendingStarts.end());
+  477: std::sort(boundaryStarts.begin(), boundaryStarts.end());
+  478: boundaryStarts.erase(std::unique(boundaryStarts.begin(), boundaryStarts.end()), boundaryStarts.end());
+  482: auto it = std::upper_bound(boundaryStarts.begin(), boundaryStarts.end(), address);
+  483: if (it == boundaryStarts.end())
+  492: for (const auto &pending : pendingEntries)
+  494: const uint32_t target = pending.target;
+  505: if (pending.containingStart.has_value())
+  507: auto containingDecodedIt = decodedFunctions.find(*pending.containingStart);
+  508: if (containingDecodedIt == decodedFunctions.end())
+  514: auto sliceIt = std::find_if(containingInstructions.begin(), containingInstructions.end(),
+  518: if (sliceIt == containingInstructions.end())
+  523: uint32_t sliceEndAddress = pending.containingEnd;
+  525: if (nextStartOpt.has_value() && nextStartOpt.value() < sliceEndAddress)
+  527: sliceEndAddress = nextStartOpt.value();
+  533: const uint32_t returnThunkEnd = target + 8u;
+  534: if (returnThunkEnd < sliceEndAddress)
+  536: sliceEndAddress = returnThunkEnd;
+  540: if (sliceEndAddress <= target)
+  545: auto sliceEndIt = std::find_if(sliceIt, containingInstructions.end(),
+  547: { return candidate.address >= sliceEndAddress; });
+  548: if (sliceEndIt == sliceIt)
+  553: std::vector<Instruction> slicedInstructions(sliceIt, sliceEndIt);
+  555: entryFunction.end = sliceEndAddress;
+  559: const auto sectionEndOpt = executableSectionEnd(target);
+  560: if (!sectionEndOpt.has_value())
+  565: uint32_t entryEnd = sectionEndOpt.value();
+  567: if (nextStartOpt.has_value() && nextStartOpt.value() < entryEnd)
+  569: entryEnd = nextStartOpt.value();
+  571: if (entryEnd <= target)
+  576: entryFunction.end = entryEnd;
+... output capped at 60 matches ...
+
+FILTER PATTERN: continue;
+  306: continue;
+  322: continue;
+  343: continue;
+  348: continue;
+  354: continue;
+  363: continue;
+  426: continue;
+  431: continue;
+  437: continue;
+  510: continue;
+  520: continue;
+  542: continue;
+  550: continue;
+  562: continue;
+  573: continue;
+  579: continue;
+  612: continue;
+  627: continue;
+  632: continue;
+  637: continue;
+  643: continue;
+  652: continue;
+  669: continue;
+  674: continue;
+  687: continue;
+  696: continue;
+  705: continue;
+  715: continue;
+  723: continue;
+  780: continue;
+  789: continue;
+  795: continue;
+  802: continue;
+  813: continue;
+  851: continue;
+  854: continue;
+  860: continue;
+  864: continue;
+ 1058: continue;
+ 1122: continue;
+ 1141: continue;
+ 1154: continue;
+ 1176: continue;
+ 1197: continue;
+ 1228: continue;
+ 1301: continue;
+ 1894: continue;
+ 1900: continue;
+ 1905: continue;
+ 1948: continue;
+ 2047: continue;
+ 2052: continue;
+ 2057: continue;
+ 2063: continue;
+ 2072: continue;
+ 2119: continue;
+ 2124: continue;
+ 2130: continue;
+ 2150: continue;
+ 2155: continue;
+... output capped at 60 matches ...
+
+FILTER PATTERN: return false;
+   46: return false;
+  210: return false;
+  219: return false;
+  227: return false;
+  313: return false;
+  840: return false;
+  958: return false;
+  975: return false;
+ 1083: return false;
+ 1263: return false;
+ 1927: return false;
+ 1971: return false;
+ 2109: return false;
+ 2294: return false;
+ 2347: return false;
+ 2395: return false;
+ 2517: { return false; });
+
+=== STATIC GATE ===
+PASS — Parser remains at locked clean hash.
+extractFunctions() consumption sites: 1
+m_functions references: 29
+PASS — Downstream function flow is statically connected.
+OVERALL: PASS
+
+GAME ELF MODIFIED: NO
+ELAPSED SECONDS: 0.296
