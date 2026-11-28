@@ -1,0 +1,1069 @@
+
+====================================================================================================
+1. ENVIRONMENT
+====================================================================================================
+Generated: 2026-11-28 05:24:55
+PowerShell: 5.1.26100.10068
+ProjectRoot: D:\Games\MarkOfKriRecomp
+RecompRoot: D:\Games\MarkOfKriRecomp\external\PS2Recomp
+SourceRoot: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp
+AuditRoot: D:\Downloads\MarkOfKri_Audits
+Output: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_COMPLETE_20261128_052455
+
+====================================================================================================
+2. PROJECT TREE VERIFICATION
+====================================================================================================
+Project root exists: True
+PS2Recomp root exists: True
+ps2xRecomp source root exists: True
+Audit root exists: True
+
+====================================================================================================
+3. DYNAMIC PS2RECOMP SOURCE DISCOVERY
+====================================================================================================
+Searching recursively instead of assuming source locations.
+
+function_table_emitter.cpp candidates:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp
+
+code_generator.cpp candidates:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\code_generator.cpp
+
+ps2_recompiler.cpp candidates:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+
+ps2_recompiler.h candidates:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\ps2_recompiler.h
+
+code_generator.h candidates:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h
+
+====================================================================================================
+4. ACTUAL SOURCE FILE HASHES
+====================================================================================================
+PRESENT: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp
+  SIZE: 6251
+  SHA256: F6B1DC7129E37EC110081DA6483049739722DD04FEC989F3F3F1767480255938
+PRESENT: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\code_generator.cpp
+  SIZE: 10542
+  SHA256: 974CF3866FAE8ACF6872A41DA59B95E48711ABBA28057F78109384181BB7DD10
+PRESENT: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+  SIZE: 103776
+  SHA256: ACA34E519DD8CE7C1BC06CDD0F7363629408F3A675E48F2C220E8A66BC071045
+PRESENT: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\ps2_recompiler.h
+  SIZE: 4342
+  SHA256: 0C55C249D20D6D0F4680078DDFB0EEA7D4E0D6370180EDACDD06AB447264ED97
+PRESENT: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h
+  SIZE: 11573
+  SHA256: 80C39350A903F83C79E0955A1FE375626B9540C0BA80C9F5A51C877CA448CAE5
+
+====================================================================================================
+5. FUNCTION TABLE EMITTER — COMPLETE REGISTRATION ANALYSIS
+====================================================================================================
+
+SOURCE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp
+
+PATTERN: FunctionTableEmitter::emit
+       22: std::string FunctionTableEmitter::emit(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs)
+
+PATTERN: registeredAddresses
+       28: std::unordered_set<uint32_t> registeredAddresses;
+       48: if (!registeredAddresses.insert(address).second)
+
+PATTERN: isRecompiled
+       62: if (!function.isRecompiled && !function.isStub && !function.isSkipped)
+
+PATTERN: isStub
+       62: if (!function.isRecompiled && !function.isStub && !function.isSkipped)
+       71: else if (function.isStub)
+
+PATTERN: isSkipped
+       62: if (!function.isRecompiled && !function.isStub && !function.isSkipped)
+       67: if (function.isSkipped)
+
+PATTERN: registerFunction
+
+PATTERN: entries
+       27: std::vector<std::pair<uint32_t, std::string>> entries;
+       52: entries.emplace_back(address, name);
+      135: std::sort(entries.begin(), entries.end(), [](const auto &a, const auto &b)
+      141: if (!entries.empty())
+      143: tableBase = entries.front().first & ~3u;
+      144: tableEnd = (entries.back().first + 4u + 3u) & ~3u;
+      163: for (const auto &[address, name] : entries)
+
+PATTERN: functions
+       22: std::string FunctionTableEmitter::emit(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs)
+       55: std::vector<std::pair<uint32_t, std::string>> normalFunctions;
+       56: std::vector<std::pair<uint32_t, std::string>> stubFunctions;
+       57: std::vector<std::pair<uint32_t, std::string>> systemCallFunctions;
+       58: std::vector<std::pair<uint32_t, std::string>> libraryFunctions;
+       60: for (const auto &function : functions)
+       69: libraryFunctions.emplace_back(function.start, generatedName);
+       76: systemCallFunctions.emplace_back(function.start, generatedName);
+       80: stubFunctions.emplace_back(function.start, generatedName);
+       85: normalFunctions.emplace_back(function.start, generatedName);
+      103: for (const auto &[address, name] : normalFunctions)
+      122: for (const auto &[address, name] : stubFunctions)
+      126: for (const auto &[address, name] : systemCallFunctions)
+      130: for (const auto &[address, name] : libraryFunctions)
+      150: ss << "#include <ps2_recompiled_functions.h>\n";
+
+PATTERN: stubs
+       22: std::string FunctionTableEmitter::emit(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs)
+       24: (void)stubs;
+      151: ss << "#include \"ps2_stubs.h\"\n";
+      152: ss << "#include <ps2_recompiled_stubs.h>\n";
+
+PATTERN: address
+       28: std::unordered_set<uint32_t> registeredAddresses;
+       30: auto addEntry = [&](uint32_t address, const std::string &name)
+       36: if ((address & 3u) != 0u)
+       39: oss << "Unaligned function table entry for " << name << " at 0x" << std::hex << address;
+       43: cg.m_reporter->errorAt("function-table", name, address, oss.str());
+       48: if (!registeredAddresses.insert(address).second)
+       52: entries.emplace_back(address, name);
+      103: for (const auto &[address, name] : normalFunctions)
+      105: addEntry(address, name);
+      122: for (const auto &[address, name] : stubFunctions)
+      124: addEntry(address, name);
+      126: for (const auto &[address, name] : systemCallFunctions)
+      128: addEntry(address, name);
+      130: for (const auto &[address, name] : libraryFunctions)
+      132: addEntry(address, name);
+      163: for (const auto &[address, name] : entries)
+      165: const uint32_t slot = (address - tableBase) >> 2;
+      167: << "; // 0x" << std::hex << address << std::dec << "\n";
+
+emit() SOURCE CONTEXT
+emit() anchor line: 22
+       12: #include <utility>
+       13: #include <vector>
+       14: 
+       15: namespace ps2recomp
+       16: {
+       17:     FunctionTableEmitter::FunctionTableEmitter(CodeGenerator &codeGenerator)
+       18:         : m_codeGenerator(codeGenerator)
+       19:     {
+       20:     }
+       21: 
+       22:     std::string FunctionTableEmitter::emit(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs)
+       23:     {
+       24:         (void)stubs;
+       25: 
+       26:         CodeGenerator &cg = m_codeGenerator;
+       27:         std::vector<std::pair<uint32_t, std::string>> entries;
+       28:         std::unordered_set<uint32_t> registeredAddresses;
+       29: 
+       30:         auto addEntry = [&](uint32_t address, const std::string &name)
+       31:         {
+       32:             if (name.empty())
+       33:             {
+       34:                 return;
+       35:             }
+       36:             if ((address & 3u) != 0u)
+       37:             {
+       38:                 std::ostringstream oss;
+       39:                 oss << "Unaligned function table entry for " << name << " at 0x" << std::hex << address;
+       40: 
+       41:                 if (cg.m_reporter)
+       42:                 {
+       43:                     cg.m_reporter->errorAt("function-table", name, address, oss.str());
+       44:                 }
+       45: 
+       46:                 throw std::runtime_error(oss.str());
+       47:             }
+       48:             if (!registeredAddresses.insert(address).second)
+       49:             {
+       50:                 return;
+       51:             }
+       52:             entries.emplace_back(address, name);
+       53:         };
+       54: 
+       55:         std::vector<std::pair<uint32_t, std::string>> normalFunctions;
+       56:         std::vector<std::pair<uint32_t, std::string>> stubFunctions;
+       57:         std::vector<std::pair<uint32_t, std::string>> systemCallFunctions;
+       58:         std::vector<std::pair<uint32_t, std::string>> libraryFunctions;
+       59: 
+       60:         for (const auto &function : functions)
+       61:         {
+       62:             if (!function.isRecompiled && !function.isStub && !function.isSkipped)
+       63:                 continue;
+       64: 
+       65:             std::string generatedName = cg.getFunctionName(function.start);
+       66: 
+       67:             if (function.isSkipped)
+       68:             {
+       69:                 libraryFunctions.emplace_back(function.start, generatedName);
+       70:             }
+       71:             else if (function.isStub)
+       72:             {
+       73:                 const auto target = PS2Recompiler::resolveStubTarget(function.name);
+       74:                 if (target == StubTarget::Syscall)
+       75:                 {
+       76:                     systemCallFunctions.emplace_back(function.start, generatedName);
+       77:                 }
+       78:                 else
+       79:                 {
+       80:                     stubFunctions.emplace_back(function.start, generatedName);
+       81:                 }
+       82:             }
+       83:             else
+       84:             {
+       85:                 normalFunctions.emplace_back(function.start, generatedName);
+       86:             }
+       87:         }
+       88: 
+       89:         if (cg.m_bootstrapInfo.valid)
+       90:         {
+       91:             std::string entryTarget = cg.m_bootstrapInfo.entryName;
+       92:             if (entryTarget.empty())
+       93:             {
+       94:                 entryTarget = cg.getFunctionName(cg.m_bootstrapInfo.entry);
+       95:             }
+       96:             if (entryTarget.empty())
+       97:             {
+       98:                 throw std::runtime_error("No entry function name available for registration.");
+       99:             }
+      100:             addEntry(cg.m_bootstrapInfo.entry, entryTarget);
+      101:         }
+      102: 
+      103:         for (const auto &[address, name] : normalFunctions)
+      104:         {
+      105:             addEntry(address, name);
+      106:         }
+      107: 
+      108:         for (const auto &[ownerStart, targets] : cg.m_resumeEntryTargetsByOwner)
+      109:         {
+      110:             const std::string ownerName = cg.getFunctionName(ownerStart);
+      111:             if (ownerName.empty())
+      112:             {
+      113:                 continue;
+      114:             }
+      115: 
+      116:             for (uint32_t target : targets)
+      117:             {
+      118:                 addEntry(target, ownerName);
+      119:             }
+      120:         }
+      121: 
+      122:         for (const auto &[address, name] : stubFunctions)
+      123:         {
+      124:             addEntry(address, name);
+      125:         }
+      126:         for (const auto &[address, name] : systemCallFunctions)
+      127:         {
+      128:             addEntry(address, name);
+      129:         }
+      130:         for (const auto &[address, name] : libraryFunctions)
+      131:         {
+      132:             addEntry(address, name);
+      133:         }
+      134: 
+      135:         std::sort(entries.begin(), entries.end(), [](const auto &a, const auto &b)
+      136:                   { return a.first < b.first; });
+      137: 
+      138:         uint32_t tableBase = 0u;
+      139:         uint32_t tableEnd = 0u;
+      140:         uint32_t slotCount = 0u;
+      141:         if (!entries.empty())
+      142:         {
+      143:             tableBase = entries.front().first & ~3u;
+      144:             tableEnd = (entries.back().first + 4u + 3u) & ~3u;
+      145:             slotCount = (tableEnd - tableBase) >> 2;
+      146:         }
+      147: 
+      148:         std::stringstream ss;
+      149:         ss << "#include \"ps2_runtime.h\"\n";
+      150:         ss << "#include <ps2_recompiled_functions.h>\n";
+      151:         ss << "#include \"ps2_stubs.h\"\n";
+      152:         ss << "#include <ps2_recompiled_stubs.h>\n";
+      153:         ss << "#include \"ps2_syscalls.h\"\n\n";
+      154: 
+      155:         ss << "extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x" << std::hex << tableBase << "u;\n";
+      156:         ss << "extern const uint32_t g_ps2RecompiledFunctionTableEnd = 0x" << std::hex << tableEnd << "u;\n";
+      157:         ss << "extern const uint32_t g_ps2RecompiledFunctionTableSlotCount = " << std::dec << slotCount << "u;\n";
+      158:         ss << "PS2Runtime::RecompiledFunction g_ps2RecompiledFunctionTable[" << std::dec << (slotCount == 0u ? 1u : slotCount) << "u] = {};\n\n";
+      159: 
+      160:         ss << "namespace {\n";
+      161:         ss << "struct GeneratedFunctionTableInitializer {\n";
+      162:         ss << "    GeneratedFunctionTableInitializer() {\n";
+      163:         for (const auto &[address, name] : entries)
+      164:         {
+      165:             const uint32_t slot = (address - tableBase) >> 2;
+      166:             ss << "        g_ps2RecompiledFunctionTable[" << std::dec << slot << "] = " << name
+      167:                << "; // 0x" << std::hex << address << std::dec << "\n";
+      168:         }
+      169:         ss << "    }\n";
+      170:         ss << "};\n";
+      171:         ss << "static const GeneratedFunctionTableInitializer g_generatedFunctionTableInitializer;\n";
+      172:         ss << "}\n";
+      173: 
+      174:         return ss.str();
+      175:     }
+      176: }
+
+====================================================================================================
+6. CODE GENERATOR — REGISTRATION CALL PATH
+====================================================================================================
+
+SOURCE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\code_generator.cpp
+
+PATTERN: FunctionTableEmitter
+      294: FunctionTableEmitter emitter(*this);
+
+PATTERN: generateFunctionRegistration
+      292: std::string CodeGenerator::generateFunctionRegistration(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs)
+
+PATTERN: registerFunction
+
+PATTERN: isRecompiled
+
+PATTERN: isStub
+
+PATTERN: isSkipped
+
+PATTERN: functions
+      108: void CodeGenerator::setRenamedFunctions(const std::unordered_map<uint32_t, std::string> &renames)
+      110: m_renamedFunctions = renames;
+      166: auto it = m_renamedFunctions.find(address);
+      167: if (it != m_renamedFunctions.end())
+      267: const Function &function, const std::vector<Instruction> &instructions, const std::vector<Function> *allFunctions)
+      270: return analyzer.analyze(function, instructions, allFunctions);
+      292: std::string CodeGenerator::generateFunctionRegistration(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs)
+      295: return emitter.emit(functions, stubs);
+
+PATTERN: stubs
+      292: std::string CodeGenerator::generateFunctionRegistration(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs)
+      295: return emitter.emit(functions, stubs);
+
+PATTERN: registration
+      292: std::string CodeGenerator::generateFunctionRegistration(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs)
+
+REGISTRATION METHOD CONTEXT
+Registration method anchor line: 292
+      282:     std::string CodeGenerator::emitUnhandledInstruction(const Instruction &inst, const std::string &message)
+      283:     {
+      284:         if (m_reporter)
+      285:         {
+      286:             m_reporter->recordUnhandledInstruction(m_currentFunctionName, inst.address, inst.raw, message);
+      287:         }
+      288: 
+      289:         return fmt::format("throw std::runtime_error(\"{} at 0x{:X} raw=0x{:08X}\");", message, inst.address, inst.raw);
+      290:     }
+      291: 
+      292:     std::string CodeGenerator::generateFunctionRegistration(const std::vector<Function> &functions, const std::map<uint32_t, std::string> &stubs)
+      293:     {
+      294:         FunctionTableEmitter emitter(*this);
+      295:         return emitter.emit(functions, stubs);
+      296:     }
+      297: 
+      298:     const Symbol *CodeGenerator::findSymbolByAddress(uint32_t address) const
+      299:     {
+      300:         auto it = m_symbols.find(address);
+      301:         if (it != m_symbols.end())
+      302:         {
+      303:             return &it->second;
+      304:         }
+      305: 
+      306:         return nullptr;
+      307:     }
+      308: }
+
+====================================================================================================
+7. PS2 RECOMPILER — FUNCTION COLLECTION AND STATE
+====================================================================================================
+
+SOURCE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+
+PATTERN: m_functions
+      966: m_functions = m_elfParser->extractFunctions();
+      978: auditIndex < m_functions.size();
+      981: const auto &auditFunction = m_functions[auditIndex];
+      994: auditFile << "COUNT\t" << m_functions.size() << "\n";
+     1002: if (m_functions.empty())
+     1069: m_reporter.recordDiscovered(m_functions.size(), m_symbols.size(), m_sections.size(), m_relocations.size());
+     1072: msg << "extracted " << m_functions.size() << " functions, "
+     1123: msg << "recompiling " << m_functions.size() << " functions";
+     1134: m_functions.begin(), m_functions.end(),
+     1137: if (functionIt == m_functions.end())
+     1147: m_functions.push_back(std::move(manualInitializer));
+     1175: m_functions.begin(), m_functions.end(),
+     1190: m_functions.push_back(std::move(stubEntry));
+     1194: for (auto &function : m_functions)
+     1288: auditIndex < m_functions.size();
+     1291: const auto &auditFunction = m_functions[auditIndex];
+     1320: finalAudit << "COUNT\t" << m_functions.size() << "\n";
+     1391: for (const auto &function : m_functions)
+     1406: auto entryIt = std::find_if(m_functions.begin(), m_functions.end(),
+     1409: if (entryIt != m_functions.end())
+     1426: for (const auto &function : m_functions)
+     1485: outputFunctions.reserve(m_functions.size());
+     1486: for (const auto &function : m_functions)
+     1942: std::string registerFunctions = m_codeGenerator->generateFunctionRegistration(m_functions, m_generatedStubs);
+     1983: for (const auto &function : m_functions)
+     2037: for (const auto &function : m_functions)
+     2091: collectInternalEntryTargetsImpl(m_functions, m_decodedFunctions, guestFallbackEntryAddresses, m_resumeEntryTargetsByOwner);
+     2094: coveredEntryAddresses.reserve(m_functions.size() + guestFallbackEntryAddresses.size());
+     2095: for (const auto &function : m_functions)
+     2116: m_functions,
+     2136: for (const auto &function : m_functions)
+     2180: for (const auto &function : m_functions)
+     2208: for (const auto &function : m_functions)
+     2228: m_codeGenerator->collectInternalBranchTargets(function, instructions, &m_functions);
+     2257: collectPostTransferEntryTargetsImpl(m_functions, m_decodedFunctions, m_resumeEntryTargetsByOwner);
+
+PATTERN: functions.push
+     1147: m_functions.push_back(std::move(manualInitializer));
+     1190: m_functions.push_back(std::move(stubEntry));
+     1490: outputFunctions.push_back(&function);
+
+PATTERN: functions.emplace
+
+PATTERN: m_skipFunctionStarts
+      897: m_skipFunctionStarts.clear();
+      913: m_skipFunctionStarts.insert(*selector.start);
+     2402: if (m_skipFunctionStarts.contains(function.start))
+
+PATTERN: m_stubFunctionStarts
+      899: m_stubFunctionStarts.clear();
+      925: m_stubFunctionStarts.insert(*selector.start);
+     2077: for (uint32_t address : m_stubFunctionStarts)
+     2412: if (m_stubFunctionStarts.contains(function.start))
+
+PATTERN: m_correctnessCriticalFunctionStarts
+      902: m_correctnessCriticalFunctionStarts.clear();
+     1131: for (uint32_t initializerStart : m_correctnessCriticalFunctionStarts)
+     2446: m_correctnessCriticalFunctionStarts.contains(function.start);
+     2460: m_correctnessCriticalFunctionStarts.clear();
+     2477: m_correctnessCriticalFunctionStarts.insert(target);
+
+PATTERN: functionStarts
+      768: std::unordered_set<uint32_t> functionStarts;
+      769: functionStarts.reserve(functions.size());
+      772: functionStarts.insert(function.start);
+      778: if (functionStarts.contains(entryAddress))
+      897: m_skipFunctionStarts.clear();
+      899: m_stubFunctionStarts.clear();
+      902: m_correctnessCriticalFunctionStarts.clear();
+      913: m_skipFunctionStarts.insert(*selector.start);
+      925: m_stubFunctionStarts.insert(*selector.start);
+     1000: collectCorrectnessCriticalFunctionStarts();
+     1131: for (uint32_t initializerStart : m_correctnessCriticalFunctionStarts)
+     2077: for (uint32_t address : m_stubFunctionStarts)
+     2402: if (m_skipFunctionStarts.contains(function.start))
+     2412: if (m_stubFunctionStarts.contains(function.start))
+     2446: m_correctnessCriticalFunctionStarts.contains(function.start);
+     2458: void PS2Recompiler::collectCorrectnessCriticalFunctionStarts()
+     2460: m_correctnessCriticalFunctionStarts.clear();
+     2477: m_correctnessCriticalFunctionStarts.insert(target);
+
+PATTERN: isRecompiled
+       83: return function.isRecompiled || function.isStub || function.isSkipped;
+      346: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      424: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      503: entryFunction.isRecompiled = true;
+      610: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      625: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      667: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      786: if (!function.isRecompiled || function.isStub || function.isSkipped ||
+      850: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      990: << (auditFunction.isRecompiled ? 1 : 0)
+     1263: function.isRecompiled = true;
+     1293: if (auditFunction.isRecompiled)
+     1302: if (!auditFunction.isRecompiled &&
+     1316: << (auditFunction.isRecompiled ? 1 : 0)
+     2138: if (!function.isRecompiled || function.isStub || function.isSkipped)
+     2182: if (function.isRecompiled && !function.isStub && !function.isSkipped &&
+     2210: if (!function.isRecompiled || function.isStub || function.isSkipped)
+
+PATTERN: isStub
+       83: return function.isRecompiled || function.isStub || function.isSkipped;
+      346: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      424: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      501: entryFunction.isStub = false;
+      610: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      625: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      667: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      786: if (!function.isRecompiled || function.isStub || function.isSkipped ||
+      850: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      988: << (auditFunction.isStub ? 1 : 0) << "\t"
+     1180: (function.start == stubStart || !isStubFunction(function));
+     1199: if (isStubFunction(function))
+     1203: function.isStub = true;
+     1225: function.isStub = false;
+     1261: function.isStub = false;
+     1296: if (auditFunction.isStub)
+     1303: !auditFunction.isStub &&
+     1314: << (auditFunction.isStub ? 1 : 0) << "\t"
+     1428: if (function.isStub || function.isSkipped)
+     1513: if (function.isStub || function.isSkipped)
+     1985: if (!function.isStub && !function.isSkipped)
+     2138: if (!function.isRecompiled || function.isStub || function.isSkipped)
+     2182: if (function.isRecompiled && !function.isStub && !function.isSkipped &&
+     2210: if (!function.isRecompiled || function.isStub || function.isSkipped)
+     2410: bool PS2Recompiler::isStubFunction(const Function &function) const
+     2421: return ps2_runtime_calls::isStubName(function.name);
+
+PATTERN: isSkipped
+       83: return function.isRecompiled || function.isStub || function.isSkipped;
+      346: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      424: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      502: entryFunction.isSkipped = false;
+      610: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      625: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      667: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      786: if (!function.isRecompiled || function.isStub || function.isSkipped ||
+      850: if (!function.isRecompiled || function.isStub || function.isSkipped)
+      989: << (auditFunction.isSkipped ? 1 : 0) << "\t"
+     1204: function.isSkipped = false;
+     1224: function.isSkipped = true;
+     1243: function.isSkipped = true;
+     1262: function.isSkipped = false;
+     1299: if (auditFunction.isSkipped)
+     1304: !auditFunction.isSkipped)
+     1315: << (auditFunction.isSkipped ? 1 : 0) << "\t"
+     1428: if (function.isStub || function.isSkipped)
+     1440: if (function.isSkipped)
+     1513: if (function.isStub || function.isSkipped)
+     1985: if (!function.isStub && !function.isSkipped)
+     2138: if (!function.isRecompiled || function.isStub || function.isSkipped)
+     2182: if (function.isRecompiled && !function.isStub && !function.isSkipped &&
+     2210: if (!function.isRecompiled || function.isStub || function.isSkipped)
+
+PATTERN: shouldGenerateCodeForFunction
+       81: bool shouldGenerateCodeForFunction(const Function &function)
+     1393: if (!shouldGenerateCodeForFunction(function))
+     1488: if (shouldGenerateCodeForFunction(function))
+     2039: if (!shouldGenerateCodeForFunction(function))
+
+PATTERN: generateFunctionRegistration
+     1942: std::string registerFunctions = m_codeGenerator->generateFunctionRegistration(m_functions, m_generatedStubs);
+
+PATTERN: FunctionTableEmitter
+
+====================================================================================================
+8. FOUR TARGETS — COMPLETE SOURCE REFERENCES
+====================================================================================================
+
+--------------------------------------------------------------------------------
+reg_frame @ 0x001048E0
+--------------------------------------------------------------------------------
+Emitter: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp
+CodeGenerator: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\code_generator.cpp
+Recompiler: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+
+--------------------------------------------------------------------------------
+dereg_frame @ 0x00104920
+--------------------------------------------------------------------------------
+Emitter: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp
+CodeGenerator: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\code_generator.cpp
+Recompiler: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+
+--------------------------------------------------------------------------------
+__register_frame_info_table @ 0x0037F9A8
+--------------------------------------------------------------------------------
+Emitter: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp
+CodeGenerator: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\code_generator.cpp
+Recompiler: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+
+--------------------------------------------------------------------------------
+__deregister_frame_info @ 0x0037FA00
+--------------------------------------------------------------------------------
+Emitter: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp
+CodeGenerator: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\code_generator.cpp
+Recompiler: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+
+====================================================================================================
+9. FUNCTION STRUCTURE / STATE TYPE DISCOVERY
+====================================================================================================
+
+FUNCTION STATE HEADER: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\code_generator.h
+       18: struct Function;
+
+FUNCTION STATE HEADER: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\control_flow_analyzer.h
+       11: struct Function;
+
+FUNCTION STATE HEADER: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\elf_parser.h
+       15: struct Function;
+
+FUNCTION STATE HEADER: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\ps2_recompiler.h
+       87: bool isStubFunction(const Function &function) const;
+
+FUNCTION STATE HEADER: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\types.h
+       90: struct Function
+      168: struct FunctionCall
+       98: bool isRecompiled = false;
+       99: bool isStub = false;
+      100: bool isSkipped = false;
+
+FUNCTION STATE HEADER: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\Emitters\function_emitter.h
+        9: struct Function;
+       13: class FunctionEmitter
+
+FUNCTION STATE HEADER: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\include\ps2recomp\Emitters\function_table_emitter.h
+       11: struct Function;
+       14: class FunctionTableEmitter
+
+====================================================================================================
+10. ISOLATED GENERATION OUTPUT
+====================================================================================================
+Repair root: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518
+Generated root: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\generated
+Generated CPP count: 7227
+Generated header count: 2
+
+reg_frame @ 0x001048E0
+PRESENT: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\generated\reg_frame_0x1048e0.cpp
+  SIZE: 3272
+  SHA256: 5E5182A746FB6B8E11A605743FD0BB5747216ED2C569551E3FC9A7988CB9FB60
+
+PATTERN: // Function:
+       14: // Function: reg_frame
+
+PATTERN: // Address:
+       15: // Address: 0x1048e0 - 0x104920
+
+PATTERN: void 
+       16: void reg_frame_0x1048e0(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+
+PATTERN: PS_LOG_ENTRY
+       18: PS_LOG_ENTRY("reg_frame_0x1048e0");
+
+PATTERN: reg_frame
+       14: // Function: reg_frame
+       16: void reg_frame_0x1048e0(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+       18: PS_LOG_ENTRY("reg_frame_0x1048e0");
+
+PATTERN: 0x001048E0
+
+dereg_frame @ 0x00104920
+PRESENT: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\generated\dereg_frame_0x104920.cpp
+  SIZE: 2992
+  SHA256: FDB94C0CB1293837ED6AAD433B1AF180B21B98264EE8C6D5560966A8D7C123AD
+
+PATTERN: // Function:
+       14: // Function: dereg_frame
+
+PATTERN: // Address:
+       15: // Address: 0x104920 - 0x104958
+
+PATTERN: void 
+       16: void dereg_frame_0x104920(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+
+PATTERN: PS_LOG_ENTRY
+       18: PS_LOG_ENTRY("dereg_frame_0x104920");
+
+PATTERN: dereg_frame
+       14: // Function: dereg_frame
+       16: void dereg_frame_0x104920(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+       18: PS_LOG_ENTRY("dereg_frame_0x104920");
+
+PATTERN: 0x00104920
+
+__register_frame_info_table @ 0x0037F9A8
+PRESENT: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\generated\ps2___register_frame_info_table_0x37f9a8.cpp
+  SIZE: 2642
+  SHA256: DF17877DD47406D6381821206A906FE594E237B3B83930D9678DA38D96138DF1
+
+PATTERN: // Function:
+       14: // Function: __register_frame_info_table
+
+PATTERN: // Address:
+       15: // Address: 0x37f9a8 - 0x37f9d0
+
+PATTERN: void 
+       16: void ps2___register_frame_info_table_0x37f9a8(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+
+PATTERN: PS_LOG_ENTRY
+       18: PS_LOG_ENTRY("ps2___register_frame_info_table_0x37f9a8");
+
+PATTERN: __register_frame_info_table
+       14: // Function: __register_frame_info_table
+       16: void ps2___register_frame_info_table_0x37f9a8(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+       18: PS_LOG_ENTRY("ps2___register_frame_info_table_0x37f9a8");
+
+PATTERN: 0x0037F9A8
+
+__deregister_frame_info @ 0x0037FA00
+PRESENT: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\generated\ps2___deregister_frame_info_0x37fa00.cpp
+  SIZE: 7895
+  SHA256: 281625BF23079A689E340FC25F29B00A2285D1328020855150350B0B934E8BFE
+
+PATTERN: // Function:
+       14: // Function: __deregister_frame_info
+
+PATTERN: // Address:
+       15: // Address: 0x37fa00 - 0x37fa78
+
+PATTERN: void 
+       16: void ps2___deregister_frame_info_0x37fa00(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+
+PATTERN: PS_LOG_ENTRY
+       18: PS_LOG_ENTRY("ps2___deregister_frame_info_0x37fa00");
+
+PATTERN: __deregister_frame_info
+       14: // Function: __deregister_frame_info
+       16: void ps2___deregister_frame_info_0x37fa00(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+       18: PS_LOG_ENTRY("ps2___deregister_frame_info_0x37fa00");
+
+PATTERN: 0x0037FA00
+
+====================================================================================================
+11. ISOLATED REGISTER_FUNCTIONS.CPP — TARGET CHECK
+====================================================================================================
+
+REGISTER TABLE: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\generated\register_functions.cpp
+PRESENT: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\generated\register_functions.cpp
+  SIZE: 9524441
+  SHA256: 33F6D7DD85B5DBCE97414A15100208350354503A392D1A9E82F514782F374734
+
+reg_frame @ 0x001048E0
+     1201: g_ps2RecompiledFunctionTable[4662] = reg_frame_0x1048e0; // 0x1048e0
+     1202: g_ps2RecompiledFunctionTable[4672] = reg_frame_0x1048e0; // 0x104908
+     1203: g_ps2RecompiledFunctionTable[4678] = dereg_frame_0x104920; // 0x104920
+     1204: g_ps2RecompiledFunctionTable[4686] = dereg_frame_0x104920; // 0x104940
+     1201: g_ps2RecompiledFunctionTable[4662] = reg_frame_0x1048e0; // 0x1048e0
+     1202: g_ps2RecompiledFunctionTable[4672] = reg_frame_0x1048e0; // 0x104908
+
+dereg_frame @ 0x00104920
+     1203: g_ps2RecompiledFunctionTable[4678] = dereg_frame_0x104920; // 0x104920
+     1204: g_ps2RecompiledFunctionTable[4686] = dereg_frame_0x104920; // 0x104940
+     1203: g_ps2RecompiledFunctionTable[4678] = dereg_frame_0x104920; // 0x104920
+     1204: g_ps2RecompiledFunctionTable[4686] = dereg_frame_0x104920; // 0x104940
+
+__register_frame_info_table @ 0x0037F9A8
+    86256: g_ps2RecompiledFunctionTable[654952] = ps2___register_frame_info_table_0x37f9a8; // 0x37f9a8
+    86256: g_ps2RecompiledFunctionTable[654952] = ps2___register_frame_info_table_0x37f9a8; // 0x37f9a8
+
+__deregister_frame_info @ 0x0037FA00
+    86259: g_ps2RecompiledFunctionTable[654974] = ps2___deregister_frame_info_0x37fa00; // 0x37fa00
+    86260: g_ps2RecompiledFunctionTable[654982] = ps2___deregister_frame_info_0x37fa00; // 0x37fa20
+    86261: g_ps2RecompiledFunctionTable[654991] = ps2___deregister_frame_info_0x37fa00; // 0x37fa44
+    86262: g_ps2RecompiledFunctionTable[654993] = ps2___deregister_frame_info_0x37fa00; // 0x37fa4c
+    86263: g_ps2RecompiledFunctionTable[654999] = ps2___deregister_frame_info_0x37fa00; // 0x37fa64
+    86259: g_ps2RecompiledFunctionTable[654974] = ps2___deregister_frame_info_0x37fa00; // 0x37fa00
+    86260: g_ps2RecompiledFunctionTable[654982] = ps2___deregister_frame_info_0x37fa00; // 0x37fa20
+    86261: g_ps2RecompiledFunctionTable[654991] = ps2___deregister_frame_info_0x37fa00; // 0x37fa44
+    86262: g_ps2RecompiledFunctionTable[654993] = ps2___deregister_frame_info_0x37fa00; // 0x37fa4c
+    86263: g_ps2RecompiledFunctionTable[654999] = ps2___deregister_frame_info_0x37fa00; // 0x37fa64
+
+====================================================================================================
+12. GENERATION INPUT / TOML REFERENCES
+====================================================================================================
+
+TOML: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\constructor_repair.toml
+SIZE: 87318
+SHA256: 4F481305674EDB516941D427A01B049EA325A0AB2E2ACC85F5442BB5E480A662
+
+reg_frame references:
+
+dereg_frame references:
+
+__register_frame_info_table references:
+      733: "__register_frame_info_table@0x0037F9A8",
+      733: "__register_frame_info_table@0x0037F9A8",
+
+__deregister_frame_info references:
+      734: "__deregister_frame_info@0x0037FA00",
+      734: "__deregister_frame_info@0x0037FA00",
+
+TOML: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\backups\0001_config.toml
+SIZE: 678
+SHA256: 06284750F24DE1E87E3A62552141597FB80376650BD3EF04DC8D6C19D429AE44
+
+reg_frame references:
+
+dereg_frame references:
+
+__register_frame_info_table references:
+
+__deregister_frame_info references:
+
+TOML: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\backups\0002_ECOFF_ROW_MATCH_TEMP.toml
+SIZE: 87248
+SHA256: E37F62F68322CCE9380337CF01DC4A05C659444C8BEA92E7303BE931E318D7AA
+
+reg_frame references:
+
+dereg_frame references:
+
+__register_frame_info_table references:
+      731: "__register_frame_info_table@0x0037F9A8",
+      731: "__register_frame_info_table@0x0037F9A8",
+
+__deregister_frame_info references:
+      732: "__deregister_frame_info@0x0037FA00",
+      732: "__deregister_frame_info@0x0037FA00",
+
+TOML: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\backups\0003_config.toml
+SIZE: 247
+SHA256: 796851D0D91501256FC3A8B6A80DF462FD2675F52848DE54926E88A936A73DBB
+
+reg_frame references:
+
+dereg_frame references:
+
+__register_frame_info_table references:
+
+__deregister_frame_info references:
+
+TOML: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\backups\0004_config.toml
+SIZE: 678
+SHA256: 06284750F24DE1E87E3A62552141597FB80376650BD3EF04DC8D6C19D429AE44
+
+reg_frame references:
+
+dereg_frame references:
+
+__register_frame_info_table references:
+
+__deregister_frame_info references:
+
+TOML: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\backups\0005_config.toml
+SIZE: 678
+SHA256: 06284750F24DE1E87E3A62552141597FB80376650BD3EF04DC8D6C19D429AE44
+
+reg_frame references:
+
+dereg_frame references:
+
+__register_frame_info_table references:
+
+__deregister_frame_info references:
+
+====================================================================================================
+13. PS2RECOMP GENERATION LOG
+====================================================================================================
+
+LOG: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\ps2_recomp_stderr.log
+SIZE: 0
+
+LOG: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\ps2_recomp_stdout.log
+SIZE: 59764
+      405: Recompilation completed successfully
+       22: Warnings: 376, errors: 0
+       22: Warnings: 376, errors: 0
+       28: [warning] control-flow function=StartDraw__Fv addr=0x10166c - unresolved JR/JALR at 0x10166c 0x1016a4 0x101700; promoted 52 fallback entries
+       29: [warning] control-flow function=LoadLevelSettings__F6eLevelR14LevelStartInfo addr=0x102d78 - unresolved JR/JALR at 0x102d78 0x102ddc 0x102e38; promoted 98 fallback entries
+       30: [warning] control-flow function=FadeToPostLevelScreen__F6eLevel addr=0x103198 - unresolved JR/JALR at 0x103198 0x1031d8; promoted 159 fallback entries
+       31: [warning] control-flow function=ChooseMinimalImage__F6eLevelT0 addr=0x10372c - unresolved JR/JALR at 0x10372c 0x10376c; promoted 199 fallback entries
+       32: [warning] control-flow function=LoadGameDataFromMemCard__Fv addr=0x103880 - unresolved JR/JALR at 0x103880; promoted 63 fallback entries
+       33: [warning] control-flow function=update__6Camera addr=0x1060a4 - unresolved JR/JALR at 0x1060a4 0x106134; promoted 781 fallback entries
+       34: [warning] control-flow function=updateBowCamera__6Camerab addr=0x10c930 - unresolved JR/JALR at 0x10c930 0x10c95c; promoted 216 fallback entries
+       35: [warning] control-flow function=resetBowMode__6Camera addr=0x1157d0 - unresolved JR/JALR at 0x1157d0; promoted 31 fallback entries
+       36: [warning] control-flow function=msc_saveToFile__FPUcUiPc addr=0x11bc90 - unresolved JR/JALR at 0x11bc90 0x11bcd8 0x11bcf0; promoted 50 fallback entries
+       37: [warning] control-flow function=msc_loadFileToAddr__FPcPUcUi addr=0x11bd60 - unresolved JR/JALR at 0x11bd60 0x11bdb8 0x11bdcc; promoted 56 fallback entries
+       38: [warning] control-flow function=msc_loadFile__FPcPUi addr=0x11be38 - unresolved JR/JALR at 0x11be38 0x11be9c 0x11beb0; promoted 56 fallback entries
+       39: [warning] control-flow function=edit__8MenuItem addr=0x129614 - unresolved JR/JALR at 0x129614 0x1296c0 0x129700 0x129714; promoted 84 fallback entries
+       40: [warning] control-flow function=draw__8MenuItem addr=0x129e24 - unresolved JR/JALR at 0x129e24 0x129e50; promoted 101 fallback entries
+       41: [warning] control-flow function=edit__12MenuListItem addr=0x12a0a4 - unresolved JR/JALR at 0x12a0a4; promoted 75 fallback entries
+       42: [warning] control-flow function=draw__12MenuListItem addr=0x12a0f4 - unresolved JR/JALR at 0x12a0f4; promoted 119 fallback entries
+       43: [warning] control-flow function=drawMenuItem__5_Menu addr=0x12a2cc - unresolved JR/JALR at 0x12a2cc; promoted 74 fallback entries
+       44: [warning] control-flow function=close__5_Menu addr=0x12a8c8 - unresolved JR/JALR at 0x12a8c8 0x12a95c; promoted 73 fallback entries
+       45: [warning] control-flow function=menu_windowCloseCurrent__Fv addr=0x12aa34 - unresolved JR/JALR at 0x12aa34; promoted 52 fallback entries
+       46: [warning] control-flow function=edit__10MenuWindow addr=0x12abd0 - unresolved JR/JALR at 0x12abd0 0x12ac18 0x12ac2c 0x12ac60 0x12ac7c; promoted 146 fallback entries
+       47: [warning] control-flow function=menu_caseMenuEdit__FP13_MenuBaseItem addr=0x12bd48 - unresolved JR/JALR at 0x12bd48 0x12bdbc; promoted 72 fallback entries
+       48: [warning] control-flow function=menu_savePlayerPos__Fv addr=0x160184 - unresolved JR/JALR at 0x160184; promoted 75 fallback entries
+       49: [warning] control-flow function=menu_loadPlayerPos__Fv addr=0x160338 - unresolved JR/JALR at 0x160338 0x160370; promoted 119 fallback entries
+       50: [warning] control-flow function=menu_openPregameMenu__Fv addr=0x1618f0 - unresolved JR/JALR at 0x1618f0; promoted 64 fallback entries
+       51: [warning] control-flow function=menu_openMainMenu__Fv addr=0x1619f0 - unresolved JR/JALR at 0x1619f0; promoted 69 fallback entries
+       52: [warning] control-flow function=menu_headerDataMenuEdit__FP13_MenuBaseItem addr=0x1639b0 - unresolved JR/JALR at 0x1639b0; promoted 39 fallback entries
+       53: [warning] control-flow function=menu_openPrevHeaderMenu__Fv addr=0x163e8c - unresolved JR/JALR at 0x163e8c; promoted 36 fallback entries
+       54: [warning] control-flow function=menu_openNextHeaderMenu__FP8CaseNode addr=0x163f24 - unresolved JR/JALR at 0x163f24; promoted 38 fallback entries
+       55: [warning] control-flow function=edit__5_Menu addr=0x164f40 - unresolved JR/JALR at 0x164f40 0x164f54 0x164f88; promoted 37 fallback entries
+       56: [warning] control-flow function=editActionItem__8MenuItem addr=0x1653b8 - unresolved JR/JALR at 0x1653b8; promoted 19 fallback entries
+  ... additional hits suppressed ...
+
+====================================================================================================
+14. EXISTING CONSTRUCTOR ROOT-CAUSE REPORT
+====================================================================================================
+MISSING: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_ROOT_CAUSE_REPORT.txt
+
+====================================================================================================
+15. EXISTING TARGET SUMMARY
+====================================================================================================
+MISSING: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_TARGET_SUMMARY.txt
+
+====================================================================================================
+16. GLOBAL REGISTRATION IMPLEMENTATION DISCOVERY
+====================================================================================================
+Files containing FunctionTableEmitter:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\code_generator.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp
+
+Files containing registeredAddresses:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp
+
+Files containing m_functions:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+
+Files containing isRecompiled:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\control_flow_analyzer.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\function_table_emitter.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\ps2_recompiler.cpp
+
+====================================================================================================
+17. TARGET FUNCTION GENERATION / REGISTRATION FILE SEARCH
+====================================================================================================
+
+reg_frame / 0x001048E0
+Source files mentioning symbol:
+NONE FOUND
+Audit files mentioning symbol:
+D:\Downloads\MarkOfKri_Audits\GS_ALIAS_ADDRESS_TRACE_20261126_040618.txt
+D:\Downloads\MarkOfKri_Audits\GS_ALIAS_IMPLEMENTATION_AUDIT_20261126_040415.txt
+D:\Downloads\MarkOfKri_Audits\GS_BACKEND_FIXTURE_PARAMETERS_20261126_111030.txt
+D:\Downloads\MarkOfKri_Audits\GS_BACKEND_TEST_SEAM_AUDIT_20261126_043046.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_00100008_ISOLATED_GENERATION_20261128_003854.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_CONSTRUCTOR_FUNCTION_PROVENANCE_AUDIT.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_CONSTRUCTOR_GENERATION_INPUT_AUDIT.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_CONSTRUCTOR_GENERATION_INPUT_COVERAGE_AUDIT_20261128_050230.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_EXACT_PROMOTION_RECONSTRUCTION_20261128_002911.txt
+D:\Downloads\MarkOfKri_Audits\AUTHORITATIVE_ANALYZER_267_20261127_151449\analyzer_stdout.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FINAL_COVERAGE_20261128_051537\CONSTRUCTOR_FINAL_COVERAGE_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FINAL_COVERAGE_20261128_051537\CONSTRUCTOR_TARGET_SUMMARY.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\CONSTRUCTOR_FORENSIC_REPAIR_MANIFEST.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\CONSTRUCTOR_FORENSIC_REPAIR_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_ROOT_CAUSE_20261128_051700\CONSTRUCTOR_REGISTRATION_ROOT_CAUSE_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_ROOT_CAUSE_20261128_051700\CONSTRUCTOR_REGISTRATION_TARGET_SUMMARY.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_STATE_FORENSIC_20261128_052202\CONSTRUCTOR_REGISTRATION_STATE_FORENSIC.txt
+D:\Downloads\MarkOfKri_Audits\ENTRY_BOOTSTRAP_RECOMP_20261126_223041\ENTRY_BOOTSTRAP_RECOMPILATION_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\MDEBUG_ECOFF_INVESTIGATION_20261127_160757\MDEBUG_IMPLEMENTATION_CONTEXT.txt
+D:\Downloads\MarkOfKri_Audits\MDEBUG_ECOFF_INVESTIGATION_20261127_160757\MDEBUG_PRINTABLE_STRINGS.txt
+
+dereg_frame / 0x00104920
+Source files mentioning symbol:
+NONE FOUND
+Audit files mentioning symbol:
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_00100008_ISOLATED_GENERATION_20261128_003854.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_CONSTRUCTOR_FUNCTION_PROVENANCE_AUDIT.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_CONSTRUCTOR_GENERATION_INPUT_AUDIT.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_CONSTRUCTOR_GENERATION_INPUT_COVERAGE_AUDIT_20261128_050230.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_EXACT_PROMOTION_RECONSTRUCTION_20261128_002911.txt
+D:\Downloads\MarkOfKri_Audits\AUTHORITATIVE_ANALYZER_267_20261127_151449\analyzer_stdout.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FINAL_COVERAGE_20261128_051537\CONSTRUCTOR_FINAL_COVERAGE_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FINAL_COVERAGE_20261128_051537\CONSTRUCTOR_TARGET_SUMMARY.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\CONSTRUCTOR_FORENSIC_REPAIR_MANIFEST.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\CONSTRUCTOR_FORENSIC_REPAIR_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_ROOT_CAUSE_20261128_051700\CONSTRUCTOR_REGISTRATION_ROOT_CAUSE_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_ROOT_CAUSE_20261128_051700\CONSTRUCTOR_REGISTRATION_TARGET_SUMMARY.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_STATE_FORENSIC_20261128_052202\CONSTRUCTOR_REGISTRATION_STATE_FORENSIC.txt
+D:\Downloads\MarkOfKri_Audits\ENTRY_BOOTSTRAP_RECOMP_20261126_223041\ENTRY_BOOTSTRAP_RECOMPILATION_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\MDEBUG_ECOFF_INVESTIGATION_20261127_160757\MDEBUG_PRINTABLE_STRINGS.txt
+
+__register_frame_info_table / 0x0037F9A8
+Source files mentioning symbol:
+NONE FOUND
+Audit files mentioning symbol:
+D:\Downloads\MarkOfKri_Audits\DMA_AUDIO_FINAL_GAME_IMPORT_AUDIT_20261126_192052.txt
+D:\Downloads\MarkOfKri_Audits\EE_RPC_REGISTRATION_RESET_OWNERSHIP_20261127_211117.txt
+D:\Downloads\MarkOfKri_Audits\GLOBAL_IOP_HANDLE_RPC_ROUTING_20261127_210431.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_00100008_ISOLATED_GENERATION_20261128_003854.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_CONSTRUCTOR_FUNCTION_PROVENANCE_AUDIT.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_CONSTRUCTOR_GENERATION_INPUT_AUDIT.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_CONSTRUCTOR_GENERATION_INPUT_COVERAGE_AUDIT_20261128_050230.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_EXACT_PROMOTION_RECONSTRUCTION_20261128_002911.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_FINAL_PREBUILD_AUDIT_20261127_211337.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_NEXT_SUBSYSTEM_AUDIT_20261126_111446.txt
+D:\Downloads\MarkOfKri_Audits\ANALYZER_CLI_CONTRACT_20261127_150146\ANALYZER_EXE_STRINGS.txt
+D:\Downloads\MarkOfKri_Audits\AUTHORITATIVE_ANALYZER_267_20261127_151449\analyzer_stdout.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FINAL_COVERAGE_20261128_051537\CONSTRUCTOR_FINAL_COVERAGE_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FINAL_COVERAGE_20261128_051537\CONSTRUCTOR_TARGET_SUMMARY.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\CONSTRUCTOR_FORENSIC_REPAIR_MANIFEST.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\CONSTRUCTOR_FORENSIC_REPAIR_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_ROOT_CAUSE_20261128_051700\CONSTRUCTOR_REGISTRATION_ROOT_CAUSE_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_ROOT_CAUSE_20261128_051700\CONSTRUCTOR_REGISTRATION_TARGET_SUMMARY.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_STATE_FORENSIC_20261128_052202\CONSTRUCTOR_REGISTRATION_STATE_FORENSIC.txt
+D:\Downloads\MarkOfKri_Audits\ECOFF_FDR_PDR_LAYOUT_RESEARCH_20261127_162120\ECOFF_FDR_PDR_STRUCTURE_RESEARCH.txt
+D:\Downloads\MarkOfKri_Audits\ENTRY_BOOTSTRAP_RECOMP_20261126_223041\ENTRY_BOOTSTRAP_RECOMPILATION_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\FUNCTION_FALLBACK_ELF_METADATA_20261127_160213\FUNCTION_FALLBACK_ELF_METADATA_AUDIT.txt
+D:\Downloads\MarkOfKri_Audits\MDEBUG_ECOFF_INVESTIGATION_20261127_160757\MDEBUG_IMPLEMENTATION_CONTEXT.txt
+D:\Downloads\MarkOfKri_Audits\MDEBUG_ECOFF_INVESTIGATION_20261127_160757\MDEBUG_PRINTABLE_STRINGS.txt
+
+__deregister_frame_info / 0x0037FA00
+Source files mentioning symbol:
+NONE FOUND
+Audit files mentioning symbol:
+D:\Downloads\MarkOfKri_Audits\IOP_RPC_BRIDGE_OWNERSHIP_20261127_210613.txt
+D:\Downloads\MarkOfKri_Audits\IOP_SUBSYSTEM_HANDLE_CALLERS_20261127_210209.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_00100008_ISOLATED_GENERATION_20261128_003854.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_CONSTRUCTOR_FUNCTION_PROVENANCE_AUDIT.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_CONSTRUCTOR_GENERATION_INPUT_AUDIT.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_CONSTRUCTOR_GENERATION_INPUT_COVERAGE_AUDIT_20261128_050230.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_EXACT_PROMOTION_RECONSTRUCTION_20261128_002911.txt
+D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_NEXT_SUBSYSTEM_AUDIT_20261126_111446.txt
+D:\Downloads\MarkOfKri_Audits\ANALYZER_CLI_CONTRACT_20261127_150146\ANALYZER_EXE_STRINGS.txt
+D:\Downloads\MarkOfKri_Audits\AUTHORITATIVE_ANALYZER_267_20261127_151449\analyzer_stdout.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FINAL_COVERAGE_20261128_051537\CONSTRUCTOR_FINAL_COVERAGE_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FINAL_COVERAGE_20261128_051537\CONSTRUCTOR_TARGET_SUMMARY.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\CONSTRUCTOR_FORENSIC_REPAIR_MANIFEST.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_FORENSIC_REPAIR_20261128_050518\CONSTRUCTOR_FORENSIC_REPAIR_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_ROOT_CAUSE_20261128_051700\CONSTRUCTOR_REGISTRATION_ROOT_CAUSE_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_ROOT_CAUSE_20261128_051700\CONSTRUCTOR_REGISTRATION_TARGET_SUMMARY.txt
+D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_STATE_FORENSIC_20261128_052202\CONSTRUCTOR_REGISTRATION_STATE_FORENSIC.txt
+D:\Downloads\MarkOfKri_Audits\ENTRY_BOOTSTRAP_RECOMP_20261126_223041\ENTRY_BOOTSTRAP_RECOMPILATION_REPORT.txt
+D:\Downloads\MarkOfKri_Audits\FUNCTION_FALLBACK_ELF_METADATA_20261127_160213\FUNCTION_FALLBACK_ELF_METADATA_AUDIT.txt
+D:\Downloads\MarkOfKri_Audits\MDEBUG_ECOFF_INVESTIGATION_20261127_160757\MDEBUG_IMPLEMENTATION_CONTEXT.txt
+D:\Downloads\MarkOfKri_Audits\MDEBUG_ECOFF_INVESTIGATION_20261127_160757\MDEBUG_PRINTABLE_STRINGS.txt
+D:\Downloads\MarkOfKri_Audits\PS2RECOMP_DISCOVERY_EXCLUSION_AUDIT_20261127_134328\PS2RECOMP_DISCOVERY_EXCLUSION_AUDIT_REPORT.txt
+
+====================================================================================================
+18. STATIC FACT SUMMARY
+====================================================================================================
+KNOWN FROM THIS PASS:
+
+  [1] Four constructor targets are being investigated.
+  [2] Generated C++ files are expected under the isolated repair output.
+  [3] Registration output is expected in register_functions.cpp.
+  [4] Actual PS2Recomp source locations are discovered dynamically.
+  [5] FunctionTableEmitter registration predicates are collected.
+  [6] m_functions/state assignment references are collected.
+  [7] All four target symbols/addresses are searched through the source tree.
+  [8] TOML and generation logs are checked.
+  [9] Existing forensic reports are checked.
+
+IMPORTANT: This pass does not modify the generator or runtime.
+
+====================================================================================================
+19. NEXT-STAGE CLASSIFICATION
+====================================================================================================
+The next repair must be selected from the following evidence chain:
+
+DISCOVERY
+  -> Was each target represented in the recompiler function collection?
+
+STATE
+  -> Did each target receive a state accepted by registration emission?
+
+EMITTER
+  -> Did FunctionTableEmitter intentionally exclude each target?
+
+EMISSION
+  -> Did an accepted target reach register_functions.cpp?
+
+If the evidence shows targets are generated but absent from the final
+function collection/state, the fix belongs in PS2Recompiler discovery/state.
+
+If the evidence shows targets are present and accepted but omitted by
+FunctionTableEmitter, the fix belongs in registration emission.
+
+If the evidence shows FunctionTableEmitter emits them but they disappear
+from register_functions.cpp, investigate downstream generation/deduplication.
+
+NO MANUAL REGISTRATION PATCH SHOULD BE MADE UNTIL THIS CHAIN IDENTIFIES
+THE ACTUAL FAILURE POINT.
+
+====================================================================================================
+20. COMPLETION
+====================================================================================================
+Estimated runtime: 30–120 seconds
+Actual elapsed: 171.43 seconds (2.86 minutes)
+Production modified: NO
+PS2Recomp rerun: NO
+CMake build: NO
+Runner launched: NO
+Runner terminated: NO
+PowerShell session remains open.
+Complete report directory: D:\Downloads\MarkOfKri_Audits\CONSTRUCTOR_REGISTRATION_COMPLETE_20261128_052455
