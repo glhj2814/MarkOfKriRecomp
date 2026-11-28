@@ -1,0 +1,1728 @@
+MARK OF KRI — SIF / RPC / FILE-SEMAPHORE IMPLEMENTATION TRACE
+Generated: 2026-11-27 19:41:50
+MODE: READ ONLY
+
+========== SIF command dispatch ==========
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp
+SHA256: FCA911DA82716904EA408BB20848D03AA36582C10C304DA03EE0DAD7A1BFA8F1
+--- SYMBOL: dispatchSifCommand ---
+227:     }
+228: 
+229:     bool dispatchSifCommand(uint8_t *rdram,
+230:                             PS2Runtime *runtime,
+231:                             uint32_t commandId,
+232:                             const void *packet,
+233:                             size_t packetSize) noexcept
+234:     {
+235:         if (!rdram || !runtime || !packet || packetSize < 16u || packetSize > 112u)
+236:             return false;
+237: 
+238:         SifCmdHandler registered{};
+239:         {
+240:             std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+241:             const auto handler = g_sifCmdHandlers.find(commandId);
+242:             if (handler == g_sifCmdHandlers.end() || handler->second.function == 0u)
+243:                 return false;
+244:             registered = handler->second;
+245:         }
+246: 
+247:         if (!runtime->hasFunction(registered.function))
+248:             return false;
+249: 
+250:         const uint32_t packetAddress = runtime->guestMalloc(static_cast<uint32_t>(packetSize), 16u);
+251:         if (packetAddress == 0u)
+252:             return false;
+253: 
+254:         uint8_t *const first = getMemPtr(rdram, packetAddress);
+255:         uint8_t *const last = getMemPtr(rdram, packetAddress + static_cast<uint32_t>(packetSize - 1u));
+256:         if (!first || !last || last < first || static_cast<size_t>(last - first) != packetSize - 1u)
+257:         {
+258:             runtime->guestFree(packetAddress);
+259:             return false;
+260:         }
+261: 
+262:         ps2TraceGuestRangeWrite(rdram, packetAddress, static_cast<uint32_t>(packetSize), "SIF command packet", nullptr);
+263:         std::memcpy(first, packet, packetSize);
+264: 
+
+--- SYMBOL: sceSifCmdIntrHdlr ---
+13: namespace ps2_stubs
+14: {
+15:     void sceSifCmdIntrHdlr(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+16:     {
+17:         TODO_NAMED("sceSifCmdIntrHdlr", rdram, ctx, runtime);
+18:     }
+19: 
+20:     void sceSifLoadModule(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+21:     {
+22:         ps2_syscalls::SifLoadModule(rdram, ctx, runtime);
+23:     }
+24: 
+25:     void sceSifSendCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+26:     {
+27:         const uint32_t srcAddr = getRegU32(ctx, 7); // $a3
+28:         const uint32_t dstAddr = readStackU32(rdram, ctx, 16);
+29:         const uint32_t size = readStackU32(rdram, ctx, 20);
+30:         if (size != 0u && srcAddr != 0u && dstAddr != 0u)
+31:         {
+32:             std::vector<uint8_t> payload(size);
+33:             bool valid = runtime != nullptr;
+34:             for (uint32_t i = 0; i < size; ++i)
+35:             {
+36:                 const uint8_t *src = getConstMemPtr(rdram, srcAddr + i);
+37:                 if (!src)
+38:                 {
+39:                     valid = false;
+40:                     break;
+41:                 }
+42:                 payload[i] = *src;
+43:             }
+44:             if (!valid || !runtime->writeIopMemory(dstAddr, payload.data(), payload.size()))
+45:             {
+46:                 setReturnS32(ctx, 0);
+47:                 return;
+48:             }
+49:         }
+50: 
+
+--- SYMBOL: sceSifAddCmdHandler ---
+290:     }
+291: 
+292:     void sceSifAddCmdHandler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+293:     {
+294:         const uint32_t cid = getRegU32(ctx, 4);
+295:         const uint32_t handler = getRegU32(ctx, 5);
+296:         const uint32_t argument = getRegU32(ctx, 6);
+297:         std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+298:         g_sifCmdHandlers[cid] = SifCmdHandler{handler, argument};
+299:         setReturnS32(ctx, 0);
+300:     }
+301: 
+302:     void sceSifAllocIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+303:     {
+304:         (void)rdram;
+305:         const uint32_t reqSize = getRegU32(ctx, 4);
+306:         setReturnU32(ctx, runtime ? runtime->allocateIopMemory(reqSize, 64u) : 0u);
+307:     }
+308: 
+309:     void sceSifAllocSysMemory(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+310:     {
+311:         (void)rdram;
+312:         const uint32_t size = getRegU32(ctx, 5);
+313:         setReturnU32(ctx, runtime ? runtime->allocateIopMemory(size, 64u) : 0u);
+314:     }
+315: 
+316:     void sceSifBindRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+317:     {
+318:         ps2_syscalls::SifBindRpc(rdram, ctx, runtime);
+319:     }
+320: 
+321:     void sceSifCheckStatRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+322:     {
+323:         ps2_syscalls::SifCheckStatRpc(rdram, ctx, runtime);
+324:     }
+325: 
+326:     void sceSifDmaStat(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+327:     {
+
+--- SYMBOL: sceSifSendCmd ---
+23:     }
+24: 
+25:     void sceSifSendCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+26:     {
+27:         const uint32_t srcAddr = getRegU32(ctx, 7); // $a3
+28:         const uint32_t dstAddr = readStackU32(rdram, ctx, 16);
+29:         const uint32_t size = readStackU32(rdram, ctx, 20);
+30:         if (size != 0u && srcAddr != 0u && dstAddr != 0u)
+31:         {
+32:             std::vector<uint8_t> payload(size);
+33:             bool valid = runtime != nullptr;
+34:             for (uint32_t i = 0; i < size; ++i)
+35:             {
+36:                 const uint8_t *src = getConstMemPtr(rdram, srcAddr + i);
+37:                 if (!src)
+38:                 {
+39:                     valid = false;
+40:                     break;
+41:                 }
+42:                 payload[i] = *src;
+43:             }
+44:             if (!valid || !runtime->writeIopMemory(dstAddr, payload.data(), payload.size()))
+45:             {
+46:                 setReturnS32(ctx, 0);
+47:                 return;
+48:             }
+49:         }
+50: 
+51:         setReturnS32(ctx, 1);
+52:     }
+53: 
+54:     namespace
+55:     {
+56:         struct Ps2SifDmaTransfer
+57:         {
+58:             uint32_t src = 0;
+59:             uint32_t dest = 0;
+60:             int32_t size = 0;
+
+
+========== SIF declarations ==========
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.h
+SHA256: 628E65A764E363E07FE068F91865D49F5C0E5EB2918CACABEFBB07BC8ED5C320
+--- SYMBOL: dispatchSifCommand ---
+5: namespace ps2_stubs
+6: {
+7:     bool dispatchSifCommand(uint8_t *rdram, PS2Runtime *runtime, uint32_t commandId, const void *packet, size_t packetSize) noexcept;
+8:     void sceSifCmdIntrHdlr(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+9:     void sceSifLoadModule(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+10:     void sceSifSendCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+11:     void resetSifState();
+12:     void sceSifAddCmdHandler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+13:     void sceSifAllocIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+14:     void sceSifAllocSysMemory(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+15:     void sceSifBindRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+16:     void sceSifCheckStatRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+17:     void sceSifDmaStat(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+18:     void sceSifExecRequest(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+19:     void sceSifExitCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+20:     void sceSifExitRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+21:     void sceSifFreeIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+22:     void sceSifFreeSysMemory(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+23:     void sceSifGetDataTable(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+24:     void sceSifGetIopAddr(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+25:     void sceSifGetNextRequest(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+26:     void sceSifGetOtherData(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+27:     void sceSifGetReg(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+28:     void sceSifGetSreg(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+29:     void sceSifInitCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+30:     void sceSifInitIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+31:     void sceSifInitRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+32:     void sceSifIsAliveIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+33:     void sceSifLoadElf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+34:     void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+35:     void sceSifLoadFileReset(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+36:     void sceSifLoadIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+37:     void sceSifLoadModuleBuffer(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+38:     void sceSifRebootIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+39:     void sceSifRegisterRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+40:     void sceSifRemoveCmdHandler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+41:     void sceSifRemoveRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+42:     void sceSifRemoveRpcQueue(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+
+--- SYMBOL: sceSifCmdIntrHdlr ---
+6: {
+7:     bool dispatchSifCommand(uint8_t *rdram, PS2Runtime *runtime, uint32_t commandId, const void *packet, size_t packetSize) noexcept;
+8:     void sceSifCmdIntrHdlr(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+9:     void sceSifLoadModule(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+10:     void sceSifSendCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+11:     void resetSifState();
+12:     void sceSifAddCmdHandler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+13:     void sceSifAllocIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+14:     void sceSifAllocSysMemory(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+15:     void sceSifBindRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+16:     void sceSifCheckStatRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+17:     void sceSifDmaStat(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+18:     void sceSifExecRequest(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+19:     void sceSifExitCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+20:     void sceSifExitRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+21:     void sceSifFreeIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+22:     void sceSifFreeSysMemory(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+23:     void sceSifGetDataTable(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+24:     void sceSifGetIopAddr(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+25:     void sceSifGetNextRequest(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+26:     void sceSifGetOtherData(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+27:     void sceSifGetReg(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+28:     void sceSifGetSreg(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+29:     void sceSifInitCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+30:     void sceSifInitIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+31:     void sceSifInitRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+32:     void sceSifIsAliveIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+33:     void sceSifLoadElf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+34:     void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+35:     void sceSifLoadFileReset(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+36:     void sceSifLoadIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+37:     void sceSifLoadModuleBuffer(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+38:     void sceSifRebootIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+39:     void sceSifRegisterRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+40:     void sceSifRemoveCmdHandler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+41:     void sceSifRemoveRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+42:     void sceSifRemoveRpcQueue(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+43:     void sceSifResetIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+
+
+========== RPC packet handling ==========
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp
+SHA256: 38AA2006A5240A8D29B087844DF2822284210F2F928C50A5F4D2B0AE3ED2A5B5
+--- SYMBOL: sceRpcGetPacket ---
+1001:     }
+1002: 
+1003:     void sceRpcGetPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+1004:     {
+1005:         uint32_t queuePtr = getRegU32(ctx, 4);
+1006:         setReturnS32(ctx, static_cast<int32_t>(queuePtr));
+1007:     }
+1008: }
+
+--- SYMBOL: SifCallRpc ---
+340:     }
+341: 
+342:     void SifCallRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+343:     {
+344:         std::lock_guard<std::recursive_mutex> rpcCallLock(g_sif_call_rpc_mutex);
+345: 
+346:         const uint32_t clientPtr = getRegU32(ctx, 4);
+347:         const uint32_t rpcNum = getRegU32(ctx, 5);
+348:         const uint32_t mode = getRegU32(ctx, 6);
+349:         const uint32_t sendBuf = getRegU32(ctx, 7);
+350:         const uint32_t stackPointer = getRegU32(ctx, 29);
+351: 
+352:         const uint32_t sendSizeRegisters = getRegU32(ctx, 8);
+353:         const uint32_t receiveBufferRegisters = getRegU32(ctx, 9);
+354:         const uint32_t receiveSizeRegisters = getRegU32(ctx, 10);
+355:         const uint32_t endFunctionRegisters = getRegU32(ctx, 11);
+356:         uint32_t endParameterRegisters = 0u;
+357:         (void)readStackU32(rdram, stackPointer, 0x0u, endParameterRegisters);
+358: 
+359:         uint32_t sendSizeStack = 0u;
+360:         uint32_t receiveBufferStack = 0u;
+361:         uint32_t receiveSizeStack = 0u;
+362:         uint32_t endFunctionStack = 0u;
+363:         uint32_t endParameterStack = 0u;
+364:         (void)readStackU32(rdram, stackPointer, 0x10u, sendSizeStack);
+365:         (void)readStackU32(rdram, stackPointer, 0x14u, receiveBufferStack);
+366:         (void)readStackU32(rdram, stackPointer, 0x18u, receiveSizeStack);
+367:         (void)readStackU32(rdram, stackPointer, 0x1Cu, endFunctionStack);
+368:         (void)readStackU32(rdram, stackPointer, 0x20u, endParameterStack);
+369: 
+370:         const auto looksLikeGuestPointer = [](uint32_t value)
+371:         {
+372:             if (value == 0u)
+373:             {
+374:                 return true;
+375:             }
+376:             const uint32_t normalized = value & 0x1FFFFFFFu;
+377:             return normalized >= 0x10000u && normalized < PS2_RAM_SIZE;
+
+966:     void sceSifCallRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+967:     {
+968:         SifCallRpc(rdram, ctx, runtime);
+969:     }
+970: 
+971:     void sceSifSendCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+972:     {
+973:         uint32_t cid = getRegU32(ctx, 4);
+974:         uint32_t packetAddr = getRegU32(ctx, 5);
+975:         uint32_t packetSize = getRegU32(ctx, 6);
+976:         uint32_t srcExtra = getRegU32(ctx, 7);
+977: 
+978:         uint32_t sp = getRegU32(ctx, 29);
+979:         uint32_t destExtra = 0;
+980:         uint32_t sizeExtra = 0;
+981:         readStackU32(rdram, sp, 0x10, destExtra);
+982:         readStackU32(rdram, sp, 0x14, sizeExtra);
+983: 
+984:         if (sizeExtra > 0 && srcExtra && destExtra)
+985:         {
+986:             rpcCopyToRdram(rdram, destExtra, srcExtra, sizeExtra);
+987:         }
+988: 
+989:         static int logCount = 0;
+990:         if (logCount < 5)
+991:         {
+992:             RUNTIME_LOG("[sceSifSendCmd] cid=0x" << std::hex << cid
+993:                                                  << " packet=0x" << packetAddr
+994:                                                  << " psize=0x" << packetSize
+995:                                                  << " extra=0x" << destExtra << std::dec << std::endl);
+996:             ++logCount;
+997:         }
+998: 
+999:         // Return non-zero on success.
+1000:         setReturnS32(ctx, 1);
+1001:     }
+1002: 
+1003:     void sceRpcGetPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+
+--- SYMBOL: SifBindRpc ---
+252:     }
+253: 
+254:     void SifBindRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+255:     {
+256:         uint32_t clientPtr = getRegU32(ctx, 4);
+257:         uint32_t rpcId = getRegU32(ctx, 5);
+258:         uint32_t mode = getRegU32(ctx, 6);
+259: 
+260:         t_SifRpcClientData *client = reinterpret_cast<t_SifRpcClientData *>(getMemPtr(rdram, clientPtr));
+261: 
+262:         if (!client)
+263:         {
+264:             SifRpcDebugEvent event = makeRpcDebugEvent("BindRpc", ctx, runtime);
+265:             event.clientPtr = clientPtr;
+266:             event.sid = rpcId;
+267:             event.mode = mode;
+268:             event.flags = kSifRpcDebugFlagMissingClient;
+269:             event.result = -1;
+270:             pushSifRpcDebugEvent(event);
+271:             setReturnS32(ctx, -1);
+272:             return;
+273:         }
+274: 
+275:         client->command = 0;
+276:         client->buf = 0;
+277:         client->cbuf = 0;
+278:         client->end_function = 0;
+279:         client->end_param = 0;
+280:         client->server = 0;
+281:         client->hdr.pkt_addr = 0;
+282:         client->hdr.sema_id = -1;
+283:         client->hdr.mode = mode;
+284: 
+285:         uint32_t serverPtr = 0;
+286:         {
+287:             std::lock_guard<std::mutex> lock(g_rpc_mutex);
+288:             client->hdr.rpc_id = g_rpc_next_id++;
+289:             auto it = g_rpc_servers.find(rpcId);
+
+--- SYMBOL: SifRegisterRpc ---
+703:     }
+704: 
+705:     void SifRegisterRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+706:     {
+707:         uint32_t sdPtr = getRegU32(ctx, 4);
+708:         uint32_t sid = getRegU32(ctx, 5);
+709:         uint32_t func = getRegU32(ctx, 6);
+710:         uint32_t buf = getRegU32(ctx, 7);
+711:         // stack args: cfunc, cbuf, qd...
+712:         uint32_t sp = getRegU32(ctx, 29);
+713:         uint32_t cfunc = 0;
+714:         uint32_t cbuf = 0;
+715:         uint32_t qd = 0;
+716:         readStackU32(rdram, sp, 0x10, cfunc);
+717:         readStackU32(rdram, sp, 0x14, cbuf);
+718:         readStackU32(rdram, sp, 0x18, qd);
+719: 
+720:         t_SifRpcServerData *sd = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, sdPtr));
+721:         if (!sd)
+722:         {
+723:             SifRpcDebugEvent event = makeRpcDebugEvent("RegisterRpc", ctx, runtime);
+724:             event.serverPtr = sdPtr;
+725:             event.sid = sid;
+726:             event.sendBuf = buf;
+727:             event.recvBuf = cbuf;
+728:             event.resultPtr = qd;
+729:             event.endFunc = cfunc;
+730:             event.flags = kSifRpcDebugFlagMissingClient;
+731:             event.result = -1;
+732:             pushSifRpcDebugEvent(event);
+733:             setReturnS32(ctx, -1);
+734:             return;
+735:         }
+736: 
+737:         sd->sid = static_cast<int>(sid);
+738:         sd->func = func;
+739:         sd->buf = buf;
+740:         sd->size = 0;
+
+
+========== RPC stub wrappers ==========
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp
+SHA256: 765190EB48CDFE9CCF5538071B6624B15B8BD5DCE8B7D22AA8DB2B64E67D291A
+--- SYMBOL: sceRpcFreePacket ---
+4: namespace ps2_stubs
+5: {
+6:     void sceRpcFreePacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+7:     {
+8:         TODO_NAMED("sceRpcFreePacket", rdram, ctx, runtime);
+9:     }
+10: 
+11:     void sceRpcGetFPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+12:     {
+13:         TODO_NAMED("sceRpcGetFPacket", rdram, ctx, runtime);
+14:     }
+15: 
+16:     void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+17:     {
+18:         TODO_NAMED("sceRpcGetFPacket2", rdram, ctx, runtime);
+19:     }
+20: }
+
+--- SYMBOL: sceRpcGetFPacket ---
+9:     }
+10: 
+11:     void sceRpcGetFPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+12:     {
+13:         TODO_NAMED("sceRpcGetFPacket", rdram, ctx, runtime);
+14:     }
+15: 
+16:     void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+17:     {
+18:         TODO_NAMED("sceRpcGetFPacket2", rdram, ctx, runtime);
+19:     }
+20: }
+
+--- SYMBOL: sceRpcGetFPacket2 ---
+14:     }
+15: 
+16:     void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+17:     {
+18:         TODO_NAMED("sceRpcGetFPacket2", rdram, ctx, runtime);
+19:     }
+20: }
+
+
+========== RPC declarations ==========
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.h
+SHA256: 60CA272ED4B0473F721E42D7253C6A732BAEBB2CC50E45E5BCDED3756444B0B6
+--- SYMBOL: sceRpcGetPacket ---
+17:     void sceSifCallRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+18:     void sceSifSendCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+19:     void sceRpcGetPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+20: }
+
+--- SYMBOL: SifCallRpc ---
+9:     void SifInitRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+10:     void SifBindRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+11:     void SifCallRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+12:     void SifRegisterRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+13:     void SifCheckStatRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+14:     void SifSetRpcQueue(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+15:     void SifRemoveRpcQueue(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+16:     void SifRemoveRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+17:     void sceSifCallRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+18:     void sceSifSendCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+19:     void sceRpcGetPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+20: }
+
+
+========== Semaphore syscall implementation ==========
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Sync.cpp
+SHA256: 597E8049A3958826F99EF6503F8166C781A94A6362FF13C54C98CB397D3B8555
+--- SYMBOL: CreateSema ---
+67:     }
+68: 
+69:     void CreateSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+70:     {
+71:         const uint32_t address = getRegU32(ctx, 4);
+72:         const auto *param = address == 0u ? nullptr : getEeGuestStruct<ee_sema_t>(rdram, address);
+73:         if (!param)
+74:         {
+75:             setReturnS32(ctx, KE_ERROR);
+76:             return;
+77:         }
+78: 
+79:         // ee_sema_t from ps2sdk. The IOP attr/option/init/max ordering is not
+80:         // accepted by the EE runtime.
+81:         setReturnS32(ctx,
+82:                      scheduler(rdram, ctx, runtime)
+83:                          .createSemaphore(param->init_count,
+84:                                           param->max_count,
+85:                                           param->attr,
+86:                                           param->option));
+87:     }
+88: 
+89:     void DeleteSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+90:     {
+91:         deleteSemaphoreImpl(rdram, ctx, runtime, false);
+92:     }
+93: 
+94:     void iDeleteSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+95:     {
+96:         deleteSemaphoreImpl(rdram, ctx, runtime, true);
+97:     }
+98: 
+99:     void SignalSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+100:     {
+101:         signalSemaphoreImpl(rdram, ctx, runtime, false);
+102:     }
+103: 
+104:     void iSignalSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+
+--- SYMBOL: SignalSema ---
+97:     }
+98: 
+99:     void SignalSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+100:     {
+101:         signalSemaphoreImpl(rdram, ctx, runtime, false);
+102:     }
+103: 
+104:     void iSignalSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+105:     {
+106:         signalSemaphoreImpl(rdram, ctx, runtime, true);
+107:     }
+108: 
+109:     void WaitSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+110:     {
+111:         scheduler(rdram, ctx, runtime).waitSemaphore(static_cast<int>(getRegU32(ctx, 4)));
+112:     }
+113: 
+114:     void PollSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+115:     {
+116:         setReturnS32(ctx,
+117:                      scheduler(rdram, ctx, runtime).pollSemaphore(static_cast<int>(getRegU32(ctx, 4))));
+118:     }
+119: 
+120:     void iPollSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+121:     {
+122:         PollSema(rdram, ctx, runtime);
+123:     }
+124: 
+125:     void ReferSemaStatus(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+126:     {
+127:         EeScheduler &ee = scheduler(rdram, ctx, runtime);
+128:         const EeSemaphore *semaphore = ee.semaphore(static_cast<int>(getRegU32(ctx, 4)));
+129:         if (!semaphore)
+130:         {
+131:             setReturnS32(ctx, KE_UNKNOWN_SEMID);
+132:             return;
+133:         }
+134:         auto *status = getEeGuestStruct<ee_sema_t>(rdram, getRegU32(ctx, 5));
+
+--- SYMBOL: iSignalSema ---
+102:     }
+103: 
+104:     void iSignalSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+105:     {
+106:         signalSemaphoreImpl(rdram, ctx, runtime, true);
+107:     }
+108: 
+109:     void WaitSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+110:     {
+111:         scheduler(rdram, ctx, runtime).waitSemaphore(static_cast<int>(getRegU32(ctx, 4)));
+112:     }
+113: 
+114:     void PollSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+115:     {
+116:         setReturnS32(ctx,
+117:                      scheduler(rdram, ctx, runtime).pollSemaphore(static_cast<int>(getRegU32(ctx, 4))));
+118:     }
+119: 
+120:     void iPollSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+121:     {
+122:         PollSema(rdram, ctx, runtime);
+123:     }
+124: 
+125:     void ReferSemaStatus(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+126:     {
+127:         EeScheduler &ee = scheduler(rdram, ctx, runtime);
+128:         const EeSemaphore *semaphore = ee.semaphore(static_cast<int>(getRegU32(ctx, 4)));
+129:         if (!semaphore)
+130:         {
+131:             setReturnS32(ctx, KE_UNKNOWN_SEMID);
+132:             return;
+133:         }
+134:         auto *status = getEeGuestStruct<ee_sema_t>(rdram, getRegU32(ctx, 5));
+135:         if (!status)
+136:         {
+137:             setReturnS32(ctx, KE_ERROR);
+138:             return;
+139:         }
+
+--- SYMBOL: WaitSema ---
+107:     }
+108: 
+109:     void WaitSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+110:     {
+111:         scheduler(rdram, ctx, runtime).waitSemaphore(static_cast<int>(getRegU32(ctx, 4)));
+112:     }
+113: 
+114:     void PollSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+115:     {
+116:         setReturnS32(ctx,
+117:                      scheduler(rdram, ctx, runtime).pollSemaphore(static_cast<int>(getRegU32(ctx, 4))));
+118:     }
+119: 
+120:     void iPollSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+121:     {
+122:         PollSema(rdram, ctx, runtime);
+123:     }
+124: 
+125:     void ReferSemaStatus(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+126:     {
+127:         EeScheduler &ee = scheduler(rdram, ctx, runtime);
+128:         const EeSemaphore *semaphore = ee.semaphore(static_cast<int>(getRegU32(ctx, 4)));
+129:         if (!semaphore)
+130:         {
+131:             setReturnS32(ctx, KE_UNKNOWN_SEMID);
+132:             return;
+133:         }
+134:         auto *status = getEeGuestStruct<ee_sema_t>(rdram, getRegU32(ctx, 5));
+135:         if (!status)
+136:         {
+137:             setReturnS32(ctx, KE_ERROR);
+138:             return;
+139:         }
+140:         status->count = semaphore->count;
+141:         status->max_count = semaphore->maxCount;
+142:         status->init_count = semaphore->initCount;
+143:         status->wait_threads = static_cast<int>(semaphore->waiters.size());
+144:         status->attr = semaphore->attr;
+
+--- SYMBOL: PollSema ---
+112:     }
+113: 
+114:     void PollSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+115:     {
+116:         setReturnS32(ctx,
+117:                      scheduler(rdram, ctx, runtime).pollSemaphore(static_cast<int>(getRegU32(ctx, 4))));
+118:     }
+119: 
+120:     void iPollSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+121:     {
+122:         PollSema(rdram, ctx, runtime);
+123:     }
+124: 
+125:     void ReferSemaStatus(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+126:     {
+127:         EeScheduler &ee = scheduler(rdram, ctx, runtime);
+128:         const EeSemaphore *semaphore = ee.semaphore(static_cast<int>(getRegU32(ctx, 4)));
+129:         if (!semaphore)
+130:         {
+131:             setReturnS32(ctx, KE_UNKNOWN_SEMID);
+132:             return;
+133:         }
+134:         auto *status = getEeGuestStruct<ee_sema_t>(rdram, getRegU32(ctx, 5));
+135:         if (!status)
+136:         {
+137:             setReturnS32(ctx, KE_ERROR);
+138:             return;
+139:         }
+140:         status->count = semaphore->count;
+141:         status->max_count = semaphore->maxCount;
+142:         status->init_count = semaphore->initCount;
+143:         status->wait_threads = static_cast<int>(semaphore->waiters.size());
+144:         status->attr = semaphore->attr;
+145:         status->option = semaphore->option;
+146:         setReturnS32(ctx, KE_OK);
+147:     }
+148: 
+149:     void iReferSemaStatus(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+
+120:     void iPollSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+121:     {
+122:         PollSema(rdram, ctx, runtime);
+123:     }
+124: 
+125:     void ReferSemaStatus(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+126:     {
+127:         EeScheduler &ee = scheduler(rdram, ctx, runtime);
+128:         const EeSemaphore *semaphore = ee.semaphore(static_cast<int>(getRegU32(ctx, 4)));
+129:         if (!semaphore)
+130:         {
+131:             setReturnS32(ctx, KE_UNKNOWN_SEMID);
+132:             return;
+133:         }
+134:         auto *status = getEeGuestStruct<ee_sema_t>(rdram, getRegU32(ctx, 5));
+135:         if (!status)
+136:         {
+137:             setReturnS32(ctx, KE_ERROR);
+138:             return;
+139:         }
+140:         status->count = semaphore->count;
+141:         status->max_count = semaphore->maxCount;
+142:         status->init_count = semaphore->initCount;
+143:         status->wait_threads = static_cast<int>(semaphore->waiters.size());
+144:         status->attr = semaphore->attr;
+145:         status->option = semaphore->option;
+146:         setReturnS32(ctx, KE_OK);
+147:     }
+148: 
+149:     void iReferSemaStatus(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+150:     {
+151:         ReferSemaStatus(rdram, ctx, runtime);
+152:     }
+153: 
+154:     void CreateEventFlag(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+155:     {
+156:         struct EeEventFlagParam
+157:         {
+
+
+========== Semaphore scheduler implementation ==========
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp
+SHA256: 830241BF7744E574C7FF2AAC7F10FFA8302745D87018AA7D60B10730F8086C99
+--- SYMBOL: createSemaphore ---
+847: }
+848: 
+849: int EeScheduler::createSemaphore(int initCount, int maxCount, uint32_t attr, uint32_t option)
+850: {
+851:     assertExecutor();
+852:     if (maxCount <= 0 || initCount < 0 || initCount > maxCount)
+853:     {
+854:         return KE_ERROR;
+855:     }
+856:     const int id = allocatePositiveId(m_nextSemaphoreId, m_semaphores);
+857:     if (id == 0)
+858:     {
+859:         return KE_ERROR;
+860:     }
+861:     EeSemaphore semaphore{};
+862:     semaphore.id = id;
+863:     semaphore.count = initCount;
+864:     semaphore.maxCount = maxCount;
+865:     semaphore.initCount = initCount;
+866:     semaphore.attr = attr;
+867:     semaphore.option = option;
+868:     m_semaphores.emplace(id, std::move(semaphore));
+869:     publishSnapshot();
+870:     return id;
+871: }
+872: 
+873: int EeScheduler::deleteSemaphore(int id, bool interruptSafe)
+874: {
+875:     assertExecutor();
+876:     auto it = m_semaphores.find(id);
+877:     if (it == m_semaphores.end())
+878:     {
+879:         return KE_UNKNOWN_SEMID;
+880:     }
+881:     std::deque<int> waiters = std::move(it->second.waiters);
+882:     m_semaphores.erase(it);
+883:     for (const int threadId : waiters)
+884:     {
+
+--- SYMBOL: signalSemaphore ---
+892: }
+893: 
+894: int EeScheduler::signalSemaphore(int id, bool interruptSafe)
+895: {
+896:     assertExecutor();
+897:     EeSemaphore *object = semaphore(id);
+898:     if (!object)
+899:     {
+900:         return KE_UNKNOWN_SEMID;
+901:     }
+902:     if (!object->waiters.empty())
+903:     {
+904:         const int waiterId = object->waiters.front();
+905:         object->waiters.pop_front();
+906:         GuestThread *waiter = thread(waiterId);
+907:         assert(waiter != nullptr);
+908:         makeReady(*waiter, id, interruptSafe);
+909:         publishSnapshot();
+910:         return id;
+911:     }
+912:     if (object->count == object->maxCount)
+913:     {
+914:         return KE_SEMA_OVF;
+915:     }
+916:     ++object->count;
+917:     publishSnapshot();
+918:     return id;
+919: }
+920: 
+921: int EeScheduler::pollSemaphore(int id)
+922: {
+923:     assertExecutor();
+924:     EeSemaphore *object = semaphore(id);
+925:     if (!object)
+926:     {
+927:         return KE_UNKNOWN_SEMID;
+928:     }
+929:     if (object->count == 0)
+
+--- SYMBOL: waitSemaphore ---
+936: }
+937: 
+938: void EeScheduler::waitSemaphore(int id)
+939: {
+940:     assertExecutor();
+941:     EeSemaphore *object = semaphore(id);
+942:     if (!object)
+943:     {
+944:         GuestThread *self = currentThread();
+945:         assert(self != nullptr);
+946:         setReturnS32(&self->activeContext(), KE_UNKNOWN_SEMID);
+947:         return;
+948:     }
+949:     if (object->count != 0)
+950:     {
+951:         --object->count;
+952:         GuestThread *self = currentThread();
+953:         assert(self != nullptr);
+954:         setReturnS32(&self->activeContext(), id);
+955:         publishSnapshot();
+956:         return;
+957:     }
+958:     GuestThread *self = currentThread();
+959:     assert(self != nullptr);
+960:     object->waiters.push_back(self->id);
+961:     blockCurrent(EeWaitState{EeWaitReason::Semaphore, EeSemaphoreWait{id}});
+962: }
+963: 
+964: int EeScheduler::createEventFlag(uint32_t initialBits, uint32_t attr, uint32_t option)
+965: {
+966:     assertExecutor();
+967:     const int id = allocatePositiveId(m_nextEventFlagId, m_eventFlags);
+968:     if (id == 0)
+969:     {
+970:         return KE_ERROR;
+971:     }
+972:     EeEventFlag flag{};
+973:     flag.id = id;
+
+--- SYMBOL: pollSemaphore ---
+919: }
+920: 
+921: int EeScheduler::pollSemaphore(int id)
+922: {
+923:     assertExecutor();
+924:     EeSemaphore *object = semaphore(id);
+925:     if (!object)
+926:     {
+927:         return KE_UNKNOWN_SEMID;
+928:     }
+929:     if (object->count == 0)
+930:     {
+931:         return KE_SEMA_ZERO;
+932:     }
+933:     --object->count;
+934:     publishSnapshot();
+935:     return id;
+936: }
+937: 
+938: void EeScheduler::waitSemaphore(int id)
+939: {
+940:     assertExecutor();
+941:     EeSemaphore *object = semaphore(id);
+942:     if (!object)
+943:     {
+944:         GuestThread *self = currentThread();
+945:         assert(self != nullptr);
+946:         setReturnS32(&self->activeContext(), KE_UNKNOWN_SEMID);
+947:         return;
+948:     }
+949:     if (object->count != 0)
+950:     {
+951:         --object->count;
+952:         GuestThread *self = currentThread();
+953:         assert(self != nullptr);
+954:         setReturnS32(&self->activeContext(), id);
+955:         publishSnapshot();
+956:         return;
+
+--- SYMBOL: deleteSemaphore ---
+871: }
+872: 
+873: int EeScheduler::deleteSemaphore(int id, bool interruptSafe)
+874: {
+875:     assertExecutor();
+876:     auto it = m_semaphores.find(id);
+877:     if (it == m_semaphores.end())
+878:     {
+879:         return KE_UNKNOWN_SEMID;
+880:     }
+881:     std::deque<int> waiters = std::move(it->second.waiters);
+882:     m_semaphores.erase(it);
+883:     for (const int threadId : waiters)
+884:     {
+885:         if (GuestThread *waiter = thread(threadId))
+886:         {
+887:             makeReady(*waiter, KE_WAIT_DELETE, interruptSafe);
+888:         }
+889:     }
+890:     publishSnapshot();
+891:     return id;
+892: }
+893: 
+894: int EeScheduler::signalSemaphore(int id, bool interruptSafe)
+895: {
+896:     assertExecutor();
+897:     EeSemaphore *object = semaphore(id);
+898:     if (!object)
+899:     {
+900:         return KE_UNKNOWN_SEMID;
+901:     }
+902:     if (!object->waiters.empty())
+903:     {
+904:         const int waiterId = object->waiters.front();
+905:         object->waiters.pop_front();
+906:         GuestThread *waiter = thread(waiterId);
+907:         assert(waiter != nullptr);
+908:         makeReady(*waiter, id, interruptSafe);
+
+
+========== File I/O stub implementations ==========
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\FileIO.cpp
+SHA256: 8D476D8F86A29F26642BF994F96DB6B423E0420DD10F3D3D1293D1E3083D95E9
+--- SYMBOL: sceFsSemInit ---
+19:     }
+20: 
+21:     void sceFsSemInit(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+22:     {
+23:         TODO_NAMED("sceFsSemInit", rdram, ctx, runtime);
+24:     }
+25: 
+26:     void sceFsSigSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+27:     {
+28:         TODO_NAMED("sceFsSigSema", rdram, ctx, runtime);
+29:     }
+30: 
+31:     void close(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+32:     {
+33:         ps2_syscalls::fioClose(rdram, ctx, runtime);
+34:     }
+35: 
+36:     void fstat(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+37:     {
+38:         uint32_t statAddr = getRegU32(ctx, 5);
+39:         if (uint8_t *statBuf = getMemPtr(rdram, statAddr))
+40:         {
+41:             std::memset(statBuf, 0, 128);
+42:             setReturnS32(ctx, 0);
+43:             return;
+44:         }
+45:         setReturnS32(ctx, -1);
+46:     }
+47: 
+48:     void lseek(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+49:     {
+50:         ps2_syscalls::fioLseek(rdram, ctx, runtime);
+51:     }
+52: 
+53:     void open(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+54:     {
+55:         ps2_syscalls::fioOpen(rdram, ctx, runtime);
+56:     }
+
+--- SYMBOL: sceFsSigSema ---
+24:     }
+25: 
+26:     void sceFsSigSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+27:     {
+28:         TODO_NAMED("sceFsSigSema", rdram, ctx, runtime);
+29:     }
+30: 
+31:     void close(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+32:     {
+33:         ps2_syscalls::fioClose(rdram, ctx, runtime);
+34:     }
+35: 
+36:     void fstat(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+37:     {
+38:         uint32_t statAddr = getRegU32(ctx, 5);
+39:         if (uint8_t *statBuf = getMemPtr(rdram, statAddr))
+40:         {
+41:             std::memset(statBuf, 0, 128);
+42:             setReturnS32(ctx, 0);
+43:             return;
+44:         }
+45:         setReturnS32(ctx, -1);
+46:     }
+47: 
+48:     void lseek(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+49:     {
+50:         ps2_syscalls::fioLseek(rdram, ctx, runtime);
+51:     }
+52: 
+53:     void open(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+54:     {
+55:         ps2_syscalls::fioOpen(rdram, ctx, runtime);
+56:     }
+57: 
+58:     void read(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+59:     {
+60:         ps2_syscalls::fioRead(rdram, ctx, runtime);
+61:     }
+
+--- SYMBOL: sceFsSemExit ---
+14:     }
+15: 
+16:     void sceFsSemExit(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+17:     {
+18:         TODO_NAMED("sceFsSemExit", rdram, ctx, runtime);
+19:     }
+20: 
+21:     void sceFsSemInit(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+22:     {
+23:         TODO_NAMED("sceFsSemInit", rdram, ctx, runtime);
+24:     }
+25: 
+26:     void sceFsSigSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+27:     {
+28:         TODO_NAMED("sceFsSigSema", rdram, ctx, runtime);
+29:     }
+30: 
+31:     void close(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+32:     {
+33:         ps2_syscalls::fioClose(rdram, ctx, runtime);
+34:     }
+35: 
+36:     void fstat(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+37:     {
+38:         uint32_t statAddr = getRegU32(ctx, 5);
+39:         if (uint8_t *statBuf = getMemPtr(rdram, statAddr))
+40:         {
+41:             std::memset(statBuf, 0, 128);
+42:             setReturnS32(ctx, 0);
+43:             return;
+44:         }
+45:         setReturnS32(ctx, -1);
+46:     }
+47: 
+48:     void lseek(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+49:     {
+50:         ps2_syscalls::fioLseek(rdram, ctx, runtime);
+51:     }
+
+--- SYMBOL: sceFsIntrSigSema ---
+9:     }
+10: 
+11:     void sceFsIntrSigSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+12:     {
+13:         TODO_NAMED("sceFsIntrSigSema", rdram, ctx, runtime);
+14:     }
+15: 
+16:     void sceFsSemExit(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+17:     {
+18:         TODO_NAMED("sceFsSemExit", rdram, ctx, runtime);
+19:     }
+20: 
+21:     void sceFsSemInit(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+22:     {
+23:         TODO_NAMED("sceFsSemInit", rdram, ctx, runtime);
+24:     }
+25: 
+26:     void sceFsSigSema(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+27:     {
+28:         TODO_NAMED("sceFsSigSema", rdram, ctx, runtime);
+29:     }
+30: 
+31:     void close(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+32:     {
+33:         ps2_syscalls::fioClose(rdram, ctx, runtime);
+34:     }
+35: 
+36:     void fstat(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+37:     {
+38:         uint32_t statAddr = getRegU32(ctx, 5);
+39:         if (uint8_t *statBuf = getMemPtr(rdram, statAddr))
+40:         {
+41:             std::memset(statBuf, 0, 128);
+42:             setReturnS32(ctx, 0);
+43:             return;
+44:         }
+45:         setReturnS32(ctx, -1);
+46:     }
+
+
+========== RPC PACKET STRUCTURE / OWNERSHIP SEARCH ==========
+FILES SEARCHED: 95
+MATCH: sceRpcGetPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp
+1001:     }
+1002: 
+1003:     void sceRpcGetPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+1004:     {
+1005:         uint32_t queuePtr = getRegU32(ctx, 4);
+1006:         setReturnS32(ctx, static_cast<int32_t>(queuePtr));
+1007:     }
+
+MATCH: sceRpcGetPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.h
+17:     void sceSifCallRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+18:     void sceSifSendCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+19:     void sceRpcGetPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+20: }
+
+MATCH: sceRpcGetPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h
+92:     X(sceSifCallRpc)           \
+93:     X(sceSifSendCmd)           \
+94:     X(sceRpcGetPacket)         \
+95:                                \
+96:     X(fioOpen)                 \
+97:     X(fioClose)                \
+98:     X(fioRead)                 \
+
+TOTAL [sceRpcGetPacket]: 3
+
+MATCH: RpcPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h
+86: static uint32_t rpcAllocPacketAddr(uint8_t *rdram)
+87: {
+88:     if (kRpcPacketPoolCount == 0)
+89:         return 0;
+90: 
+91:     uint32_t slot = g_rpc_packet_index++ % kRpcPacketPoolCount;
+92:     uint32_t addr = kRpcPacketPoolBase + (slot * kRpcPacketSize);
+
+MATCH: RpcPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h
+89:         return 0;
+90: 
+91:     uint32_t slot = g_rpc_packet_index++ % kRpcPacketPoolCount;
+92:     uint32_t addr = kRpcPacketPoolBase + (slot * kRpcPacketSize);
+93:     rpcZeroRdram(rdram, addr, kRpcPacketSize);
+94:     return addr;
+95: }
+
+MATCH: RpcPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h
+90: 
+91:     uint32_t slot = g_rpc_packet_index++ % kRpcPacketPoolCount;
+92:     uint32_t addr = kRpcPacketPoolBase + (slot * kRpcPacketSize);
+93:     rpcZeroRdram(rdram, addr, kRpcPacketSize);
+94:     return addr;
+95: }
+96: 
+
+MATCH: RpcPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h
+91:     uint32_t slot = g_rpc_packet_index++ % kRpcPacketPoolCount;
+92:     uint32_t addr = kRpcPacketPoolBase + (slot * kRpcPacketSize);
+93:     rpcZeroRdram(rdram, addr, kRpcPacketSize);
+94:     return addr;
+95: }
+96: 
+97: static uint32_t rpcAllocServerAddr(uint8_t *rdram)
+
+MATCH: RpcPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h
+243: inline std::string g_ps2_cwd_device = "host0";
+244: 
+245: static constexpr uint32_t kRpcPacketSize = 64;
+246: static constexpr uint32_t kRpcPacketPoolBase = 0x01F00000;
+247: static constexpr uint32_t kRpcPacketPoolBytes = 0x00010000;
+248: static constexpr uint32_t kRpcPacketPoolCount = kRpcPacketPoolBytes / kRpcPacketSize;
+249: static constexpr uint32_t kRpcServerPoolBase = 0x01F10000;
+
+MATCH: RpcPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h
+244: 
+245: static constexpr uint32_t kRpcPacketSize = 64;
+246: static constexpr uint32_t kRpcPacketPoolBase = 0x01F00000;
+247: static constexpr uint32_t kRpcPacketPoolBytes = 0x00010000;
+248: static constexpr uint32_t kRpcPacketPoolCount = kRpcPacketPoolBytes / kRpcPacketSize;
+249: static constexpr uint32_t kRpcServerPoolBase = 0x01F10000;
+250: static constexpr uint32_t kRpcServerPoolBytes = 0x00010000;
+
+MATCH: RpcPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h
+245: static constexpr uint32_t kRpcPacketSize = 64;
+246: static constexpr uint32_t kRpcPacketPoolBase = 0x01F00000;
+247: static constexpr uint32_t kRpcPacketPoolBytes = 0x00010000;
+248: static constexpr uint32_t kRpcPacketPoolCount = kRpcPacketPoolBytes / kRpcPacketSize;
+249: static constexpr uint32_t kRpcServerPoolBase = 0x01F10000;
+250: static constexpr uint32_t kRpcServerPoolBytes = 0x00010000;
+251: static constexpr uint32_t kRpcServerStride = 0x80;
+
+MATCH: RpcPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h
+246: static constexpr uint32_t kRpcPacketPoolBase = 0x01F00000;
+247: static constexpr uint32_t kRpcPacketPoolBytes = 0x00010000;
+248: static constexpr uint32_t kRpcPacketPoolCount = kRpcPacketPoolBytes / kRpcPacketSize;
+249: static constexpr uint32_t kRpcServerPoolBase = 0x01F10000;
+250: static constexpr uint32_t kRpcServerPoolBytes = 0x00010000;
+251: static constexpr uint32_t kRpcServerStride = 0x80;
+252: static constexpr uint32_t kRpcServerPoolCount = kRpcServerPoolBytes / kRpcServerStride;
+
+TOTAL [RpcPacket]: 8
+
+MATCH: RPC_PACKET
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp
+234:             g_rpc_clients.clear();
+235:             g_rpc_next_id = 1;
+236:             g_rpc_packet_index = 0;
+237:             g_rpc_server_index = 0;
+238:             g_rpc_active_queue = 0;
+239:             g_sif_rpc_debug_next_seq = 0;
+240:             for (size_t i = 0; i < kSifRpcDebugHistoryCount; ++i)
+
+MATCH: RPC_PACKET
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h
+89:         return 0;
+90: 
+91:     uint32_t slot = g_rpc_packet_index++ % kRpcPacketPoolCount;
+92:     uint32_t addr = kRpcPacketPoolBase + (slot * kRpcPacketSize);
+93:     rpcZeroRdram(rdram, addr, kRpcPacketSize);
+94:     return addr;
+95: }
+
+MATCH: RPC_PACKET
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h
+214: inline bool g_rpc_initialized = false;
+215: inline uint32_t g_rpc_next_id = 1;
+216: inline uint32_t g_rpc_packet_index = 0;
+217: inline uint32_t g_rpc_server_index = 0;
+218: inline uint32_t g_rpc_active_queue = 0;
+219: inline std::mutex g_bootmode_mutex;
+220: inline bool g_bootmode_initialized = false;
+
+TOTAL [RPC_PACKET]: 3
+
+MATCH: packet.*free
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+211:                 if (m_packet)
+212:                 {
+213:                     av_packet_free(&m_packet);
+214:                 }
+215:                 if (m_codecCtx)
+216:                 {
+217:                     avcodec_free_context(&m_codecCtx);
+
+TOTAL [packet.*free]: 1
+
+MATCH: free.*packet
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+211:                 if (m_packet)
+212:                 {
+213:                     av_packet_free(&m_packet);
+214:                 }
+215:                 if (m_codecCtx)
+216:                 {
+217:                     avcodec_free_context(&m_codecCtx);
+
+MATCH: free.*packet
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp
+4: namespace ps2_stubs
+5: {
+6:     void sceRpcFreePacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+7:     {
+8:         TODO_NAMED("sceRpcFreePacket", rdram, ctx, runtime);
+9:     }
+10: 
+
+MATCH: free.*packet
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp
+6:     void sceRpcFreePacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+7:     {
+8:         TODO_NAMED("sceRpcFreePacket", rdram, ctx, runtime);
+9:     }
+10: 
+11:     void sceRpcGetFPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+12:     {
+
+MATCH: free.*packet
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.h
+5: namespace ps2_stubs
+6: {
+7:     void sceRpcFreePacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+8:     void sceRpcGetFPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+9:     void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+10: }
+
+MATCH: free.*packet
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp
+256:         if (!first || !last || last < first || static_cast<size_t>(last - first) != packetSize - 1u)
+257:         {
+258:             runtime->guestFree(packetAddress);
+259:             return false;
+260:         }
+261: 
+262:         ps2TraceGuestRangeWrite(rdram, packetAddress, static_cast<uint32_t>(packetSize), "SIF command packet", nullptr);
+
+MATCH: free.*packet
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp
+278:             invocation.onComplete = [runtime, packetAddress](const R5900Context &, R5900Context &)
+279:             {
+280:                 runtime->guestFree(packetAddress);
+281:             };
+282:             runtime->eeScheduler().queueInvocation(std::move(invocation));
+283:             return true;
+284:         }
+
+MATCH: free.*packet
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp
+285:         catch (...)
+286:         {
+287:             runtime->guestFree(packetAddress);
+288:             return false;
+289:         }
+290:     }
+291: 
+
+MATCH: free.*packet
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\include\ps2_call_list.h
+234:     X(sceIDC)                                 \
+235:     X(sceMpegFlush)                           \
+236:     X(sceRpcFreePacket)                       \
+237:     X(sceRpcGetFPacket)                       \
+238:     X(sceRpcGetFPacket2)                      \
+239:     X(sceSDC)                                 \
+240:     X(sceSifCmdIntrHdlr)                      \
+
+TOTAL [free.*packet]: 8
+
+MATCH: packet.*alloc
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+256:                 m_codecCtx = avcodec_alloc_context3(codec);
+257:                 m_frame = av_frame_alloc();
+258:                 m_packet = av_packet_alloc();
+259:                 if (!m_codecCtx || !m_frame || !m_packet)
+260:                 {
+261:                     std::cerr << "[MPEG] failed to allocate FFmpeg decoder state." << std::endl;
+262:                     reset();
+
+MATCH: packet.*alloc
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+300:                 if (allocRet < 0)
+301:                 {
+302:                     std::cerr << "[MPEG] failed to allocate packet: " << ffmpegErrorString(allocRet) << std::endl;
+303:                     return false;
+304:                 }
+305:                 std::memcpy(m_packet->data, data, size);
+306:                 m_packet->pts = pts;
+
+MATCH: packet.*alloc
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp
+248:             return false;
+249: 
+250:         const uint32_t packetAddress = runtime->guestMalloc(static_cast<uint32_t>(packetSize), 16u);
+251:         if (packetAddress == 0u)
+252:             return false;
+253: 
+254:         uint8_t *const first = getMemPtr(rdram, packetAddress);
+
+TOTAL [packet.*alloc]: 3
+
+MATCH: alloc.*packet
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+297: 
+298:                 av_packet_unref(m_packet);
+299:                 const int allocRet = av_new_packet(m_packet, static_cast<int>(size));
+300:                 if (allocRet < 0)
+301:                 {
+302:                     std::cerr << "[MPEG] failed to allocate packet: " << ffmpegErrorString(allocRet) << std::endl;
+303:                     return false;
+
+MATCH: alloc.*packet
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+300:                 if (allocRet < 0)
+301:                 {
+302:                     std::cerr << "[MPEG] failed to allocate packet: " << ffmpegErrorString(allocRet) << std::endl;
+303:                     return false;
+304:                 }
+305:                 std::memcpy(m_packet->data, data, size);
+306:                 m_packet->pts = pts;
+
+MATCH: alloc.*packet
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp
+248:             return false;
+249: 
+250:         const uint32_t packetAddress = runtime->guestMalloc(static_cast<uint32_t>(packetSize), 16u);
+251:         if (packetAddress == 0u)
+252:             return false;
+253: 
+254:         uint8_t *const first = getMemPtr(rdram, packetAddress);
+
+MATCH: alloc.*packet
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h
+84: }
+85: 
+86: static uint32_t rpcAllocPacketAddr(uint8_t *rdram)
+87: {
+88:     if (kRpcPacketPoolCount == 0)
+89:         return 0;
+90: 
+
+TOTAL [alloc.*packet]: 4
+
+MATCH: FPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+294:         }
+295: 
+296:         uint32_t advanceGifPacketWords(uint8_t *rdram, PS2Runtime *runtime, uint32_t stateAddr, uint32_t wordCount)
+297:         {
+298:             uint32_t currentAddr = 0u;
+299:             if (!tryReadWordFromGuest(rdram, runtime, stateAddr, currentAddr))
+300:             {
+
+MATCH: FPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+612:             writeGuestU64(rdram, runtime, reservedAddr + 8u, 0u);
+613: 
+614:             const uint32_t refPacketAddr = terminatePacketBuilderState(rdram, ctx, runtime);
+615:             const uint32_t refWords[4] = {0x30000000u | chunkQwc, dataAddr & 0x9FFFFFFFu, 0u, 0u};
+616:             writeGuestBytes(rdram,
+617:                             runtime,
+618:                             refPacketAddr,
+
+MATCH: FPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+616:             writeGuestBytes(rdram,
+617:                             runtime,
+618:                             refPacketAddr,
+619:                             reinterpret_cast<const uint8_t *>(refWords),
+620:                             sizeof(refWords));
+621:             writePacketBuilderCurrent(rdram, runtime, stateAddr, refPacketAddr + 16u);
+622: 
+
+MATCH: FPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+619:                             reinterpret_cast<const uint8_t *>(refWords),
+620:                             sizeof(refWords));
+621:             writePacketBuilderCurrent(rdram, runtime, stateAddr, refPacketAddr + 16u);
+622: 
+623:             qwcRemaining -= chunkQwc;
+624:             dataAddr += chunkQwc * 16u;
+625:         }
+
+MATCH: FPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+633:     void sceGifPkReserve(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+634:     {
+635:         setReturnU32(ctx, advanceGifPacketWords(rdram, runtime, getRegU32(ctx, 4), getRegU32(ctx, 5)));
+636:     }
+637: 
+638:     void sceGifPkTerminate(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+639:     {
+
+MATCH: FPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp
+9:     }
+10: 
+11:     void sceRpcGetFPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+12:     {
+13:         TODO_NAMED("sceRpcGetFPacket", rdram, ctx, runtime);
+14:     }
+15: 
+
+MATCH: FPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp
+11:     void sceRpcGetFPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+12:     {
+13:         TODO_NAMED("sceRpcGetFPacket", rdram, ctx, runtime);
+14:     }
+15: 
+16:     void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+17:     {
+
+MATCH: FPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp
+14:     }
+15: 
+16:     void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+17:     {
+18:         TODO_NAMED("sceRpcGetFPacket2", rdram, ctx, runtime);
+19:     }
+20: }
+
+MATCH: FPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp
+16:     void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+17:     {
+18:         TODO_NAMED("sceRpcGetFPacket2", rdram, ctx, runtime);
+19:     }
+20: }
+
+MATCH: FPacket
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.h
+6: {
+7:     void sceRpcFreePacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+8:     void sceRpcGetFPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+9:     void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+10: }
+
+TOTAL [FPacket]: 23
+
+MATCH: packetAddr
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+462:         const uint32_t extraValue = getRegU32(ctx, 6);
+463:         const uint32_t tagWord = getRegU32(ctx, 7) | 0x10000000u;
+464:         const uint32_t packetAddr = terminatePacketBuilderState(rdram, ctx, runtime);
+465:         const uint32_t words[4] = {tagWord, 0u, countValue, extraValue};
+466:         const uint32_t nextAddr = packetAddr + 16u;
+467: 
+468:         writeGuestU32(rdram, runtime, stateAddr + 8u, packetAddr);
+
+MATCH: packetAddr
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+464:         const uint32_t packetAddr = terminatePacketBuilderState(rdram, ctx, runtime);
+465:         const uint32_t words[4] = {tagWord, 0u, countValue, extraValue};
+466:         const uint32_t nextAddr = packetAddr + 16u;
+467: 
+468:         writeGuestU32(rdram, runtime, stateAddr + 8u, packetAddr);
+469:         writeGuestBytes(rdram,
+470:                         runtime,
+
+MATCH: packetAddr
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+466:         const uint32_t nextAddr = packetAddr + 16u;
+467: 
+468:         writeGuestU32(rdram, runtime, stateAddr + 8u, packetAddr);
+469:         writeGuestBytes(rdram,
+470:                         runtime,
+471:                         packetAddr,
+472:                         reinterpret_cast<const uint8_t *>(words),
+
+MATCH: packetAddr
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+469:         writeGuestBytes(rdram,
+470:                         runtime,
+471:                         packetAddr,
+472:                         reinterpret_cast<const uint8_t *>(words),
+473:                         sizeof(words));
+474:         writePacketBuilderCurrent(rdram, runtime, stateAddr, nextAddr);
+475:     }
+
+MATCH: packetAddr
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+481:         const uint32_t extraValue = getRegU32(ctx, 6);
+482:         const uint32_t tagWord = getRegU32(ctx, 7) | 0x70000000u;
+483:         const uint32_t packetAddr = terminatePacketBuilderState(rdram, ctx, runtime);
+484:         const uint32_t words[4] = {tagWord, countValue, extraValue, 0u};
+485:         const uint32_t nextAddr = packetAddr + 16u;
+486: 
+487:         writeGuestU32(rdram, runtime, stateAddr + 8u, packetAddr);
+
+MATCH: packetAddr
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+483:         const uint32_t packetAddr = terminatePacketBuilderState(rdram, ctx, runtime);
+484:         const uint32_t words[4] = {tagWord, countValue, extraValue, 0u};
+485:         const uint32_t nextAddr = packetAddr + 16u;
+486: 
+487:         writeGuestU32(rdram, runtime, stateAddr + 8u, packetAddr);
+488:         writeGuestBytes(rdram,
+489:                         runtime,
+
+MATCH: packetAddr
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+485:         const uint32_t nextAddr = packetAddr + 16u;
+486: 
+487:         writeGuestU32(rdram, runtime, stateAddr + 8u, packetAddr);
+488:         writeGuestBytes(rdram,
+489:                         runtime,
+490:                         packetAddr,
+491:                         reinterpret_cast<const uint8_t *>(words),
+
+MATCH: packetAddr
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+488:         writeGuestBytes(rdram,
+489:                         runtime,
+490:                         packetAddr,
+491:                         reinterpret_cast<const uint8_t *>(words),
+492:                         sizeof(words));
+493:         writePacketBuilderCurrent(rdram, runtime, stateAddr, nextAddr);
+494:     }
+
+MATCH: packetAddr
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+511:         const uint32_t extra0 = getRegU32(ctx, 7);
+512:         const uint32_t extra1 = getRegU32(ctx, 8);
+513:         const uint32_t packetAddr = terminatePacketBuilderState(rdram, ctx, runtime);
+514:         const uint32_t words[4] = {tagWord, refAddr, extra0, extra1};
+515: 
+516:         writeGuestBytes(rdram,
+517:                         runtime,
+
+MATCH: packetAddr
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp
+516:         writeGuestBytes(rdram,
+517:                         runtime,
+518:                         packetAddr,
+519:                         reinterpret_cast<const uint8_t *>(words),
+520:                         sizeof(words));
+521:         writePacketBuilderCurrent(rdram, runtime, stateAddr, packetAddr + 16u);
+522:     }
+
+TOTAL [packetAddr]: 48
+
+MATCH: packetSize
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+100:                 {
+101:                     uint8_t *packetData = nullptr;
+102:                     int packetSize = 0;
+103:                     const int chunk = static_cast<int>(std::min<size_t>(
+104:                         remaining, static_cast<size_t>(std::numeric_limits<int>::max())));
+105:                     const int used = av_parser_parse2(
+106:                         m_parser,
+
+MATCH: packetSize
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+107:                         m_codecCtx,
+108:                         &packetData,
+109:                         &packetSize,
+110:                         cursor,
+111:                         chunk,
+112:                         parserPts,
+113:                         parserDts,
+
+MATCH: packetSize
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+118:                         return false;
+119:                     }
+120:                     if (used == 0 && packetSize == 0)
+121:                     {
+122:                         break;
+123:                     }
+124: 
+
+MATCH: packetSize
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+133:                     }
+134: 
+135:                     if (packetSize > 0)
+136:                     {
+137:                         ++totalPacketsSent;
+138:                         if (!sendPacket(packetData, static_cast<size_t>(packetSize), frames, m_parser->pts, m_parser->dts))
+139:                         {
+
+MATCH: packetSize
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+136:                     {
+137:                         ++totalPacketsSent;
+138:                         if (!sendPacket(packetData, static_cast<size_t>(packetSize), frames, m_parser->pts, m_parser->dts))
+139:                         {
+140:                             return false;
+141:                         }
+142:                     }
+
+MATCH: packetSize
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+168:                 {
+169:                     uint8_t *packetData = nullptr;
+170:                     int packetSize = 0;
+171:                     const int used = av_parser_parse2(
+172:                         m_parser,
+173:                         m_codecCtx,
+174:                         &packetData,
+
+MATCH: packetSize
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+173:                         m_codecCtx,
+174:                         &packetData,
+175:                         &packetSize,
+176:                         nullptr,
+177:                         0,
+178:                         AV_NOPTS_VALUE,
+179:                         AV_NOPTS_VALUE,
+
+MATCH: packetSize
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+180:                         0);
+181:                     (void)used;
+182:                     if (packetSize > 0 && !sendPacket(packetData, static_cast<size_t>(packetSize), frames, m_parser->pts, m_parser->dts))
+183:                     {
+184:                         return false;
+185:                     }
+186:                 }
+
+MATCH: packetSize
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+942:         }
+943: 
+944:         MpegPesHeader parsePesHeader(const uint8_t *packet, size_t packetSize)
+945:         {
+946:             MpegPesHeader result{};
+947:             result.payloadOffset = packetSize;
+948:             if (!packet || packetSize <= 6u)
+
+MATCH: packetSize
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\MPEG.cpp
+945:         {
+946:             MpegPesHeader result{};
+947:             result.payloadOffset = packetSize;
+948:             if (!packet || packetSize <= 6u)
+949:             {
+950:                 return result;
+951:             }
+
+TOTAL [packetSize]: 36
+
+TOTAL [SifGetPacket]: 0
+
+TOTAL [SifFreePacket]: 0
+
+========== FINAL INTEGRITY ==========
+SOURCE MODIFIED: NO
+GAME ELF MODIFIED: NO
+ELAPSED SECONDS: 0.923
