@@ -1,0 +1,1065 @@
+MARK OF KRI — MAIN PATH DEPENDENCY AND RESUME AUDIT
+Timestamp: 2026-11-28 04:17:29
+READ ONLY — NO PRODUCTION FILES MODIFIED
+
+===== ps2_main_0x1014d0.cpp =====
+Path: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\ps2_main_0x1014d0.cpp
+Bytes: 19644
+SHA256: C7C26FF10CA904FDD15C03F0BD9CEE09938789798672643845402DDC954BACE2
+Resume case labels found: 11
+Labels: 0X101508, 0X101514, 0X101528, 0X101534, 0X101558, 0X101588, 0X10158C, 0X1015BC, 0X1015C4, 0X1015F0, 0X101608
+dispatchGuestBranch occurrences: 7
+--- Dispatch context, source lines 80-87 ---
+80: // 0x101504: 0xffb10010  sd          $s1, 0x10($sp) (Delay Slot)
+81: WRITE64(ADD32(GPR_U32(ctx, 29), 16), GPR_U64(ctx, 17));
+82: ctx->in_delay_slot = false;
+83: ctx->pc = 0x37B3C0u;
+84: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x37B3C0u, 0x101500u, 0x101508u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+85: return;
+86: }
+87: ctx->pc = 0x101508u;
+--- Dispatch context, source lines 98-105 ---
+98: // 0x101510: 0xaf82b468  sw          $v0, -0x4B98($gp) (Delay Slot)
+99: WRITE32(ADD32(GPR_U32(ctx, 28), 4294947944), GPR_U32(ctx, 2));
+100: ctx->in_delay_slot = false;
+101: ctx->pc = 0x1000C8u;
+102: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x1000C8u, 0x10150Cu, 0x101514u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+103: return;
+104: }
+105: ctx->pc = 0x101514u;
+--- Dispatch context, source lines 132-139 ---
+132: // 0x101530: 0x2e040001  sltiu       $a0, $s0, 0x1 (Delay Slot)
+133: SET_GPR_U64(ctx, 4, ((uint64_t)GPR_U64(ctx, 16) < (uint64_t)(int64_t)(int32_t)1) ? 1 : 0);
+134: ctx->in_delay_slot = false;
+135: ctx->pc = 0x102BC8u;
+136: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x102BC8u, 0x10152Cu, 0x101534u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+137: return;
+138: }
+139: ctx->pc = 0x101534u;
+--- Dispatch context, source lines 178-185 ---
+178: // 0x101554: 0xae650170  sw          $a1, 0x170($s3) (Delay Slot)
+179: WRITE32(ADD32(GPR_U32(ctx, 19), 368), GPR_U32(ctx, 5));
+180: ctx->in_delay_slot = false;
+181: ctx->pc = 0x101638u;
+182: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x101638u, 0x101550u, 0x101558u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+183: return;
+184: }
+185: ctx->pc = 0x101558u;
+--- Dispatch context, source lines 280-287 ---
+280: // 0x1015b8: 0xaf92b468  sw          $s2, -0x4B98($gp) (Delay Slot)
+281: WRITE32(ADD32(GPR_U32(ctx, 28), 4294947944), GPR_U32(ctx, 18));
+282: ctx->in_delay_slot = false;
+283: ctx->pc = 0x101028u;
+284: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x101028u, 0x1015B4u, 0x1015BCu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+285: return;
+286: }
+287: ctx->pc = 0x1015BCu;
+--- Dispatch context, source lines 348-355 ---
+348: // 0x1015ec: 0x8f85b460  lw          $a1, -0x4BA0($gp) (Delay Slot)
+349: SET_GPR_S32(ctx, 5, (int32_t)READ32(ADD32(GPR_U32(ctx, 28), 4294947936)));
+350: ctx->in_delay_slot = false;
+351: ctx->pc = 0x1008D8u;
+352: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x1008D8u, 0x1015E8u, 0x1015F0u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+353: return;
+354: }
+355: ctx->pc = 0x1015F0u;
+--- Dispatch context, source lines 380-387 ---
+380: // 0x101600: 0xc040f72  jal         func_103DC8
+381: ctx->pc = 0x101600u;
+382: SET_GPR_U32(ctx, 31, 0x101608u);
+383: ctx->pc = 0x103DC8u;
+384: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x103DC8u, 0x101600u, 0x101608u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+385: return;
+386: }
+387: ctx->pc = 0x101608u;
+Registration filename reference: False
+CMake filename reference: False
+
+===== ps2___main_0x37b3c0.cpp =====
+Path: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\ps2___main_0x37b3c0.cpp
+Bytes: 2504
+SHA256: F9996E1E843D4D9A989F118CE0DB0C96B46FBB8437D062DCE25E103A9EA1687E
+Resume case labels found: 1
+Labels: 0X37B3D8
+dispatchGuestBranch occurrences: 1
+--- Dispatch context, source lines 64-71 ---
+64: {
+65: const uint32_t jumpTarget = GPR_U32(ctx, 31);
+66: ctx->pc = jumpTarget;
+67: #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+68: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x37B3D8u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+69: return;
+70: #else
+71: ctx->pc = jumpTarget;
+Registration filename reference: False
+CMake filename reference: False
+
+===== startGame__Fv_0x1000c8.cpp =====
+Path: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\startGame__Fv_0x1000c8.cpp
+Bytes: 17658
+SHA256: ABFD0A19E1945ECE4499308648CA9CF1244FA08CBF59AC27ABAB893A62A608EE
+Resume case labels found: 11
+Labels: 0X1000DC, 0X1000E4, 0X1001A0, 0X1001B8, 0X1001C4, 0X1001CC, 0X1001DC, 0X1001F4, 0X100210, 0X100218, 0X100220
+dispatchGuestBranch occurrences: 12
+--- Dispatch context, source lines 53-60 ---
+53: // 0x1000d8: 0x24050001  addiu       $a1, $zero, 0x1 (Delay Slot)
+54: SET_GPR_S32(ctx, 5, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+55: ctx->in_delay_slot = false;
+56: ctx->pc = 0x345248u;
+57: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x345248u, 0x1000D4u, 0x1000DCu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+58: return;
+59: }
+60: ctx->pc = 0x1000DCu;
+--- Dispatch context, source lines 68-75 ---
+68: // 0x1000e0: 0x3a0202d  daddu       $a0, $sp, $zero (Delay Slot)
+69: SET_GPR_U64(ctx, 4, (uint64_t)GPR_U64(ctx, 29) + (uint64_t)GPR_U64(ctx, 0));
+70: ctx->in_delay_slot = false;
+71: ctx->pc = 0x351C78u;
+72: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x351C78u, 0x1000DCu, 0x1000E4u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+73: return;
+74: }
+75: ctx->pc = 0x1000E4u;
+--- Dispatch context, source lines 218-225 ---
+218: // 0x10019c: 0xafa00054  sw          $zero, 0x54($sp) (Delay Slot)
+219: WRITE32(ADD32(GPR_U32(ctx, 29), 84), GPR_U32(ctx, 0));
+220: ctx->in_delay_slot = false;
+221: ctx->pc = 0x2E0388u;
+222: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2E0388u, 0x100198u, 0x1001A0u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+223: return;
+224: }
+225: ctx->pc = 0x1001A0u;
+--- Dispatch context, source lines 245-252 ---
+245: // 0x1001b4: 0x24a510b0  addiu       $a1, $a1, 0x10B0 (Delay Slot)
+246: SET_GPR_S32(ctx, 5, (int32_t)ADD32(GPR_U32(ctx, 5), 4272));
+247: ctx->in_delay_slot = false;
+248: ctx->pc = 0x341D78u;
+249: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x341D78u, 0x1001B0u, 0x1001B8u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+250: return;
+251: }
+252: ctx->pc = 0x1001B8u;
+--- Dispatch context, source lines 263-270 ---
+263: // 0x1001c0: 0x282d  daddu       $a1, $zero, $zero (Delay Slot)
+264: SET_GPR_U64(ctx, 5, (uint64_t)GPR_U64(ctx, 0) + (uint64_t)GPR_U64(ctx, 0));
+265: ctx->in_delay_slot = false;
+266: ctx->pc = 0x345248u;
+267: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x345248u, 0x1001BCu, 0x1001C4u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+268: return;
+269: }
+270: ctx->pc = 0x1001C4u;
+--- Dispatch context, source lines 272-279 ---
+272: // 0x1001c4: 0xc041106  jal         func_104418
+273: ctx->pc = 0x1001C4u;
+274: SET_GPR_U32(ctx, 31, 0x1001CCu);
+275: ctx->pc = 0x104418u;
+276: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x104418u, 0x1001C4u, 0x1001CCu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+277: return;
+278: }
+279: ctx->pc = 0x1001CCu;
+--- Dispatch context, source lines 293-300 ---
+293: // 0x1001d8: 0x27a50080  addiu       $a1, $sp, 0x80 (Delay Slot)
+294: SET_GPR_S32(ctx, 5, (int32_t)ADD32(GPR_U32(ctx, 29), 128));
+295: ctx->in_delay_slot = false;
+296: ctx->pc = 0x345248u;
+297: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x345248u, 0x1001D4u, 0x1001DCu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+298: return;
+299: }
+300: ctx->pc = 0x1001DCu;
+--- Dispatch context, source lines 331-338 ---
+331: // 0x1001f0: 0x282d  daddu       $a1, $zero, $zero (Delay Slot)
+332: SET_GPR_U64(ctx, 5, (uint64_t)GPR_U64(ctx, 0) + (uint64_t)GPR_U64(ctx, 0));
+333: ctx->in_delay_slot = false;
+334: ctx->pc = 0x345248u;
+335: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x345248u, 0x1001ECu, 0x1001F4u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+336: return;
+337: }
+338: ctx->pc = 0x1001F4u;
+--- Dispatch context, source lines 359-366 ---
+359: // 0x100208: 0xc040eb4  jal         func_103AD0
+360: ctx->pc = 0x100208u;
+361: SET_GPR_U32(ctx, 31, 0x100210u);
+362: ctx->pc = 0x103AD0u;
+363: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x103AD0u, 0x100208u, 0x100210u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+364: return;
+365: }
+366: ctx->pc = 0x100210u;
+--- Dispatch context, source lines 368-375 ---
+368: // 0x100210: 0xc087682  jal         func_21DA08
+369: ctx->pc = 0x100210u;
+370: SET_GPR_U32(ctx, 31, 0x100218u);
+371: ctx->pc = 0x21DA08u;
+372: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x21DA08u, 0x100210u, 0x100218u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+373: return;
+374: }
+375: ctx->pc = 0x100218u;
+--- Dispatch context, source lines 377-384 ---
+377: // 0x100218: 0xc0a9e32  jal         func_2A78C8
+378: ctx->pc = 0x100218u;
+379: SET_GPR_U32(ctx, 31, 0x100220u);
+380: ctx->pc = 0x2A78C8u;
+381: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2A78C8u, 0x100218u, 0x100220u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+382: return;
+383: }
+384: ctx->pc = 0x100220u;
+--- Dispatch context, source lines 400-407 ---
+400: SET_GPR_S32(ctx, 29, (int32_t)ADD32(GPR_U32(ctx, 29), 192));
+401: ctx->in_delay_slot = false;
+402: ctx->pc = jumpTarget;
+403: #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+404: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x100228u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+405: return;
+406: #else
+407: ctx->pc = jumpTarget;
+Registration filename reference: False
+CMake filename reference: False
+
+===== ShowBootSequence__Fb_0x102bc8.cpp =====
+Path: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\ShowBootSequence__Fb_0x102bc8.cpp
+Bytes: 17307
+SHA256: CDFECF834FD1BC77B96D646FD8DE8FF8AA1D60DE7AD70FA9E664704C16D511E5
+Resume case labels found: 14
+Labels: 0X102BF4, 0X102BFC, 0X102C04, 0X102C1C, 0X102C2C, 0X102C38, 0X102C40, 0X102C4C, 0X102C6C, 0X102C74, 0X102C90, 0X102CB0, 0X102CBC, 0X102CC8
+dispatchGuestBranch occurrences: 13
+--- Dispatch context, source lines 82-89 ---
+82: // 0x102bec: 0xc040eb4  jal         func_103AD0
+83: ctx->pc = 0x102BECu;
+84: SET_GPR_U32(ctx, 31, 0x102BF4u);
+85: ctx->pc = 0x103AD0u;
+86: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x103AD0u, 0x102BECu, 0x102BF4u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+87: return;
+88: }
+89: ctx->pc = 0x102BF4u;
+--- Dispatch context, source lines 97-104 ---
+97: // 0x102bf8: 0x24110001  addiu       $s1, $zero, 0x1 (Delay Slot)
+98: SET_GPR_S32(ctx, 17, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+99: ctx->in_delay_slot = false;
+100: ctx->pc = 0x103F58u;
+101: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x103F58u, 0x102BF4u, 0x102BFCu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+102: return;
+103: }
+104: ctx->pc = 0x102BFCu;
+--- Dispatch context, source lines 112-119 ---
+112: // 0x102c00: 0x3a0202d  daddu       $a0, $sp, $zero (Delay Slot)
+113: SET_GPR_U64(ctx, 4, (uint64_t)GPR_U64(ctx, 29) + (uint64_t)GPR_U64(ctx, 0));
+114: ctx->in_delay_slot = false;
+115: ctx->pc = 0x2DCCC8u;
+116: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2DCCC8u, 0x102BFCu, 0x102C04u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+117: return;
+118: }
+119: ctx->pc = 0x102C04u;
+--- Dispatch context, source lines 139-146 ---
+139: // 0x102c18: 0x27a503a0  addiu       $a1, $sp, 0x3A0 (Delay Slot)
+140: SET_GPR_S32(ctx, 5, (int32_t)ADD32(GPR_U32(ctx, 29), 928));
+141: ctx->in_delay_slot = false;
+142: ctx->pc = 0x2DCB28u;
+143: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2DCB28u, 0x102C14u, 0x102C1Cu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+144: return;
+145: }
+146: ctx->pc = 0x102C1Cu;
+--- Dispatch context, source lines 160-167 ---
+160: // 0x102c28: 0x27a503e0  addiu       $a1, $sp, 0x3E0 (Delay Slot)
+161: SET_GPR_S32(ctx, 5, (int32_t)ADD32(GPR_U32(ctx, 29), 992));
+162: ctx->in_delay_slot = false;
+163: ctx->pc = 0x2D7358u;
+164: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2D7358u, 0x102C24u, 0x102C2Cu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+165: return;
+166: }
+167: ctx->pc = 0x102C2Cu;
+--- Dispatch context, source lines 178-185 ---
+178: // 0x102c34: 0x24844590  addiu       $a0, $a0, 0x4590 (Delay Slot)
+179: SET_GPR_S32(ctx, 4, (int32_t)ADD32(GPR_U32(ctx, 4), 17808));
+180: ctx->in_delay_slot = false;
+181: ctx->pc = 0x2BE528u;
+182: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2BE528u, 0x102C30u, 0x102C38u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+183: return;
+184: }
+185: ctx->pc = 0x102C38u;
+--- Dispatch context, source lines 187-194 ---
+187: // 0x102c38: 0xc0b81b0  jal         func_2E06C0
+188: ctx->pc = 0x102C38u;
+189: SET_GPR_U32(ctx, 31, 0x102C40u);
+190: ctx->pc = 0x2E06C0u;
+191: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2E06C0u, 0x102C38u, 0x102C40u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+192: return;
+193: }
+194: ctx->pc = 0x102C40u;
+--- Dispatch context, source lines 205-212 ---
+205: // 0x102c48: 0x27a503b0  addiu       $a1, $sp, 0x3B0 (Delay Slot)
+206: SET_GPR_S32(ctx, 5, (int32_t)ADD32(GPR_U32(ctx, 29), 944));
+207: ctx->in_delay_slot = false;
+208: ctx->pc = 0x345248u;
+209: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x345248u, 0x102C44u, 0x102C4Cu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+210: return;
+211: }
+212: ctx->pc = 0x102C4Cu;
+--- Dispatch context, source lines 258-265 ---
+258: // 0x102c68: 0x24050001  addiu       $a1, $zero, 0x1 (Delay Slot)
+259: SET_GPR_S32(ctx, 5, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+260: ctx->in_delay_slot = false;
+261: ctx->pc = 0x345248u;
+262: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x345248u, 0x102C64u, 0x102C6Cu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+263: return;
+264: }
+265: ctx->pc = 0x102C6Cu;
+--- Dispatch context, source lines 267-274 ---
+267: // 0x102c6c: 0xc0d4bd4  jal         func_352F50
+268: ctx->pc = 0x102C6Cu;
+269: SET_GPR_U32(ctx, 31, 0x102C74u);
+270: ctx->pc = 0x352F50u;
+271: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x352F50u, 0x102C6Cu, 0x102C74u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+272: return;
+273: }
+274: ctx->pc = 0x102C74u;
+--- Dispatch context, source lines 374-381 ---
+374: // 0x102cb8: 0x200302d  daddu       $a2, $s0, $zero (Delay Slot)
+375: SET_GPR_U64(ctx, 6, (uint64_t)GPR_U64(ctx, 16) + (uint64_t)GPR_U64(ctx, 0));
+376: ctx->in_delay_slot = false;
+377: ctx->pc = 0x352A88u;
+378: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x352A88u, 0x102CB4u, 0x102CBCu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+379: return;
+380: }
+381: ctx->pc = 0x102CBCu;
+--- Dispatch context, source lines 392-399 ---
+392: // 0x102cc4: 0x24050002  addiu       $a1, $zero, 0x2 (Delay Slot)
+393: SET_GPR_S32(ctx, 5, (int32_t)ADD32(GPR_U32(ctx, 0), 2));
+394: ctx->in_delay_slot = false;
+395: ctx->pc = 0x2D7288u;
+396: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2D7288u, 0x102CC0u, 0x102CC8u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+397: return;
+398: }
+399: ctx->pc = 0x102CC8u;
+--- Dispatch context, source lines 418-425 ---
+418: SET_GPR_S32(ctx, 29, (int32_t)ADD32(GPR_U32(ctx, 29), 1056));
+419: ctx->in_delay_slot = false;
+420: ctx->pc = jumpTarget;
+421: #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+422: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x102CD4u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+423: return;
+424: #else
+425: ctx->pc = jumpTarget;
+Registration filename reference: False
+CMake filename reference: False
+
+===== NewGame__Fv_0x101638.cpp =====
+Path: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\NewGame__Fv_0x101638.cpp
+Bytes: 1123
+SHA256: 91D2EFEBE074942908D7F83C016AEE8FA2BA732985714AE9F0FDD1E5141CBE91
+Resume case labels found: 0
+No conventional switch-case labels detected; inspect dispatch format.
+dispatchGuestBranch occurrences: 0
+Registration filename reference: False
+CMake filename reference: False
+
+===== doSavedLevel__Fv_0x101028.cpp =====
+Path: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\doSavedLevel__Fv_0x101028.cpp
+Bytes: 64034
+SHA256: 2D5D04F18EC3CA0336BABFEB397C0BE1E8C1AE5A8ECF2C2699324AB8AF92284E
+Resume case labels found: 26
+Labels: 0X10106C, 0X101074, 0X10108C, 0X101098, 0X1010A8, 0X1010B8, 0X1010C4, 0X1010CC, 0X1010E0, 0X1010E8, 0X1010F0, 0X101110, 0X101134, 0X101150, 0X10116C, 0X101238, 0X101288, 0X1012D8, 0X101334, 0X101390, 0X1013F8, 0X101414, 0X101418, 0X101420, 0X101430, 0X101478
+dispatchGuestBranch occurrences: 21
+--- Dispatch context, source lines 104-111 ---
+104: // 0x101068: 0xffb70180  sd          $s7, 0x180($sp) (Delay Slot)
+105: WRITE64(ADD32(GPR_U32(ctx, 29), 384), GPR_U64(ctx, 23));
+106: ctx->in_delay_slot = false;
+107: ctx->pc = 0x32BD68u;
+108: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x32BD68u, 0x101064u, 0x10106Cu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+109: return;
+110: }
+111: ctx->pc = 0x10106Cu;
+--- Dispatch context, source lines 113-120 ---
+113: // 0x10106c: 0xc0410e8  jal         func_1043A0
+114: ctx->pc = 0x10106Cu;
+115: SET_GPR_U32(ctx, 31, 0x101074u);
+116: ctx->pc = 0x1043A0u;
+117: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x1043A0u, 0x10106Cu, 0x101074u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+118: return;
+119: }
+120: ctx->pc = 0x101074u;
+--- Dispatch context, source lines 140-147 ---
+140: // 0x101088: 0x200202d  daddu       $a0, $s0, $zero (Delay Slot)
+141: SET_GPR_U64(ctx, 4, (uint64_t)GPR_U64(ctx, 16) + (uint64_t)GPR_U64(ctx, 0));
+142: ctx->in_delay_slot = false;
+143: ctx->pc = 0x2E46D8u;
+144: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2E46D8u, 0x101084u, 0x10108Cu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+145: return;
+146: }
+147: ctx->pc = 0x10108Cu;
+--- Dispatch context, source lines 158-165 ---
+158: // 0x101094: 0x282d  daddu       $a1, $zero, $zero (Delay Slot)
+159: SET_GPR_U64(ctx, 5, (uint64_t)GPR_U64(ctx, 0) + (uint64_t)GPR_U64(ctx, 0));
+160: ctx->in_delay_slot = false;
+161: ctx->pc = 0x2E6468u;
+162: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2E6468u, 0x101090u, 0x101098u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+163: return;
+164: }
+165: ctx->pc = 0x101098u;
+--- Dispatch context, source lines 179-186 ---
+179: // 0x1010a4: 0x302d  daddu       $a2, $zero, $zero (Delay Slot)
+180: SET_GPR_U64(ctx, 6, (uint64_t)GPR_U64(ctx, 0) + (uint64_t)GPR_U64(ctx, 0));
+181: ctx->in_delay_slot = false;
+182: ctx->pc = 0x2E22C0u;
+183: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2E22C0u, 0x1010A0u, 0x1010A8u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+184: return;
+185: }
+186: ctx->pc = 0x1010A8u;
+--- Dispatch context, source lines 200-207 ---
+200: // 0x1010b4: 0x302d  daddu       $a2, $zero, $zero (Delay Slot)
+201: SET_GPR_U64(ctx, 6, (uint64_t)GPR_U64(ctx, 0) + (uint64_t)GPR_U64(ctx, 0));
+202: ctx->in_delay_slot = false;
+203: ctx->pc = 0x2BF730u;
+204: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2BF730u, 0x1010B0u, 0x1010B8u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+205: return;
+206: }
+207: ctx->pc = 0x1010B8u;
+--- Dispatch context, source lines 218-225 ---
+218: // 0x1010c0: 0x282d  daddu       $a1, $zero, $zero (Delay Slot)
+219: SET_GPR_U64(ctx, 5, (uint64_t)GPR_U64(ctx, 0) + (uint64_t)GPR_U64(ctx, 0));
+220: ctx->in_delay_slot = false;
+221: ctx->pc = 0x2E6458u;
+222: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2E6458u, 0x1010BCu, 0x1010C4u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+223: return;
+224: }
+225: ctx->pc = 0x1010C4u;
+--- Dispatch context, source lines 227-234 ---
+227: // 0x1010c4: 0xc0410dc  jal         func_104370
+228: ctx->pc = 0x1010C4u;
+229: SET_GPR_U32(ctx, 31, 0x1010CCu);
+230: ctx->pc = 0x104370u;
+231: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x104370u, 0x1010C4u, 0x1010CCu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+232: return;
+233: }
+234: ctx->pc = 0x1010CCu;
+--- Dispatch context, source lines 261-268 ---
+261: // 0x1010dc: 0x8c4474d4  lw          $a0, 0x74D4($v0) (Delay Slot)
+262: SET_GPR_S32(ctx, 4, (int32_t)READ32(ADD32(GPR_U32(ctx, 2), 29908)));
+263: ctx->in_delay_slot = false;
+264: ctx->pc = 0x2CA4B8u;
+265: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2CA4B8u, 0x1010D8u, 0x1010E0u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+266: return;
+267: }
+268: ctx->pc = 0x1010E0u;
+--- Dispatch context, source lines 293-300 ---
+293: // 0x1010ec: 0x3a0202d  daddu       $a0, $sp, $zero (Delay Slot)
+294: SET_GPR_U64(ctx, 4, (uint64_t)GPR_U64(ctx, 29) + (uint64_t)GPR_U64(ctx, 0));
+295: ctx->in_delay_slot = false;
+296: ctx->pc = 0x2C82C8u;
+297: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2C82C8u, 0x1010E8u, 0x1010F0u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+298: return;
+299: }
+300: ctx->pc = 0x1010F0u;
+--- Dispatch context, source lines 349-356 ---
+349: // 0x10110c: 0x8c4474d8  lw          $a0, 0x74D8($v0) (Delay Slot)
+350: SET_GPR_S32(ctx, 4, (int32_t)READ32(ADD32(GPR_U32(ctx, 2), 29912)));
+351: ctx->in_delay_slot = false;
+352: ctx->pc = 0x2CC530u;
+353: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2CC530u, 0x101108u, 0x101110u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+354: return;
+355: }
+356: ctx->pc = 0x101110u;
+--- Dispatch context, source lines 405-412 ---
+405: // 0x101130: 0x2a0a02d  daddu       $s4, $s5, $zero (Delay Slot)
+406: SET_GPR_U64(ctx, 20, (uint64_t)GPR_U64(ctx, 21) + (uint64_t)GPR_U64(ctx, 0));
+407: ctx->in_delay_slot = false;
+408: ctx->pc = 0x104210u;
+409: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x104210u, 0x10112Cu, 0x101134u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+410: return;
+411: }
+412: ctx->pc = 0x101134u;
+--- Dispatch context, source lines 436-443 ---
+436: // 0x10114c: 0x8e3e74d8  lw          $fp, 0x74D8($s1) (Delay Slot)
+437: SET_GPR_S32(ctx, 30, (int32_t)READ32(ADD32(GPR_U32(ctx, 17), 29912)));
+438: ctx->in_delay_slot = false;
+439: ctx->pc = 0x2BDE60u;
+440: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2BDE60u, 0x101148u, 0x101150u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+441: return;
+442: }
+443: ctx->pc = 0x101150u;
+--- Dispatch context, source lines 465-472 ---
+465: // 0x101164: 0xc0586ba  jal         func_161AE8
+466: ctx->pc = 0x101164u;
+467: SET_GPR_U32(ctx, 31, 0x10116Cu);
+468: ctx->pc = 0x161AE8u;
+469: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x161AE8u, 0x101164u, 0x10116Cu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+470: return;
+471: }
+472: ctx->pc = 0x10116Cu;
+--- Dispatch context, source lines 877-884 ---
+877: // 0x101330: 0xa3a00102  sb          $zero, 0x102($sp) (Delay Slot)
+878: WRITE8(ADD32(GPR_U32(ctx, 29), 258), (uint8_t)GPR_U32(ctx, 0));
+879: ctx->in_delay_slot = false;
+880: ctx->pc = 0x102CE0u;
+881: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x102CE0u, 0x10132Cu, 0x101334u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+882: return;
+883: }
+884: ctx->pc = 0x101334u;
+--- Dispatch context, source lines 1053-1060 ---
+1053: // 0x1013f4: 0x24050028  addiu       $a1, $zero, 0x28 (Delay Slot)
+1054: SET_GPR_S32(ctx, 5, (int32_t)ADD32(GPR_U32(ctx, 0), 40));
+1055: ctx->in_delay_slot = false;
+1056: ctx->pc = 0x100230u;
+1057: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x100230u, 0x1013F0u, 0x1013F8u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+1058: return;
+1059: }
+1060: ctx->pc = 0x1013F8u;
+--- Dispatch context, source lines 1083-1090 ---
+1083: // 0x101410: 0x302d  daddu       $a2, $zero, $zero (Delay Slot)
+1084: SET_GPR_U64(ctx, 6, (uint64_t)GPR_U64(ctx, 0) + (uint64_t)GPR_U64(ctx, 0));
+1085: ctx->in_delay_slot = false;
+1086: ctx->pc = 0x2BF730u;
+1087: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2BF730u, 0x10140Cu, 0x101414u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+1088: return;
+1089: }
+1090: ctx->pc = 0x101414u;
+--- Dispatch context, source lines 1102-1109 ---
+1102: // 0x10141c: 0x240202d  daddu       $a0, $s2, $zero (Delay Slot)
+1103: SET_GPR_U64(ctx, 4, (uint64_t)GPR_U64(ctx, 18) + (uint64_t)GPR_U64(ctx, 0));
+1104: ctx->in_delay_slot = false;
+1105: ctx->pc = 0x100620u;
+1106: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x100620u, 0x101418u, 0x101420u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+1107: return;
+1108: }
+1109: ctx->pc = 0x101420u;
+--- Dispatch context, source lines 1123-1130 ---
+1123: // 0x10142c: 0xa2606afa  sb          $zero, 0x6AFA($s3) (Delay Slot)
+1124: WRITE8(ADD32(GPR_U32(ctx, 19), 27386), (uint8_t)GPR_U32(ctx, 0));
+1125: ctx->in_delay_slot = false;
+1126: ctx->pc = 0x100438u;
+1127: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x100438u, 0x101428u, 0x101430u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+1128: return;
+1129: }
+1130: ctx->pc = 0x101430u;
+--- Dispatch context, source lines 1219-1226 ---
+1219: // 0x101474: 0x2a0282d  daddu       $a1, $s5, $zero (Delay Slot)
+1220: SET_GPR_U64(ctx, 5, (uint64_t)GPR_U64(ctx, 21) + (uint64_t)GPR_U64(ctx, 0));
+1221: ctx->in_delay_slot = false;
+1222: ctx->pc = 0x100E80u;
+1223: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x100E80u, 0x101470u, 0x101478u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+1224: return;
+1225: }
+1226: ctx->pc = 0x101478u;
+--- Dispatch context, source lines 1305-1312 ---
+1305: SET_GPR_S32(ctx, 29, (int32_t)ADD32(GPR_U32(ctx, 29), 432));
+1306: ctx->in_delay_slot = false;
+1307: ctx->pc = jumpTarget;
+1308: #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+1309: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x1014C4u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+1310: return;
+1311: #else
+1312: ctx->pc = jumpTarget;
+Registration filename reference: False
+CMake filename reference: False
+
+===== doLevel__F6eLevelT0_0x1008d8.cpp =====
+Path: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\doLevel__F6eLevelT0_0x1008d8.cpp
+Bytes: 75679
+SHA256: 8BBDC9BEF59FB2CBCF30D75B069600E8047F839C294A62DE866C51668A978AF0
+Resume case labels found: 36
+Labels: 0X100928, 0X100944, 0X10096C, 0X100970, 0X100978, 0X1009A4, 0X1009AC, 0X1009C4, 0X1009CC, 0X1009E4, 0X1009F4, 0X1009FC, 0X100A10, 0X100A20, 0X100A28, 0X100A30, 0X100A3C, 0X100A5C, 0X100A74, 0X100B50, 0X100BA0, 0X100BF0, 0X100C50, 0X100C5C, 0X100CA4, 0X100CB4, 0X100D04, 0X100D10, 0X100D68, 0X100D70, 0X100D7C, 0X100DB4, 0X100DD0, 0X100DD8, 0X100DE8, 0X100E30
+dispatchGuestBranch occurrences: 22
+--- Dispatch context, source lines 123-130 ---
+123: // 0x100924: 0x8e3274d8  lw          $s2, 0x74D8($s1) (Delay Slot)
+124: SET_GPR_S32(ctx, 18, (int32_t)READ32(ADD32(GPR_U32(ctx, 17), 29912)));
+125: ctx->in_delay_slot = false;
+126: ctx->pc = 0x2BDE60u;
+127: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2BDE60u, 0x100920u, 0x100928u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+128: return;
+129: }
+130: ctx->pc = 0x100928u;
+--- Dispatch context, source lines 152-159 ---
+152: // 0x10093c: 0xc0586ba  jal         func_161AE8
+153: ctx->pc = 0x10093Cu;
+154: SET_GPR_U32(ctx, 31, 0x100944u);
+155: ctx->pc = 0x161AE8u;
+156: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x161AE8u, 0x10093Cu, 0x100944u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+157: return;
+158: }
+159: ctx->pc = 0x100944u;
+--- Dispatch context, source lines 201-208 ---
+201: // 0x100968: 0x220802d  daddu       $s0, $s1, $zero (Delay Slot)
+202: SET_GPR_U64(ctx, 16, (uint64_t)GPR_U64(ctx, 17) + (uint64_t)GPR_U64(ctx, 0));
+203: ctx->in_delay_slot = false;
+204: ctx->pc = 0x356520u;
+205: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x356520u, 0x100964u, 0x10096Cu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+206: return;
+207: }
+208: ctx->pc = 0x10096Cu;
+--- Dispatch context, source lines 214-221 ---
+214: // 0x100970: 0xc0405c6  jal         func_101718
+215: ctx->pc = 0x100970u;
+216: SET_GPR_U32(ctx, 31, 0x100978u);
+217: ctx->pc = 0x101718u;
+218: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x101718u, 0x100970u, 0x100978u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+219: return;
+220: }
+221: ctx->pc = 0x100978u;
+--- Dispatch context, source lines 276-283 ---
+276: // 0x1009a0: 0x24060002  addiu       $a2, $zero, 0x2 (Delay Slot)
+277: SET_GPR_S32(ctx, 6, (int32_t)ADD32(GPR_U32(ctx, 0), 2));
+278: ctx->in_delay_slot = false;
+279: ctx->pc = 0x1043C8u;
+280: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x1043C8u, 0x10099Cu, 0x1009A4u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+281: return;
+282: }
+283: ctx->pc = 0x1009A4u;
+--- Dispatch context, source lines 330-337 ---
+330: // 0x1009c0: 0x24060002  addiu       $a2, $zero, 0x2 (Delay Slot)
+331: SET_GPR_S32(ctx, 6, (int32_t)ADD32(GPR_U32(ctx, 0), 2));
+332: ctx->in_delay_slot = false;
+333: ctx->pc = 0x1043C8u;
+334: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x1043C8u, 0x1009BCu, 0x1009C4u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+335: return;
+336: }
+337: ctx->pc = 0x1009C4u;
+--- Dispatch context, source lines 384-391 ---
+384: // 0x1009e0: 0x24060002  addiu       $a2, $zero, 0x2 (Delay Slot)
+385: SET_GPR_S32(ctx, 6, (int32_t)ADD32(GPR_U32(ctx, 0), 2));
+386: ctx->in_delay_slot = false;
+387: ctx->pc = 0x1043C8u;
+388: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x1043C8u, 0x1009DCu, 0x1009E4u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+389: return;
+390: }
+391: ctx->pc = 0x1009E4u;
+--- Dispatch context, source lines 405-412 ---
+405: // 0x1009f0: 0x24060002  addiu       $a2, $zero, 0x2 (Delay Slot)
+406: SET_GPR_S32(ctx, 6, (int32_t)ADD32(GPR_U32(ctx, 0), 2));
+407: ctx->in_delay_slot = false;
+408: ctx->pc = 0x1043C8u;
+409: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x1043C8u, 0x1009ECu, 0x1009F4u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+410: return;
+411: }
+412: ctx->pc = 0x1009F4u;
+--- Dispatch context, source lines 456-463 ---
+456: // 0x100a0c: 0x24060002  addiu       $a2, $zero, 0x2 (Delay Slot)
+457: SET_GPR_S32(ctx, 6, (int32_t)ADD32(GPR_U32(ctx, 0), 2));
+458: ctx->in_delay_slot = false;
+459: ctx->pc = 0x1043C8u;
+460: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x1043C8u, 0x100A08u, 0x100A10u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+461: return;
+462: }
+463: ctx->pc = 0x100A10u;
+--- Dispatch context, source lines 478-485 ---
+478: // 0x100a1c: 0x24060002  addiu       $a2, $zero, 0x2 (Delay Slot)
+479: SET_GPR_S32(ctx, 6, (int32_t)ADD32(GPR_U32(ctx, 0), 2));
+480: ctx->in_delay_slot = false;
+481: ctx->pc = 0x1043C8u;
+482: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x1043C8u, 0x100A18u, 0x100A20u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+483: return;
+484: }
+485: ctx->pc = 0x100A20u;
+--- Dispatch context, source lines 510-517 ---
+510: // 0x100a2c: 0x302d  daddu       $a2, $zero, $zero (Delay Slot)
+511: SET_GPR_U64(ctx, 6, (uint64_t)GPR_U64(ctx, 0) + (uint64_t)GPR_U64(ctx, 0));
+512: ctx->in_delay_slot = false;
+513: ctx->pc = 0x1043C8u;
+514: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x1043C8u, 0x100A28u, 0x100A30u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+515: return;
+516: }
+517: ctx->pc = 0x100A30u;
+--- Dispatch context, source lines 578-585 ---
+578: // 0x100a58: 0x240800ff  addiu       $t0, $zero, 0xFF (Delay Slot)
+579: SET_GPR_S32(ctx, 8, (int32_t)ADD32(GPR_U32(ctx, 0), 255));
+580: ctx->in_delay_slot = false;
+581: ctx->pc = 0x356520u;
+582: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x356520u, 0x100A54u, 0x100A5Cu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+583: return;
+584: }
+585: ctx->pc = 0x100A5Cu;
+--- Dispatch context, source lines 606-613 ---
+606: // 0x100a70: 0x260202d  daddu       $a0, $s3, $zero (Delay Slot)
+607: SET_GPR_U64(ctx, 4, (uint64_t)GPR_U64(ctx, 19) + (uint64_t)GPR_U64(ctx, 0));
+608: ctx->in_delay_slot = false;
+609: ctx->pc = 0x104330u;
+610: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x104330u, 0x100A6Cu, 0x100A74u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+611: return;
+612: }
+613: ctx->pc = 0x100A74u;
+--- Dispatch context, source lines 1033-1040 ---
+1033: // 0x100c4c: 0xafa00000  sw          $zero, 0x0($sp) (Delay Slot)
+1034: WRITE32(ADD32(GPR_U32(ctx, 29), 0), GPR_U32(ctx, 0));
+1035: ctx->in_delay_slot = false;
+1036: ctx->pc = 0x102CE0u;
+1037: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x102CE0u, 0x100C48u, 0x100C50u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+1038: return;
+1039: }
+1040: ctx->pc = 0x100C50u;
+--- Dispatch context, source lines 1204-1211 ---
+1204: // 0x100d00: 0xfc490008  sd          $t1, 0x8($v0) (Delay Slot)
+1205: WRITE64(ADD32(GPR_U32(ctx, 2), 8), GPR_U64(ctx, 9));
+1206: ctx->in_delay_slot = false;
+1207: ctx->pc = 0x102CE0u;
+1208: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x102CE0u, 0x100CFCu, 0x100D04u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+1209: return;
+1210: }
+1211: ctx->pc = 0x100D04u;
+--- Dispatch context, source lines 1319-1326 ---
+1319: // 0x100d6c: 0x260202d  daddu       $a0, $s3, $zero (Delay Slot)
+1320: SET_GPR_U64(ctx, 4, (uint64_t)GPR_U64(ctx, 19) + (uint64_t)GPR_U64(ctx, 0));
+1321: ctx->in_delay_slot = false;
+1322: ctx->pc = 0x1044F0u;
+1323: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x1044F0u, 0x100D68u, 0x100D70u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+1324: return;
+1325: }
+1326: ctx->pc = 0x100D70u;
+--- Dispatch context, source lines 1337-1344 ---
+1337: // 0x100d78: 0x2c0282d  daddu       $a1, $s6, $zero (Delay Slot)
+1338: SET_GPR_U64(ctx, 5, (uint64_t)GPR_U64(ctx, 22) + (uint64_t)GPR_U64(ctx, 0));
+1339: ctx->in_delay_slot = false;
+1340: ctx->pc = 0x100230u;
+1341: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x100230u, 0x100D74u, 0x100D7Cu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+1342: return;
+1343: }
+1344: ctx->pc = 0x100D7Cu;
+--- Dispatch context, source lines 1418-1425 ---
+1418: // 0x100db0: 0x8e0574d8  lw          $a1, 0x74D8($s0) (Delay Slot)
+1419: SET_GPR_S32(ctx, 5, (int32_t)READ32(ADD32(GPR_U32(ctx, 16), 29912)));
+1420: ctx->in_delay_slot = false;
+1421: ctx->pc = 0x1041D8u;
+1422: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x1041D8u, 0x100DACu, 0x100DB4u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+1423: return;
+1424: }
+1425: ctx->pc = 0x100DB4u;
+--- Dispatch context, source lines 1457-1464 ---
+1457: // 0x100dd4: 0x260202d  daddu       $a0, $s3, $zero (Delay Slot)
+1458: SET_GPR_U64(ctx, 4, (uint64_t)GPR_U64(ctx, 19) + (uint64_t)GPR_U64(ctx, 0));
+1459: ctx->in_delay_slot = false;
+1460: ctx->pc = 0x100620u;
+1461: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x100620u, 0x100DD0u, 0x100DD8u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+1462: return;
+1463: }
+1464: ctx->pc = 0x100DD8u;
+--- Dispatch context, source lines 1478-1485 ---
+1478: // 0x100de4: 0xa2006afa  sb          $zero, 0x6AFA($s0) (Delay Slot)
+1479: WRITE8(ADD32(GPR_U32(ctx, 16), 27386), (uint8_t)GPR_U32(ctx, 0));
+1480: ctx->in_delay_slot = false;
+1481: ctx->pc = 0x100438u;
+1482: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x100438u, 0x100DE0u, 0x100DE8u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+1483: return;
+1484: }
+1485: ctx->pc = 0x100DE8u;
+--- Dispatch context, source lines 1574-1581 ---
+1574: // 0x100e2c: 0x220282d  daddu       $a1, $s1, $zero (Delay Slot)
+1575: SET_GPR_U64(ctx, 5, (uint64_t)GPR_U64(ctx, 17) + (uint64_t)GPR_U64(ctx, 0));
+1576: ctx->in_delay_slot = false;
+1577: ctx->pc = 0x100E80u;
+1578: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x100E80u, 0x100E28u, 0x100E30u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+1579: return;
+1580: }
+1581: ctx->pc = 0x100E30u;
+--- Dispatch context, source lines 1654-1661 ---
+1654: SET_GPR_S32(ctx, 29, (int32_t)ADD32(GPR_U32(ctx, 29), 400));
+1655: ctx->in_delay_slot = false;
+1656: ctx->pc = jumpTarget;
+1657: #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+1658: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x100E74u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+1659: return;
+1660: #else
+1661: ctx->pc = jumpTarget;
+Registration filename reference: False
+CMake filename reference: False
+
+===== FinishGame__Fv_0x103dc8.cpp =====
+Path: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\FinishGame__Fv_0x103dc8.cpp
+Bytes: 22809
+SHA256: 76D7FFBBEF06A5D25254E5C62720EE79969ED608A9103E71E9A84603EFEB7A6B
+Resume case labels found: 20
+Labels: 0X103DE8, 0X103DF0, 0X103DF8, 0X103E00, 0X103E10, 0X103E24, 0X103E38, 0X103E7C, 0X103E90, 0X103E98, 0X103EA0, 0X103EAC, 0X103EB4, 0X103EC0, 0X103EE0, 0X103EE8, 0X103F04, 0X103F24, 0X103F30, 0X103F3C
+dispatchGuestBranch occurrences: 19
+--- Dispatch context, source lines 71-78 ---
+71: // 0x103de4: 0xffb00cb0  sd          $s0, 0xCB0($sp) (Delay Slot)
+72: WRITE64(ADD32(GPR_U32(ctx, 29), 3248), GPR_U64(ctx, 16));
+73: ctx->in_delay_slot = false;
+74: ctx->pc = 0x366090u;
+75: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x366090u, 0x103DE0u, 0x103DE8u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+76: return;
+77: }
+78: ctx->pc = 0x103DE8u;
+--- Dispatch context, source lines 80-87 ---
+80: // 0x103de8: 0xc0caf5a  jal         func_32BD68
+81: ctx->pc = 0x103DE8u;
+82: SET_GPR_U32(ctx, 31, 0x103DF0u);
+83: ctx->pc = 0x32BD68u;
+84: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x32BD68u, 0x103DE8u, 0x103DF0u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+85: return;
+86: }
+87: ctx->pc = 0x103DF0u;
+--- Dispatch context, source lines 89-96 ---
+89: // 0x103df0: 0xc040eb4  jal         func_103AD0
+90: ctx->pc = 0x103DF0u;
+91: SET_GPR_U32(ctx, 31, 0x103DF8u);
+92: ctx->pc = 0x103AD0u;
+93: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x103AD0u, 0x103DF0u, 0x103DF8u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+94: return;
+95: }
+96: ctx->pc = 0x103DF8u;
+--- Dispatch context, source lines 98-105 ---
+98: // 0x103df8: 0xc040fd6  jal         func_103F58
+99: ctx->pc = 0x103DF8u;
+100: SET_GPR_U32(ctx, 31, 0x103E00u);
+101: ctx->pc = 0x103F58u;
+102: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x103F58u, 0x103DF8u, 0x103E00u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+103: return;
+104: }
+105: ctx->pc = 0x103E00u;
+--- Dispatch context, source lines 119-126 ---
+119: // 0x103e0c: 0x24a5f6c0  addiu       $a1, $a1, -0x940 (Delay Slot)
+120: SET_GPR_S32(ctx, 5, (int32_t)ADD32(GPR_U32(ctx, 5), 4294964928));
+121: ctx->in_delay_slot = false;
+122: ctx->pc = 0x2A1388u;
+123: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2A1388u, 0x103E08u, 0x103E10u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+124: return;
+125: }
+126: ctx->pc = 0x103E10u;
+--- Dispatch context, source lines 143-150 ---
+143: // 0x103e20: 0x2406ffff  addiu       $a2, $zero, -0x1 (Delay Slot)
+144: SET_GPR_S32(ctx, 6, (int32_t)ADD32(GPR_U32(ctx, 0), 4294967295));
+145: ctx->in_delay_slot = false;
+146: ctx->pc = 0x2A09C0u;
+147: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2A09C0u, 0x103E1Cu, 0x103E24u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+148: return;
+149: }
+150: ctx->pc = 0x103E24u;
+--- Dispatch context, source lines 167-174 ---
+167: // 0x103e34: 0x2406ffff  addiu       $a2, $zero, -0x1 (Delay Slot)
+168: SET_GPR_S32(ctx, 6, (int32_t)ADD32(GPR_U32(ctx, 0), 4294967295));
+169: ctx->in_delay_slot = false;
+170: ctx->pc = 0x2A09C0u;
+171: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2A09C0u, 0x103E30u, 0x103E38u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+172: return;
+173: }
+174: ctx->pc = 0x103E38u;
+--- Dispatch context, source lines 227-234 ---
+227: // 0x103e78: 0xafa00024  sw          $zero, 0x24($sp) (Delay Slot)
+228: WRITE32(ADD32(GPR_U32(ctx, 29), 36), GPR_U32(ctx, 0));
+229: ctx->in_delay_slot = false;
+230: ctx->pc = 0x2D2EF0u;
+231: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2D2EF0u, 0x103E74u, 0x103E7Cu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+232: return;
+233: }
+234: ctx->pc = 0x103E7Cu;
+--- Dispatch context, source lines 251-258 ---
+251: // 0x103e8c: 0x382d  daddu       $a3, $zero, $zero (Delay Slot)
+252: SET_GPR_U64(ctx, 7, (uint64_t)GPR_U64(ctx, 0) + (uint64_t)GPR_U64(ctx, 0));
+253: ctx->in_delay_slot = false;
+254: ctx->pc = 0x2D2E28u;
+255: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2D2E28u, 0x103E88u, 0x103E90u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+256: return;
+257: }
+258: ctx->pc = 0x103E90u;
+--- Dispatch context, source lines 266-273 ---
+266: // 0x103e94: 0x220202d  daddu       $a0, $s1, $zero (Delay Slot)
+267: SET_GPR_U64(ctx, 4, (uint64_t)GPR_U64(ctx, 17) + (uint64_t)GPR_U64(ctx, 0));
+268: ctx->in_delay_slot = false;
+269: ctx->pc = 0x2D2330u;
+270: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2D2330u, 0x103E90u, 0x103E98u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+271: return;
+272: }
+273: ctx->pc = 0x103E98u;
+--- Dispatch context, source lines 275-282 ---
+275: // 0x103e98: 0xc0caf5a  jal         func_32BD68
+276: ctx->pc = 0x103E98u;
+277: SET_GPR_U32(ctx, 31, 0x103EA0u);
+278: ctx->pc = 0x32BD68u;
+279: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x32BD68u, 0x103E98u, 0x103EA0u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+280: return;
+281: }
+282: ctx->pc = 0x103EA0u;
+--- Dispatch context, source lines 293-300 ---
+293: // 0x103ea8: 0x24844590  addiu       $a0, $a0, 0x4590 (Delay Slot)
+294: SET_GPR_S32(ctx, 4, (int32_t)ADD32(GPR_U32(ctx, 4), 17808));
+295: ctx->in_delay_slot = false;
+296: ctx->pc = 0x2BE528u;
+297: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2BE528u, 0x103EA4u, 0x103EACu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+298: return;
+299: }
+300: ctx->pc = 0x103EACu;
+--- Dispatch context, source lines 302-309 ---
+302: // 0x103eac: 0xc0b81b0  jal         func_2E06C0
+303: ctx->pc = 0x103EACu;
+304: SET_GPR_U32(ctx, 31, 0x103EB4u);
+305: ctx->pc = 0x2E06C0u;
+306: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2E06C0u, 0x103EACu, 0x103EB4u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+307: return;
+308: }
+309: ctx->pc = 0x103EB4u;
+--- Dispatch context, source lines 320-327 ---
+320: // 0x103ebc: 0x27a50c80  addiu       $a1, $sp, 0xC80 (Delay Slot)
+321: SET_GPR_S32(ctx, 5, (int32_t)ADD32(GPR_U32(ctx, 29), 3200));
+322: ctx->in_delay_slot = false;
+323: ctx->pc = 0x345248u;
+324: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x345248u, 0x103EB8u, 0x103EC0u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+325: return;
+326: }
+327: ctx->pc = 0x103EC0u;
+--- Dispatch context, source lines 373-380 ---
+373: // 0x103edc: 0x24050001  addiu       $a1, $zero, 0x1 (Delay Slot)
+374: SET_GPR_S32(ctx, 5, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+375: ctx->in_delay_slot = false;
+376: ctx->pc = 0x345248u;
+377: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x345248u, 0x103ED8u, 0x103EE0u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+378: return;
+379: }
+380: ctx->pc = 0x103EE0u;
+--- Dispatch context, source lines 382-389 ---
+382: // 0x103ee0: 0xc0d4bd4  jal         func_352F50
+383: ctx->pc = 0x103EE0u;
+384: SET_GPR_U32(ctx, 31, 0x103EE8u);
+385: ctx->pc = 0x352F50u;
+386: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x352F50u, 0x103EE0u, 0x103EE8u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+387: return;
+388: }
+389: ctx->pc = 0x103EE8u;
+--- Dispatch context, source lines 489-496 ---
+489: // 0x103f2c: 0x200302d  daddu       $a2, $s0, $zero (Delay Slot)
+490: SET_GPR_U64(ctx, 6, (uint64_t)GPR_U64(ctx, 16) + (uint64_t)GPR_U64(ctx, 0));
+491: ctx->in_delay_slot = false;
+492: ctx->pc = 0x352A88u;
+493: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x352A88u, 0x103F28u, 0x103F30u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+494: return;
+495: }
+496: ctx->pc = 0x103F30u;
+--- Dispatch context, source lines 507-514 ---
+507: // 0x103f38: 0x24050002  addiu       $a1, $zero, 0x2 (Delay Slot)
+508: SET_GPR_S32(ctx, 5, (int32_t)ADD32(GPR_U32(ctx, 0), 2));
+509: ctx->in_delay_slot = false;
+510: ctx->pc = 0x2D2310u;
+511: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2D2310u, 0x103F34u, 0x103F3Cu, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+512: return;
+513: }
+514: ctx->pc = 0x103F3Cu;
+--- Dispatch context, source lines 536-543 ---
+536: SET_GPR_S32(ctx, 29, (int32_t)ADD32(GPR_U32(ctx, 29), 3312));
+537: ctx->in_delay_slot = false;
+538: ctx->pc = jumpTarget;
+539: #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+540: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x103F4Cu, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+541: return;
+542: #else
+543: ctx->pc = jumpTarget;
+Registration filename reference: False
+CMake filename reference: False
+
+===== ps2___do_global_ctors_0x37b310.cpp =====
+Path: D:\Downloads\MarkOfKri_Audits\BOOTSTRAP_00100008_ISOLATED_20261128_003854\output\ps2___do_global_ctors_0x37b310.cpp
+Bytes: 15048
+SHA256: 4D052B29871D4B2078EB79216E0494D94BFBFF192B83184639800A54272213FB
+Expected hash match: True
+Resume case labels found: 44
+Labels: 0X37B310, 0X37B314, 0X37B318, 0X37B31C, 0X37B320, 0X37B324, 0X37B328, 0X37B32C, 0X37B330, 0X37B334, 0X37B338, 0X37B33C, 0X37B340, 0X37B344, 0X37B348, 0X37B34C, 0X37B350, 0X37B354, 0X37B358, 0X37B35C, 0X37B360, 0X37B364, 0X37B368, 0X37B36C, 0X37B370, 0X37B374, 0X37B378, 0X37B37C, 0X37B380, 0X37B384, 0X37B388, 0X37B38C, 0X37B390, 0X37B394, 0X37B398, 0X37B39C, 0X37B3A0, 0X37B3A4, 0X37B3A8, 0X37B3AC, 0X37B3B0, 0X37B3B4, 0X37B3B8, 0X37B3BC
+dispatchGuestBranch occurrences: 2
+--- Dispatch context, source lines 314-321 ---
+314: // 0x37b3a0: 0x2610fffc  addiu       $s0, $s0, -0x4 (Delay Slot)
+315: SET_GPR_S32(ctx, 16, (int32_t)ADD32(GPR_U32(ctx, 16), 4294967292));
+316: ctx->in_delay_slot = false;
+317: ctx->pc = jumpTarget;
+318: if (!runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x37B39Cu, 0x37B3A4u, PS2Runtime::GuestBranchKind::IndirectCall, "JALR")) {
+319: return;
+320: }
+321: }
+--- Dispatch context, source lines 386-393 ---
+386: SET_GPR_S32(ctx, 29, (int32_t)ADD32(GPR_U32(ctx, 29), 48));
+387: ctx->in_delay_slot = false;
+388: ctx->pc = jumpTarget;
+389: #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+390: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x37B3B8u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+391: return;
+392: #else
+393: ctx->pc = jumpTarget;
+Registration filename reference: False
+CMake filename reference: False
+
+===== newGame__4Game_0x2bdd38.cpp =====
+Path: D:\Downloads\MarkOfKri_Audits\BOOTSTRAP_00100008_ISOLATED_20261128_003854\output\newGame__4Game_0x2bdd38.cpp
+Bytes: 13668
+SHA256: 92C483D402CE3F14A186620F7000BEF681D4D0E10D6A6CF0E2BE6431F8AC6862
+Expected hash match: True
+Resume case labels found: 3
+Labels: 0X2BDDE0, 0X2BDE38, 0X2BDE44
+dispatchGuestBranch occurrences: 3
+--- Dispatch context, source lines 236-243 ---
+236: // 0x2bde34: 0xff83d170  sd          $v1, -0x2E90($gp) (Delay Slot)
+237: WRITE64(ADD32(GPR_U32(ctx, 28), 4294955376), GPR_U64(ctx, 3));
+238: ctx->in_delay_slot = false;
+239: ctx->pc = 0x2A78C8u;
+240: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x2A78C8u, 0x2BDE30u, 0x2BDE38u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+241: return;
+242: }
+243: ctx->pc = 0x2BDE38u;
+--- Dispatch context, source lines 254-261 ---
+254: // 0x2bde40: 0x2484e9f0  addiu       $a0, $a0, -0x1610 (Delay Slot)
+255: SET_GPR_S32(ctx, 4, (int32_t)ADD32(GPR_U32(ctx, 4), 4294961648));
+256: ctx->in_delay_slot = false;
+257: ctx->pc = 0x21B1F0u;
+258: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x21B1F0u, 0x2BDE3Cu, 0x2BDE44u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+259: return;
+260: }
+261: ctx->pc = 0x2BDE44u;
+--- Dispatch context, source lines 286-293 ---
+286: SET_GPR_S32(ctx, 29, (int32_t)ADD32(GPR_U32(ctx, 29), 32));
+287: ctx->in_delay_slot = false;
+288: ctx->pc = jumpTarget;
+289: #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+290: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x2BDE58u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+291: return;
+292: #else
+293: ctx->pc = jumpTarget;
+Registration filename reference: False
+CMake filename reference: False
+
+===== IngameTextMessageReset__Fv_0x2a78c8.cpp =====
+Path: D:\Downloads\MarkOfKri_Audits\BOOTSTRAP_00100008_ISOLATED_20261128_003854\output\IngameTextMessageReset__Fv_0x2a78c8.cpp
+Bytes: 3280
+SHA256: 710132F2A85F0FF4A34D490A140F4CC3A987B3D0524BCB2144F7B022D84BED7D
+Expected hash match: True
+Resume case labels found: 1
+Labels: 0X2A78E0
+dispatchGuestBranch occurrences: 1
+--- Dispatch context, source lines 83-90 ---
+83: WRITE32(ADD32(GPR_U32(ctx, 28), 4294959724), GPR_U32(ctx, 0));
+84: ctx->in_delay_slot = false;
+85: ctx->pc = jumpTarget;
+86: #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+87: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x2A78FCu, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+88: return;
+89: #else
+90: ctx->pc = jumpTarget;
+Registration filename reference: False
+CMake filename reference: False
+
+===== init__19PlayerMoveCheckList_0x21b1f0.cpp =====
+Path: D:\Downloads\MarkOfKri_Audits\BOOTSTRAP_00100008_ISOLATED_20261128_003854\output\init__19PlayerMoveCheckList_0x21b1f0.cpp
+Bytes: 2713
+SHA256: E4809CB6D25227BAE70D5E666B29279EED7A9145E05DB66ADD7DD9CA66952423
+Expected hash match: True
+Resume case labels found: 1
+Labels: 0X21B200
+dispatchGuestBranch occurrences: 2
+--- Dispatch context, source lines 34-41 ---
+34: // 0x21b1f8: 0xc086c64  jal         func_21B190
+35: ctx->pc = 0x21B1F8u;
+36: SET_GPR_U32(ctx, 31, 0x21B200u);
+37: ctx->pc = 0x21B190u;
+38: if (!runtime->dispatchGuestBranch(rdram, ctx, 0x21B190u, 0x21B1F8u, 0x21B200u, PS2Runtime::GuestBranchKind::DirectCall, "JAL")) {
+39: return;
+40: }
+41: ctx->pc = 0x21B200u;
+--- Dispatch context, source lines 63-70 ---
+63: SET_GPR_S32(ctx, 29, (int32_t)ADD32(GPR_U32(ctx, 29), 16));
+64: ctx->in_delay_slot = false;
+65: ctx->pc = jumpTarget;
+66: #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+67: (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x21B210u, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+68: return;
+69: #else
+70: ctx->pc = jumpTarget;
+Registration filename reference: False
+CMake filename reference: False
+
+===== TARGET ADDRESS REGISTRATION CHECK =====
+0x002A78C8 registered by address text: False
+0x0021B1F0 registered by address text: False
+0x0037B310 registered by address text: False
+0x002BDD38 registered by address text: False
+
+===== SUMMARY =====
+Actual elapsed: 0.07 seconds
+Estimated runtime: 5–45 seconds.
+Production files modified: 0
