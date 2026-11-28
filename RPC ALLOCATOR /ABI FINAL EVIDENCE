@@ -1,0 +1,1642 @@
+MARK OF KRI — RPC ALLOCATOR / ABI FINAL EVIDENCE
+GENERATED: 2026-11-27 20:28:43
+MODE: READ-ONLY
+
+===== ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp =====
+SHA256: 38AA2006A5240A8D29B087844DF2822284210F2F928C50A5F4D2B0AE3ED2A5B5
+LINE COUNT: 1008
+--- LINES 1-160 ---
+    1: #include "Common.h"
+    2: #include "RPC.h"
+    3: #include "../../ps2_iop_transport.h"
+    4: 
+    5: namespace ps2_syscalls
+    6: {
+    7:     namespace
+    8:     {
+    9:         SifRpcDebugEvent makeRpcDebugEvent(const char *op, R5900Context *ctx, PS2Runtime *runtime)
+   10:         {
+   11:             SifRpcDebugEvent event{};
+   12:             event.op = op;
+   13:             event.pc = ctx ? ctx->pc : 0u;
+   14:             event.ra = ctx ? getRegU32(ctx, 31) : 0u;
+   15:             event.threadId = runtime ? static_cast<uint32_t>(runtime->eeScheduler().currentThreadId()) : 0u;
+   16:             return event;
+   17:         }
+   18: 
+   19:         void pushSifRpcDebugEventLocked(SifRpcDebugEvent event)
+   20:         {
+   21:             event.seq = ++g_sif_rpc_debug_next_seq;
+   22:             g_sif_rpc_debug_history[event.seq % kSifRpcDebugHistoryCount] = event;
+   23:         }
+   24: 
+   25:         void pushSifRpcDebugEvent(SifRpcDebugEvent event)
+   26:         {
+   27:             std::lock_guard<std::mutex> lock(g_rpc_mutex);
+   28:             pushSifRpcDebugEventLocked(event);
+   29:         }
+   30: 
+   31:         void fillRpcDebugPreview(const uint8_t *rdram, uint32_t addr, uint32_t size, uint8_t *preview, uint32_t &previewSize)
+   32:         {
+   33:             previewSize = 0u;
+   34:             if (!rdram || !addr || !preview || size == 0u)
+   35:             {
+   36:                 return;
+   37:             }
+   38: 
+   39:             const uint32_t count = std::min<uint32_t>(size, static_cast<uint32_t>(kSifRpcDebugPreviewBytes));
+   40:             for (uint32_t i = 0; i < count; ++i)
+   41:             {
+   42:                 const uint8_t *ptr = getConstMemPtr(rdram, addr + i);
+   43:                 if (!ptr)
+   44:                 {
+   45:                     break;
+   46:                 }
+   47:                 preview[i] = *ptr;
+   48:                 ++previewSize;
+   49:             }
+   50:         }
+   51: 
+   52:         std::string formatRpcTraceBytes(const uint8_t *bytes, uint32_t count)
+   53:         {
+   54:             std::string out;
+   55:             if (!bytes || count == 0u)
+   56:             {
+   57:                 return out;
+   58:             }
+   59: 
+   60:             char item[4] = {};
+   61:             for (uint32_t i = 0; i < count; ++i)
+   62:             {
+   63:                 std::snprintf(item, sizeof(item), "%02X", bytes[i]);
+   64:                 if (!out.empty())
+   65:                 {
+   66:                     out.push_back(' ');
+   67:                 }
+   68:                 out += item;
+   69:             }
+   70:             return out;
+   71:         }
+   72: 
+   73: #ifndef PS2X_ENABLE_IOP_RPC_TRACE
+   74: #define PS2X_ENABLE_IOP_RPC_TRACE 1
+   75: #endif
+   76: 
+   77: #if PS2X_ENABLE_IOP_RPC_TRACE
+   78:         std::string loadedIopModuleTraceSummary()
+   79:         {
+   80:             std::lock_guard<std::mutex> lock(g_sif_module_mutex);
+   81:             std::string out;
+   82:             uint32_t count = 0u;
+   83:             for (const auto &entry : g_sif_modules_by_id)
+   84:             {
+   85:                 const SifModuleRecord &module = entry.second;
+   86:                 if (!module.loaded)
+   87:                 {
+   88:                     continue;
+   89:                 }
+   90: 
+   91:                 if (!out.empty())
+   92:                 {
+   93:                     out += "; ";
+   94:                 }
+   95:                 out += module.pathKey.empty() ? module.path : module.pathKey;
+   96:                 ++count;
+   97:                 if (count >= 6u)
+   98:                 {
+   99:                     break;
+  100:                 }
+  101:             }
+  102:             return out;
+  103:         }
+  104: 
+  105:         void logUnhandledRpcTrace(const SifRpcDebugEvent &event)
+  106:         {
+  107:             static std::unordered_set<uint64_t> loggedSignatures;
+  108:             if (std::strcmp(event.op ? event.op : "", "CallRpc") != 0)
+  109:             {
+  110:                 return;
+  111:             }
+  112: 
+  113:             uint64_t signature = 1469598103934665603ull;
+  114:             auto mixSignature = [&](uint32_t value)
+  115:             {
+  116:                 signature ^= static_cast<uint64_t>(value);
+  117:                 signature *= 1099511628211ull;
+  118:             };
+  119:             mixSignature(event.sid);
+  120:             mixSignature(event.rpcNum);
+  121:             mixSignature(event.sendSize);
+  122:             mixSignature(event.recvSize);
+  123:             if (!loggedSignatures.insert(signature).second || loggedSignatures.size() > 128u)
+  124:             {
+  125:                 return;
+  126:             }
+  127: 
+  128:             const std::string modules = loadedIopModuleTraceSummary();
+  129:             std::cerr << "[IOP/RPC trace:unhandled]"
+  130:                       << " sid=0x" << std::hex << event.sid
+  131:                       << " rpc=0x" << event.rpcNum
+  132:                       << " pc=0x" << event.pc
+  133:                       << " ra=0x" << event.ra
+  134:                       << " send=0x" << event.sendBuf << "/" << std::dec << event.sendSize
+  135:                       << " recv=0x" << std::hex << event.recvBuf << "/" << std::dec << event.recvSize
+  136:                       << " sendBytes=[" << formatRpcTraceBytes(event.sendPreview, event.sendPreviewSize) << "]"
+  137:                       << " loadedModules=[" << modules << "]"
+  138:                       << std::dec << std::endl;
+  139:         }
+  140: #endif
+  141: 
+  142:         bool signalRpcCompletionSema(PS2Runtime *runtime, uint32_t semaId)
+  143:         {
+  144:             if (!runtime || semaId == 0u || semaId > 0xFFFFu)
+  145:             {
+  146:                 return false;
+  147:             }
+  148:             return runtime->eeScheduler().signalSemaphore(static_cast<int>(semaId), true) >= 0;
+  149:         }
+  150: 
+  151:     } // namespace
+  152: 
+  153:     void SifStopModule(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  154:     {
+  155:         const int32_t moduleId = static_cast<int32_t>(getRegU32(ctx, 4)); // $a0
+  156:         const uint32_t resultAddr = getRegU32(ctx, 7);                    // $a3 (int* result, optional)
+  157: 
+  158:         int32_t moduleResult = -1;
+  159:         const bool stoppedByEmulator = runtime->stopIopModule(moduleId, &moduleResult);
+  160:         uint32_t refsLeft = 0;
+--- LINES 990-1008 ---
+  990:         if (logCount < 5)
+  991:         {
+  992:             RUNTIME_LOG("[sceSifSendCmd] cid=0x" << std::hex << cid
+  993:                                                  << " packet=0x" << packetAddr
+  994:                                                  << " psize=0x" << packetSize
+  995:                                                  << " extra=0x" << destExtra << std::dec << std::endl);
+  996:             ++logCount;
+  997:         }
+  998: 
+  999:         // Return non-zero on success.
+ 1000:         setReturnS32(ctx, 1);
+ 1001:     }
+ 1002: 
+ 1003:     void sceRpcGetPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+ 1004:     {
+ 1005:         uint32_t queuePtr = getRegU32(ctx, 4);
+ 1006:         setReturnS32(ctx, static_cast<int32_t>(queuePtr));
+ 1007:     }
+ 1008: }
+
+===== ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h =====
+SHA256: 8B06D504E30D66C001EC5DEFE934479EA6FFFD9140E96E542626B09B570ACC7D
+LINE COUNT: 400
+--- COMPLETE FILE ---
+    1: static void setRegU32(R5900Context *ctx, int reg, uint32_t value)
+    2: {
+    3:     if (!ctx || reg < 0 || reg > 31)
+    4:         return;
+    5:     SET_GPR_U32(ctx, reg, value);
+    6: }
+    7: 
+    8: static void rpcCopyToRdram(uint8_t *rdram, uint32_t dst, uint32_t src, size_t size)
+    9: {
+   10:     if (!rdram || size == 0)
+   11:         return;
+   12: 
+   13:     ps2TraceGuestRangeWrite(rdram, dst, static_cast<uint32_t>(size), "rpcCopyToRdram", nullptr);
+   14: 
+   15:     constexpr size_t kMaxRpcTransferBytes = 1u * 1024u * 1024u;
+   16:     const size_t clampedSize = std::min(size, kMaxRpcTransferBytes);
+   17:     if (clampedSize != size)
+   18:     {
+   19:         static uint32_t warnCount = 0;
+   20:         if (warnCount < 8)
+   21:         {
+   22:             std::cerr << "[SifCallRpc] clamping copy size from " << size
+   23:                       << " to " << clampedSize
+   24:                       << " bytes (dst=0x" << std::hex << dst
+   25:                       << " src=0x" << src << std::dec << ")" << std::endl;
+   26:             ++warnCount;
+   27:         }
+   28:     }
+   29: 
+   30:     for (size_t i = 0; i < clampedSize; ++i)
+   31:     {
+   32:         const uint32_t dstAddr = dst + static_cast<uint32_t>(i);
+   33:         const uint32_t srcAddr = src + static_cast<uint32_t>(i);
+   34:         uint8_t *dstPtr = getMemPtr(rdram, dstAddr);
+   35:         const uint8_t *srcPtr = getConstMemPtr(rdram, srcAddr);
+   36:         if (!dstPtr || !srcPtr)
+   37:         {
+   38:             break;
+   39:         }
+   40:         *dstPtr = *srcPtr;
+   41:     }
+   42: }
+   43: 
+   44: static void rpcZeroRdram(uint8_t *rdram, uint32_t dst, size_t size)
+   45: {
+   46:     if (!rdram || size == 0)
+   47:         return;
+   48: 
+   49:     ps2TraceGuestRangeWrite(rdram, dst, static_cast<uint32_t>(size), "rpcZeroRdram", nullptr);
+   50: 
+   51:     constexpr size_t kMaxRpcTransferBytes = 1u * 1024u * 1024u;
+   52:     const size_t clampedSize = std::min(size, kMaxRpcTransferBytes);
+   53:     if (clampedSize != size)
+   54:     {
+   55:         static uint32_t warnCount = 0;
+   56:         if (warnCount < 8)
+   57:         {
+   58:             std::cerr << "[SifCallRpc] clamping zero size from " << size
+   59:                       << " to " << clampedSize
+   60:                       << " bytes (dst=0x" << std::hex << dst << std::dec << ")" << std::endl;
+   61:             ++warnCount;
+   62:         }
+   63:     }
+   64: 
+   65:     for (size_t i = 0; i < clampedSize; ++i)
+   66:     {
+   67:         const uint32_t dstAddr = dst + static_cast<uint32_t>(i);
+   68:         uint8_t *dstPtr = getMemPtr(rdram, dstAddr);
+   69:         if (!dstPtr)
+   70:         {
+   71:             break;
+   72:         }
+   73:         *dstPtr = 0;
+   74:     }
+   75: }
+   76: 
+   77: static bool readStackU32(uint8_t *rdram, uint32_t sp, uint32_t offset, uint32_t &out)
+   78: {
+   79:     uint8_t *ptr = getMemPtr(rdram, sp + offset);
+   80:     if (!ptr)
+   81:         return false;
+   82:     out = *reinterpret_cast<uint32_t *>(ptr);
+   83:     return true;
+   84: }
+   85: 
+   86: static uint32_t rpcAllocPacketAddr(uint8_t *rdram)
+   87: {
+   88:     if (kRpcPacketPoolCount == 0)
+   89:         return 0;
+   90: 
+   91:     uint32_t slot = g_rpc_packet_index++ % kRpcPacketPoolCount;
+   92:     uint32_t addr = kRpcPacketPoolBase + (slot * kRpcPacketSize);
+   93:     rpcZeroRdram(rdram, addr, kRpcPacketSize);
+   94:     return addr;
+   95: }
+   96: 
+   97: static uint32_t rpcAllocServerAddr(uint8_t *rdram)
+   98: {
+   99:     if (kRpcServerPoolCount == 0)
+  100:         return 0;
+  101: 
+  102:     uint32_t slot = g_rpc_server_index++ % kRpcServerPoolCount;
+  103:     uint32_t addr = kRpcServerPoolBase + (slot * kRpcServerStride);
+  104:     rpcZeroRdram(rdram, addr, kRpcServerStride);
+  105:     return addr;
+  106: }
+  107: 
+  108: inline std::string translatePs2Path(const char *ps2Path)
+  109: {
+  110:     if (!ps2Path || !*ps2Path)
+  111:     {
+  112:         return {};
+  113:     }
+  114: 
+  115:     const ps2x::iop::ParsedPs2Path parsed = ps2x::iop::parsePs2Path(ps2Path);
+  116:     if (!parsed)
+  117:     {
+  118:         return {};
+  119:     }
+  120: 
+  121:     auto resolveWithBase = [&](const std::filesystem::path &base, const std::string &suffix) -> std::string
+  122:     {
+  123:         const std::string normalizedSuffix = normalizePs2PathSuffix(suffix);
+  124:         std::filesystem::path resolved = base;
+  125:         if (!normalizedSuffix.empty())
+  126:         {
+  127:             resolved /= std::filesystem::path(normalizedSuffix);
+  128:         }
+  129:         return resolved.lexically_normal().string();
+  130:     };
+  131: 
+  132:     switch (parsed.device)
+  133:     {
+  134:     case ps2x::iop::Ps2PathDevice::Host:
+  135:         return resolveWithBase(getConfiguredHostRoot(), parsed.path);
+  136:     case ps2x::iop::Ps2PathDevice::Cdrom:
+  137:         return resolveWithBase(getConfiguredCdRoot(), parsed.path);
+  138:     case ps2x::iop::Ps2PathDevice::MemoryCard0:
+  139:         return resolveWithBase(getConfiguredMcRoot(), parsed.path);
+  140:     case ps2x::iop::Ps2PathDevice::NativeHost:
+  141:         return std::filesystem::path(parsed.path).lexically_normal().string();
+  142:     default:
+  143:         return {};
+  144:     }
+  145: }
+  146: 
+  147: static bool localtimeSafe(const std::time_t *t, std::tm *out)
+  148: {
+  149: #ifdef _WIN32
+  150:     return localtime_s(out, t) == 0;
+  151: #else
+  152:     return localtime_r(t, out) != nullptr;
+  153: #endif
+  154: }
+  155: 
+  156: static void encodePs2Time(std::time_t t, uint8_t out[8])
+  157: {
+  158:     std::tm tm{};
+  159:     if (!localtimeSafe(&t, &tm))
+  160:     {
+  161:         std::memset(out, 0, 8);
+  162:         return;
+  163:     }
+  164: 
+  165:     uint16_t year = static_cast<uint16_t>(tm.tm_year + 1900);
+  166:     out[0] = 0;
+  167:     out[1] = static_cast<uint8_t>(tm.tm_sec);
+  168:     out[2] = static_cast<uint8_t>(tm.tm_min);
+  169:     out[3] = static_cast<uint8_t>(tm.tm_hour);
+  170:     out[4] = static_cast<uint8_t>(tm.tm_mday);
+  171:     out[5] = static_cast<uint8_t>(tm.tm_mon + 1);
+  172:     out[6] = static_cast<uint8_t>(year & 0xFF);
+  173:     out[7] = static_cast<uint8_t>((year >> 8) & 0xFF);
+  174: }
+  175: 
+  176: static std::time_t fileTimeToTimeT(std::filesystem::file_time_type ft)
+  177: {
+  178:     auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+  179:         ft - std::filesystem::file_time_type::clock::now() + std::chrono::system_clock::now());
+  180:     return std::chrono::system_clock::to_time_t(sctp);
+  181: }
+  182: 
+  183: static bool gmtimeSafe(const std::time_t *t, std::tm *out)
+  184: {
+  185: #ifdef _WIN32
+  186:     return gmtime_s(out, t) == 0;
+  187: #else
+  188:     return gmtime_r(t, out) != nullptr;
+  189: #endif
+  190: }
+  191: 
+  192: static int getTimezoneOffsetMinutes()
+  193: {
+  194:     std::time_t now = std::time(nullptr);
+  195:     std::tm local{};
+  196:     std::tm gmt{};
+  197:     if (!localtimeSafe(&now, &local) || !gmtimeSafe(&now, &gmt))
+  198:         return 0;
+  199: 
+  200:     std::time_t localTime = std::mktime(&local);
+  201:     std::time_t gmtTime = std::mktime(&gmt);
+  202:     if (localTime == static_cast<std::time_t>(-1) || gmtTime == static_cast<std::time_t>(-1))
+  203:         return 0;
+  204: 
+  205:     double diff = std::difftime(localTime, gmtTime);
+  206:     return static_cast<int>(diff / 60.0);
+  207: }
+  208: 
+  209: static uint32_t packOsdConfig(uint32_t spdifMode, uint32_t screenType, uint32_t videoOutput,
+  210:                               uint32_t japLanguage, uint32_t ps1drvConfig, uint32_t version,
+  211:                               uint32_t language, int timezoneOffset)
+  212: {
+  213:     uint32_t raw = 0;
+  214:     raw |= (spdifMode & 0x1) << 0;
+  215:     raw |= (screenType & 0x3) << 1;
+  216:     raw |= (videoOutput & 0x1) << 3;
+  217:     raw |= (japLanguage & 0x1) << 4;
+  218:     raw |= (ps1drvConfig & 0xFF) << 5;
+  219:     raw |= (version & 0x7) << 13;
+  220:     raw |= (language & 0x1F) << 16;
+  221:     raw |= (static_cast<uint32_t>(timezoneOffset) & 0x7FF) << 21;
+  222:     return raw;
+  223: }
+  224: 
+  225: static uint32_t packOsdConfig2(uint32_t format, uint32_t daylightSaving, uint32_t timeFormat,
+  226:                                uint32_t dateFormat, uint32_t version, uint32_t language)
+  227: {
+  228:     const uint32_t flags =
+  229:         ((daylightSaving & 0x1u) << 4) |
+  230:         ((timeFormat & 0x1u) << 5) |
+  231:         ((dateFormat & 0x3u) << 6);
+  232: 
+  233:     return (format & 0xFFu) |
+  234:            ((flags & 0xFFu) << 8) |
+  235:            ((version & 0xFFu) << 16) |
+  236:            ((language & 0xFFu) << 24);
+  237: }
+  238: 
+  239: static int decodeTimezoneOffset(uint32_t raw)
+  240: {
+  241:     int tz = static_cast<int>((raw >> 21) & 0x7FF);
+  242:     if (tz & 0x400)
+  243:         tz |= ~0x7FF;
+  244:     return tz;
+  245: }
+  246: 
+  247: static int clampTimezoneOffset(int tz)
+  248: {
+  249:     if (tz < -1024)
+  250:         return -1024;
+  251:     if (tz > 1023)
+  252:         return 1023;
+  253:     return tz;
+  254: }
+  255: 
+  256: static uint32_t sanitizeOsdConfigRaw(uint32_t raw)
+  257: {
+  258:     uint32_t spdifMode = raw & 0x1;
+  259:     uint32_t screenType = (raw >> 1) & 0x3;
+  260:     if (screenType > 2)
+  261:         screenType = 0;
+  262:     uint32_t videoOutput = (raw >> 3) & 0x1;
+  263:     uint32_t japLanguage = (raw >> 4) & 0x1;
+  264:     uint32_t ps1drvConfig = (raw >> 5) & 0xFF;
+  265:     uint32_t version = (raw >> 13) & 0x7;
+  266:     if (version > 2)
+  267:         version = 1;
+  268:     uint32_t language = (raw >> 16) & 0x1F;
+  269:     int tz = clampTimezoneOffset(decodeTimezoneOffset(raw));
+  270:     return packOsdConfig(spdifMode, screenType, videoOutput, japLanguage, ps1drvConfig, version, language, tz);
+  271: }
+  272: 
+  273: static uint32_t sanitizeOsdConfig2Raw(uint32_t raw)
+  274: {
+  275:     const uint32_t format = raw & 0xFFu;
+  276:     const uint32_t flags = (raw >> 8) & 0xFFu;
+  277:     const uint32_t daylightSaving = (flags >> 4) & 0x1u;
+  278:     const uint32_t timeFormat = (flags >> 5) & 0x1u;
+  279:     uint32_t dateFormat = (flags >> 6) & 0x3u;
+  280:     if (dateFormat > 2u)
+  281:         dateFormat = 0u;
+  282: 
+  283:     uint32_t version = (raw >> 16) & 0xFFu;
+  284:     if (version > 2u)
+  285:         version = 1u;
+  286: 
+  287:     const uint32_t language = (raw >> 24) & 0xFFu;
+  288:     return packOsdConfig2(format, daylightSaving, timeFormat, dateFormat, version, language);
+  289: }
+  290: 
+  291: static uint32_t syncOsdConfigRawVersionLanguage(uint32_t raw, uint32_t version, uint32_t language)
+  292: {
+  293:     raw &= ~((0x7u << 13) | (0x1Fu << 16));
+  294:     raw |= (version & 0x7u) << 13;
+  295:     raw |= (language & 0x1Fu) << 16;
+  296:     return sanitizeOsdConfigRaw(raw);
+  297: }
+  298: 
+  299: static uint32_t makeReadableOsdConfig2RawLocked()
+  300: {
+  301:     const uint32_t version = (g_osd_config_raw >> 13) & 0x7u;
+  302:     const uint32_t language = (g_osd_config_raw >> 16) & 0x1Fu;
+  303:     uint32_t raw = g_osd_config2_raw & 0x0000FFFFu;
+  304:     raw |= (version & 0xFFu) << 16;
+  305:     raw |= (language & 0xFFu) << 24;
+  306:     return sanitizeOsdConfig2Raw(raw);
+  307: }
+  308: 
+  309: static void ensureOsdConfigInitialized()
+  310: {
+  311:     std::lock_guard<std::mutex> lock(g_osd_mutex);
+  312:     if (g_osd_config_initialized)
+  313:         return;
+  314: 
+  315:     int tz = clampTimezoneOffset(getTimezoneOffsetMinutes());
+  316:     uint32_t spdifMode = 1;   // disabled
+  317:     uint32_t screenType = 0;  // 4:3
+  318:     uint32_t videoOutput = 0; // RGB
+  319:     uint32_t japLanguage = 1; // non-japanese
+  320:     uint32_t ps1drvConfig = 0;
+  321:     uint32_t version = 1;  // OSD2
+  322:     uint32_t language = 1; // English
+  323:     g_osd_config_raw = packOsdConfig(spdifMode, screenType, videoOutput, japLanguage, ps1drvConfig, version, language, tz);
+  324:     g_osd_config2_raw = packOsdConfig2(0, 0, 0, 0, version, language);
+  325:     g_osd_config_initialized = true;
+  326: }
+  327: 
+  328: static uint32_t allocTlsAddr(uint8_t *rdram)
+  329: {
+  330:     if (!rdram || kTlsPoolCount == 0)
+  331:         return 0;
+  332: 
+  333:     std::lock_guard<std::mutex> lock(g_tls_mutex);
+  334:     uint32_t slot = g_tls_index++ % kTlsPoolCount;
+  335:     uint32_t addr = kTlsPoolBase + (slot * kTlsBlockSize);
+  336:     rpcZeroRdram(rdram, addr, kTlsBlockSize);
+  337:     return addr;
+  338: }
+  339: 
+  340: static uint32_t allocBootModeAddr(uint8_t *rdram, size_t bytes)
+  341: {
+  342:     if (!rdram)
+  343:         return 0;
+  344: 
+  345:     size_t aligned = (bytes + 15u) & ~15u;
+  346:     if (g_bootmode_pool_offset + aligned > kBootModePoolBytes)
+  347:         return 0;
+  348: 
+  349:     uint32_t addr = kBootModePoolBase + g_bootmode_pool_offset;
+  350:     g_bootmode_pool_offset += static_cast<uint32_t>(aligned);
+  351:     rpcZeroRdram(rdram, addr, aligned);
+  352:     return addr;
+  353: }
+  354: 
+  355: static uint32_t createBootModeEntry(uint8_t *rdram, uint8_t id, uint16_t value, uint8_t lenField, const uint32_t *data, uint8_t dataCount)
+  356: {
+  357:     uint8_t allocCount = (dataCount == 0) ? 1 : dataCount;
+  358:     size_t bytes = static_cast<size_t>(1 + allocCount) * sizeof(uint32_t);
+  359:     uint32_t addr = allocBootModeAddr(rdram, bytes);
+  360:     if (!addr)
+  361:         return 0;
+  362: 
+  363:     uint32_t header = (static_cast<uint32_t>(lenField) << 24) |
+  364:                       (static_cast<uint32_t>(id) << 16) |
+  365:                       (static_cast<uint32_t>(value) & 0xFFFFu);
+  366: 
+  367:     uint32_t *dst = reinterpret_cast<uint32_t *>(getMemPtr(rdram, addr));
+  368:     if (!dst)
+  369:         return 0;
+  370: 
+  371:     dst[0] = header;
+  372:     for (uint8_t i = 0; i < allocCount; ++i)
+  373:     {
+  374:         dst[1 + i] = (data && i < dataCount) ? data[i] : 0;
+  375:     }
+  376: 
+  377:     return addr;
+  378: }
+  379: 
+  380: static void ensureBootModeTable(uint8_t *rdram)
+  381: {
+  382:     std::lock_guard<std::mutex> lock(g_bootmode_mutex);
+  383:     if (g_bootmode_initialized)
+  384:         return;
+  385: 
+  386:     g_bootmode_pool_offset = 0;
+  387:     g_bootmode_addresses.clear();
+  388: 
+  389:     const uint32_t boot3Data[1] = {0};
+  390:     const uint32_t boot5Data[1] = {0};
+  391: 
+  392:     g_bootmode_addresses[1] = createBootModeEntry(rdram, 1, 0, 0, nullptr, 0);
+  393:     g_bootmode_addresses[3] = createBootModeEntry(rdram, 3, 0, 1, boot3Data, 1);
+  394:     g_bootmode_addresses[4] = createBootModeEntry(rdram, 4, 0, 0, nullptr, 0);
+  395:     g_bootmode_addresses[5] = createBootModeEntry(rdram, 5, 0, 1, boot5Data, 1);
+  396:     g_bootmode_addresses[6] = createBootModeEntry(rdram, 6, 0, 0, nullptr, 0);
+  397:     g_bootmode_addresses[7] = createBootModeEntry(rdram, 7, 0, 0, nullptr, 0);
+  398: 
+  399:     g_bootmode_initialized = true;
+  400: }
+
+===== ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h =====
+SHA256: 7E7FD92C0B454AD667BD99AB5A9C621BC5BB00D09B7EF267CEC4FD40227DBF8A
+LINE COUNT: 354
+--- COMPLETE FILE ---
+    1: #pragma once
+    2: 
+    3: #include <cstddef>
+    4: #include <cstdint>
+    5: 
+    6: // Thread status
+    7: #define THS_RUN 0x01
+    8: #define THS_READY 0x02
+    9: #define THS_WAIT 0x04
+   10: #define THS_SUSPEND 0x08
+   11: #define THS_WAITSUSPEND 0x0c
+   12: #define THS_DORMANT 0x10
+   13: 
+   14: // Thread WAIT Status
+   15: #define TSW_NONE 0
+   16: #define TSW_SLEEP 1
+   17: #define TSW_SEMA 2
+   18: #define TSW_EVENT 3
+   19: 
+   20: // Common kernel-like error codes used by thread/event/alarm syscalls.
+   21: constexpr int KE_OK = 0;
+   22: constexpr int KE_ERROR = -1;
+   23: constexpr int KE_ILLEGAL_PRIORITY = -403;
+   24: constexpr int KE_ILLEGAL_MODE = -405;
+   25: constexpr int KE_ILLEGAL_THID = -406;
+   26: constexpr int KE_UNKNOWN_THID = -407;
+   27: constexpr int KE_UNKNOWN_SEMID = -408;
+   28: constexpr int KE_UNKNOWN_EVFID = -409;
+   29: constexpr int KE_DORMANT = -413;
+   30: constexpr int KE_NOT_DORMANT = -414;
+   31: constexpr int KE_NOT_SUSPEND = -415;
+   32: constexpr int KE_NOT_WAIT = -416;
+   33: constexpr int KE_RELEASE_WAIT = -418;
+   34: constexpr int KE_SEMA_ZERO = -419;
+   35: constexpr int KE_SEMA_OVF = -420;
+   36: constexpr int KE_EVF_COND = -421;
+   37: constexpr int KE_EVF_MULTI = -422;
+   38: constexpr int KE_EVF_ILPAT = -423;
+   39: constexpr int KE_WAIT_DELETE = -425;
+   40: 
+   41: // SIF RPC Structures
+   42: struct t_SifRpcHeader
+   43: {
+   44:     uint32_t pkt_addr; // void*
+   45:     uint32_t rpc_id;
+   46:     int sema_id;
+   47:     uint32_t mode;
+   48: };
+   49: 
+   50: struct t_SifRpcClientData
+   51: {
+   52:     t_SifRpcHeader hdr;
+   53:     uint32_t command;
+   54:     uint32_t buf;          // void*
+   55:     uint32_t cbuf;         // void*
+   56:     uint32_t end_function; // func ptr
+   57:     uint32_t end_param;    // void*
+   58:     uint32_t server;       // t_SifRpcServerData*
+   59: };
+   60: 
+   61: struct t_SifRpcServerData
+   62: {
+   63:     int sid;
+   64:     uint32_t func; // func ptr
+   65:     uint32_t buf;  // void*
+   66:     int size;
+   67:     uint32_t cfunc; // func ptr
+   68:     uint32_t cbuf;  // void*
+   69:     int size2;
+   70:     uint32_t client;   // t_SifRpcClientData*
+   71:     uint32_t pkt_addr; // void*
+   72:     int rpc_number;
+   73:     uint32_t recvbuf; // void*
+   74:     int rsize;
+   75:     int rmode;
+   76:     int rid;
+   77:     uint32_t link; // t_SifRpcServerData*
+   78:     uint32_t next; // t_SifRpcServerData*
+   79:     uint32_t base; // t_SifRpcDataQueue*
+   80: };
+   81: 
+   82: struct t_SifRpcDataQueue
+   83: {
+   84:     int thread_id;
+   85:     int active;
+   86:     uint32_t link;  // t_SifRpcServerData*
+   87:     uint32_t start; // t_SifRpcServerData*
+   88:     uint32_t end;   // t_SifRpcServerData*
+   89:     uint32_t next;  // t_SifRpcDataQueue*
+   90: };
+   91: 
+   92: struct ee_thread_status_t
+   93: {
+   94:     int status;           // 0x00
+   95:     uint32_t func;        // 0x04
+   96:     uint32_t stack;       // 0x08
+   97:     int stack_size;       // 0x0C
+   98:     uint32_t gp_reg;      // 0x10
+   99:     int initial_priority; // 0x14
+  100:     int current_priority; // 0x18
+  101:     uint32_t attr;        // 0x1C
+  102:     uint32_t option;      // 0x20
+  103:     uint32_t waitType;    // 0x24
+  104:     uint32_t waitId;      // 0x28
+  105:     uint32_t wakeupCount; // 0x2C
+  106: };
+  107: 
+  108: // PS2SDK EE kernel.h t_ee_thread. CreateThread consumes this full 0x24-byte
+  109: // descriptor; it is not the attr-first IOP thread descriptor.
+  110: struct ee_thread_t
+  111: {
+  112:     int status;
+  113:     uint32_t func;
+  114:     uint32_t stack;
+  115:     int stack_size;
+  116:     uint32_t gp_reg;
+  117:     int initial_priority;
+  118:     int current_priority;
+  119:     uint32_t attr;
+  120:     uint32_t option;
+  121: };
+  122: 
+  123: static_assert(sizeof(ee_thread_t) == 0x24u);
+  124: static_assert(sizeof(ee_thread_status_t) == 0x30u);
+  125: 
+  126: struct ee_sema_t
+  127: {
+  128:     int count;
+  129:     int max_count;
+  130:     int init_count;
+  131:     int wait_threads;
+  132:     uint32_t attr;
+  133:     uint32_t option;
+  134: };
+  135: 
+  136: static_assert(sizeof(ee_sema_t) == 0x18u);
+  137: 
+  138: struct io_stat_t
+  139: {
+  140:     uint32_t mode;
+  141:     uint32_t attr;
+  142:     uint32_t size;
+  143:     uint8_t ctime[8];
+  144:     uint8_t atime[8];
+  145:     uint8_t mtime[8];
+  146:     uint32_t hisize;
+  147: };
+  148: 
+  149: static constexpr uint32_t kFioSoIfLnk = 0x0008;
+  150: static constexpr uint32_t kFioSoIfReg = 0x0010;
+  151: static constexpr uint32_t kFioSoIfDir = 0x0020;
+  152: static constexpr uint32_t kFioSoIROth = 0x0004;
+  153: static constexpr uint32_t kFioSoIWOth = 0x0002;
+  154: static constexpr uint32_t kFioSoIXOth = 0x0001;
+  155: 
+  156: struct RpcServerState
+  157: {
+  158:     uint32_t sid = 0;
+  159:     uint32_t sd_ptr = 0; // PS2 address
+  160: };
+  161: 
+  162: struct RpcClientState
+  163: {
+  164:     bool busy = false;
+  165:     uint32_t last_rpc = 0;
+  166:     uint32_t sid = 0;
+  167: };
+  168: 
+  169: struct SifRpcDebugEvent
+  170: {
+  171:     uint64_t seq = 0;
+  172:     const char *op = "";
+  173:     uint32_t pc = 0;
+  174:     uint32_t ra = 0;
+  175:     uint32_t threadId = 0;
+  176:     uint32_t sid = 0;
+  177:     uint32_t rpcNum = 0;
+  178:     uint32_t clientPtr = 0;
+  179:     uint32_t serverPtr = 0;
+  180:     uint32_t sendBuf = 0;
+  181:     uint32_t sendSize = 0;
+  182:     uint32_t recvBuf = 0;
+  183:     uint32_t recvSize = 0;
+  184:     uint32_t resultPtr = 0;
+  185:     uint32_t mode = 0;
+  186:     uint32_t endFunc = 0;
+  187:     uint32_t endParam = 0;
+  188:     uint32_t semaId = 0;
+  189:     uint32_t flags = 0;
+  190:     uint32_t sendPreviewSize = 0;
+  191:     uint32_t recvPreviewSize = 0;
+  192:     uint8_t sendPreview[16]{};
+  193:     uint8_t recvPreview[16]{};
+  194:     int32_t result = 0;
+  195: };
+  196: 
+  197: static constexpr size_t kSifRpcDebugHistoryCount = 256u;
+  198: static constexpr size_t kSifRpcDebugPreviewBytes = 16u;
+  199: static constexpr uint32_t kSifRpcDebugFlagNowait = 1u << 0;
+  200: static constexpr uint32_t kSifRpcDebugFlagHandledByHle = 1u << 1;
+  201: static constexpr uint32_t kSifRpcDebugFlagCallback = 1u << 2;
+  202: static constexpr uint32_t kSifRpcDebugFlagMissingClient = 1u << 3;
+  203: static constexpr uint32_t kSifRpcDebugFlagServerDispatch = 1u << 4;
+  204: static constexpr uint32_t kSifRpcDebugFlagUnhandled = 1u << 6;
+  205: static constexpr uint32_t kSifRpcDebugFlagFallbackCopy = 1u << 7;
+  206: static constexpr uint32_t kSifRpcDebugFlagFallbackZero = 1u << 8;
+  207: 
+  208: inline std::unordered_map<uint32_t, RpcServerState> g_rpc_servers;
+  209: inline std::unordered_map<uint32_t, RpcClientState> g_rpc_clients;
+  210: inline SifRpcDebugEvent g_sif_rpc_debug_history[kSifRpcDebugHistoryCount]{};
+  211: inline uint64_t g_sif_rpc_debug_next_seq = 0;
+  212: inline std::mutex g_rpc_mutex;
+  213: inline std::recursive_mutex g_sif_call_rpc_mutex;
+  214: inline bool g_rpc_initialized = false;
+  215: inline uint32_t g_rpc_next_id = 1;
+  216: inline uint32_t g_rpc_packet_index = 0;
+  217: inline uint32_t g_rpc_server_index = 0;
+  218: inline uint32_t g_rpc_active_queue = 0;
+  219: inline std::mutex g_bootmode_mutex;
+  220: inline bool g_bootmode_initialized = false;
+  221: inline uint32_t g_bootmode_pool_offset = 0;
+  222: inline std::unordered_map<uint8_t, uint32_t> g_bootmode_addresses;
+  223: 
+  224: static constexpr uint32_t kGuestSyscallTableGuestBase = 0x80011F80u;
+  225: static constexpr uint32_t kGuestSyscallTablePhysBase = kGuestSyscallTableGuestBase & 0x1FFFFFFFu;
+  226: static constexpr uint32_t kGuestSyscallMirrorLimit = 0x00080000u;
+  227: static constexpr uint32_t kGuestSyscallTableProbeBase = 0x000002F0u;
+  228: 
+  229: inline std::mutex g_tls_mutex;
+  230: inline uint32_t g_tls_index = 0;
+  231: 
+  232: inline std::mutex g_osd_mutex;
+  233: inline bool g_osd_config_initialized = false;
+  234: inline uint32_t g_osd_config_raw = 0;
+  235: inline uint32_t g_osd_config2_raw = 0;
+  236: 
+  237: inline std::mutex g_ps2_path_mutex;
+  238: inline bool g_ps2_paths_initialized = false;
+  239: inline std::filesystem::path g_host_base;
+  240: inline std::filesystem::path g_cdrom_base;
+  241: inline std::filesystem::path g_host_cwd;
+  242: inline std::filesystem::path g_cdrom_cwd;
+  243: inline std::string g_ps2_cwd_device = "host0";
+  244: 
+  245: static constexpr uint32_t kRpcPacketSize = 64;
+  246: static constexpr uint32_t kRpcPacketPoolBase = 0x01F00000;
+  247: static constexpr uint32_t kRpcPacketPoolBytes = 0x00010000;
+  248: static constexpr uint32_t kRpcPacketPoolCount = kRpcPacketPoolBytes / kRpcPacketSize;
+  249: static constexpr uint32_t kRpcServerPoolBase = 0x01F10000;
+  250: static constexpr uint32_t kRpcServerPoolBytes = 0x00010000;
+  251: static constexpr uint32_t kRpcServerStride = 0x80;
+  252: static constexpr uint32_t kRpcServerPoolCount = kRpcServerPoolBytes / kRpcServerStride;
+  253: 
+  254: static constexpr uint32_t kTlsPoolBase = 0x01F20000;
+  255: static constexpr uint32_t kTlsPoolBytes = 0x00010000;
+  256: static constexpr uint32_t kTlsBlockSize = 0x100;
+  257: static constexpr uint32_t kTlsPoolCount = kTlsPoolBytes / kTlsBlockSize;
+  258: 
+  259: static constexpr uint32_t kBootModePoolBase = 0x01F30000;
+  260: static constexpr uint32_t kBootModePoolBytes = 0x00001000;
+  261: 
+  262: static constexpr uint32_t kSifRpcModeNowait = 0x01;
+  263: static constexpr uint32_t kSifRpcModeNoWbDc = 0x02;
+  264: static constexpr size_t kMaxSifModulePathBytes = 260;
+  265: static constexpr uint32_t kMaxSifModuleLogs = 24;
+  266: static constexpr size_t kSifModuleBufferProbeBytes = 2048;
+  267: static constexpr size_t kLoadfilePathMaxBytes = 252;
+  268: static constexpr size_t kLoadfileArgMaxBytes = 252;
+  269: static constexpr uint32_t kElfMagic = 0x464C457Fu;
+  270: static constexpr uint16_t kElfMachineMips = 8u;
+  271: static constexpr uint16_t kElfTypeExec = 2u;
+  272: static constexpr uint32_t kElfPtLoad = 1u;
+  273: static constexpr uint32_t kElfPtMipsRegInfo = 0x70000000u;
+  274: static constexpr uint32_t kElfShtMipsRegInfo = 0x70000006u;
+  275: 
+  276: #pragma pack(push, 1)
+  277: struct Elf32Header
+  278: {
+  279:     uint32_t magic;
+  280:     uint8_t elfClass;
+  281:     uint8_t endianness;
+  282:     uint8_t version;
+  283:     uint8_t osAbi;
+  284:     uint8_t abiVersion;
+  285:     uint8_t pad[7];
+  286:     uint16_t type;
+  287:     uint16_t machine;
+  288:     uint32_t version2;
+  289:     uint32_t entry;
+  290:     uint32_t phoff;
+  291:     uint32_t shoff;
+  292:     uint32_t flags;
+  293:     uint16_t ehsize;
+  294:     uint16_t phentsize;
+  295:     uint16_t phnum;
+  296:     uint16_t shentsize;
+  297:     uint16_t shnum;
+  298:     uint16_t shstrndx;
+  299: };
+  300: 
+  301: struct Elf32ProgramHeader
+  302: {
+  303:     uint32_t type;
+  304:     uint32_t offset;
+  305:     uint32_t vaddr;
+  306:     uint32_t paddr;
+  307:     uint32_t filesz;
+  308:     uint32_t memsz;
+  309:     uint32_t flags;
+  310:     uint32_t align;
+  311: };
+  312: 
+  313: struct Elf32SectionHeader
+  314: {
+  315:     uint32_t name;
+  316:     uint32_t type;
+  317:     uint32_t flags;
+  318:     uint32_t addr;
+  319:     uint32_t offset;
+  320:     uint32_t size;
+  321:     uint32_t link;
+  322:     uint32_t info;
+  323:     uint32_t addralign;
+  324:     uint32_t entsize;
+  325: };
+  326: 
+  327: struct GuestExecData
+  328: {
+  329:     uint32_t epc;
+  330:     uint32_t gp;
+  331:     uint32_t sp;
+  332:     uint32_t dummy;
+  333: };
+  334: #pragma pack(pop)
+  335: 
+  336: static_assert(sizeof(Elf32Header) == 52u, "Unexpected ELF32 header layout.");
+  337: static_assert(sizeof(Elf32ProgramHeader) == 32u, "Unexpected ELF32 program header layout.");
+  338: static_assert(sizeof(Elf32SectionHeader) == 40u, "Unexpected ELF32 section header layout.");
+  339: static_assert(sizeof(GuestExecData) == 16u, "Unexpected GuestExecData layout.");
+  340: 
+  341: struct SifModuleRecord
+  342: {
+  343:     int32_t id = 0;
+  344:     std::string path;
+  345:     std::string pathKey;
+  346:     uint32_t refCount = 0;
+  347:     bool loaded = false;
+  348: };
+  349: 
+  350: inline std::mutex g_sif_module_mutex;
+  351: inline std::unordered_map<int32_t, SifModuleRecord> g_sif_modules_by_id;
+  352: inline std::unordered_map<std::string, int32_t> g_sif_module_id_by_path;
+  353: inline int32_t g_next_sif_module_id = 1;
+  354: inline uint32_t g_sif_module_log_count = 0;
+
+===== ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp =====
+SHA256: 765190EB48CDFE9CCF5538071B6624B15B8BD5DCE8B7D22AA8DB2B64E67D291A
+LINE COUNT: 20
+--- COMPLETE FILE ---
+    1: #include "Common.h"
+    2: #include "RPC.h"
+    3: 
+    4: namespace ps2_stubs
+    5: {
+    6:     void sceRpcFreePacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+    7:     {
+    8:         TODO_NAMED("sceRpcFreePacket", rdram, ctx, runtime);
+    9:     }
+   10: 
+   11:     void sceRpcGetFPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   12:     {
+   13:         TODO_NAMED("sceRpcGetFPacket", rdram, ctx, runtime);
+   14:     }
+   15: 
+   16:     void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   17:     {
+   18:         TODO_NAMED("sceRpcGetFPacket2", rdram, ctx, runtime);
+   19:     }
+   20: }
+
+===== ps2xTest\src\ps2_sif_rpc_tests.cpp =====
+SHA256: 098F37F0A18287FD7F976F912B6ABAB2FDDE1C4B583758C19023D7899FC53FE4
+LINE COUNT: 654
+--- COMPLETE TEST FILE ---
+    1: #include "MiniTest.h"
+    2: #include "ps2_runtime.h"
+    3: #include "ps2_runtime_macros.h"
+    4: #include "ps2_iop_transport.h"
+    5: #include "ps2_syscalls.h"
+    6: #include "ps2_stubs.h"
+    7: #include "runtime/ee_scheduler.h"
+    8: 
+    9: #include <array>
+   10: #include <cstdint>
+   11: #include <cstring>
+   12: #include <filesystem>
+   13: #include <string>
+   14: #include <vector>
+   15: 
+   16: using namespace ps2_syscalls;
+   17: 
+   18: namespace ps2_stubs
+   19: {
+   20:     void resetSifState();
+   21: }
+   22: 
+   23: namespace
+   24: {
+   25:     constexpr int KE_OK = 0;
+   26:     constexpr int KE_SEMA_ZERO = -419;
+   27: 
+   28:     constexpr uint32_t K_SIF_RPC_MODE_NOWAIT = 0x01u;
+   29:     constexpr uint32_t K_STACK_ADDR = 0x00100000u;
+   30:     constexpr uint32_t IOP_SID_MCSERV = 0x80000400u;
+   31:     constexpr uint32_t IOP_SID_LIBSD = 0x80000701u;
+   32: 
+   33:     #pragma pack(push, 1)
+   34:     struct SifRpcHeader
+   35:     {
+   36:         uint32_t pkt_addr;
+   37:         uint32_t rpc_id;
+   38:         int32_t sema_id;
+   39:         uint32_t mode;
+   40:     };
+   41: 
+   42:     struct SifRpcClientData
+   43:     {
+   44:         SifRpcHeader hdr;
+   45:         uint32_t command;
+   46:         uint32_t buf;
+   47:         uint32_t cbuf;
+   48:         uint32_t end_function;
+   49:         uint32_t end_param;
+   50:         uint32_t server;
+   51:     };
+   52: 
+   53:     struct SifRpcServerData
+   54:     {
+   55:         int32_t sid;
+   56:         uint32_t func;
+   57:         uint32_t buf;
+   58:         int32_t size;
+   59:         uint32_t cfunc;
+   60:         uint32_t cbuf;
+   61:         int32_t size2;
+   62:         uint32_t client;
+   63:         uint32_t pkt_addr;
+   64:         int32_t rpc_number;
+   65:         uint32_t recvbuf;
+   66:         int32_t rsize;
+   67:         int32_t rmode;
+   68:         int32_t rid;
+   69:         uint32_t link;
+   70:         uint32_t next;
+   71:         uint32_t base;
+   72:     };
+   73: 
+   74:     struct SifRpcDataQueue
+   75:     {
+   76:         int32_t thread_id;
+   77:         int32_t active;
+   78:         uint32_t link;
+   79:         uint32_t start;
+   80:         uint32_t end;
+   81:         uint32_t next;
+   82:     };
+   83: 
+   84:     struct McDescParam
+   85:     {
+   86:         int32_t fd;
+   87:         int32_t port;
+   88:         int32_t slot;
+   89:         int32_t size;
+   90:         int32_t offset;
+   91:         int32_t origin;
+   92:         uint32_t buffer;
+   93:         uint32_t param;
+   94:         uint8_t data[16];
+   95:     };
+   96:     #pragma pack(pop)
+   97: 
+   98:     static_assert(sizeof(SifRpcHeader) == 0x10u, "Unexpected SifRpcHeader size.");
+   99:     static_assert(sizeof(SifRpcClientData) == 0x28u, "Unexpected SifRpcClientData size.");
+  100:     static_assert(sizeof(SifRpcServerData) == 0x44u, "Unexpected SifRpcServerData size.");
+  101:     static_assert(sizeof(SifRpcDataQueue) == 0x18u, "Unexpected SifRpcDataQueue size.");
+  102:     static_assert(sizeof(McDescParam) == 0x30u, "Unexpected McDescParam size.");
+  103: 
+  104:     struct TestEnv
+  105:     {
+  106:         std::vector<uint8_t> rdram;
+  107:         R5900Context ctx{};
+  108:         PS2Runtime runtime;
+  109: 
+  110:         TestEnv() : rdram(PS2_RAM_SIZE, 0)
+  111:         {
+  112:             ps2_stubs::resetSifState();
+  113:             std::memset(&ctx, 0, sizeof(ctx));
+  114:         }
+  115:     };
+  116: 
+  117:     ps2x::iop::RpcResult callIop(TestEnv &env,
+  118:                                  uint32_t sid,
+  119:                                  uint32_t function,
+  120:                                  uint32_t sendAddress,
+  121:                                  uint32_t sendSize,
+  122:                                  uint32_t receiveAddress,
+  123:                                  uint32_t receiveSize)
+  124:     {
+  125:         ps2x::iop::RpcRequest request{};
+  126:         request.sid = sid;
+  127:         request.function = function;
+  128:         request.send = {sendAddress, sendSize};
+  129:         request.receive = {receiveAddress, receiveSize};
+  130:         return PS2IopTransport::handleRpc(
+  131:             &env.runtime, env.rdram.data(), &env.ctx, std::move(request));
+  132:     }
+  133: 
+  134:     void setRegU32(R5900Context &ctx, int reg, uint32_t value)
+  135:     {
+  136:         ctx.r[reg] = _mm_set_epi64x(0, static_cast<int64_t>(value));
+  137:     }
+  138: 
+  139:     int32_t getRegS32(const R5900Context &ctx, int reg)
+  140:     {
+  141:         return static_cast<int32_t>(::getRegU32(&ctx, reg));
+  142:     }
+  143: 
+  144:     uint32_t getRegU32Result(const R5900Context &ctx, int reg)
+  145:     {
+  146:         return ::getRegU32(&ctx, reg);
+  147:     }
+  148: 
+  149:     void writeGuestU32(uint8_t *rdram, uint32_t addr, uint32_t value)
+  150:     {
+  151:         std::memcpy(rdram + addr, &value, sizeof(value));
+  152:     }
+  153: 
+  154:     struct ScopedTempDir
+  155:     {
+  156:         std::filesystem::path path;
+  157: 
+  158:         explicit ScopedTempDir(const std::string &name)
+  159:         {
+  160:             path = std::filesystem::temp_directory_path() /
+  161:                    ("ps2recomp_" + name + "_" + std::to_string(reinterpret_cast<std::uintptr_t>(this)));
+  162:             std::filesystem::remove_all(path);
+  163:             std::filesystem::create_directories(path);
+  164:         }
+  165: 
+  166:         ~ScopedTempDir()
+  167:         {
+  168:             std::error_code ec;
+  169:             std::filesystem::remove_all(path, ec);
+  170:         }
+  171:     };
+  172: 
+  173:     template <typename T>
+  174:     void writeGuestStruct(uint8_t *rdram, uint32_t addr, const T &value)
+  175:     {
+  176:         std::memcpy(rdram + addr, &value, sizeof(value));
+  177:     }
+  178: 
+  179:     template <typename T>
+  180:     T readGuestStruct(const uint8_t *rdram, uint32_t addr)
+  181:     {
+  182:         T value{};
+  183:         std::memcpy(&value, rdram + addr, sizeof(value));
+  184:         return value;
+  185:     }
+  186: }
+  187: 
+  188: void register_ps2_sif_rpc_tests()
+  189: {
+  190:     MiniTest::Case("PS2SifRpc", [](TestCase &tc)
+  191:     {
+  192:         tc.Run("SifInitRpc does not reset the running IOP", [](TestCase &t)
+  193:         {
+  194:             TestEnv env;
+  195: 
+  196:             env.runtime.eeScheduler().accountCycles(80u);
+  197:             const uint64_t cyclesBeforeInit = env.runtime.iopDebugSnapshot().emulatorCycles;
+  198:             t.IsTrue(cyclesBeforeInit != 0u, "IOP cycle counter should advance before RPC initialization");
+  199: 
+  200:             SifInitRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  201: 
+  202:             t.Equals(env.runtime.iopDebugSnapshot().emulatorCycles, cyclesBeforeInit,
+  203:                      "SifInitRpc must not reboot or reset the IOP");
+  204:         });
+  205: 
+  206:         tc.Run("Guest checkpoints run the IOP in bounded batches", [](TestCase &t)
+  207:         {
+  208:             TestEnv env;
+  209:             EeScheduler &scheduler = env.runtime.eeScheduler();
+  210:             const uint64_t start = env.runtime.iopDebugSnapshot().emulatorCycles;
+  211: 
+  212:             constexpr uint32_t kStep = EeScheduler::kGeneratedCheckpointCycles;
+  213:             constexpr uint64_t kStepsPerBatch = EeScheduler::kIopBatchEeCycles / kStep;
+  214:             for (uint64_t i = 0; i + 1u < kStepsPerBatch; ++i)
+  215:                 (void)scheduler.checkpointDue(kStep);
+  216:             t.Equals(env.runtime.iopDebugSnapshot().emulatorCycles, start,
+  217:                      "IOP should not run for every few dozen guest cycles");
+  218: 
+  219:             (void)scheduler.checkpointDue(kStep);
+  220:             t.Equals(env.runtime.iopDebugSnapshot().emulatorCycles, start + EeScheduler::kIopBatchEeCycles / 8u,
+  221:                      "IOP must catch up to the EE once a batch has accumulated");
+  222: 
+  223:             (void)scheduler.checkpointDue(kStep);
+  224:             scheduler.accountCycles(8u);
+  225:             t.Equals(env.runtime.iopDebugSnapshot().emulatorCycles,
+  226:                      start + (EeScheduler::kIopBatchEeCycles + kStep + 8u) / 8u,
+  227:                      "accountCycles must run the IOP up to the current EE time");
+  228:         });
+  229: 
+  230:         tc.Run("SifLoadModule validates ROM modules and activates their HLE service", [](TestCase &t)
+  231:         {
+  232:             TestEnv env;
+  233:             constexpr uint32_t kPathAddress = 0x00021000u;
+  234: 
+  235:             const auto load = [&](std::string_view path)
+  236:             {
+  237:                 std::memcpy(env.rdram.data() + kPathAddress, path.data(), path.size());
+  238:                 env.rdram[kPathAddress + path.size()] = 0u;
+  239:                 setRegU32(env.ctx, 4, kPathAddress);
+  240:                 setRegU32(env.ctx, 5, 0u);
+  241:                 setRegU32(env.ctx, 6, 0u);
+  242:                 SifLoadModule(env.rdram.data(), &env.ctx, &env.runtime);
+  243:                 return getRegS32(env.ctx, 2);
+  244:             };
+  245: 
+  246:             t.Equals(load("rom0:NOT_A_REAL_MODULE"), -1,
+  247:                      "SifLoadModule must reject unknown ROM modules instead of fabricating success");
+  248: 
+  249:             const int32_t libsdId = load("rom0:LIBSD");
+  250:             t.IsTrue(libsdId > 0, "registered no-BIOS ROM module should receive a real managed ID");
+  251: 
+  252:             const auto snapshot = env.runtime.iopDebugSnapshot();
+  253:             bool libsdActive = false;
+  254:             for (const auto &service : snapshot.services)
+  255:             {
+  256:                 if (service.name == "libsd")
+  257:                 {
+  258:                     libsdActive = service.active;
+  259:                     break;
+  260:                 }
+  261:             }
+  262:             t.IsTrue(libsdActive, "loading LIBSD should activate its HLE RPC route");
+  263:         });
+  264: 
+  265:         tc.Run("emulated RPC bind waits for a registered IOP server", [](TestCase &t)
+  266:         {
+  267:             TestEnv env;
+  268: 
+  269:             constexpr uint32_t kClientAddr = 0x00021F00u;
+  270:             constexpr uint32_t kUnregisteredSid = 0x13572468u;
+  271: 
+  272:             SifInitRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  273:             setRegU32(env.ctx, 4, kClientAddr);
+  274:             setRegU32(env.ctx, 5, kUnregisteredSid);
+  275:             setRegU32(env.ctx, 6, 0u);
+  276:             SifBindRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  277: 
+  278:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SifBindRpc transport should complete");
+  279:             const SifRpcClientData client = readGuestStruct<SifRpcClientData>(env.rdram.data(), kClientAddr);
+  280:             t.Equals(client.server, 0u,
+  281:                      "client server pointer must stay null until the emulated IRX registers its SID");
+  282:         });
+  283: 
+  284:         tc.Run("register bind call updates descriptors and payload", [](TestCase &t)
+  285:         {
+  286:             TestEnv env;
+  287: 
+  288:             constexpr uint32_t kQdAddr = 0x00022000u;
+  289:             constexpr uint32_t kSdAddr = 0x00022100u;
+  290:             constexpr uint32_t kClientAddr = 0x00022200u;
+  291:             constexpr uint32_t kServerBufAddr = 0x00022300u;
+  292:             constexpr uint32_t kClientCbufAddr = 0x00022400u;
+  293:             constexpr uint32_t kSendAddr = 0x00022500u;
+  294:             constexpr uint32_t kRecvAddr = 0x00022600u;
+  295:             constexpr uint32_t kSid = 0x20000111u;
+  296: 
+  297:             SifInitRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  298: 
+  299:             setRegU32(env.ctx, 4, kQdAddr);
+  300:             setRegU32(env.ctx, 5, 0x33u);
+  301:             SifSetRpcQueue(env.rdram.data(), &env.ctx, &env.runtime);
+  302:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SifSetRpcQueue should succeed");
+  303: 
+  304:             setRegU32(env.ctx, 29, K_STACK_ADDR);
+  305:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x10u, 0x9000u);          // cfunc
+  306:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x14u, kClientCbufAddr);  // cbuf
+  307:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x18u, kQdAddr);          // qd
+  308: 
+  309:             setRegU32(env.ctx, 4, kSdAddr);
+  310:             setRegU32(env.ctx, 5, kSid);
+  311:             setRegU32(env.ctx, 6, 0u); // no server callback
+  312:             setRegU32(env.ctx, 7, kServerBufAddr);
+  313:             SifRegisterRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  314:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SifRegisterRpc should succeed");
+  315: 
+  316:             const SifRpcDataQueue qdAfterRegister = readGuestStruct<SifRpcDataQueue>(env.rdram.data(), kQdAddr);
+  317:             const SifRpcServerData sdAfterRegister = readGuestStruct<SifRpcServerData>(env.rdram.data(), kSdAddr);
+  318:             t.Equals(qdAfterRegister.link, kSdAddr, "queue link should point at registered server");
+  319:             t.Equals(static_cast<uint32_t>(sdAfterRegister.sid), kSid, "server sid should match registered sid");
+  320:             t.Equals(sdAfterRegister.buf, kServerBufAddr, "server buf should match register arg");
+  321:             t.Equals(sdAfterRegister.cbuf, kClientCbufAddr, "server cbuf should match stack arg");
+  322:             t.Equals(sdAfterRegister.base, kQdAddr, "server base should point to queue");
+  323: 
+  324:             setRegU32(env.ctx, 4, kClientAddr);
+  325:             setRegU32(env.ctx, 5, kSid);
+  326:             setRegU32(env.ctx, 6, 0u);
+  327:             SifBindRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  328:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SifBindRpc should succeed");
+  329: 
+  330:             const SifRpcClientData clientAfterBind = readGuestStruct<SifRpcClientData>(env.rdram.data(), kClientAddr);
+  331:             t.Equals(clientAfterBind.server, kSdAddr, "client should bind to registered server");
+  332:             t.Equals(clientAfterBind.buf, kServerBufAddr, "client buf should mirror server buf");
+  333:             t.Equals(clientAfterBind.cbuf, kClientCbufAddr, "client cbuf should mirror server cbuf");
+  334: 
+  335:             std::array<uint8_t, 16> payload{};
+  336:             for (size_t i = 0; i < payload.size(); ++i)
+  337:             {
+  338:                 payload[i] = static_cast<uint8_t>(0x50u + i);
+  339:             }
+  340:             std::memcpy(env.rdram.data() + kSendAddr, payload.data(), payload.size());
+  341:             std::memset(env.rdram.data() + kServerBufAddr, 0, payload.size());
+  342:             std::memset(env.rdram.data() + kRecvAddr, 0, payload.size());
+  343: 
+  344:             setRegU32(env.ctx, 4, kClientAddr);
+  345:             setRegU32(env.ctx, 5, 0x55u);
+  346:             setRegU32(env.ctx, 6, 0u);
+  347:             setRegU32(env.ctx, 7, kSendAddr);
+  348:             setRegU32(env.ctx, 8, static_cast<uint32_t>(payload.size()));
+  349:             setRegU32(env.ctx, 9, kRecvAddr);
+  350:             setRegU32(env.ctx, 10, static_cast<uint32_t>(payload.size()));
+  351:             setRegU32(env.ctx, 11, 0u);
+  352:             setRegU32(env.ctx, 29, K_STACK_ADDR);
+  353:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x00u, 0u); // endParam
+  354: 
+  355:             SifCallRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  356:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SifCallRpc should succeed");
+  357: 
+  358:             const SifRpcServerData sdAfterCall = readGuestStruct<SifRpcServerData>(env.rdram.data(), kSdAddr);
+  359:             t.Equals(sdAfterCall.client, kClientAddr, "server should record caller client pointer");
+  360:             t.Equals(static_cast<uint32_t>(sdAfterCall.rpc_number), 0x55u, "server rpc_number should match request");
+  361:             t.Equals(static_cast<uint32_t>(sdAfterCall.size), static_cast<uint32_t>(payload.size()), "server size should match sendSize");
+  362:             t.Equals(sdAfterCall.recvbuf, kRecvAddr, "server recvbuf should match request recv pointer");
+  363:             t.Equals(static_cast<uint32_t>(sdAfterCall.rsize), static_cast<uint32_t>(payload.size()), "server rsize should match recvSize");
+  364:             t.Equals(static_cast<uint32_t>(sdAfterCall.rmode), 1u, "blocking call should set rmode to 1");
+  365: 
+  366:             t.IsTrue(std::memcmp(env.rdram.data() + kServerBufAddr, payload.data(), payload.size()) == 0,
+  367:                      "send payload should be copied into server buffer");
+  368:             t.IsTrue(std::memcmp(env.rdram.data() + kRecvAddr, payload.data(), payload.size()) == 0,
+  369:                      "unhandled RPC should copy payload into recv buffer");
+  370: 
+  371:             setRegU32(env.ctx, 4, kClientAddr);
+  372:             SifCheckStatRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  373:             t.Equals(getRegS32(env.ctx, 2), 0, "SifCheckStatRpc should report not busy after synchronous completion");
+  374:         });
+  375: 
+  376:         tc.Run("MCSERV RPC init and get info report a formatted PS2 card", [](TestCase &t)
+  377:         {
+  378:             TestEnv env;
+  379:             const auto mcservModule = env.runtime.loadIopModule("rom0:MCSERV");
+  380:             t.IsTrue(mcservModule.moduleId > 0, "MCSERV test should load its IOP module first");
+  381:             ScopedTempDir temp("mcserv_rpc");
+  382: 
+  383:             const PS2Runtime::IoPaths oldPaths = PS2Runtime::getIoPaths();
+  384:             PS2Runtime::IoPaths ioPaths;
+  385:             ioPaths.elfDirectory = temp.path;
+  386:             ioPaths.hostRoot = temp.path;
+  387:             ioPaths.cdRoot = temp.path;
+  388:             ioPaths.mcRoot = temp.path / "mc0";
+  389:             PS2Runtime::setIoPaths(ioPaths);
+  390: 
+  391:             constexpr uint32_t kSendAddr = 0x00034000u;
+  392:             constexpr uint32_t kRecvAddr = 0x00035000u;
+  393:             constexpr uint32_t kEndParamAddr = 0x00036000u;
+  394: 
+  395:             const ps2x::iop::RpcResult initResult =
+  396:                 callIop(env, IOP_SID_MCSERV, 0xFEu,
+  397:                         kSendAddr, sizeof(McDescParam), kRecvAddr, 12u);
+  398:             t.IsTrue(initResult.handled, "MCSERV init RPC should be handled");
+  399:             t.Equals(initResult.resultAddress, kRecvAddr, "MCSERV init should return recv buffer");
+  400:             t.IsFalse(initResult.signalNowaitCompletion, "MCSERV init should not request special nowait signaling");
+  401:             t.Equals(readGuestStruct<int32_t>(env.rdram.data(), kRecvAddr + 0u), 0,
+  402:                      "MCSERV init result should succeed");
+  403:             t.IsTrue(readGuestStruct<uint32_t>(env.rdram.data(), kRecvAddr + 4u) >= 0x205u,
+  404:                      "MCSERV init should expose a supported mcserv version");
+  405:             t.IsTrue(readGuestStruct<uint32_t>(env.rdram.data(), kRecvAddr + 8u) >= 0x206u,
+  406:                      "MCSERV init should expose a supported mcman version");
+  407: 
+  408:             McDescParam getInfo{};
+  409:             getInfo.port = 0;
+  410:             getInfo.slot = 0;
+  411:             getInfo.size = 1;   // formatted requested by XMCSERV libmc
+  412:             getInfo.offset = 1; // free clusters requested by XMCSERV libmc
+  413:             getInfo.origin = 1; // type requested by XMCSERV libmc
+  414:             getInfo.param = kEndParamAddr;
+  415:             writeGuestStruct(env.rdram.data(), kSendAddr, getInfo);
+  416:             std::memset(env.rdram.data() + kRecvAddr, 0xCC, 12u);
+  417:             std::memset(env.rdram.data() + kEndParamAddr, 0xCC, 192u);
+  418: 
+  419:             const ps2x::iop::RpcResult getInfoResult =
+  420:                 callIop(env, IOP_SID_MCSERV, 0x01u,
+  421:                         kSendAddr, sizeof(McDescParam), kRecvAddr, 4u);
+  422: 
+  423:             PS2Runtime::setIoPaths(oldPaths);
+  424: 
+  425:             t.IsTrue(getInfoResult.handled, "MCSERV get info RPC should be handled");
+  426:             t.Equals(readGuestStruct<int32_t>(env.rdram.data(), kRecvAddr), 0,
+  427:                      "get info result should succeed");
+  428:             t.Equals(readGuestStruct<int32_t>(env.rdram.data(), kEndParamAddr + 0u), 2,
+  429:                      "get info should report PS2 card type");
+  430:             t.Equals(readGuestStruct<int32_t>(env.rdram.data(), kEndParamAddr + 4u), 0x2000,
+  431:                      "get info should report free clusters");
+  432:             t.Equals(readGuestStruct<int32_t>(env.rdram.data(), kEndParamAddr + 144u), 1,
+  433:                      "get info should report formatted card");
+  434:         });
+  435: 
+  436:         tc.Run("DBCMAN version RPC returns the 3.10 compatibility response", [](TestCase &t)
+  437:         {
+  438:             TestEnv env;
+  439:             const auto dbcmanModule = env.runtime.loadIopModule("rom0:DBCMAN");
+  440:             t.IsTrue(dbcmanModule.moduleId > 0, "DBCMAN test should load its IOP module first");
+  441: 
+  442:             constexpr uint32_t kDbcManSid = 0x80001300u;
+  443:             constexpr uint32_t kCheckVersionRpc = 0x80001363u;
+  444:             constexpr uint32_t kRecvAddr = 0x00035A00u;
+  445:             constexpr uint32_t kDbcManVersion = 0x0310u;
+  446: 
+  447:             std::memset(env.rdram.data() + kRecvAddr, 0xCC, 16u);
+  448:             const ps2x::iop::RpcResult result =
+  449:                 callIop(env, kDbcManSid, kCheckVersionRpc,
+  450:                         0u, 0u, kRecvAddr, 16u);
+  451: 
+  452:             t.IsTrue(result.handled, "DBCMAN check-version RPC should be handled");
+  453:             t.Equals(result.resultAddress, kRecvAddr, "DBCMAN check-version RPC should return the receive buffer");
+  454:             t.IsFalse(result.signalNowaitCompletion, "DBCMAN check-version RPC should not request special nowait signaling");
+  455:             for (uint32_t index = 0u; index < 4u; ++index)
+  456:             {
+  457:                 t.Equals(readGuestStruct<uint32_t>(env.rdram.data(), kRecvAddr + (index * 4u)),
+  458:                          kDbcManVersion,
+  459:                          "DBCMAN should repeat version 3.10 across the response words");
+  460:             }
+  461:         });
+  462: 
+  463:         tc.Run("LIBSD RPC routes through the IOP audio service", [](TestCase &t)
+  464:         {
+  465:             TestEnv env;
+  466:             const auto libsdModule = env.runtime.loadIopModule("rom0:LIBSD");
+  467:             t.IsTrue(libsdModule.moduleId > 0, "LIBSD test should load its IOP module first");
+  468: 
+  469:             constexpr uint32_t kSetVoiceRpc = 0x8010u;
+  470:             constexpr uint32_t kSendAddr = 0x00035B00u;
+  471:             constexpr uint32_t kRecvAddr = 0x00035C00u;
+  472: 
+  473:             std::array<uint32_t, 5> command{};
+  474:             command[0] = 3u;          // voice index
+  475:             command[2] = 0x1000u;    // neutral pitch
+  476:             command[3] = 0x00120000u; // plausible sample address
+  477:             writeGuestStruct(env.rdram.data(), kSendAddr, command);
+  478:             std::memset(env.rdram.data() + kRecvAddr, 0xA5, 16u);
+  479:             const ps2x::iop::RpcResult result =
+  480:                 callIop(env, IOP_SID_LIBSD, kSetVoiceRpc,
+  481:                         kSendAddr, static_cast<uint32_t>(sizeof(command)),
+  482:                         kRecvAddr, 16u);
+  483: 
+  484:             t.IsTrue(result.handled, "LIBSD SID should be handled by the IOP audio service");
+  485:             t.Equals(result.resultAddress, kRecvAddr, "LIBSD should return the audio backend receive buffer");
+  486:             t.IsFalse(result.signalNowaitCompletion, "LIBSD should not request special nowait signaling");
+  487:             for (uint32_t index = 0u; index < 16u; ++index)
+  488:             {
+  489:                 t.Equals(env.rdram[kRecvAddr + index], static_cast<uint8_t>(0xA5),
+  490:                          "LIBSD should preserve the backend-owned response buffer");
+  491:             }
+  492:         });
+  493: 
+  494:         tc.Run("hybrid bind before register waits then remaps", [](TestCase &t)
+  495:         {
+  496:             TestEnv env;
+  497: 
+  498:             constexpr uint32_t kQdAddr = 0x00024000u;
+  499:             constexpr uint32_t kSdAddr = 0x00024100u;
+  500:             constexpr uint32_t kClientAddr = 0x00024200u;
+  501:             constexpr uint32_t kServerBufAddr = 0x00024300u;
+  502:             constexpr uint32_t kServerCbufAddr = 0x00024400u;
+  503:             constexpr uint32_t kSid = 0x20000122u;
+  504: 
+  505:             SifInitRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  506: 
+  507:             setRegU32(env.ctx, 4, kClientAddr);
+  508:             setRegU32(env.ctx, 5, kSid);
+  509:             setRegU32(env.ctx, 6, 0u);
+  510:             SifBindRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  511:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "initial bind without registered server should still succeed");
+  512: 
+  513:             const SifRpcClientData clientBeforeRegister = readGuestStruct<SifRpcClientData>(env.rdram.data(), kClientAddr);
+  514:             t.Equals(clientBeforeRegister.server, 0u, "bind must wait until a hybrid backend owns the SID");
+  515:             t.Equals(clientBeforeRegister.buf, 0u, "unbound client starts with empty buf");
+  516:             t.Equals(clientBeforeRegister.cbuf, 0u, "unbound client starts with empty cbuf");
+  517: 
+  518:             setRegU32(env.ctx, 4, kQdAddr);
+  519:             setRegU32(env.ctx, 5, 0x44u);
+  520:             SifSetRpcQueue(env.rdram.data(), &env.ctx, &env.runtime);
+  521:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SifSetRpcQueue should succeed");
+  522: 
+  523:             setRegU32(env.ctx, 29, K_STACK_ADDR);
+  524:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x10u, 0u);
+  525:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x14u, kServerCbufAddr);
+  526:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x18u, kQdAddr);
+  527: 
+  528:             setRegU32(env.ctx, 4, kSdAddr);
+  529:             setRegU32(env.ctx, 5, kSid);
+  530:             setRegU32(env.ctx, 6, 0u);
+  531:             setRegU32(env.ctx, 7, kServerBufAddr);
+  532:             SifRegisterRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  533:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SifRegisterRpc should succeed");
+  534: 
+  535:             const SifRpcClientData clientAfterRegister = readGuestStruct<SifRpcClientData>(env.rdram.data(), kClientAddr);
+  536:             t.Equals(clientAfterRegister.server, kSdAddr, "register should remap pre-bound clients to concrete server descriptor");
+  537:             t.Equals(clientAfterRegister.buf, kServerBufAddr, "register should update client buf from server descriptor");
+  538:             t.Equals(clientAfterRegister.cbuf, kServerCbufAddr, "register should update client cbuf from server descriptor");
+  539:             t.IsTrue(clientAfterRegister.server != clientBeforeRegister.server, "client server pointer should switch from unbound to real server");
+  540: 
+  541:             setRegU32(env.ctx, 4, kSdAddr);
+  542:             setRegU32(env.ctx, 5, kQdAddr);
+  543:             SifRemoveRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  544:             t.Equals(getRegU32Result(env.ctx, 2), kSdAddr, "SifRemoveRpc should return removed server pointer");
+  545: 
+  546:             const SifRpcDataQueue qdAfterRemove = readGuestStruct<SifRpcDataQueue>(env.rdram.data(), kQdAddr);
+  547:             const SifRpcServerData sdAfterRemove = readGuestStruct<SifRpcServerData>(env.rdram.data(), kSdAddr);
+  548:             t.Equals(qdAfterRemove.link, 0u, "queue link should detach removed server");
+  549:             t.Equals(sdAfterRemove.link, 0u, "removed server link should be cleared");
+  550:         });
+  551: 
+  552:         tc.Run("SifSetRpcQueue remove roundtrip is stable", [](TestCase &t)
+  553:         {
+  554:             TestEnv env;
+  555: 
+  556:             constexpr uint32_t kQdAddr = 0x00026000u;
+  557: 
+  558:             SifInitRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  559: 
+  560:             setRegU32(env.ctx, 4, kQdAddr);
+  561:             setRegU32(env.ctx, 5, 0x55u);
+  562:             SifSetRpcQueue(env.rdram.data(), &env.ctx, &env.runtime);
+  563:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SifSetRpcQueue should succeed");
+  564: 
+  565:             const SifRpcDataQueue qd = readGuestStruct<SifRpcDataQueue>(env.rdram.data(), kQdAddr);
+  566:             t.Equals(static_cast<uint32_t>(qd.thread_id), 0x55u, "queue thread id should match argument");
+  567: 
+  568:             setRegU32(env.ctx, 4, kQdAddr);
+  569:             SifRemoveRpcQueue(env.rdram.data(), &env.ctx, &env.runtime);
+  570:             t.Equals(getRegU32Result(env.ctx, 2), kQdAddr, "SifRemoveRpcQueue should return removed queue pointer");
+  571: 
+  572:             setRegU32(env.ctx, 4, kQdAddr);
+  573:             SifRemoveRpcQueue(env.rdram.data(), &env.ctx, &env.runtime);
+  574:             t.Equals(getRegU32Result(env.ctx, 2), 0u, "removing the same queue twice should return 0");
+  575:         });
+  576: 
+  577:         tc.Run("SifCallRpc falls back to stack ABI when register pack is implausible", [](TestCase &t)
+  578:         {
+  579:             TestEnv env;
+  580: 
+  581:             constexpr uint32_t kQdAddr = 0x0002A000u;
+  582:             constexpr uint32_t kSdAddr = 0x0002A100u;
+  583:             constexpr uint32_t kClientAddr = 0x0002A200u;
+  584:             constexpr uint32_t kServerBufAddr = 0x0002A300u;
+  585:             constexpr uint32_t kSendAddr = 0x0002A400u;
+  586:             constexpr uint32_t kRecvAddr = 0x0002A500u;
+  587:             constexpr uint32_t kSid = 0x20000133u;
+  588: 
+  589:             SifInitRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  590: 
+  591:             setRegU32(env.ctx, 4, kQdAddr);
+  592:             setRegU32(env.ctx, 5, 0x66u);
+  593:             SifSetRpcQueue(env.rdram.data(), &env.ctx, &env.runtime);
+  594:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SifSetRpcQueue should succeed");
+  595: 
+  596:             setRegU32(env.ctx, 29, K_STACK_ADDR);
+  597:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x10u, 0u);
+  598:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x14u, 0u);
+  599:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x18u, kQdAddr);
+  600: 
+  601:             setRegU32(env.ctx, 4, kSdAddr);
+  602:             setRegU32(env.ctx, 5, kSid);
+  603:             setRegU32(env.ctx, 6, 0u);
+  604:             setRegU32(env.ctx, 7, kServerBufAddr);
+  605:             SifRegisterRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  606:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SifRegisterRpc should succeed");
+  607: 
+  608:             setRegU32(env.ctx, 4, kClientAddr);
+  609:             setRegU32(env.ctx, 5, kSid);
+  610:             setRegU32(env.ctx, 6, 0u);
+  611:             SifBindRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  612:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SifBindRpc should succeed");
+  613: 
+  614:             std::array<uint8_t, 12> payload{};
+  615:             for (size_t i = 0; i < payload.size(); ++i)
+  616:             {
+  617:                 payload[i] = static_cast<uint8_t>(0xA0u + i);
+  618:             }
+  619:             std::memcpy(env.rdram.data() + kSendAddr, payload.data(), payload.size());
+  620:             std::memset(env.rdram.data() + kRecvAddr, 0, payload.size());
+  621: 
+  622:             setRegU32(env.ctx, 29, K_STACK_ADDR);
+  623:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x10u, static_cast<uint32_t>(payload.size()));
+  624:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x14u, kRecvAddr);
+  625:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x18u, static_cast<uint32_t>(payload.size()));
+  626:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x1Cu, 0u);
+  627:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x20u, 0u);
+  628:             writeGuestU32(env.rdram.data(), K_STACK_ADDR + 0x00u, 0u);
+  629: 
+  630:             setRegU32(env.ctx, 4, kClientAddr);
+  631:             setRegU32(env.ctx, 5, 0x99u);
+  632:             setRegU32(env.ctx, 6, 0u);
+  633:             setRegU32(env.ctx, 7, kSendAddr);
+  634:             setRegU32(env.ctx, 8, 0x03000000u); // implausible size (> 0x02000000 threshold)
+  635:             setRegU32(env.ctx, 9, 0x00000004u); // implausible guest pointer
+  636:             setRegU32(env.ctx, 10, 0x03000001u);
+  637:             setRegU32(env.ctx, 11, 0u);
+  638: 
+  639:             SifCallRpc(env.rdram.data(), &env.ctx, &env.runtime);
+  640:             t.Equals(getRegS32(env.ctx, 2), KE_OK, "SifCallRpc should succeed with stack ABI fallback");
+  641: 
+  642:             const SifRpcServerData sdAfterCall = readGuestStruct<SifRpcServerData>(env.rdram.data(), kSdAddr);
+  643:             t.Equals(static_cast<uint32_t>(sdAfterCall.size), static_cast<uint32_t>(payload.size()),
+  644:                      "stack ABI sendSize should be selected when register ABI is implausible");
+  645:             t.Equals(sdAfterCall.recvbuf, kRecvAddr, "stack ABI recvBuf should be selected");
+  646:             t.Equals(static_cast<uint32_t>(sdAfterCall.rsize), static_cast<uint32_t>(payload.size()),
+  647:                      "stack ABI recvSize should be selected");
+  648: 
+  649:             t.IsTrue(std::memcmp(env.rdram.data() + kRecvAddr, payload.data(), payload.size()) == 0,
+  650:                      "recv payload should match stack-selected transfer size");
+  651:         });
+  652: 
+  653:     });
+  654: }
+
+===== SAFETY =====
+SOURCE MODIFIED: NO
+BUILD EXECUTED: NO
+GAME EXECUTABLE MODIFIED: NO
+ELAPSED SECONDS: 0.045
