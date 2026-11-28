@@ -1,0 +1,523 @@
+MARK OF KRI — EXACT GS TEST REGISTRATION EXTRACTION
+Generated: 2026-11-27 21:28:14
+READ ONLY — no source or build modifications.
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\gs_cache\CMakeLists.txt =====
+   1: cmake_minimum_required(VERSION 3.21)
+   2: 
+   3: if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+   4:     project(PS2GSCacheTests LANGUAGES CXX)
+   5:     include(CTest)
+   6: endif()
+   7: 
+   8: get_filename_component(PS2_GS_DEFAULT_RUNTIME_DIR "${CMAKE_CURRENT_LIST_DIR}/../../ps2xRuntime" ABSOLUTE)
+   9: set(PS2_GS_RUNTIME_DIR "${PS2_GS_DEFAULT_RUNTIME_DIR}" CACHE PATH "Runtime source to test")
+  10: option(PS2_GS_CACHE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+  11: option(PS2_GS_CACHE_BUILD_MEMORY_TESTS "Build tests for the new shared cached-reader API" ON)
+  12: 
+  13: find_package(Threads REQUIRED)
+  14: add_library(ps2_gs_cache_backend_under_test STATIC
+  15:     "${PS2_GS_RUNTIME_DIR}/src/lib/gs/gs_cpu_backend.cpp"
+  16:     "${PS2_GS_RUNTIME_DIR}/src/lib/gs/gs_frontend.cpp"
+  17:     "${PS2_GS_RUNTIME_DIR}/src/lib/gs/ps2_gs_memory.cpp"
+  18: )
+  19: target_include_directories(ps2_gs_cache_backend_under_test PUBLIC "${PS2_GS_RUNTIME_DIR}/include")
+  20: target_compile_features(ps2_gs_cache_backend_under_test PUBLIC cxx_std_20)
+  21: target_compile_definitions(ps2_gs_cache_backend_under_test PRIVATE PS2_RUNTIME_LOGS=0 AGRESSIVE_LOGS=0)
+  22: target_link_libraries(ps2_gs_cache_backend_under_test PUBLIC Threads::Threads)
+  23: set_target_properties(ps2_gs_cache_backend_under_test PROPERTIES CXX_EXTENSIONS OFF)
+  24: 
+  25: if(PS2_GS_CACHE_SANITIZERS)
+  26:     if(NOT CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" OR MSVC)
+  27:         message(FATAL_ERROR "PS2_GS_CACHE_SANITIZERS requires a GCC/Clang sanitizer toolchain")
+  28:     endif()
+  29:     target_compile_options(ps2_gs_cache_backend_under_test PUBLIC
+  30:         -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all)
+  31:     target_link_options(ps2_gs_cache_backend_under_test PUBLIC -fsanitize=address,undefined)
+  32: endif()
+  33: 
+  34: function(add_gs_cache_suite target source prefix)
+  35:     add_executable(${target} "${source}")
+  36:     target_link_libraries(${target} PRIVATE ps2_gs_cache_backend_under_test)
+  37:     set_target_properties(${target} PROPERTIES CXX_EXTENSIONS OFF)
+  38:     foreach(test_name IN LISTS ARGN)
+  39:         add_test(NAME "gs_cache.${prefix}.${test_name}" COMMAND ${target} "${test_name}")
+  40:         set_tests_properties("gs_cache.${prefix}.${test_name}" PROPERTIES LABELS "gs;cache" TIMEOUT 60)
+  41:     endforeach()
+  42: endfunction()
+  43: 
+  44: add_gs_cache_suite(ps2_gs_texture_cache_tests gs_texture_cache_tests.cpp texture
+  45:     unaligned_texture unaligned_wrap stale_mirror page_alternation
+  46:     flush_visibility upload_visibility local_copy_visibility raster_visibility
+  47:     reset_and_rebind invalid_vram_size reserved_psm)
+  48: 
+  49: add_gs_cache_suite(ps2_gs_clut_cache_tests gs_clut_cache_tests.cpp clut
+  50:     unaligned_csm1_ct32 unaligned_csm1_ct16 unaligned_csm1_ct16s wrapped_clut unaligned_csm2
+  51:     retained_palette clut_uses_page_cache cbp0_conditional cbp1_conditional
+  52:     reserved_cld nonindexed_cld tex2_reload shared_contexts
+  53:     csa_ct32 csa_ct16 csa_ct16s texa_without_reload palette_before_filtering high_planes)
+  54: 
+  55: if(PS2_GS_CACHE_BUILD_MEMORY_TESTS)
+  56:     add_gs_cache_suite(ps2_gs_memory_cache_tests gs_memory_cache_tests.cpp memory
+  57:         ct32 ct24 ct16 ct16s t8 t4 t8h t4hl t4hh z32 z24 z16 z16s
+  58:         alias_lanes physical_tag_aliases)
+  59: endif()
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\gs_cache\gs_memory_cache_tests.cpp =====
+  73:     }
+  74: 
+  75:     void physicalTagAliases()
+  76:     {
+  77:         BackendFixture f;
+  78:         GSMem::TexturePageCache cache;
+  79:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kRed);
+  80:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 32, 2, 0, 0), kRed, "prime aligned view");
+  81:         cache.Snapshot(f.vram.data());
+  82:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kGreen);
+  83:         // Both descriptors resolve to the very same physical byte, so this is a hit.
+  84:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 31, 2, 8, 0), kRed, "alias descriptor keeps the same cached bytes");
+  85:         cache.Invalidate();
+  86:         expectEqual(GSMem::ReadTexture(cache, f.vram.data(), GS_PSM_CT32, 31, 2, 8, 0), kGreen, "alias after flush");
+  87:     }
+  88: 
+  89:     void backendOwnedTextureCache()
+  90:     {
+  91:         BackendFixture f;
+  92:         const GSTex0Reg tex = texture(GS_PSM_CT32, 32);
+  93: 
+  94:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kRed);
+  95:         const uint32_t first = f.sample(tex);
+  96:         expectEqual(first, kRed, "initial backend texture sample");
+  97: 
+  98:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kGreen);
+  99:         const uint32_t cached = f.sample(tex);
+ 100:         expectEqual(cached, kRed, "backend cache preserves the pre-write texture");
+ 101: 
+ 102:         f.backend.TextureFlush();
+ 103:         const uint32_t refreshed = f.sample(tex);
+ 104:         expectEqual(refreshed, kGreen, "texture flush refreshes the backend cache");
+ 105:     }
+ 106: }
+ 107: 
+ 108: int main(int argc, char** argv)
+ 109: {
+ 110:     return run(argc, argv, {
+ 111:         {"ct32", addressCoverage<GS_PSM_CT32>}, {"ct24", addressCoverage<GS_PSM_CT24>},
+ 112:         {"ct16", addressCoverage<GS_PSM_CT16>}, {"ct16s", addressCoverage<GS_PSM_CT16S>},
+ 113:         {"t8", addressCoverage<GS_PSM_T8>}, {"t4", addressCoverage<GS_PSM_T4>},
+ 114:         {"t8h", addressCoverage<GS_PSM_T8H>}, {"t4hl", addressCoverage<GS_PSM_T4HL>},
+ 115:         {"t4hh", addressCoverage<GS_PSM_T4HH>}, {"z32", addressCoverage<GS_PSM_Z32>},
+ 116:         {"z24", addressCoverage<GS_PSM_Z24>}, {"z16", addressCoverage<GS_PSM_Z16>},
+ 117:         {"z16s", addressCoverage<GS_PSM_Z16S>}, {"alias_lanes", aliasLanes},
+ 118:         {"physical_tag_aliases", physicalTagAliases},
+ 119:         {"backend_owned_texture_cache", backendOwnedTextureCache}
+ 120:     });
+ 121: }
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\gs_cache\gs_texture_cache_tests.cpp =====
+ 132:         f.backend.WriteVram(tex.psm, tex.tbp0, tex.tbw, 0, 0, kGreen);
+ 133:         f.backend.Reset();
+ 134:         expectEqual(f.sample(tex), kGreen, "reset invalidates without clearing VRAM");
+ 135:         std::vector<uint8_t> other(kVramSize);
+ 136:         std::memcpy(other.data() + 8192u, &kBlue, sizeof(kBlue));
+ 137:         f.backend.Initialize(other.data(), static_cast<uint32_t>(other.size()));
+ 138:         expectEqual(f.sample(tex), kBlue, "initialize invalidates the previous VRAM allocation");
+ 139:     }
+ 140: 
+ 141:     void invalidVramSize()
+ 142:     {
+ 143:         BackendFixture f;
+ 144:         std::vector<uint8_t> shortVram(8192);
+ 145:         bool rejected = false;
+ 146:         try { f.backend.Initialize(shortVram.data(), static_cast<uint32_t>(shortVram.size())); }
+ 147:         catch (const std::invalid_argument&) { rejected = true; }
+ 148:         require(rejected, "undersized VRAM must be rejected before masked accesses can escape it");
+ 149:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kGreen);
+ 150:         expectEqual(f.sample(texture()), kGreen, "failed initialize preserves the existing backend binding");
+ 151:         f.backend.Initialize(nullptr, 0);
+ 152:         expectEqual(f.backend.ReadVram(GS_PSM_CT32, 32, 2, 0, 0), 0, "null binding is safe");
+ 153:     }
+ 154: 
+ 155:     void reservedPsm()
+ 156:     {
+ 157:         BackendFixture f;
+ 158:         auto tex = texture(0x3F);
+ 159:         f.backend.WriteVram(GS_PSM_CT32, 32, 2, 0, 0, kGreen);
+ 160:         f.backend.WriteVram(0x3F, 32, 2, 0, 0, kRed);
+ 161:         expectEqual(f.backend.ReadVram(GS_PSM_CT32, 32, 2, 0, 0), kGreen, "reserved writes are no-op");
+ 162:         expectEqual(f.backend.ReadVram(0x3F, 32, 2, 0, 0), 0, "reserved raw reads use null semantics");
+ 163:         expectEqual(f.sample(tex), 0xFFFF00FFu, "reserved sampling preserves the existing magenta diagnostic");
+ 164:     }
+ 165: }
+ 166: 
+ 167: int main(int argc, char** argv)
+ 168: {
+ 169:     return run(argc, argv, {
+ 170:         {"unaligned_texture", unalignedTexture}, {"unaligned_wrap", unalignedWrap},
+ 171:         {"stale_mirror", staleMirror}, {"page_alternation", pageAlternation},
+ 172:         {"flush_visibility", flushVisibility}, {"upload_visibility", uploadVisibility},
+ 173:         {"local_copy_visibility", localCopyVisibility}, {"raster_visibility", rasterVisibility},
+ 174:         {"reset_and_rebind", resetAndRebind}, {"invalid_vram_size", invalidVramSize},
+ 175:         {"reserved_psm", reservedPsm}
+ 176:     });
+ 177: }
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\gs_cache\gs_clut_cache_tests.cpp =====
+ 233:         f.index(tex, 6, 1, 1);
+ 234:         f.palette(tex, 0, kRed);
+ 235:         f.palette(tex, 2, kGreen);
+ 236:         f.palette(tex, 4, kBlue);
+ 237:         f.palette(tex, 6, 0x80F8F8F8);
+ 238:         f.palette(tex, 3, 0x80FF00FF);
+ 239:         f.bind(tex);
+ 240:         f.gs.writeRegister(GS_REG_TEX1_1, (1ull << 5) | (1ull << 6));
+ 241:         expectEqual(f.sample(1, 1), 0x807C7C7C, "bilinear filtering blends four colors, never four indices");
+ 242:     }
+ 243: 
+ 244:     void highPlanes()
+ 245:     {
+ 246:         FrontendFixture f;
+ 247:         auto low = texture(GS_PSM_T4HL, 31);
+ 248:         auto high = low;
+ 249:         high.psm = GS_PSM_T4HH;
+ 250:         high.cbp = 192;
+ 251:         high.csa = 1;
+ 252:         f.gs.WriteVram(GS_PSM_CT32, 31, 2, 8, 0, 0x00ABCDEF);
+ 253:         f.index(low, 3, 8);
+ 254:         f.index(high, 12, 8);
+ 255:         f.palette(low, 3, kRed);
+ 256:         f.palette(high, 12, kGreen);
+ 257:         f.bind(low);
+ 258:         f.bind(high);
+ 259:         low.cld = high.cld = 0;
+ 260:         f.bind(low);
+ 261:         expectEqual(f.sample(8), kRed, "low nibble uses its own CSA bank");
+ 262:         f.bind(high);
+ 263:         expectEqual(f.sample(8), kGreen, "same cached physical bytes supply the high nibble");
+ 264:         expectEqual(f.gs.ReadVram(GS_PSM_CT24, 31, 2, 8, 0), 0xABCDEF, "index writes preserve the RGB plane");
+ 265:     }
+ 266: }
+ 267: 
+ 268: int main(int argc, char** argv)
+ 269: {
+ 270:     return run(argc, argv, {
+ 271:         {"unaligned_csm1_ct32", unalignedCsm1<GS_PSM_CT32>},
+ 272:         {"unaligned_csm1_ct16", unalignedCsm1<GS_PSM_CT16>},
+ 273:         {"unaligned_csm1_ct16s", unalignedCsm1<GS_PSM_CT16S>},
+ 274:         {"wrapped_clut", wrappedClut}, {"unaligned_csm2", unalignedCsm2},
+ 275:         {"retained_palette", retainedPalette}, {"clut_uses_page_cache", clutUsesPageCache},
+ 276:         {"cbp0_conditional", conditionalLoad<0>}, {"cbp1_conditional", conditionalLoad<1>},
+ 277:         {"reserved_cld", reservedCld}, {"nonindexed_cld", nonIndexedCld},
+ 278:         {"tex2_reload", tex2Reload}, {"shared_contexts", sharedContexts},
+ 279:         {"csa_ct32", csaBanks<GS_PSM_CT32>}, {"csa_ct16", csaBanks<GS_PSM_CT16>},
+ 280:         {"csa_ct16s", csaBanks<GS_PSM_CT16S>}, {"texa_without_reload", texaWithoutReload},
+ 281:         {"palette_before_filtering", paletteBeforeFiltering}, {"high_planes", highPlanes}
+ 282:     });
+ 283: }
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\gs_cache\gs_test_support.h =====
+  35:             error << message << ": expected 0x" << std::hex << expected << ", got 0x" << actual;
+  36:             throw std::runtime_error(error.str());
+  37:         }
+  38:     }
+  39: 
+  40:     struct Test
+  41:     {
+  42:         std::string_view name;
+  43:         void (*run)();
+  44:     };
+  45: 
+  46:     inline int run(int argc, char** argv, std::initializer_list<Test> tests)
+  47:     {
+  48:         try
+  49:         {
+  50:             if (argc != 2)
+  51:                 throw std::invalid_argument("Pass one test name; run the complete suite with CTest.");
+  52:             for (const Test& test : tests)
+  53:             {
+  54:                 if (test.name == argv[1])
+  55:                 {
+  56:                     test.run();
+  57:                     std::cout << "PASS " << test.name << '\n';
+  58:                     return 0;
+  59:                 }
+  60:             }
+  61:             throw std::invalid_argument("Unknown test name: " + std::string(argv[1]));
+  62:         }
+  63:         catch (const std::exception& error)
+  64:         {
+  65:             std::cerr << "FAIL: " << error.what() << '\n';
+  66:             return 1;
+  67:         }
+  68:     }
+  69: 
+  70:     inline GSTex0Reg texture(uint8_t psm = GS_PSM_CT32, uint32_t base = 32u)
+  71:     {
+  72:         GSTex0Reg tex{};
+  73:         tex.tbp0 = base;
+  74:         tex.tbw = 2;
+  75:         tex.psm = psm;
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\ps2xTest\CTestTestfile.cmake =====
+   1: # CMake generated Testfile for 
+   2: # Source directory: D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest
+   3: # Build directory: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest
+   4: # 
+   5: # This file includes the relevant testing commands required for 
+   6: # testing this directory and lists subdirectories to be tested as well.
+   7: subdirs("gs_cache")
+
+===== D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\ps2xTest\gs_cache\CTestTestfile.cmake =====
+   1: # CMake generated Testfile for 
+   2: # Source directory: D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache
+   3: # Build directory: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache
+   4: # 
+   5: # This file includes the relevant testing commands required for 
+   6: # testing this directory and lists subdirectories to be tested as well.
+   7: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+   8:   add_test([=[gs_cache.texture.unaligned_texture]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_texture_cache_tests.exe" "unaligned_texture")
+   9:   set_tests_properties([=[gs_cache.texture.unaligned_texture]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  10: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+  11:   add_test([=[gs_cache.texture.unaligned_texture]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_texture_cache_tests.exe" "unaligned_texture")
+  12:   set_tests_properties([=[gs_cache.texture.unaligned_texture]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  13: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+  14:   add_test([=[gs_cache.texture.unaligned_texture]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_texture_cache_tests.exe" "unaligned_texture")
+  15:   set_tests_properties([=[gs_cache.texture.unaligned_texture]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  16: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+  17:   add_test([=[gs_cache.texture.unaligned_texture]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_texture_cache_tests.exe" "unaligned_texture")
+  18:   set_tests_properties([=[gs_cache.texture.unaligned_texture]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  19: else()
+  20:   add_test([=[gs_cache.texture.unaligned_texture]=] NOT_AVAILABLE)
+  21: endif()
+  22: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+  23:   add_test([=[gs_cache.texture.unaligned_wrap]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_texture_cache_tests.exe" "unaligned_wrap")
+  24:   set_tests_properties([=[gs_cache.texture.unaligned_wrap]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  25: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+  26:   add_test([=[gs_cache.texture.unaligned_wrap]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_texture_cache_tests.exe" "unaligned_wrap")
+  27:   set_tests_properties([=[gs_cache.texture.unaligned_wrap]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  28: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+  29:   add_test([=[gs_cache.texture.unaligned_wrap]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_texture_cache_tests.exe" "unaligned_wrap")
+  30:   set_tests_properties([=[gs_cache.texture.unaligned_wrap]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  31: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+  32:   add_test([=[gs_cache.texture.unaligned_wrap]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_texture_cache_tests.exe" "unaligned_wrap")
+  33:   set_tests_properties([=[gs_cache.texture.unaligned_wrap]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  34: else()
+  35:   add_test([=[gs_cache.texture.unaligned_wrap]=] NOT_AVAILABLE)
+  36: endif()
+  37: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+  38:   add_test([=[gs_cache.texture.stale_mirror]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_texture_cache_tests.exe" "stale_mirror")
+  39:   set_tests_properties([=[gs_cache.texture.stale_mirror]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  40: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+  41:   add_test([=[gs_cache.texture.stale_mirror]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_texture_cache_tests.exe" "stale_mirror")
+  42:   set_tests_properties([=[gs_cache.texture.stale_mirror]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  43: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+  44:   add_test([=[gs_cache.texture.stale_mirror]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_texture_cache_tests.exe" "stale_mirror")
+  45:   set_tests_properties([=[gs_cache.texture.stale_mirror]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  46: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+  47:   add_test([=[gs_cache.texture.stale_mirror]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_texture_cache_tests.exe" "stale_mirror")
+  48:   set_tests_properties([=[gs_cache.texture.stale_mirror]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  49: else()
+  50:   add_test([=[gs_cache.texture.stale_mirror]=] NOT_AVAILABLE)
+  51: endif()
+  52: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+  53:   add_test([=[gs_cache.texture.page_alternation]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_texture_cache_tests.exe" "page_alternation")
+  54:   set_tests_properties([=[gs_cache.texture.page_alternation]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  55: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+  56:   add_test([=[gs_cache.texture.page_alternation]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_texture_cache_tests.exe" "page_alternation")
+  57:   set_tests_properties([=[gs_cache.texture.page_alternation]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  58: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+  59:   add_test([=[gs_cache.texture.page_alternation]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_texture_cache_tests.exe" "page_alternation")
+  60:   set_tests_properties([=[gs_cache.texture.page_alternation]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  61: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+  62:   add_test([=[gs_cache.texture.page_alternation]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_texture_cache_tests.exe" "page_alternation")
+  63:   set_tests_properties([=[gs_cache.texture.page_alternation]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  64: else()
+  65:   add_test([=[gs_cache.texture.page_alternation]=] NOT_AVAILABLE)
+  66: endif()
+  67: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+  68:   add_test([=[gs_cache.texture.flush_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_texture_cache_tests.exe" "flush_visibility")
+  69:   set_tests_properties([=[gs_cache.texture.flush_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  70: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+  71:   add_test([=[gs_cache.texture.flush_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_texture_cache_tests.exe" "flush_visibility")
+  72:   set_tests_properties([=[gs_cache.texture.flush_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  73: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+  74:   add_test([=[gs_cache.texture.flush_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_texture_cache_tests.exe" "flush_visibility")
+  75:   set_tests_properties([=[gs_cache.texture.flush_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  76: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+  77:   add_test([=[gs_cache.texture.flush_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_texture_cache_tests.exe" "flush_visibility")
+  78:   set_tests_properties([=[gs_cache.texture.flush_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  79: else()
+  80:   add_test([=[gs_cache.texture.flush_visibility]=] NOT_AVAILABLE)
+  81: endif()
+  82: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+  83:   add_test([=[gs_cache.texture.upload_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_texture_cache_tests.exe" "upload_visibility")
+  84:   set_tests_properties([=[gs_cache.texture.upload_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  85: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+  86:   add_test([=[gs_cache.texture.upload_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_texture_cache_tests.exe" "upload_visibility")
+  87:   set_tests_properties([=[gs_cache.texture.upload_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  88: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+  89:   add_test([=[gs_cache.texture.upload_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_texture_cache_tests.exe" "upload_visibility")
+  90:   set_tests_properties([=[gs_cache.texture.upload_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  91: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+  92:   add_test([=[gs_cache.texture.upload_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_texture_cache_tests.exe" "upload_visibility")
+  93:   set_tests_properties([=[gs_cache.texture.upload_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+  94: else()
+  95:   add_test([=[gs_cache.texture.upload_visibility]=] NOT_AVAILABLE)
+  96: endif()
+  97: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+  98:   add_test([=[gs_cache.texture.local_copy_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_texture_cache_tests.exe" "local_copy_visibility")
+  99:   set_tests_properties([=[gs_cache.texture.local_copy_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 100: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+ 101:   add_test([=[gs_cache.texture.local_copy_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_texture_cache_tests.exe" "local_copy_visibility")
+ 102:   set_tests_properties([=[gs_cache.texture.local_copy_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 103: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+ 104:   add_test([=[gs_cache.texture.local_copy_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_texture_cache_tests.exe" "local_copy_visibility")
+ 105:   set_tests_properties([=[gs_cache.texture.local_copy_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 106: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+ 107:   add_test([=[gs_cache.texture.local_copy_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_texture_cache_tests.exe" "local_copy_visibility")
+ 108:   set_tests_properties([=[gs_cache.texture.local_copy_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 109: else()
+ 110:   add_test([=[gs_cache.texture.local_copy_visibility]=] NOT_AVAILABLE)
+ 111: endif()
+ 112: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+ 113:   add_test([=[gs_cache.texture.raster_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_texture_cache_tests.exe" "raster_visibility")
+ 114:   set_tests_properties([=[gs_cache.texture.raster_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 115: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+ 116:   add_test([=[gs_cache.texture.raster_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_texture_cache_tests.exe" "raster_visibility")
+ 117:   set_tests_properties([=[gs_cache.texture.raster_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 118: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+ 119:   add_test([=[gs_cache.texture.raster_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_texture_cache_tests.exe" "raster_visibility")
+ 120:   set_tests_properties([=[gs_cache.texture.raster_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 121: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+ 122:   add_test([=[gs_cache.texture.raster_visibility]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_texture_cache_tests.exe" "raster_visibility")
+ 123:   set_tests_properties([=[gs_cache.texture.raster_visibility]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 124: else()
+ 125:   add_test([=[gs_cache.texture.raster_visibility]=] NOT_AVAILABLE)
+ 126: endif()
+ 127: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+ 128:   add_test([=[gs_cache.texture.reset_and_rebind]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_texture_cache_tests.exe" "reset_and_rebind")
+ 129:   set_tests_properties([=[gs_cache.texture.reset_and_rebind]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 130: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+ 131:   add_test([=[gs_cache.texture.reset_and_rebind]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_texture_cache_tests.exe" "reset_and_rebind")
+ 132:   set_tests_properties([=[gs_cache.texture.reset_and_rebind]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 133: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+ 134:   add_test([=[gs_cache.texture.reset_and_rebind]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_texture_cache_tests.exe" "reset_and_rebind")
+ 135:   set_tests_properties([=[gs_cache.texture.reset_and_rebind]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 136: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+ 137:   add_test([=[gs_cache.texture.reset_and_rebind]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_texture_cache_tests.exe" "reset_and_rebind")
+ 138:   set_tests_properties([=[gs_cache.texture.reset_and_rebind]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 139: else()
+ 140:   add_test([=[gs_cache.texture.reset_and_rebind]=] NOT_AVAILABLE)
+ 141: endif()
+ 142: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+ 143:   add_test([=[gs_cache.texture.invalid_vram_size]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_texture_cache_tests.exe" "invalid_vram_size")
+ 144:   set_tests_properties([=[gs_cache.texture.invalid_vram_size]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 145: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+ 146:   add_test([=[gs_cache.texture.invalid_vram_size]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_texture_cache_tests.exe" "invalid_vram_size")
+ 147:   set_tests_properties([=[gs_cache.texture.invalid_vram_size]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 148: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+ 149:   add_test([=[gs_cache.texture.invalid_vram_size]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_texture_cache_tests.exe" "invalid_vram_size")
+ 150:   set_tests_properties([=[gs_cache.texture.invalid_vram_size]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 151: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+ 152:   add_test([=[gs_cache.texture.invalid_vram_size]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_texture_cache_tests.exe" "invalid_vram_size")
+ 153:   set_tests_properties([=[gs_cache.texture.invalid_vram_size]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 154: else()
+ 155:   add_test([=[gs_cache.texture.invalid_vram_size]=] NOT_AVAILABLE)
+ 156: endif()
+ 157: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+ 158:   add_test([=[gs_cache.texture.reserved_psm]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_texture_cache_tests.exe" "reserved_psm")
+ 159:   set_tests_properties([=[gs_cache.texture.reserved_psm]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 160: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+ 161:   add_test([=[gs_cache.texture.reserved_psm]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_texture_cache_tests.exe" "reserved_psm")
+ 162:   set_tests_properties([=[gs_cache.texture.reserved_psm]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 163: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+ 164:   add_test([=[gs_cache.texture.reserved_psm]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_texture_cache_tests.exe" "reserved_psm")
+ 165:   set_tests_properties([=[gs_cache.texture.reserved_psm]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 166: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+ 167:   add_test([=[gs_cache.texture.reserved_psm]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_texture_cache_tests.exe" "reserved_psm")
+ 168:   set_tests_properties([=[gs_cache.texture.reserved_psm]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;44;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 169: else()
+ 170:   add_test([=[gs_cache.texture.reserved_psm]=] NOT_AVAILABLE)
+ 171: endif()
+ 172: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+ 173:   add_test([=[gs_cache.clut.unaligned_csm1_ct32]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_clut_cache_tests.exe" "unaligned_csm1_ct32")
+ 174:   set_tests_properties([=[gs_cache.clut.unaligned_csm1_ct32]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 175: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+ 176:   add_test([=[gs_cache.clut.unaligned_csm1_ct32]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_clut_cache_tests.exe" "unaligned_csm1_ct32")
+ 177:   set_tests_properties([=[gs_cache.clut.unaligned_csm1_ct32]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 178: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+ 179:   add_test([=[gs_cache.clut.unaligned_csm1_ct32]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_clut_cache_tests.exe" "unaligned_csm1_ct32")
+ 180:   set_tests_properties([=[gs_cache.clut.unaligned_csm1_ct32]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 181: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+ 182:   add_test([=[gs_cache.clut.unaligned_csm1_ct32]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_clut_cache_tests.exe" "unaligned_csm1_ct32")
+ 183:   set_tests_properties([=[gs_cache.clut.unaligned_csm1_ct32]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 184: else()
+ 185:   add_test([=[gs_cache.clut.unaligned_csm1_ct32]=] NOT_AVAILABLE)
+ 186: endif()
+ 187: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+ 188:   add_test([=[gs_cache.clut.unaligned_csm1_ct16]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_clut_cache_tests.exe" "unaligned_csm1_ct16")
+ 189:   set_tests_properties([=[gs_cache.clut.unaligned_csm1_ct16]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 190: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+ 191:   add_test([=[gs_cache.clut.unaligned_csm1_ct16]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_clut_cache_tests.exe" "unaligned_csm1_ct16")
+ 192:   set_tests_properties([=[gs_cache.clut.unaligned_csm1_ct16]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 193: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+ 194:   add_test([=[gs_cache.clut.unaligned_csm1_ct16]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_clut_cache_tests.exe" "unaligned_csm1_ct16")
+ 195:   set_tests_properties([=[gs_cache.clut.unaligned_csm1_ct16]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 196: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+ 197:   add_test([=[gs_cache.clut.unaligned_csm1_ct16]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_clut_cache_tests.exe" "unaligned_csm1_ct16")
+ 198:   set_tests_properties([=[gs_cache.clut.unaligned_csm1_ct16]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 199: else()
+ 200:   add_test([=[gs_cache.clut.unaligned_csm1_ct16]=] NOT_AVAILABLE)
+ 201: endif()
+ 202: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+ 203:   add_test([=[gs_cache.clut.unaligned_csm1_ct16s]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_clut_cache_tests.exe" "unaligned_csm1_ct16s")
+ 204:   set_tests_properties([=[gs_cache.clut.unaligned_csm1_ct16s]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 205: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+ 206:   add_test([=[gs_cache.clut.unaligned_csm1_ct16s]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_clut_cache_tests.exe" "unaligned_csm1_ct16s")
+ 207:   set_tests_properties([=[gs_cache.clut.unaligned_csm1_ct16s]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 208: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+ 209:   add_test([=[gs_cache.clut.unaligned_csm1_ct16s]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_clut_cache_tests.exe" "unaligned_csm1_ct16s")
+ 210:   set_tests_properties([=[gs_cache.clut.unaligned_csm1_ct16s]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 211: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+ 212:   add_test([=[gs_cache.clut.unaligned_csm1_ct16s]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_clut_cache_tests.exe" "unaligned_csm1_ct16s")
+ 213:   set_tests_properties([=[gs_cache.clut.unaligned_csm1_ct16s]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 214: else()
+ 215:   add_test([=[gs_cache.clut.unaligned_csm1_ct16s]=] NOT_AVAILABLE)
+ 216: endif()
+ 217: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+ 218:   add_test([=[gs_cache.clut.wrapped_clut]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_clut_cache_tests.exe" "wrapped_clut")
+ 219:   set_tests_properties([=[gs_cache.clut.wrapped_clut]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 220: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+ 221:   add_test([=[gs_cache.clut.wrapped_clut]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_clut_cache_tests.exe" "wrapped_clut")
+ 222:   set_tests_properties([=[gs_cache.clut.wrapped_clut]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 223: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+ 224:   add_test([=[gs_cache.clut.wrapped_clut]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_clut_cache_tests.exe" "wrapped_clut")
+ 225:   set_tests_properties([=[gs_cache.clut.wrapped_clut]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 226: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+ 227:   add_test([=[gs_cache.clut.wrapped_clut]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_clut_cache_tests.exe" "wrapped_clut")
+ 228:   set_tests_properties([=[gs_cache.clut.wrapped_clut]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 229: else()
+ 230:   add_test([=[gs_cache.clut.wrapped_clut]=] NOT_AVAILABLE)
+ 231: endif()
+ 232: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+ 233:   add_test([=[gs_cache.clut.unaligned_csm2]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_clut_cache_tests.exe" "unaligned_csm2")
+ 234:   set_tests_properties([=[gs_cache.clut.unaligned_csm2]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 235: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+ 236:   add_test([=[gs_cache.clut.unaligned_csm2]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Release/ps2_gs_clut_cache_tests.exe" "unaligned_csm2")
+ 237:   set_tests_properties([=[gs_cache.clut.unaligned_csm2]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 238: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
+ 239:   add_test([=[gs_cache.clut.unaligned_csm2]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/MinSizeRel/ps2_gs_clut_cache_tests.exe" "unaligned_csm2")
+ 240:   set_tests_properties([=[gs_cache.clut.unaligned_csm2]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 241: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
+ 242:   add_test([=[gs_cache.clut.unaligned_csm2]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/RelWithDebInfo/ps2_gs_clut_cache_tests.exe" "unaligned_csm2")
+ 243:   set_tests_properties([=[gs_cache.clut.unaligned_csm2]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 244: else()
+ 245:   add_test([=[gs_cache.clut.unaligned_csm2]=] NOT_AVAILABLE)
+ 246: endif()
+ 247: if(CTEST_CONFIGURATION_TYPE MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
+ 248:   add_test([=[gs_cache.clut.retained_palette]=] "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/ps2xTest/gs_cache/Debug/ps2_gs_clut_cache_tests.exe" "retained_palette")
+ 249:   set_tests_properties([=[gs_cache.clut.retained_palette]=] PROPERTIES  LABELS "gs;cache" TIMEOUT "60" _BACKTRACE_TRIPLES "D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;39;add_test;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;49;add_gs_cache_suite;D:/Games/MarkOfKriRecomp/external/PS2Recomp/ps2xTest/gs_cache/CMakeLists.txt;0;")
+ 250: elseif(CTEST_CONFIGURATION_TYPE MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
+
+Elapsed seconds: 0.027
+Source modifications: NONE.
