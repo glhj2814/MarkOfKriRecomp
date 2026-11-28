@@ -1,0 +1,2995 @@
+MARK OF KRI — SEMAPHORE CONTEXT BINDING DIAGNOSTIC
+GENERATED: 2026-11-27 20:16:46
+MODE: READ-ONLY
+
+===== SCHEDULER CONTEXT BINDING DEFINITIONS =====
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\EeScheduler.cpp
+    1: #include "runtime/ee_scheduler.h"
+    2: 
+    3: #include "ps2_log.h"
+    4: #include "ps2_runtime_macros.h"
+    5: 
+    6: #include <algorithm>
+    7: #include <cassert>
+    8: #include <cstring>
+    9: #include <iostream>
+   10: #include <limits>
+   11: #include <stdexcept>
+   12: 
+   13: namespace
+   14: {
+   15:     constexpr int KE_OK = 0;
+   16:     constexpr int KE_ERROR = -1;
+   17:     constexpr int KE_ILLEGAL_PRIORITY = -403;
+   18:     constexpr int KE_ILLEGAL_THID = -406;
+   19:     constexpr int KE_UNKNOWN_THID = -407;
+   20:     constexpr int KE_UNKNOWN_SEMID = -408;
+   21:     constexpr int KE_UNKNOWN_EVFID = -409;
+   22:     constexpr int KE_DORMANT = -413;
+   23:     constexpr int KE_NOT_DORMANT = -414;
+   24:     constexpr int KE_NOT_SUSPEND = -415;
+   25:     constexpr int KE_NOT_WAIT = -416;
+   26:     constexpr int KE_RELEASE_WAIT = -418;
+   27:     constexpr int KE_SEMA_ZERO = -419;
+   28:     constexpr int KE_SEMA_OVF = -420;
+   29:     constexpr int KE_EVF_COND = -421;
+   30:     constexpr int KE_WAIT_DELETE = -425;
+   31: 
+   32:     constexpr uint32_t WEF_OR = 0x01u;
+   33:     constexpr uint32_t WEF_CLEAR = 0x10u;
+   34:     constexpr uint32_t WEF_CLEAR_ALL = 0x20u;
+   35:     constexpr auto kVBlankPeriod = std::chrono::microseconds(16667);
+   36:     constexpr auto kVBlankDuration = std::chrono::microseconds(500);
+   37:     constexpr uint64_t kAlarmTickMicroseconds = 64u;
+   38:     constexpr uint32_t kDebugPublishDispatchInterval = 4096u;
+   39: 
+   40:     constexpr uint64_t microsecondsToEeCycles(uint64_t microseconds)
+   41:     {
+   42:         return (microseconds * EeScheduler::kEeClockHz + 999999ull) / 1000000ull;
+   43:     }
+   44: 
+   45:     std::chrono::nanoseconds eeCyclesToHostDuration(uint64_t cycles)
+   46:     {
+   47:         constexpr uint64_t kNanosecondsPerSecond = 1000000000ull;
+   48:         const uint64_t wholeSeconds = cycles / EeScheduler::kEeClockHz;
+   49:         const uint64_t remainingCycles = cycles % EeScheduler::kEeClockHz;
+   50:         const uint64_t remainingNanoseconds = (remainingCycles * kNanosecondsPerSecond + EeScheduler::kEeClockHz - 1u) / EeScheduler::kEeClockHz;
+   51:         return std::chrono::seconds(wholeSeconds) + std::chrono::nanoseconds(remainingNanoseconds);
+   52:     }
+   53: 
+   54:     constexpr uint64_t kVBlankPeriodCycles = microsecondsToEeCycles(16667u);
+   55:     constexpr uint64_t kVBlankDurationCycles = microsecondsToEeCycles(500u);
+   56:     constexpr uint64_t kAlarmTickCycles = microsecondsToEeCycles(kAlarmTickMicroseconds);
+   57: 
+   58:     template <typename Map>
+   59:     int allocatePositiveId(int &nextId, const Map &objects)
+   60:     {
+   61:         const int first = std::max(1, nextId);
+   62:         int candidate = first;
+   63:         do
+   64:         {
+   65:             if (!objects.contains(candidate))
+   66:             {
+   67:                 nextId = (candidate == std::numeric_limits<int>::max()) ? 1 : candidate + 1;
+   68:                 return candidate;
+   69:             }
+   70:             candidate = (candidate == std::numeric_limits<int>::max()) ? 1 : candidate + 1;
+   71:         } while (candidate != first);
+   72:         return 0;
+   73:     }
+   74: }
+   75: 
+   76: EeScheduler::EeScheduler(PS2Runtime &runtime)
+   77:     : m_runtime(runtime)
+   78: {
+   79: }
+   80: 
+   81: EeScheduler::~EeScheduler()
+   82: {
+   83:     requestStop();
+   84: }
+   85: 
+   86: void EeScheduler::reset(uint8_t *rdram, const R5900Context &mainContext)
+   87: {
+   88:     m_executorThread = std::this_thread::get_id();
+   89:     m_rdram = rdram;
+   90:     m_readyQueues = {};
+   91:     m_threads.clear();
+   92:     m_semaphores.clear();
+   93:     m_eventFlags.clear();
+   94:     m_alarms.clear();
+   95:     m_intcHandlers.clear();
+   96:     m_dmacHandlers.clear();
+   97:     m_nextThreadId = kFirstThreadId;
+   98:     m_nextInvocationThreadId = -1;
+   99:     m_nextSemaphoreId = 1;
+  100:     m_nextEventFlagId = 1;
+
+===== SYSCALL CONTEXT AND RETURN PATH =====
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Sync.cpp
+    1: #include "Common.h"
+    2: #include "Sync.h"
+    3: #include "runtime/ee_scheduler.h"
+    4: 
+    5: namespace ps2_syscalls
+    6: {
+    7:     namespace
+    8:     {
+    9:         constexpr uint32_t WEF_OR = 0x01u;
+   10:         constexpr uint32_t WEF_CLEAR = 0x10u;
+   11:         constexpr uint32_t WEF_CLEAR_ALL = 0x20u;
+   12:         constexpr uint32_t WEF_MODE_MASK = WEF_OR | WEF_CLEAR | WEF_CLEAR_ALL;
+   13:         constexpr uint32_t EA_MULTI = 0x02u;
+   14: 
+   15:         EeScheduler &scheduler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   16:         {
+   17:             EeScheduler &result = runtime->eeScheduler();
+   18:             result.bindMainContextForSyscall(*ctx, rdram);
+   19:             return result;
+   20:         }
+   21: 
+   22:         void deleteSemaphoreImpl(uint8_t *rdram,
+   23:                                  R5900Context *ctx,
+   24:                                  PS2Runtime *runtime,
+   25:                                  bool interruptSafe)
+   26:         {
+   27:             EeScheduler &ee = scheduler(rdram, ctx, runtime);
+   28:             const int result = ee.deleteSemaphore(static_cast<int>(getRegU32(ctx, 4)), interruptSafe);
+   29:             setReturnS32(ctx, result);
+   30:             ee.transferIfRequested(interruptSafe);
+   31:         }
+   32: 
+   33:         void signalSemaphoreImpl(uint8_t *rdram,
+   34:                                  R5900Context *ctx,
+   35:                                  PS2Runtime *runtime,
+   36:                                  bool interruptSafe)
+   37:         {
+   38:             EeScheduler &ee = scheduler(rdram, ctx, runtime);
+   39:             const int result = ee.signalSemaphore(static_cast<int>(getRegU32(ctx, 4)), interruptSafe);
+   40:             setReturnS32(ctx, result);
+   41:             ee.transferIfRequested(interruptSafe);
+   42:         }
+   43: 
+   44:         void deleteEventFlagImpl(uint8_t *rdram,
+
+===== TARGETED FILEIO SEMAPHORE TESTS =====
+FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_runtime_kernel_tests.cpp
+  620:             std::memcpy(env.rdram.data() + K_PARAM_ADDR, &semaParam, sizeof(semaParam));
+  621:             setRegU32(env.ctx, 4, K_PARAM_ADDR);
+  622:             CreateSema(env.rdram.data(), &env.ctx, &env.runtime);
+  623:             const int semaId = getRegS32(env.ctx, 2);
+  624:             const EeSemaphore *semaphore = env.runtime.eeScheduler().semaphore(semaId);
+  625:             t.IsTrue(semaId > 0 && semaphore != nullptr, "the EE semaphore descriptor should create an object");
+  626:             t.Equals(semaphore->count, semaParam.init_count,
+  627:                      "CreateSema must use init_count at offset 0x08, not the status count field");
+  628:             t.Equals(semaphore->maxCount, semaParam.max_count, "max_count must be decoded from offset 0x04");
+  629:             t.Equals(semaphore->attr, semaParam.attr, "semaphore attr must be decoded from offset 0x10");
+  630:             t.Equals(semaphore->option, semaParam.option, "semaphore option must be decoded from offset 0x14");
+  631:         });
+  632: 
+  633:         tc.Run("FileIO sceFsSemInit creates and reuses the filesystem semaphore", [](TestCase &t)
+  634:         {
+  635:             TestEnv env;
+  636:             constexpr uint32_t kFsSemaphoreIdAddr = 0x0040DBCCu;
+  637:             const int32_t uninitialized = -1;
+  638:             std::memcpy(env.rdram.data() + kFsSemaphoreIdAddr, &uninitialized, sizeof(uninitialized));
+  639: 
+  640:             ps2_stubs::sceFsSemInit(env.rdram.data(), &env.ctx, &env.runtime);
+  641:             const int firstId = getRegS32(env.ctx, 2);
+  642:             const EeSemaphore *first = env.runtime.eeScheduler().semaphore(firstId);
+  643: 
+  644:             t.IsTrue(firstId > 0 && first != nullptr,
+  645:                      "sceFsSemInit should create a valid EE semaphore");
+  646:             if (first)
+  647:             {
+  648:                 t.Equals(first->count, 1, "filesystem semaphore should start with one token");
+  649:                 t.Equals(first->maxCount, 1, "filesystem semaphore maximum should be one");
+  650:                 t.Equals(first->attr, 0u, "filesystem semaphore attributes should be zero");
+  651:                 t.Equals(first->option, 0u, "filesystem semaphore options should be zero");
+  652:             }
+  653: 
+  654:             int32_t storedId = 0;
+  655:             std::memcpy(&storedId, env.rdram.data() + kFsSemaphoreIdAddr, sizeof(storedId));
+  656:             t.Equals(storedId, firstId, "sceFsSemInit should store its semaphore ID at 0x0040DBCC");
+  657: 
+  658:             ps2_stubs::sceFsSemInit(env.rdram.data(), &env.ctx, &env.runtime);
+  659:             const int secondId = getRegS32(env.ctx, 2);
+  660:             t.Equals(secondId, firstId, "repeated initialization should return the existing ID");
+  661:             t.IsTrue(env.runtime.eeScheduler().semaphore(secondId) != nullptr,
+  662:                      "repeated initialization should preserve the existing semaphore");
+  663:         });
+  664: 
+  665:         tc.Run("FileIO sceFsSigSema signals the stored filesystem semaphore", [](TestCase &t)
+  666:         {
+  667:             TestEnv env;
+  668:             constexpr uint32_t kFsSemaphoreIdAddr = 0x0040DBCCu;
+  669:             const int32_t uninitialized = -1;
+  670:             std::memcpy(env.rdram.data() + kFsSemaphoreIdAddr, &uninitialized, sizeof(uninitialized));
+  671: 
+  672:             ps2_stubs::sceFsSemInit(env.rdram.data(), &env.ctx, &env.runtime);
+  673:             const int semaId = getRegS32(env.ctx, 2);
+  674:             EeScheduler &ee = env.runtime.eeScheduler();
+  675:             EeSemaphore *semaphore = ee.semaphore(semaId);
+  676: 
+  677:             t.IsTrue(semaphore != nullptr, "initialization should provide a semaphore for signaling");
+  678:             if (semaphore)
+  679:             {
+  680:                 t.Equals(ee.pollSemaphore(semaId), semaId,
+  681:                          "test should consume the initial semaphore token");
+  682:                 t.Equals(semaphore->count, 0, "consuming the token should reduce the count to zero");
+  683: 
+  684:                 ps2_stubs::sceFsSigSema(env.rdram.data(), &env.ctx, &env.runtime);
+  685: 
+  686:                 t.Equals(getRegS32(env.ctx, 2), semaId,
+  687:                          "sceFsSigSema should return the SignalSema result");
+  688:                 t.Equals(semaphore->count, 1,
+  689:                          "sceFsSigSema should restore the available semaphore token");
+  690:             }
+  691:         });
+  692: 
+  693:         tc.Run("FileIO sceFsSigSema propagates an invalid semaphore ID error", [](TestCase &t)
+  694:         {
+  695:             TestEnv env;
+  696:             constexpr uint32_t kFsSemaphoreIdAddr = 0x0040DBCCu;
+  697:             const int32_t invalidId = 0x7FFFFFFF;
+  698:             std::memcpy(env.rdram.data() + kFsSemaphoreIdAddr, &invalidId, sizeof(invalidId));
+  699: 
+  700:             ps2_stubs::sceFsSigSema(env.rdram.data(), &env.ctx, &env.runtime);
+  701: 
+  702:             t.IsTrue(getRegS32(env.ctx, 2) < 0,
+  703:                      "signaling an invalid semaphore ID should return a kernel error");
+  704:         });
+  705:         tc.Run("EE scheduler selects absolute priority then FIFO", [](TestCase &t)
+  706:         {
+  707:             TestEnv env;
+  708:             std::vector<int> trace;
+  709:             gSchedulerTrace = &trace;
+  710:             gGuestActive.store(0, std::memory_order_release);
+  711:             gGuestMaxActive.store(0, std::memory_order_release);
+  712:             gGuestExecutorHash.store(0u, std::memory_order_release);
+  713:             gGuestExecutorMismatch.store(false, std::memory_order_release);
+  714:             gGuestExecutingFlagMissing.store(false, std::memory_order_release);
+  715:             env.runtime.registerFunction(K_SCHED_MAIN, schedulerMainExit);
+
+===== SCHEDULER MATCH: bindMainContextForSyscall — LINE 1485 =====
+ 1480: uint8_t *EeScheduler::rdram() const noexcept
+ 1481: {
+ 1482:     return m_rdram;
+ 1483: }
+ 1484: 
+ 1485: void EeScheduler::bindMainContextForSyscall(R5900Context &ctx, uint8_t *rdram)
+ 1486: {
+ 1487:     if (m_executorThread == std::thread::id{})
+ 1488:     {
+ 1489:         reset(rdram, ctx);
+ 1490:         GuestThread *main = selectReady();
+ 1491:         assert(main != nullptr);
+ 1492:         makeRunning(*main);
+ 1493:         return;
+ 1494:     }
+ 1495:     assertExecutor();
+ 1496:     m_rdram = rdram;
+ 1497:     if (m_currentThreadId == 0)
+ 1498:     {
+ 1499:         GuestThread *main = thread(kMainThreadId);
+ 1500:         assert(main != nullptr);
+ 1501:         assert(main->status == EeThreadStatus::Ready);
+ 1502:         removeReady(*main);
+ 1503:         makeRunning(*main);
+
+===== SCHEDULER MATCH: activeContext — LINE 209 =====
+  204:         {
+  205:             auto completion = std::move(running->resumeCompletion);
+  206:             running->resumeCompletion = {};
+  207:             try
+  208:             {
+  209:                 completion(running->activeContext());
+  210:             }
+  211:             catch (const EeDispatcherTransfer &)
+  212:             {
+  213:             }
+  214:             if (m_currentThreadId == 0)
+  215:             {
+  216:                 continue;
+  217:             }
+  218:         }
+  219:         R5900Context &context = running->activeContext();
+  220:         if (m_debugPublishCountdown == 0u)
+  221:         {
+  222:             copyMainContextToRuntime();
+  223:             publishSnapshot();
+  224:             m_debugPublishCountdown = kDebugPublishDispatchInterval - 1u;
+  225:         }
+  226:         else
+  227:         {
+
+===== SCHEDULER MATCH: activeContext — LINE 219 =====
+  214:             if (m_currentThreadId == 0)
+  215:             {
+  216:                 continue;
+  217:             }
+  218:         }
+  219:         R5900Context &context = running->activeContext();
+  220:         if (m_debugPublishCountdown == 0u)
+  221:         {
+  222:             copyMainContextToRuntime();
+  223:             publishSnapshot();
+  224:             m_debugPublishCountdown = kDebugPublishDispatchInterval - 1u;
+  225:         }
+  226:         else
+  227:         {
+  228:             --m_debugPublishCountdown;
+  229:         }
+  230: 
+  231:         publishDebugContext(context);
+  232: 
+  233:         if (context.pc == 0u)
+  234:         {
+  235:             if (!running->invocations.empty())
+  236:             {
+  237:                 GuestInvocation completed = std::move(running->invocations.back());
+
+===== SCHEDULER MATCH: activeContext — LINE 243 =====
+  238:                 running->invocations.pop_back();
+  239:                 if (completed.onComplete)
+  240:                 {
+  241:                     try
+  242:                     {
+  243:                         completed.onComplete(completed.context, running->activeContext());
+  244:                     }
+  245:                     catch (const EeDispatcherTransfer &)
+  246:                     {
+  247:                     }
+  248:                 }
+  249:                 continue;
+  250:             }
+  251:             // Returning from the entry point is a normal exit, but a null call or corrupt $ra lands here too.
+  252:             if (running->id > 0)
+  253:                 std::cerr << "[EeScheduler] thread " << running->id << " reached pc=0 from branch_pc=0x" << std::hex
+  254:                       << context.branch_pc << " ra=0x" << getRegU32(&context, 31) << std::dec
+  255:                       << "; treating as thread exit" << std::endl;
+  256:             makeDormant(*running);
+  257:             m_currentThreadId = 0;
+  258:             copyMainContextToRuntime();
+  259:             publishIdleDebugContext();
+  260:             publishSnapshot();
+  261:             continue;
+
+===== SCHEDULER MATCH: activeContext — LINE 676 =====
+  671:     GuestThread *self = currentThread();
+  672:     assert(self != nullptr);
+  673:     if (self->wakeupCount != 0u)
+  674:     {
+  675:         --self->wakeupCount;
+  676:         setReturnS32(&self->activeContext(), KE_OK);
+  677:         return;
+  678:     }
+  679:     blockCurrent(EeWaitState{EeWaitReason::Sleep, std::monostate{}});
+  680: }
+  681: 
+  682: int EeScheduler::wakeupThread(int id, bool interruptSafe)
+  683: {
+  684:     assertExecutor();
+  685:     if (id == 0 || id == m_currentThreadId)
+  686:     {
+  687:         return KE_ILLEGAL_THID;
+  688:     }
+  689:     GuestThread *target = thread(id);
+  690:     if (!target)
+  691:     {
+  692:         return KE_UNKNOWN_THID;
+  693:     }
+  694:     if (target->status == EeThreadStatus::Dormant)
+
+===== SCHEDULER MATCH: activeContext — LINE 946 =====
+  941:     EeSemaphore *object = semaphore(id);
+  942:     if (!object)
+  943:     {
+  944:         GuestThread *self = currentThread();
+  945:         assert(self != nullptr);
+  946:         setReturnS32(&self->activeContext(), KE_UNKNOWN_SEMID);
+  947:         return;
+  948:     }
+  949:     if (object->count != 0)
+  950:     {
+  951:         --object->count;
+  952:         GuestThread *self = currentThread();
+  953:         assert(self != nullptr);
+  954:         setReturnS32(&self->activeContext(), id);
+  955:         publishSnapshot();
+  956:         return;
+  957:     }
+  958:     GuestThread *self = currentThread();
+  959:     assert(self != nullptr);
+  960:     object->waiters.push_back(self->id);
+  961:     blockCurrent(EeWaitState{EeWaitReason::Semaphore, EeSemaphoreWait{id}});
+  962: }
+  963: 
+  964: int EeScheduler::createEventFlag(uint32_t initialBits, uint32_t attr, uint32_t option)
+
+===== SCHEDULER MATCH: activeContext — LINE 954 =====
+  949:     if (object->count != 0)
+  950:     {
+  951:         --object->count;
+  952:         GuestThread *self = currentThread();
+  953:         assert(self != nullptr);
+  954:         setReturnS32(&self->activeContext(), id);
+  955:         publishSnapshot();
+  956:         return;
+  957:     }
+  958:     GuestThread *self = currentThread();
+  959:     assert(self != nullptr);
+  960:     object->waiters.push_back(self->id);
+  961:     blockCurrent(EeWaitState{EeWaitReason::Semaphore, EeSemaphoreWait{id}});
+  962: }
+  963: 
+  964: int EeScheduler::createEventFlag(uint32_t initialBits, uint32_t attr, uint32_t option)
+  965: {
+  966:     assertExecutor();
+  967:     const int id = allocatePositiveId(m_nextEventFlagId, m_eventFlags);
+  968:     if (id == 0)
+  969:     {
+  970:         return KE_ERROR;
+  971:     }
+  972:     EeEventFlag flag{};
+
+===== SCHEDULER MATCH: activeContext — LINE 1064 =====
+ 1059:     EeEventFlag *flag = eventFlag(id);
+ 1060:     GuestThread *self = currentThread();
+ 1061:     assert(self != nullptr);
+ 1062:     if (!flag)
+ 1063:     {
+ 1064:         setReturnS32(&self->activeContext(), KE_UNKNOWN_EVFID);
+ 1065:         return;
+ 1066:     }
+ 1067:     if (eventCondition(flag->bits, bits, mode))
+ 1068:     {
+ 1069:         const uint32_t observed = flag->bits;
+ 1070:         writeGuestU32(resultAddress, observed);
+ 1071:         if ((mode & WEF_CLEAR_ALL) != 0u)
+ 1072:         {
+ 1073:             flag->bits = 0;
+ 1074:         }
+ 1075:         else if ((mode & WEF_CLEAR) != 0u)
+ 1076:         {
+ 1077:             flag->bits &= ~bits;
+ 1078:         }
+ 1079:         setReturnS32(&self->activeContext(), KE_OK);
+ 1080:         publishSnapshot();
+ 1081:         return;
+ 1082:     }
+
+===== SCHEDULER MATCH: activeContext — LINE 1079 =====
+ 1074:         }
+ 1075:         else if ((mode & WEF_CLEAR) != 0u)
+ 1076:         {
+ 1077:             flag->bits &= ~bits;
+ 1078:         }
+ 1079:         setReturnS32(&self->activeContext(), KE_OK);
+ 1080:         publishSnapshot();
+ 1081:         return;
+ 1082:     }
+ 1083:     flag->waiters.push_back(self->id);
+ 1084:     blockCurrent(EeWaitState{EeWaitReason::EventFlag,
+ 1085:                              EeEventFlagWait{id, bits, mode, resultAddress}});
+ 1086: }
+ 1087: 
+ 1088: int EeScheduler::setAlarm(uint16_t ticks,
+ 1089:                           uint32_t handler,
+ 1090:                           uint32_t argument,
+ 1091:                           uint32_t gp,
+ 1092:                           uint32_t sp)
+ 1093: {
+ 1094:     assertExecutor();
+ 1095:     if (handler == 0u || !m_runtime.hasFunction(handler))
+ 1096:     {
+ 1097:         return KE_ERROR;
+
+===== SCHEDULER MATCH: activeContext — LINE 1477 =====
+ 1472: }
+ 1473: 
+ 1474: R5900Context *EeScheduler::currentContext()
+ 1475: {
+ 1476:     GuestThread *self = currentThread();
+ 1477:     return self ? &self->activeContext() : nullptr;
+ 1478: }
+ 1479: 
+ 1480: uint8_t *EeScheduler::rdram() const noexcept
+ 1481: {
+ 1482:     return m_rdram;
+ 1483: }
+ 1484: 
+ 1485: void EeScheduler::bindMainContextForSyscall(R5900Context &ctx, uint8_t *rdram)
+ 1486: {
+ 1487:     if (m_executorThread == std::thread::id{})
+ 1488:     {
+ 1489:         reset(rdram, ctx);
+ 1490:         GuestThread *main = selectReady();
+ 1491:         assert(main != nullptr);
+ 1492:         makeRunning(*main);
+ 1493:         return;
+ 1494:     }
+ 1495:     assertExecutor();
+
+===== SCHEDULER MATCH: activeContext — LINE 1530 =====
+ 1525:         {
+ 1526:             continue;
+ 1527:         }
+ 1528:         EeThreadSnapshot snapshot{};
+ 1529:         snapshot.id = id;
+ 1530:         const R5900Context &context = item.activeContext();
+ 1531:         snapshot.pc = context.pc;
+ 1532:         snapshot.ra = getRegU32(&context, 31);
+ 1533:         snapshot.sp = getRegU32(&context, 29);
+ 1534:         snapshot.contextGp = getRegU32(&context, 28);
+ 1535:         snapshot.entry = item.entry;
+ 1536:         snapshot.stack = item.stack;
+ 1537:         snapshot.stackSize = item.stackSize;
+ 1538:         snapshot.gp = item.gp;
+ 1539:         snapshot.initialPriority = item.initialPriority;
+ 1540:         snapshot.currentPriority = item.currentPriority;
+ 1541:         snapshot.status = item.status;
+ 1542:         snapshot.waitReason = item.wait.reason;
+ 1543:         snapshot.waitId = waitObjectId(item.wait);
+ 1544:         snapshot.suspendCount = item.suspendCount;
+ 1545:         snapshot.wakeupCount = item.wakeupCount;
+ 1546:         snapshot.invocationDepth = static_cast<uint32_t>(item.invocations.size());
+ 1547:         next.threads.push_back(snapshot);
+ 1548:     }
+
+===== SCHEDULER MATCH: activeContext — LINE 1726 =====
+ 1721: 
+ 1722: void EeScheduler::makeReady(GuestThread &item, int result, bool interruptSafe)
+ 1723: {
+ 1724:     auto completion = std::move(item.wait.completion);
+ 1725:     item.wait = {};
+ 1726:     setReturnS32(&item.activeContext(), result);
+ 1727:     item.resumeCompletion = std::move(completion);
+ 1728:     if (item.suspendCount != 0)
+ 1729:     {
+ 1730:         item.status = EeThreadStatus::Suspended;
+ 1731:         return;
+ 1732:     }
+ 1733:     enqueueReady(item);
+ 1734:     requestPreemptionIfHigher(item, interruptSafe);
+ 1735: }
+ 1736: 
+ 1737: void EeScheduler::requestPreemptionIfHigher(const GuestThread &readyThread, bool interruptSafe)
+ 1738: {
+ 1739:     const GuestThread *running = currentThread();
+ 1740:     if (!running || readyThread.currentPriority >= running->currentPriority)
+ 1741:     {
+ 1742:         return;
+ 1743:     }
+ 1744:     m_rescheduleRequested = true;
+
+===== SCHEDULER MATCH: activeContext — LINE 2178 =====
+ 2173:         }
+ 2174:     }
+ 2175: 
+ 2176:     if (selected)
+ 2177:     {
+ 2178:         publishDebugContext(selected->activeContext());
+ 2179:     }
+ 2180: }
+
+===== SCHEDULER MATCH: currentThread — LINE 110 =====
+  105:     m_intcTailOrder = 1000;
+  106:     m_dmacHeadOrder = 0;
+  107:     m_dmacTailOrder = 1000;
+  108:     m_enabledIntcMask = 0xFFFFFFFFu;
+  109:     m_enabledDmacMask = 0xFFFFFFFFu;
+  110:     m_currentThreadId = 0;
+  111:     m_rescheduleRequested = false;
+  112:     m_timeSliceExpired = false;
+  113:     m_insideInterrupt = false;
+  114:     m_pendingEeTimerInterrupts = 0u;
+  115:     m_eeCycle = 0u;
+  116:     m_iopPendingEeCycles = 0u;
+  117:     m_sliceEndCycle = kDefaultTimeSliceCycles;
+  118:     m_stopRequested.store(false, std::memory_order_release);
+  119:     m_checkpointPending.store(false, std::memory_order_release);
+  120:     m_debugPublishCountdown = 0u;
+  121:     {
+  122:         std::lock_guard lock(m_eventMutex);
+  123:         m_events.clear();
+  124:         m_deadlines.clear();
+  125:         m_pendingInvocations.clear();
+  126:     }
+  127:     m_eventSequence = 0;
+  128:     m_invocationSequence = 0;
+
+===== SCHEDULER MATCH: currentThread — LINE 170 =====
+  165:         if (m_stopRequested.load(std::memory_order_acquire))
+  166:         {
+  167:             break;
+  168:         }
+  169: 
+  170:         if (m_currentThreadId == 0)
+  171:         {
+  172:             GuestThread *next = selectReady();
+  173:             if (!next && m_pendingInvocations.empty())
+  174:             {
+  175:                 copyMainContextToRuntime();
+  176:                 publishIdleDebugContext();
+  177:                 publishSnapshot();
+  178:                 waitForEvent();
+  179:                 continue;
+  180:             }
+  181:             if (next)
+  182:             {
+  183:                 makeRunning(*next);
+  184:             }
+  185:             else
+  186:             {
+  187:                 GuestThread *owner = &acquireInvocationThread();
+  188:                 GuestInvocation invocation = std::move(m_pendingInvocations.front());
+
+===== SCHEDULER MATCH: currentThread — LINE 191 =====
+  186:             {
+  187:                 GuestThread *owner = &acquireInvocationThread();
+  188:                 GuestInvocation invocation = std::move(m_pendingInvocations.front());
+  189:                 m_pendingInvocations.pop_front();
+  190:                 owner->status = EeThreadStatus::Running;
+  191:                 m_currentThreadId = owner->id;
+  192:                 renewTimeSlice();
+  193:                 if (getRegU32(&invocation.context, 29) == 0u)
+  194:                 {
+  195:                     SET_GPR_U32(&invocation.context, 29, invocationStackTop());
+  196:                 }
+  197:                 owner->invocations.push_back(std::move(invocation));
+  198:             }
+  199:         }
+  200: 
+  201:         GuestThread *running = currentThread();
+  202:         assert(running != nullptr);
+  203:         if (running->resumeCompletion)
+  204:         {
+  205:             auto completion = std::move(running->resumeCompletion);
+  206:             running->resumeCompletion = {};
+  207:             try
+  208:             {
+  209:                 completion(running->activeContext());
+
+===== SCHEDULER MATCH: currentThread — LINE 201 =====
+  196:                 }
+  197:                 owner->invocations.push_back(std::move(invocation));
+  198:             }
+  199:         }
+  200: 
+  201:         GuestThread *running = currentThread();
+  202:         assert(running != nullptr);
+  203:         if (running->resumeCompletion)
+  204:         {
+  205:             auto completion = std::move(running->resumeCompletion);
+  206:             running->resumeCompletion = {};
+  207:             try
+  208:             {
+  209:                 completion(running->activeContext());
+  210:             }
+  211:             catch (const EeDispatcherTransfer &)
+  212:             {
+  213:             }
+  214:             if (m_currentThreadId == 0)
+  215:             {
+  216:                 continue;
+  217:             }
+  218:         }
+  219:         R5900Context &context = running->activeContext();
+
+===== SCHEDULER MATCH: currentThread — LINE 214 =====
+  209:                 completion(running->activeContext());
+  210:             }
+  211:             catch (const EeDispatcherTransfer &)
+  212:             {
+  213:             }
+  214:             if (m_currentThreadId == 0)
+  215:             {
+  216:                 continue;
+  217:             }
+  218:         }
+  219:         R5900Context &context = running->activeContext();
+  220:         if (m_debugPublishCountdown == 0u)
+  221:         {
+  222:             copyMainContextToRuntime();
+  223:             publishSnapshot();
+  224:             m_debugPublishCountdown = kDebugPublishDispatchInterval - 1u;
+  225:         }
+  226:         else
+  227:         {
+  228:             --m_debugPublishCountdown;
+  229:         }
+  230: 
+  231:         publishDebugContext(context);
+  232: 
+
+===== SCHEDULER MATCH: currentThread — LINE 257 =====
+  252:             if (running->id > 0)
+  253:                 std::cerr << "[EeScheduler] thread " << running->id << " reached pc=0 from branch_pc=0x" << std::hex
+  254:                       << context.branch_pc << " ra=0x" << getRegU32(&context, 31) << std::dec
+  255:                       << "; treating as thread exit" << std::endl;
+  256:             makeDormant(*running);
+  257:             m_currentThreadId = 0;
+  258:             copyMainContextToRuntime();
+  259:             publishIdleDebugContext();
+  260:             publishSnapshot();
+  261:             continue;
+  262:         }
+  263: 
+  264:         if (!m_pendingInvocations.empty() && running->invocations.empty())
+  265:         {
+  266:             GuestInvocation invocation = std::move(m_pendingInvocations.front());
+  267:             m_pendingInvocations.pop_front();
+  268:             if (getRegU32(&invocation.context, 29) == 0u)
+  269:             {
+  270:                 SET_GPR_U32(&invocation.context, 29, invocationStackTop());
+  271:             }
+  272:             running->invocations.push_back(std::move(invocation));
+  273:             continue;
+  274:         }
+  275: 
+
+===== SCHEDULER MATCH: currentThread — LINE 291 =====
+  286:                                                 context.pc,
+  287:                                                 context.pc,
+  288:                                                 PS2Runtime::GuestBranchKind::DirectJump,
+  289:                                                 "EE scheduler");
+  290:                 makeDormant(*running);
+  291:                 m_currentThreadId = 0;
+  292:             }
+  293:             continue;
+  294:         }
+  295:         PS2Runtime::RecompiledFunction function = m_runtime.lookupFunction(context.pc);
+  296: 
+  297:         if (checkpointDue(kGuestDispatchCycles))
+  298:         {
+  299:             continue;
+  300:         }
+  301: 
+  302:         try
+  303:         {
+  304:             m_insideInterrupt = !running->invocations.empty() && running->invocations.back().kind == GuestInvocationKind::Interrupt;
+  305:             m_guestExecuting.store(true, std::memory_order_release);
+  306:             function(m_rdram, &context, &m_runtime);
+  307:             m_guestExecuting.store(false, std::memory_order_release);
+  308:             m_insideInterrupt = false;
+  309:         }
+
+===== SCHEDULER MATCH: currentThread — LINE 324 =====
+  319:             publishSnapshot();
+  320:             throw;
+  321:         }
+  322: 
+  323:         processPendingEvents();
+  324:         if (m_rescheduleRequested && m_currentThreadId != 0)
+  325:         {
+  326:             GuestThread *preempted = currentThread();
+  327:             assert(preempted != nullptr);
+  328:             enqueueReady(*preempted, !m_timeSliceExpired);
+  329:             m_currentThreadId = 0;
+  330:             m_rescheduleRequested = false;
+  331:             m_timeSliceExpired = false;
+  332:         }
+  333:     }
+  334: 
+  335:     m_guestExecuting.store(false, std::memory_order_release);
+  336:     m_running.store(false, std::memory_order_release);
+  337:     copyMainContextToRuntime();
+  338:     publishSnapshot();
+  339: }
+  340: 
+  341: void EeScheduler::requestStop()
+  342: {
+
+===== SCHEDULER MATCH: currentThread — LINE 326 =====
+  321:         }
+  322: 
+  323:         processPendingEvents();
+  324:         if (m_rescheduleRequested && m_currentThreadId != 0)
+  325:         {
+  326:             GuestThread *preempted = currentThread();
+  327:             assert(preempted != nullptr);
+  328:             enqueueReady(*preempted, !m_timeSliceExpired);
+  329:             m_currentThreadId = 0;
+  330:             m_rescheduleRequested = false;
+  331:             m_timeSliceExpired = false;
+  332:         }
+  333:     }
+  334: 
+  335:     m_guestExecuting.store(false, std::memory_order_release);
+  336:     m_running.store(false, std::memory_order_release);
+  337:     copyMainContextToRuntime();
+  338:     publishSnapshot();
+  339: }
+  340: 
+  341: void EeScheduler::requestStop()
+  342: {
+  343:     m_stopRequested.store(true, std::memory_order_release);
+  344:     m_checkpointPending.store(true, std::memory_order_release);
+
+===== SCHEDULER MATCH: currentThread — LINE 329 =====
+  324:         if (m_rescheduleRequested && m_currentThreadId != 0)
+  325:         {
+  326:             GuestThread *preempted = currentThread();
+  327:             assert(preempted != nullptr);
+  328:             enqueueReady(*preempted, !m_timeSliceExpired);
+  329:             m_currentThreadId = 0;
+  330:             m_rescheduleRequested = false;
+  331:             m_timeSliceExpired = false;
+  332:         }
+  333:     }
+  334: 
+  335:     m_guestExecuting.store(false, std::memory_order_release);
+  336:     m_running.store(false, std::memory_order_release);
+  337:     copyMainContextToRuntime();
+  338:     publishSnapshot();
+  339: }
+  340: 
+  341: void EeScheduler::requestStop()
+  342: {
+  343:     m_stopRequested.store(true, std::memory_order_release);
+  344:     m_checkpointPending.store(true, std::memory_order_release);
+  345:     m_eventCv.notify_all();
+  346: }
+  347: 
+
+===== SCHEDULER MATCH: currentThread — LINE 390 =====
+  385:     if (m_eeCycle < m_sliceEndCycle)
+  386:     {
+  387:         return false;
+  388:     }
+  389: 
+  390:     const GuestThread *running = currentThread();
+  391:     if (running != nullptr && hasReadyAtOrAbovePriority(running->currentPriority))
+  392:     {
+  393:         m_rescheduleRequested = true;
+  394:         m_timeSliceExpired = true;
+  395:         return true;
+  396:     }
+  397: 
+  398:     renewTimeSlice();
+  399:     return false;
+  400: }
+  401: 
+  402: void EeScheduler::accountCycles(uint32_t cycles) noexcept
+  403: {
+  404:     advanceGuestCycles(cycles);
+  405:     flushIopCycles();
+  406: }
+  407: 
+  408: void EeScheduler::advanceGuestCycles(uint32_t cycles) noexcept
+
+===== SCHEDULER MATCH: currentThread — LINE 436 =====
+  431: bool EeScheduler::isExecutingGuest() const noexcept
+  432: {
+  433:     return m_guestExecuting.load(std::memory_order_acquire);
+  434: }
+  435: 
+  436: void EeScheduler::setupCurrentThread(uint32_t stack, uint32_t stackSize, uint32_t gp)
+  437: {
+  438:     assertExecutor();
+  439:     GuestThread *target = currentThread();
+  440:     if (!target)
+  441:     {
+  442:         return;
+  443:     }
+  444: 
+  445:     target->stack = stack;
+  446:     target->stackSize = stackSize;
+  447:     target->gp = gp;
+  448:     publishSnapshot();
+  449: }
+  450: 
+  451: int EeScheduler::createThread(const EeThreadCreateParams &params)
+  452: {
+  453:     assertExecutor();
+  454:     if (params.priority < 1 || params.priority >= kPriorityCount)
+
+===== SCHEDULER MATCH: currentThread — LINE 439 =====
+  434: }
+  435: 
+  436: void EeScheduler::setupCurrentThread(uint32_t stack, uint32_t stackSize, uint32_t gp)
+  437: {
+  438:     assertExecutor();
+  439:     GuestThread *target = currentThread();
+  440:     if (!target)
+  441:     {
+  442:         return;
+  443:     }
+  444: 
+  445:     target->stack = stack;
+  446:     target->stackSize = stackSize;
+  447:     target->gp = gp;
+  448:     publishSnapshot();
+  449: }
+  450: 
+  451: int EeScheduler::createThread(const EeThreadCreateParams &params)
+  452: {
+  453:     assertExecutor();
+  454:     if (params.priority < 1 || params.priority >= kPriorityCount)
+  455:     {
+  456:         return KE_ILLEGAL_PRIORITY;
+  457:     }
+
+===== SCHEDULER MATCH: currentThread — LINE 542 =====
+  537: }
+  538: 
+  539: [[noreturn]] void EeScheduler::exitCurrent(bool deleteThreadRecord)
+  540: {
+  541:     assertExecutor();
+  542:     GuestThread *exiting = currentThread();
+  543:     assert(exiting != nullptr);
+  544:     const int id = exiting->id;
+  545:     const uint32_t ownedStack = deleteThreadRecord && exiting->ownsStack ? exiting->stack : 0u;
+  546:     makeDormant(*exiting);
+  547:     m_currentThreadId = 0;
+  548:     if (deleteThreadRecord && id != kMainThreadId)
+  549:     {
+  550:         m_threads.erase(id);
+  551:     }
+  552:     if (ownedStack != 0u)
+  553:     {
+  554:         m_runtime.guestFree(ownedStack);
+  555:     }
+  556:     publishSnapshot();
+  557:     throw EeDispatcherTransfer{};
+  558: }
+  559: 
+  560: int EeScheduler::terminateThread(int id, uint32_t &ownedStack, bool interruptSafe)
+
+===== SCHEDULER MATCH: currentThread — LINE 547 =====
+  542:     GuestThread *exiting = currentThread();
+  543:     assert(exiting != nullptr);
+  544:     const int id = exiting->id;
+  545:     const uint32_t ownedStack = deleteThreadRecord && exiting->ownsStack ? exiting->stack : 0u;
+  546:     makeDormant(*exiting);
+  547:     m_currentThreadId = 0;
+  548:     if (deleteThreadRecord && id != kMainThreadId)
+  549:     {
+  550:         m_threads.erase(id);
+  551:     }
+  552:     if (ownedStack != 0u)
+  553:     {
+  554:         m_runtime.guestFree(ownedStack);
+  555:     }
+  556:     publishSnapshot();
+  557:     throw EeDispatcherTransfer{};
+  558: }
+  559: 
+  560: int EeScheduler::terminateThread(int id, uint32_t &ownedStack, bool interruptSafe)
+  561: {
+  562:     assertExecutor();
+  563:     ownedStack = 0;
+  564:     if (id == 0 || id == m_currentThreadId)
+  565:     {
+
+===== SCHEDULER MATCH: currentThread — LINE 564 =====
+  559: 
+  560: int EeScheduler::terminateThread(int id, uint32_t &ownedStack, bool interruptSafe)
+  561: {
+  562:     assertExecutor();
+  563:     ownedStack = 0;
+  564:     if (id == 0 || id == m_currentThreadId)
+  565:     {
+  566:         return KE_ILLEGAL_THID;
+  567:     }
+  568:     GuestThread *target = thread(id);
+  569:     if (!target)
+  570:     {
+  571:         return KE_UNKNOWN_THID;
+  572:     }
+  573:     if (target->status == EeThreadStatus::Dormant)
+  574:     {
+  575:         return KE_DORMANT;
+  576:     }
+  577:     if (target->ownsStack)
+  578:     {
+  579:         ownedStack = target->stack;
+  580:         target->ownsStack = false;
+  581:     }
+  582:     makeDormant(*target);
+
+===== SCHEDULER MATCH: currentThread — LINE 593 =====
+  588: int EeScheduler::suspendThread(int id, bool interruptSafe)
+  589: {
+  590:     assertExecutor();
+  591:     if (id == 0)
+  592:     {
+  593:         id = m_currentThreadId;
+  594:     }
+  595:     GuestThread *target = thread(id);
+  596:     if (!target)
+  597:     {
+  598:         return KE_UNKNOWN_THID;
+  599:     }
+  600:     if (target->status == EeThreadStatus::Dormant)
+  601:     {
+  602:         return KE_DORMANT;
+  603:     }
+  604: 
+  605:     ++target->suspendCount;
+  606:     switch (target->status)
+  607:     {
+  608:     case EeThreadStatus::Running:
+  609:         target->status = EeThreadStatus::Suspended;
+  610:         m_currentThreadId = 0;
+  611:         m_rescheduleRequested = true;
+
+===== SCHEDULER MATCH: currentThread — LINE 610 =====
+  605:     ++target->suspendCount;
+  606:     switch (target->status)
+  607:     {
+  608:     case EeThreadStatus::Running:
+  609:         target->status = EeThreadStatus::Suspended;
+  610:         m_currentThreadId = 0;
+  611:         m_rescheduleRequested = true;
+  612:         break;
+  613:     case EeThreadStatus::Ready:
+  614:         removeReady(*target);
+  615:         target->status = EeThreadStatus::Suspended;
+  616:         break;
+  617:     case EeThreadStatus::Waiting:
+  618:         target->status = EeThreadStatus::WaitingSuspended;
+  619:         break;
+  620:     case EeThreadStatus::WaitingSuspended:
+  621:     case EeThreadStatus::Suspended:
+  622:         break;
+  623:     case EeThreadStatus::Dormant:
+  624:         break;
+  625:     }
+  626:     if (interruptSafe && m_insideInterrupt)
+  627:     {
+  628:         m_rescheduleRequested = true;
+
+===== SCHEDULER MATCH: currentThread — LINE 671 =====
+  666: }
+  667: 
+  668: void EeScheduler::sleepCurrent()
+  669: {
+  670:     assertExecutor();
+  671:     GuestThread *self = currentThread();
+  672:     assert(self != nullptr);
+  673:     if (self->wakeupCount != 0u)
+  674:     {
+  675:         --self->wakeupCount;
+  676:         setReturnS32(&self->activeContext(), KE_OK);
+  677:         return;
+  678:     }
+  679:     blockCurrent(EeWaitState{EeWaitReason::Sleep, std::monostate{}});
+  680: }
+  681: 
+  682: int EeScheduler::wakeupThread(int id, bool interruptSafe)
+  683: {
+  684:     assertExecutor();
+  685:     if (id == 0 || id == m_currentThreadId)
+  686:     {
+  687:         return KE_ILLEGAL_THID;
+  688:     }
+  689:     GuestThread *target = thread(id);
+
+===== SCHEDULER MATCH: currentThread — LINE 685 =====
+  680: }
+  681: 
+  682: int EeScheduler::wakeupThread(int id, bool interruptSafe)
+  683: {
+  684:     assertExecutor();
+  685:     if (id == 0 || id == m_currentThreadId)
+  686:     {
+  687:         return KE_ILLEGAL_THID;
+  688:     }
+  689:     GuestThread *target = thread(id);
+  690:     if (!target)
+  691:     {
+  692:         return KE_UNKNOWN_THID;
+  693:     }
+  694:     if (target->status == EeThreadStatus::Dormant)
+  695:     {
+  696:         return KE_DORMANT;
+  697:     }
+  698:     if ((target->status == EeThreadStatus::Waiting || target->status == EeThreadStatus::WaitingSuspended) &&
+  699:         target->wait.reason == EeWaitReason::Sleep)
+  700:     {
+  701:         makeReady(*target, KE_OK, interruptSafe);
+  702:     }
+  703:     else
+
+===== SCHEDULER MATCH: currentThread — LINE 716 =====
+  711: int EeScheduler::cancelWakeup(int id)
+  712: {
+  713:     assertExecutor();
+  714:     if (id == 0)
+  715:     {
+  716:         id = m_currentThreadId;
+  717:     }
+  718:     GuestThread *target = thread(id);
+  719:     if (!target)
+  720:     {
+  721:         return KE_UNKNOWN_THID;
+  722:     }
+  723:     const int old = static_cast<int>(target->wakeupCount);
+  724:     target->wakeupCount = 0;
+  725:     publishSnapshot();
+  726:     return old;
+  727: }
+  728: 
+  729: int EeScheduler::changePriority(int id, int priority, bool interruptSafe, int &oldPriority)
+  730: {
+  731:     assertExecutor();
+  732:     if (priority < 1 || priority >= kPriorityCount)
+  733:     {
+  734:         return KE_ILLEGAL_PRIORITY;
+
+===== SCHEDULER MATCH: currentThread — LINE 738 =====
+  733:     {
+  734:         return KE_ILLEGAL_PRIORITY;
+  735:     }
+  736:     if (id == 0)
+  737:     {
+  738:         id = m_currentThreadId;
+  739:     }
+  740:     GuestThread *target = thread(id);
+  741:     if (!target)
+  742:     {
+  743:         return KE_UNKNOWN_THID;
+  744:     }
+  745:     oldPriority = target->currentPriority;
+  746:     if (target->status == EeThreadStatus::Ready)
+  747:     {
+  748:         removeReady(*target);
+  749:         target->currentPriority = priority;
+  750:         enqueueReady(*target);
+  751:         requestPreemptionIfHigher(*target, interruptSafe);
+  752:     }
+  753:     else
+  754:     {
+  755:         target->currentPriority = priority;
+  756:         if (target->status == EeThreadStatus::Running)
+
+===== SCHEDULER MATCH: currentThread — LINE 777 =====
+  772: int EeScheduler::rotateReadyQueue(int priority, bool interruptSafe)
+  773: {
+  774:     assertExecutor();
+  775:     if (priority == 0)
+  776:     {
+  777:         const GuestThread *self = currentThread();
+  778:         priority = self ? self->currentPriority : 0;
+  779:     }
+  780:     if (priority < 0 || priority >= kPriorityCount)
+  781:     {
+  782:         return KE_ILLEGAL_PRIORITY;
+  783:     }
+  784: 
+  785:     GuestThread *self = currentThread();
+  786:     if (self && self->currentPriority == priority)
+  787:     {
+  788:         enqueueReady(*self);
+  789:         m_currentThreadId = 0;
+  790:         m_rescheduleRequested = true;
+  791:     }
+  792:     else
+  793:     {
+  794:         auto &queue = m_readyQueues[priority];
+  795:         if (queue.size() > 1u)
+
+===== SCHEDULER MATCH: currentThread — LINE 785 =====
+  780:     if (priority < 0 || priority >= kPriorityCount)
+  781:     {
+  782:         return KE_ILLEGAL_PRIORITY;
+  783:     }
+  784: 
+  785:     GuestThread *self = currentThread();
+  786:     if (self && self->currentPriority == priority)
+  787:     {
+  788:         enqueueReady(*self);
+  789:         m_currentThreadId = 0;
+  790:         m_rescheduleRequested = true;
+  791:     }
+  792:     else
+  793:     {
+  794:         auto &queue = m_readyQueues[priority];
+  795:         if (queue.size() > 1u)
+  796:         {
+  797:             const int head = queue.front();
+  798:             queue.pop_front();
+  799:             queue.push_back(head);
+  800:         }
+  801:     }
+  802:     (void)interruptSafe;
+  803:     publishSnapshot();
+
+===== SCHEDULER MATCH: currentThread — LINE 789 =====
+  784: 
+  785:     GuestThread *self = currentThread();
+  786:     if (self && self->currentPriority == priority)
+  787:     {
+  788:         enqueueReady(*self);
+  789:         m_currentThreadId = 0;
+  790:         m_rescheduleRequested = true;
+  791:     }
+  792:     else
+  793:     {
+  794:         auto &queue = m_readyQueues[priority];
+  795:         if (queue.size() > 1u)
+  796:         {
+  797:             const int head = queue.front();
+  798:             queue.pop_front();
+  799:             queue.push_back(head);
+  800:         }
+  801:     }
+  802:     (void)interruptSafe;
+  803:     publishSnapshot();
+  804:     return KE_OK;
+  805: }
+  806: 
+  807: int EeScheduler::releaseWait(int id, bool interruptSafe)
+
+===== SCHEDULER MATCH: currentThread — LINE 836 =====
+  831:     assertExecutor();
+  832:     if (interruptSafe || m_insideInterrupt || !m_rescheduleRequested)
+  833:     {
+  834:         return;
+  835:     }
+  836:     if (m_currentThreadId != 0)
+  837:     {
+  838:         GuestThread *self = currentThread();
+  839:         assert(self != nullptr);
+  840:         enqueueReady(*self, true);
+  841:         m_currentThreadId = 0;
+  842:     }
+  843:     m_rescheduleRequested = false;
+  844:     m_timeSliceExpired = false;
+  845:     publishSnapshot();
+  846:     throw EeDispatcherTransfer{};
+  847: }
+  848: 
+  849: int EeScheduler::createSemaphore(int initCount, int maxCount, uint32_t attr, uint32_t option)
+  850: {
+  851:     assertExecutor();
+  852:     if (maxCount <= 0 || initCount < 0 || initCount > maxCount)
+  853:     {
+  854:         return KE_ERROR;
+
+===== SCHEDULER MATCH: currentThread — LINE 838 =====
+  833:     {
+  834:         return;
+  835:     }
+  836:     if (m_currentThreadId != 0)
+  837:     {
+  838:         GuestThread *self = currentThread();
+  839:         assert(self != nullptr);
+  840:         enqueueReady(*self, true);
+  841:         m_currentThreadId = 0;
+  842:     }
+  843:     m_rescheduleRequested = false;
+  844:     m_timeSliceExpired = false;
+  845:     publishSnapshot();
+  846:     throw EeDispatcherTransfer{};
+  847: }
+  848: 
+  849: int EeScheduler::createSemaphore(int initCount, int maxCount, uint32_t attr, uint32_t option)
+  850: {
+  851:     assertExecutor();
+  852:     if (maxCount <= 0 || initCount < 0 || initCount > maxCount)
+  853:     {
+  854:         return KE_ERROR;
+  855:     }
+  856:     const int id = allocatePositiveId(m_nextSemaphoreId, m_semaphores);
+
+===== SCHEDULER MATCH: currentThread — LINE 841 =====
+  836:     if (m_currentThreadId != 0)
+  837:     {
+  838:         GuestThread *self = currentThread();
+  839:         assert(self != nullptr);
+  840:         enqueueReady(*self, true);
+  841:         m_currentThreadId = 0;
+  842:     }
+  843:     m_rescheduleRequested = false;
+  844:     m_timeSliceExpired = false;
+  845:     publishSnapshot();
+  846:     throw EeDispatcherTransfer{};
+  847: }
+  848: 
+  849: int EeScheduler::createSemaphore(int initCount, int maxCount, uint32_t attr, uint32_t option)
+  850: {
+  851:     assertExecutor();
+  852:     if (maxCount <= 0 || initCount < 0 || initCount > maxCount)
+  853:     {
+  854:         return KE_ERROR;
+  855:     }
+  856:     const int id = allocatePositiveId(m_nextSemaphoreId, m_semaphores);
+  857:     if (id == 0)
+  858:     {
+  859:         return KE_ERROR;
+
+===== SCHEDULER MATCH: currentThread — LINE 944 =====
+  939: {
+  940:     assertExecutor();
+  941:     EeSemaphore *object = semaphore(id);
+  942:     if (!object)
+  943:     {
+  944:         GuestThread *self = currentThread();
+  945:         assert(self != nullptr);
+  946:         setReturnS32(&self->activeContext(), KE_UNKNOWN_SEMID);
+  947:         return;
+  948:     }
+  949:     if (object->count != 0)
+  950:     {
+  951:         --object->count;
+  952:         GuestThread *self = currentThread();
+  953:         assert(self != nullptr);
+  954:         setReturnS32(&self->activeContext(), id);
+  955:         publishSnapshot();
+  956:         return;
+  957:     }
+  958:     GuestThread *self = currentThread();
+  959:     assert(self != nullptr);
+  960:     object->waiters.push_back(self->id);
+  961:     blockCurrent(EeWaitState{EeWaitReason::Semaphore, EeSemaphoreWait{id}});
+  962: }
+
+===== SCHEDULER MATCH: currentThread — LINE 952 =====
+  947:         return;
+  948:     }
+  949:     if (object->count != 0)
+  950:     {
+  951:         --object->count;
+  952:         GuestThread *self = currentThread();
+  953:         assert(self != nullptr);
+  954:         setReturnS32(&self->activeContext(), id);
+  955:         publishSnapshot();
+  956:         return;
+  957:     }
+  958:     GuestThread *self = currentThread();
+  959:     assert(self != nullptr);
+  960:     object->waiters.push_back(self->id);
+  961:     blockCurrent(EeWaitState{EeWaitReason::Semaphore, EeSemaphoreWait{id}});
+  962: }
+  963: 
+  964: int EeScheduler::createEventFlag(uint32_t initialBits, uint32_t attr, uint32_t option)
+  965: {
+  966:     assertExecutor();
+  967:     const int id = allocatePositiveId(m_nextEventFlagId, m_eventFlags);
+  968:     if (id == 0)
+  969:     {
+  970:         return KE_ERROR;
+
+===== SCHEDULER MATCH: currentThread — LINE 958 =====
+  953:         assert(self != nullptr);
+  954:         setReturnS32(&self->activeContext(), id);
+  955:         publishSnapshot();
+  956:         return;
+  957:     }
+  958:     GuestThread *self = currentThread();
+  959:     assert(self != nullptr);
+  960:     object->waiters.push_back(self->id);
+  961:     blockCurrent(EeWaitState{EeWaitReason::Semaphore, EeSemaphoreWait{id}});
+  962: }
+  963: 
+  964: int EeScheduler::createEventFlag(uint32_t initialBits, uint32_t attr, uint32_t option)
+  965: {
+  966:     assertExecutor();
+  967:     const int id = allocatePositiveId(m_nextEventFlagId, m_eventFlags);
+  968:     if (id == 0)
+  969:     {
+  970:         return KE_ERROR;
+  971:     }
+  972:     EeEventFlag flag{};
+  973:     flag.id = id;
+  974:     flag.attr = attr;
+  975:     flag.option = option;
+  976:     flag.initBits = initialBits;
+
+===== SCHEDULER MATCH: currentThread — LINE 1060 =====
+ 1055: 
+ 1056: void EeScheduler::waitEventFlag(int id, uint32_t bits, uint32_t mode, uint32_t resultAddress)
+ 1057: {
+ 1058:     assertExecutor();
+ 1059:     EeEventFlag *flag = eventFlag(id);
+ 1060:     GuestThread *self = currentThread();
+ 1061:     assert(self != nullptr);
+ 1062:     if (!flag)
+ 1063:     {
+ 1064:         setReturnS32(&self->activeContext(), KE_UNKNOWN_EVFID);
+ 1065:         return;
+ 1066:     }
+ 1067:     if (eventCondition(flag->bits, bits, mode))
+ 1068:     {
+ 1069:         const uint32_t observed = flag->bits;
+ 1070:         writeGuestU32(resultAddress, observed);
+ 1071:         if ((mode & WEF_CLEAR_ALL) != 0u)
+ 1072:         {
+ 1073:             flag->bits = 0;
+ 1074:         }
+ 1075:         else if ((mode & WEF_CLEAR) != 0u)
+ 1076:         {
+ 1077:             flag->bits &= ~bits;
+ 1078:         }
+
+===== SCHEDULER MATCH: currentThread — LINE 1140 =====
+ 1135: }
+ 1136: 
+ 1137: [[noreturn]] void EeScheduler::invokeCurrent(GuestInvocation invocation)
+ 1138: {
+ 1139:     assertExecutor();
+ 1140:     GuestThread *owner = currentThread();
+ 1141:     assert(owner != nullptr);
+ 1142:     if (getRegU32(&invocation.context, 29) == 0u)
+ 1143:     {
+ 1144:         SET_GPR_U32(&invocation.context, 29, invocationStackTop());
+ 1145:     }
+ 1146:     invocation.sequence = ++m_invocationSequence;
+ 1147:     owner->invocations.push_back(std::move(invocation));
+ 1148:     publishSnapshot();
+ 1149:     throw EeDispatcherTransfer{};
+ 1150: }
+ 1151: 
+ 1152: [[noreturn]] void EeScheduler::invokeCurrentSequence(std::vector<GuestInvocation> invocations)
+ 1153: {
+ 1154:     assertExecutor();
+ 1155:     GuestThread *owner = currentThread();
+ 1156:     assert(owner != nullptr);
+ 1157:     assert(!invocations.empty());
+ 1158:     for (auto it = invocations.rbegin(); it != invocations.rend(); ++it)
+
+===== SCHEDULER MATCH: currentThread — LINE 1155 =====
+ 1150: }
+ 1151: 
+ 1152: [[noreturn]] void EeScheduler::invokeCurrentSequence(std::vector<GuestInvocation> invocations)
+ 1153: {
+ 1154:     assertExecutor();
+ 1155:     GuestThread *owner = currentThread();
+ 1156:     assert(owner != nullptr);
+ 1157:     assert(!invocations.empty());
+ 1158:     for (auto it = invocations.rbegin(); it != invocations.rend(); ++it)
+ 1159:     {
+ 1160:         if (getRegU32(&it->context, 29) == 0u)
+ 1161:         {
+ 1162:             SET_GPR_U32(&it->context, 29, invocationStackTop());
+ 1163:         }
+ 1164:         it->sequence = ++m_invocationSequence;
+ 1165:         owner->invocations.push_back(std::move(*it));
+ 1166:     }
+ 1167:     publishSnapshot();
+ 1168:     throw EeDispatcherTransfer{};
+ 1169: }
+ 1170: 
+ 1171: bool EeScheduler::hasInvocation(GuestInvocationKind kind, uint64_t tag) const
+ 1172: {
+ 1173:     const GuestThread *owner = currentThread();
+
+===== SCHEDULER MATCH: currentThread — LINE 1173 =====
+ 1168:     throw EeDispatcherTransfer{};
+ 1169: }
+ 1170: 
+ 1171: bool EeScheduler::hasInvocation(GuestInvocationKind kind, uint64_t tag) const
+ 1172: {
+ 1173:     const GuestThread *owner = currentThread();
+ 1174:     if (!owner)
+ 1175:     {
+ 1176:         return false;
+ 1177:     }
+ 1178:     return std::any_of(owner->invocations.begin(), owner->invocations.end(),
+ 1179:                        [kind, tag](const GuestInvocation &invocation)
+ 1180:                        {
+ 1181:                            return invocation.kind == kind && invocation.tag == tag;
+ 1182:                        });
+ 1183: }
+ 1184: 
+ 1185: uint32_t EeScheduler::invocationStackTop()
+ 1186: {
+ 1187:     assertExecutor();
+ 1188:     const GuestThread *owner = currentThread();
+ 1189:     if (!owner)
+ 1190:     {
+ 1191:         throw std::logic_error("EE invocation stack requested without a current guest context");
+
+===== SCHEDULER MATCH: currentThread — LINE 1188 =====
+ 1183: }
+ 1184: 
+ 1185: uint32_t EeScheduler::invocationStackTop()
+ 1186: {
+ 1187:     assertExecutor();
+ 1188:     const GuestThread *owner = currentThread();
+ 1189:     if (!owner)
+ 1190:     {
+ 1191:         throw std::logic_error("EE invocation stack requested without a current guest context");
+ 1192:     }
+ 1193:     const size_t depth = owner ? owner->invocations.size() : 0u;
+ 1194:     const uint64_t key = (static_cast<uint64_t>(static_cast<uint32_t>(owner->id)) << 32u) |
+ 1195:                          static_cast<uint32_t>(depth);
+ 1196:     const auto existing = m_invocationStackTops.find(key);
+ 1197:     if (existing != m_invocationStackTops.end())
+ 1198:     {
+ 1199:         return existing->second;
+ 1200:     }
+ 1201:     constexpr uint32_t kInvocationStackSize = 0x4000u;
+ 1202:     const uint32_t top = m_runtime.reserveAsyncCallbackStack(kInvocationStackSize, 16u);
+ 1203:     if (top == 0u)
+ 1204:     {
+ 1205:         throw std::runtime_error("EE invocation stack space exhausted");
+ 1206:     }
+
+===== SCHEDULER MATCH: currentThread — LINE 1459 =====
+ 1454: {
+ 1455:     auto it = m_eventFlags.find(id);
+ 1456:     return it == m_eventFlags.end() ? nullptr : &it->second;
+ 1457: }
+ 1458: 
+ 1459: GuestThread *EeScheduler::currentThread()
+ 1460: {
+ 1461:     return thread(m_currentThreadId);
+ 1462: }
+ 1463: 
+ 1464: const GuestThread *EeScheduler::currentThread() const
+ 1465: {
+ 1466:     return thread(m_currentThreadId);
+ 1467: }
+ 1468: 
+ 1469: int EeScheduler::currentThreadId() const noexcept
+ 1470: {
+ 1471:     return m_currentThreadId;
+ 1472: }
+ 1473: 
+ 1474: R5900Context *EeScheduler::currentContext()
+ 1475: {
+ 1476:     GuestThread *self = currentThread();
+ 1477:     return self ? &self->activeContext() : nullptr;
+
+===== SCHEDULER MATCH: currentThread — LINE 1461 =====
+ 1456:     return it == m_eventFlags.end() ? nullptr : &it->second;
+ 1457: }
+ 1458: 
+ 1459: GuestThread *EeScheduler::currentThread()
+ 1460: {
+ 1461:     return thread(m_currentThreadId);
+ 1462: }
+ 1463: 
+ 1464: const GuestThread *EeScheduler::currentThread() const
+ 1465: {
+ 1466:     return thread(m_currentThreadId);
+ 1467: }
+ 1468: 
+ 1469: int EeScheduler::currentThreadId() const noexcept
+ 1470: {
+ 1471:     return m_currentThreadId;
+ 1472: }
+ 1473: 
+ 1474: R5900Context *EeScheduler::currentContext()
+ 1475: {
+ 1476:     GuestThread *self = currentThread();
+ 1477:     return self ? &self->activeContext() : nullptr;
+ 1478: }
+ 1479: 
+
+===== SCHEDULER MATCH: currentThread — LINE 1464 =====
+ 1459: GuestThread *EeScheduler::currentThread()
+ 1460: {
+ 1461:     return thread(m_currentThreadId);
+ 1462: }
+ 1463: 
+ 1464: const GuestThread *EeScheduler::currentThread() const
+ 1465: {
+ 1466:     return thread(m_currentThreadId);
+ 1467: }
+ 1468: 
+ 1469: int EeScheduler::currentThreadId() const noexcept
+ 1470: {
+ 1471:     return m_currentThreadId;
+ 1472: }
+ 1473: 
+ 1474: R5900Context *EeScheduler::currentContext()
+ 1475: {
+ 1476:     GuestThread *self = currentThread();
+ 1477:     return self ? &self->activeContext() : nullptr;
+ 1478: }
+ 1479: 
+ 1480: uint8_t *EeScheduler::rdram() const noexcept
+ 1481: {
+ 1482:     return m_rdram;
+
+===== SCHEDULER MATCH: currentThread — LINE 1466 =====
+ 1461:     return thread(m_currentThreadId);
+ 1462: }
+ 1463: 
+ 1464: const GuestThread *EeScheduler::currentThread() const
+ 1465: {
+ 1466:     return thread(m_currentThreadId);
+ 1467: }
+ 1468: 
+ 1469: int EeScheduler::currentThreadId() const noexcept
+ 1470: {
+ 1471:     return m_currentThreadId;
+ 1472: }
+ 1473: 
+ 1474: R5900Context *EeScheduler::currentContext()
+ 1475: {
+ 1476:     GuestThread *self = currentThread();
+ 1477:     return self ? &self->activeContext() : nullptr;
+ 1478: }
+ 1479: 
+ 1480: uint8_t *EeScheduler::rdram() const noexcept
+ 1481: {
+ 1482:     return m_rdram;
+ 1483: }
+ 1484: 
+
+===== SCHEDULER MATCH: currentThread — LINE 1469 =====
+ 1464: const GuestThread *EeScheduler::currentThread() const
+ 1465: {
+ 1466:     return thread(m_currentThreadId);
+ 1467: }
+ 1468: 
+ 1469: int EeScheduler::currentThreadId() const noexcept
+ 1470: {
+ 1471:     return m_currentThreadId;
+ 1472: }
+ 1473: 
+ 1474: R5900Context *EeScheduler::currentContext()
+ 1475: {
+ 1476:     GuestThread *self = currentThread();
+ 1477:     return self ? &self->activeContext() : nullptr;
+ 1478: }
+ 1479: 
+ 1480: uint8_t *EeScheduler::rdram() const noexcept
+ 1481: {
+ 1482:     return m_rdram;
+ 1483: }
+ 1484: 
+ 1485: void EeScheduler::bindMainContextForSyscall(R5900Context &ctx, uint8_t *rdram)
+ 1486: {
+ 1487:     if (m_executorThread == std::thread::id{})
+
+===== SCHEDULER MATCH: currentThread — LINE 1471 =====
+ 1466:     return thread(m_currentThreadId);
+ 1467: }
+ 1468: 
+ 1469: int EeScheduler::currentThreadId() const noexcept
+ 1470: {
+ 1471:     return m_currentThreadId;
+ 1472: }
+ 1473: 
+ 1474: R5900Context *EeScheduler::currentContext()
+ 1475: {
+ 1476:     GuestThread *self = currentThread();
+ 1477:     return self ? &self->activeContext() : nullptr;
+ 1478: }
+ 1479: 
+ 1480: uint8_t *EeScheduler::rdram() const noexcept
+ 1481: {
+ 1482:     return m_rdram;
+ 1483: }
+ 1484: 
+ 1485: void EeScheduler::bindMainContextForSyscall(R5900Context &ctx, uint8_t *rdram)
+ 1486: {
+ 1487:     if (m_executorThread == std::thread::id{})
+ 1488:     {
+ 1489:         reset(rdram, ctx);
+
+===== SCHEDULER MATCH: currentThread — LINE 1476 =====
+ 1471:     return m_currentThreadId;
+ 1472: }
+ 1473: 
+ 1474: R5900Context *EeScheduler::currentContext()
+ 1475: {
+ 1476:     GuestThread *self = currentThread();
+ 1477:     return self ? &self->activeContext() : nullptr;
+ 1478: }
+ 1479: 
+ 1480: uint8_t *EeScheduler::rdram() const noexcept
+ 1481: {
+ 1482:     return m_rdram;
+ 1483: }
+ 1484: 
+ 1485: void EeScheduler::bindMainContextForSyscall(R5900Context &ctx, uint8_t *rdram)
+ 1486: {
+ 1487:     if (m_executorThread == std::thread::id{})
+ 1488:     {
+ 1489:         reset(rdram, ctx);
+ 1490:         GuestThread *main = selectReady();
+ 1491:         assert(main != nullptr);
+ 1492:         makeRunning(*main);
+ 1493:         return;
+ 1494:     }
+
+===== SCHEDULER MATCH: currentThread — LINE 1497 =====
+ 1492:         makeRunning(*main);
+ 1493:         return;
+ 1494:     }
+ 1495:     assertExecutor();
+ 1496:     m_rdram = rdram;
+ 1497:     if (m_currentThreadId == 0)
+ 1498:     {
+ 1499:         GuestThread *main = thread(kMainThreadId);
+ 1500:         assert(main != nullptr);
+ 1501:         assert(main->status == EeThreadStatus::Ready);
+ 1502:         removeReady(*main);
+ 1503:         makeRunning(*main);
+ 1504:     }
+ 1505: }
+ 1506: 
+ 1507: EeKernelSnapshot EeScheduler::snapshot() const
+ 1508: {
+ 1509:     std::lock_guard lock(m_snapshotMutex);
+ 1510:     return m_snapshot;
+ 1511: }
+ 1512: 
+ 1513: void EeScheduler::publishSnapshot()
+ 1514: {
+ 1515:     EeKernelSnapshot next{};
+
+===== SCHEDULER MATCH: currentThread — LINE 1520 =====
+ 1515:     EeKernelSnapshot next{};
+ 1516:     next.sequence = ++m_snapshotSequence;
+ 1517:     next.eeCycle = m_eeCycle;
+ 1518:     next.sliceEndCycle = m_sliceEndCycle;
+ 1519:     next.nextEventCycle = m_nextDeadlineCycle.load(std::memory_order_acquire);
+ 1520:     next.runningThreadId = m_currentThreadId;
+ 1521:     next.threads.reserve(m_threads.size());
+ 1522:     for (const auto &[id, item] : m_threads)
+ 1523:     {
+ 1524:         if (id < 0)
+ 1525:         {
+ 1526:             continue;
+ 1527:         }
+ 1528:         EeThreadSnapshot snapshot{};
+ 1529:         snapshot.id = id;
+ 1530:         const R5900Context &context = item.activeContext();
+ 1531:         snapshot.pc = context.pc;
+ 1532:         snapshot.ra = getRegU32(&context, 31);
+ 1533:         snapshot.sp = getRegU32(&context, 29);
+ 1534:         snapshot.contextGp = getRegU32(&context, 28);
+ 1535:         snapshot.entry = item.entry;
+ 1536:         snapshot.stack = item.stack;
+ 1537:         snapshot.stackSize = item.stackSize;
+ 1538:         snapshot.gp = item.gp;
+
+===== SCHEDULER MATCH: currentThread — LINE 1662 =====
+ 1657:     return nullptr;
+ 1658: }
+ 1659: 
+ 1660: void EeScheduler::makeRunning(GuestThread &item)
+ 1661: {
+ 1662:     assert(m_currentThreadId == 0);
+ 1663:     assert(item.status == EeThreadStatus::Ready);
+ 1664:     item.status = EeThreadStatus::Running;
+ 1665:     m_currentThreadId = item.id;
+ 1666:     renewTimeSlice();
+ 1667: }
+ 1668: 
+ 1669: void EeScheduler::makeDormant(GuestThread &item)
+ 1670: {
+ 1671:     removeReady(item);
+ 1672:     removeFromWaitObject(item);
+ 1673:     item.status = EeThreadStatus::Dormant;
+ 1674:     item.wait = {};
+ 1675:     item.resumeCompletion = {};
+ 1676:     item.suspendCount = 0;
+ 1677:     item.wakeupCount = 0;
+ 1678:     item.invocations.clear();
+ 1679: }
+ 1680: 
+
+===== SCHEDULER MATCH: currentThread — LINE 1665 =====
+ 1660: void EeScheduler::makeRunning(GuestThread &item)
+ 1661: {
+ 1662:     assert(m_currentThreadId == 0);
+ 1663:     assert(item.status == EeThreadStatus::Ready);
+ 1664:     item.status = EeThreadStatus::Running;
+ 1665:     m_currentThreadId = item.id;
+ 1666:     renewTimeSlice();
+ 1667: }
+ 1668: 
+ 1669: void EeScheduler::makeDormant(GuestThread &item)
+ 1670: {
+ 1671:     removeReady(item);
+ 1672:     removeFromWaitObject(item);
+ 1673:     item.status = EeThreadStatus::Dormant;
+ 1674:     item.wait = {};
+ 1675:     item.resumeCompletion = {};
+ 1676:     item.suspendCount = 0;
+ 1677:     item.wakeupCount = 0;
+ 1678:     item.invocations.clear();
+ 1679: }
+ 1680: 
+ 1681: void EeScheduler::removeFromWaitObject(GuestThread &item)
+ 1682: {
+ 1683:     const int id = item.id;
+
+===== SCHEDULER MATCH: currentThread — LINE 1713 =====
+ 1708:     item.wait = {};
+ 1709: }
+ 1710: 
+ 1711: void EeScheduler::blockCurrent(EeWaitState wait)
+ 1712: {
+ 1713:     GuestThread *self = currentThread();
+ 1714:     assert(self != nullptr);
+ 1715:     self->wait = std::move(wait);
+ 1716:     self->status = self->suspendCount == 0 ? EeThreadStatus::Waiting : EeThreadStatus::WaitingSuspended;
+ 1717:     m_currentThreadId = 0;
+ 1718:     publishSnapshot();
+ 1719:     throw EeDispatcherTransfer{};
+ 1720: }
+ 1721: 
+ 1722: void EeScheduler::makeReady(GuestThread &item, int result, bool interruptSafe)
+ 1723: {
+ 1724:     auto completion = std::move(item.wait.completion);
+ 1725:     item.wait = {};
+ 1726:     setReturnS32(&item.activeContext(), result);
+ 1727:     item.resumeCompletion = std::move(completion);
+ 1728:     if (item.suspendCount != 0)
+ 1729:     {
+ 1730:         item.status = EeThreadStatus::Suspended;
+ 1731:         return;
+
+===== SCHEDULER MATCH: currentThread — LINE 1717 =====
+ 1712: {
+ 1713:     GuestThread *self = currentThread();
+ 1714:     assert(self != nullptr);
+ 1715:     self->wait = std::move(wait);
+ 1716:     self->status = self->suspendCount == 0 ? EeThreadStatus::Waiting : EeThreadStatus::WaitingSuspended;
+ 1717:     m_currentThreadId = 0;
+ 1718:     publishSnapshot();
+ 1719:     throw EeDispatcherTransfer{};
+ 1720: }
+ 1721: 
+ 1722: void EeScheduler::makeReady(GuestThread &item, int result, bool interruptSafe)
+ 1723: {
+ 1724:     auto completion = std::move(item.wait.completion);
+ 1725:     item.wait = {};
+ 1726:     setReturnS32(&item.activeContext(), result);
+ 1727:     item.resumeCompletion = std::move(completion);
+ 1728:     if (item.suspendCount != 0)
+ 1729:     {
+ 1730:         item.status = EeThreadStatus::Suspended;
+ 1731:         return;
+ 1732:     }
+ 1733:     enqueueReady(item);
+ 1734:     requestPreemptionIfHigher(item, interruptSafe);
+ 1735: }
+
+===== SCHEDULER MATCH: currentThread — LINE 1739 =====
+ 1734:     requestPreemptionIfHigher(item, interruptSafe);
+ 1735: }
+ 1736: 
+ 1737: void EeScheduler::requestPreemptionIfHigher(const GuestThread &readyThread, bool interruptSafe)
+ 1738: {
+ 1739:     const GuestThread *running = currentThread();
+ 1740:     if (!running || readyThread.currentPriority >= running->currentPriority)
+ 1741:     {
+ 1742:         return;
+ 1743:     }
+ 1744:     m_rescheduleRequested = true;
+ 1745:     if (interruptSafe || m_insideInterrupt)
+ 1746:     {
+ 1747:         m_checkpointPending.store(true, std::memory_order_release);
+ 1748:     }
+ 1749: }
+ 1750: 
+ 1751: void EeScheduler::applyPendingPreemption()
+ 1752: {
+ 1753:     if (!m_rescheduleRequested)
+ 1754:     {
+ 1755:         return;
+ 1756:     }
+ 1757:     if (m_currentThreadId == 0)
+
+===== SCHEDULER MATCH: currentThread — LINE 1757 =====
+ 1752: {
+ 1753:     if (!m_rescheduleRequested)
+ 1754:     {
+ 1755:         return;
+ 1756:     }
+ 1757:     if (m_currentThreadId == 0)
+ 1758:     {
+ 1759:         m_rescheduleRequested = false;
+ 1760:         m_timeSliceExpired = false;
+ 1761:         return;
+ 1762:     }
+ 1763:     GuestThread *self = currentThread();
+ 1764:     assert(self != nullptr);
+ 1765:     enqueueReady(*self, !m_timeSliceExpired);
+ 1766:     m_currentThreadId = 0;
+ 1767:     m_rescheduleRequested = false;
+ 1768:     m_timeSliceExpired = false;
+ 1769: }
+ 1770: 
+ 1771: void EeScheduler::processPendingEvents()
+ 1772: {
+ 1773:     assertExecutor();
+ 1774:     processDueDeadlines();
+ 1775:     const uint32_t timerInterrupts = m_pendingEeTimerInterrupts;
+
+===== SCHEDULER MATCH: currentThread — LINE 1763 =====
+ 1758:     {
+ 1759:         m_rescheduleRequested = false;
+ 1760:         m_timeSliceExpired = false;
+ 1761:         return;
+ 1762:     }
+ 1763:     GuestThread *self = currentThread();
+ 1764:     assert(self != nullptr);
+ 1765:     enqueueReady(*self, !m_timeSliceExpired);
+ 1766:     m_currentThreadId = 0;
+ 1767:     m_rescheduleRequested = false;
+ 1768:     m_timeSliceExpired = false;
+ 1769: }
+ 1770: 
+ 1771: void EeScheduler::processPendingEvents()
+ 1772: {
+ 1773:     assertExecutor();
+ 1774:     processDueDeadlines();
+ 1775:     const uint32_t timerInterrupts = m_pendingEeTimerInterrupts;
+ 1776:     m_pendingEeTimerInterrupts = 0u;
+ 1777:     for (uint32_t timer = 0u; timer < 4u; ++timer)
+ 1778:     {
+ 1779:         if ((timerInterrupts & (1u << timer)) != 0u)
+ 1780:         {
+ 1781:             dispatchIrq(false, 9u + timer);
+
+===== SCHEDULER MATCH: currentThread — LINE 1766 =====
+ 1761:         return;
+ 1762:     }
+ 1763:     GuestThread *self = currentThread();
+ 1764:     assert(self != nullptr);
+ 1765:     enqueueReady(*self, !m_timeSliceExpired);
+ 1766:     m_currentThreadId = 0;
+ 1767:     m_rescheduleRequested = false;
+ 1768:     m_timeSliceExpired = false;
+ 1769: }
+ 1770: 
+ 1771: void EeScheduler::processPendingEvents()
+ 1772: {
+ 1773:     assertExecutor();
+ 1774:     processDueDeadlines();
+ 1775:     const uint32_t timerInterrupts = m_pendingEeTimerInterrupts;
+ 1776:     m_pendingEeTimerInterrupts = 0u;
+ 1777:     for (uint32_t timer = 0u; timer < 4u; ++timer)
+ 1778:     {
+ 1779:         if ((timerInterrupts & (1u << timer)) != 0u)
+ 1780:         {
+ 1781:             dispatchIrq(false, 9u + timer);
+ 1782:         }
+ 1783:     }
+ 1784:     std::deque<EeEvent> pending;
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 154 =====
+  149:     m_threads.emplace(main.id, std::move(main));
+  150:     m_readyQueues[0].push_back(kMainThreadId);
+  151:     scheduleEvent(m_eeCycle + kVBlankPeriodCycles,
+  152:                   std::chrono::steady_clock::now() + kVBlankPeriod,
+  153:                   EeEvent{EeEventType::VBlankStart, 0, 0});
+  154:     publishSnapshot();
+  155: }
+  156: 
+  157: void EeScheduler::run()
+  158: {
+  159:     assertExecutor();
+  160:     m_running.store(true, std::memory_order_release);
+  161: 
+  162:     while (!m_stopRequested.load(std::memory_order_acquire))
+  163:     {
+  164:         processPendingEvents();
+  165:         if (m_stopRequested.load(std::memory_order_acquire))
+  166:         {
+  167:             break;
+  168:         }
+  169: 
+  170:         if (m_currentThreadId == 0)
+  171:         {
+  172:             GuestThread *next = selectReady();
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 177 =====
+  172:             GuestThread *next = selectReady();
+  173:             if (!next && m_pendingInvocations.empty())
+  174:             {
+  175:                 copyMainContextToRuntime();
+  176:                 publishIdleDebugContext();
+  177:                 publishSnapshot();
+  178:                 waitForEvent();
+  179:                 continue;
+  180:             }
+  181:             if (next)
+  182:             {
+  183:                 makeRunning(*next);
+  184:             }
+  185:             else
+  186:             {
+  187:                 GuestThread *owner = &acquireInvocationThread();
+  188:                 GuestInvocation invocation = std::move(m_pendingInvocations.front());
+  189:                 m_pendingInvocations.pop_front();
+  190:                 owner->status = EeThreadStatus::Running;
+  191:                 m_currentThreadId = owner->id;
+  192:                 renewTimeSlice();
+  193:                 if (getRegU32(&invocation.context, 29) == 0u)
+  194:                 {
+  195:                     SET_GPR_U32(&invocation.context, 29, invocationStackTop());
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 223 =====
+  218:         }
+  219:         R5900Context &context = running->activeContext();
+  220:         if (m_debugPublishCountdown == 0u)
+  221:         {
+  222:             copyMainContextToRuntime();
+  223:             publishSnapshot();
+  224:             m_debugPublishCountdown = kDebugPublishDispatchInterval - 1u;
+  225:         }
+  226:         else
+  227:         {
+  228:             --m_debugPublishCountdown;
+  229:         }
+  230: 
+  231:         publishDebugContext(context);
+  232: 
+  233:         if (context.pc == 0u)
+  234:         {
+  235:             if (!running->invocations.empty())
+  236:             {
+  237:                 GuestInvocation completed = std::move(running->invocations.back());
+  238:                 running->invocations.pop_back();
+  239:                 if (completed.onComplete)
+  240:                 {
+  241:                     try
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 260 =====
+  255:                       << "; treating as thread exit" << std::endl;
+  256:             makeDormant(*running);
+  257:             m_currentThreadId = 0;
+  258:             copyMainContextToRuntime();
+  259:             publishIdleDebugContext();
+  260:             publishSnapshot();
+  261:             continue;
+  262:         }
+  263: 
+  264:         if (!m_pendingInvocations.empty() && running->invocations.empty())
+  265:         {
+  266:             GuestInvocation invocation = std::move(m_pendingInvocations.front());
+  267:             m_pendingInvocations.pop_front();
+  268:             if (getRegU32(&invocation.context, 29) == 0u)
+  269:             {
+  270:                 SET_GPR_U32(&invocation.context, 29, invocationStackTop());
+  271:             }
+  272:             running->invocations.push_back(std::move(invocation));
+  273:             continue;
+  274:         }
+  275: 
+  276:         if (!m_runtime.hasFunction(context.pc))
+  277:         {
+  278:             if (!running->invocations.empty())
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 319 =====
+  314:         }
+  315:         catch (...)
+  316:         {
+  317:             m_guestExecuting.store(false, std::memory_order_release);
+  318:             m_running.store(false, std::memory_order_release);
+  319:             publishSnapshot();
+  320:             throw;
+  321:         }
+  322: 
+  323:         processPendingEvents();
+  324:         if (m_rescheduleRequested && m_currentThreadId != 0)
+  325:         {
+  326:             GuestThread *preempted = currentThread();
+  327:             assert(preempted != nullptr);
+  328:             enqueueReady(*preempted, !m_timeSliceExpired);
+  329:             m_currentThreadId = 0;
+  330:             m_rescheduleRequested = false;
+  331:             m_timeSliceExpired = false;
+  332:         }
+  333:     }
+  334: 
+  335:     m_guestExecuting.store(false, std::memory_order_release);
+  336:     m_running.store(false, std::memory_order_release);
+  337:     copyMainContextToRuntime();
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 338 =====
+  333:     }
+  334: 
+  335:     m_guestExecuting.store(false, std::memory_order_release);
+  336:     m_running.store(false, std::memory_order_release);
+  337:     copyMainContextToRuntime();
+  338:     publishSnapshot();
+  339: }
+  340: 
+  341: void EeScheduler::requestStop()
+  342: {
+  343:     m_stopRequested.store(true, std::memory_order_release);
+  344:     m_checkpointPending.store(true, std::memory_order_release);
+  345:     m_eventCv.notify_all();
+  346: }
+  347: 
+  348: void EeScheduler::postEvent(EeEvent event)
+  349: {
+  350:     if (event.type == EeEventType::Stop)
+  351:     {
+  352:         requestStop();
+  353:         return;
+  354:     }
+  355: 
+  356:     {
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 448 =====
+  443:     }
+  444: 
+  445:     target->stack = stack;
+  446:     target->stackSize = stackSize;
+  447:     target->gp = gp;
+  448:     publishSnapshot();
+  449: }
+  450: 
+  451: int EeScheduler::createThread(const EeThreadCreateParams &params)
+  452: {
+  453:     assertExecutor();
+  454:     if (params.priority < 1 || params.priority >= kPriorityCount)
+  455:     {
+  456:         return KE_ILLEGAL_PRIORITY;
+  457:     }
+  458: 
+  459:     const int id = allocateThreadId();
+  460:     if (id == 0)
+  461:     {
+  462:         return KE_ERROR;
+  463:     }
+  464: 
+  465:     GuestThread thread{};
+  466:     thread.id = id;
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 477 =====
+  472:     thread.option = params.option;
+  473:     thread.initialPriority = params.priority;
+  474:     thread.currentPriority = params.priority;
+  475:     thread.status = EeThreadStatus::Dormant;
+  476:     m_threads.emplace(id, std::move(thread));
+  477:     publishSnapshot();
+  478:     return id;
+  479: }
+  480: 
+  481: int EeScheduler::deleteThread(int id, uint32_t &ownedStack)
+  482: {
+  483:     assertExecutor();
+  484:     ownedStack = 0;
+  485:     if (id <= kMainThreadId)
+  486:     {
+  487:         return KE_ILLEGAL_THID;
+  488:     }
+  489:     auto it = m_threads.find(id);
+  490:     if (it == m_threads.end())
+  491:     {
+  492:         return KE_UNKNOWN_THID;
+  493:     }
+  494:     if (it->second.status != EeThreadStatus::Dormant)
+  495:     {
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 503 =====
+  498:     if (it->second.ownsStack)
+  499:     {
+  500:         ownedStack = it->second.stack;
+  501:     }
+  502:     m_threads.erase(it);
+  503:     publishSnapshot();
+  504:     return KE_OK;
+  505: }
+  506: 
+  507: int EeScheduler::startThread(int id, uint32_t arg, const R5900Context &caller, bool interruptSafe)
+  508: {
+  509:     assertExecutor();
+  510:     GuestThread *target = thread(id);
+  511:     if (!target)
+  512:     {
+  513:         return KE_UNKNOWN_THID;
+  514:     }
+  515:     if (target->status != EeThreadStatus::Dormant)
+  516:     {
+  517:         return KE_NOT_DORMANT;
+  518:     }
+  519: 
+  520:     target->context = R5900Context{};
+  521:     target->context.pc = target->entry;
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 535 =====
+  530:                                   : getRegU32(&caller, 29);
+  531:     SET_GPR_U32(&target->context, 29, stackTop);
+  532:     SET_GPR_U32(&target->context, 31, 0u);
+  533:     enqueueReady(*target);
+  534:     requestPreemptionIfHigher(*target, interruptSafe);
+  535:     publishSnapshot();
+  536:     return KE_OK;
+  537: }
+  538: 
+  539: [[noreturn]] void EeScheduler::exitCurrent(bool deleteThreadRecord)
+  540: {
+  541:     assertExecutor();
+  542:     GuestThread *exiting = currentThread();
+  543:     assert(exiting != nullptr);
+  544:     const int id = exiting->id;
+  545:     const uint32_t ownedStack = deleteThreadRecord && exiting->ownsStack ? exiting->stack : 0u;
+  546:     makeDormant(*exiting);
+  547:     m_currentThreadId = 0;
+  548:     if (deleteThreadRecord && id != kMainThreadId)
+  549:     {
+  550:         m_threads.erase(id);
+  551:     }
+  552:     if (ownedStack != 0u)
+  553:     {
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 556 =====
+  551:     }
+  552:     if (ownedStack != 0u)
+  553:     {
+  554:         m_runtime.guestFree(ownedStack);
+  555:     }
+  556:     publishSnapshot();
+  557:     throw EeDispatcherTransfer{};
+  558: }
+  559: 
+  560: int EeScheduler::terminateThread(int id, uint32_t &ownedStack, bool interruptSafe)
+  561: {
+  562:     assertExecutor();
+  563:     ownedStack = 0;
+  564:     if (id == 0 || id == m_currentThreadId)
+  565:     {
+  566:         return KE_ILLEGAL_THID;
+  567:     }
+  568:     GuestThread *target = thread(id);
+  569:     if (!target)
+  570:     {
+  571:         return KE_UNKNOWN_THID;
+  572:     }
+  573:     if (target->status == EeThreadStatus::Dormant)
+  574:     {
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 584 =====
+  579:         ownedStack = target->stack;
+  580:         target->ownsStack = false;
+  581:     }
+  582:     makeDormant(*target);
+  583:     (void)interruptSafe;
+  584:     publishSnapshot();
+  585:     return KE_OK;
+  586: }
+  587: 
+  588: int EeScheduler::suspendThread(int id, bool interruptSafe)
+  589: {
+  590:     assertExecutor();
+  591:     if (id == 0)
+  592:     {
+  593:         id = m_currentThreadId;
+  594:     }
+  595:     GuestThread *target = thread(id);
+  596:     if (!target)
+  597:     {
+  598:         return KE_UNKNOWN_THID;
+  599:     }
+  600:     if (target->status == EeThreadStatus::Dormant)
+  601:     {
+  602:         return KE_DORMANT;
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 630 =====
+  625:     }
+  626:     if (interruptSafe && m_insideInterrupt)
+  627:     {
+  628:         m_rescheduleRequested = true;
+  629:     }
+  630:     publishSnapshot();
+  631:     return KE_OK;
+  632: }
+  633: 
+  634: int EeScheduler::resumeThread(int id, bool interruptSafe)
+  635: {
+  636:     assertExecutor();
+  637:     if (id == 0)
+  638:     {
+  639:         return KE_ILLEGAL_THID;
+  640:     }
+  641:     GuestThread *target = thread(id);
+  642:     if (!target)
+  643:     {
+  644:         return KE_UNKNOWN_THID;
+  645:     }
+  646:     if (target->suspendCount == 0)
+  647:     {
+  648:         return KE_NOT_SUSPEND;
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 664 =====
+  659:     else if (target->status == EeThreadStatus::Suspended)
+  660:     {
+  661:         enqueueReady(*target);
+  662:         requestPreemptionIfHigher(*target, interruptSafe);
+  663:     }
+  664:     publishSnapshot();
+  665:     return KE_OK;
+  666: }
+  667: 
+  668: void EeScheduler::sleepCurrent()
+  669: {
+  670:     assertExecutor();
+  671:     GuestThread *self = currentThread();
+  672:     assert(self != nullptr);
+  673:     if (self->wakeupCount != 0u)
+  674:     {
+  675:         --self->wakeupCount;
+  676:         setReturnS32(&self->activeContext(), KE_OK);
+  677:         return;
+  678:     }
+  679:     blockCurrent(EeWaitState{EeWaitReason::Sleep, std::monostate{}});
+  680: }
+  681: 
+  682: int EeScheduler::wakeupThread(int id, bool interruptSafe)
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 707 =====
+  702:     }
+  703:     else
+  704:     {
+  705:         ++target->wakeupCount;
+  706:     }
+  707:     publishSnapshot();
+  708:     return KE_OK;
+  709: }
+  710: 
+  711: int EeScheduler::cancelWakeup(int id)
+  712: {
+  713:     assertExecutor();
+  714:     if (id == 0)
+  715:     {
+  716:         id = m_currentThreadId;
+  717:     }
+  718:     GuestThread *target = thread(id);
+  719:     if (!target)
+  720:     {
+  721:         return KE_UNKNOWN_THID;
+  722:     }
+  723:     const int old = static_cast<int>(target->wakeupCount);
+  724:     target->wakeupCount = 0;
+  725:     publishSnapshot();
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 725 =====
+  720:     {
+  721:         return KE_UNKNOWN_THID;
+  722:     }
+  723:     const int old = static_cast<int>(target->wakeupCount);
+  724:     target->wakeupCount = 0;
+  725:     publishSnapshot();
+  726:     return old;
+  727: }
+  728: 
+  729: int EeScheduler::changePriority(int id, int priority, bool interruptSafe, int &oldPriority)
+  730: {
+  731:     assertExecutor();
+  732:     if (priority < 1 || priority >= kPriorityCount)
+  733:     {
+  734:         return KE_ILLEGAL_PRIORITY;
+  735:     }
+  736:     if (id == 0)
+  737:     {
+  738:         id = m_currentThreadId;
+  739:     }
+  740:     GuestThread *target = thread(id);
+  741:     if (!target)
+  742:     {
+  743:         return KE_UNKNOWN_THID;
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 768 =====
+  763:                     break;
+  764:                 }
+  765:             }
+  766:         }
+  767:     }
+  768:     publishSnapshot();
+  769:     return KE_OK;
+  770: }
+  771: 
+  772: int EeScheduler::rotateReadyQueue(int priority, bool interruptSafe)
+  773: {
+  774:     assertExecutor();
+  775:     if (priority == 0)
+  776:     {
+  777:         const GuestThread *self = currentThread();
+  778:         priority = self ? self->currentPriority : 0;
+  779:     }
+  780:     if (priority < 0 || priority >= kPriorityCount)
+  781:     {
+  782:         return KE_ILLEGAL_PRIORITY;
+  783:     }
+  784: 
+  785:     GuestThread *self = currentThread();
+  786:     if (self && self->currentPriority == priority)
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 803 =====
+  798:             queue.pop_front();
+  799:             queue.push_back(head);
+  800:         }
+  801:     }
+  802:     (void)interruptSafe;
+  803:     publishSnapshot();
+  804:     return KE_OK;
+  805: }
+  806: 
+  807: int EeScheduler::releaseWait(int id, bool interruptSafe)
+  808: {
+  809:     assertExecutor();
+  810:     if (id == 0)
+  811:     {
+  812:         return KE_ILLEGAL_THID;
+  813:     }
+  814:     GuestThread *target = thread(id);
+  815:     if (!target)
+  816:     {
+  817:         return KE_UNKNOWN_THID;
+  818:     }
+  819:     if (target->status != EeThreadStatus::Waiting && target->status != EeThreadStatus::WaitingSuspended)
+  820:     {
+  821:         return KE_NOT_WAIT;
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 825 =====
+  820:     {
+  821:         return KE_NOT_WAIT;
+  822:     }
+  823:     removeFromWaitObject(*target);
+  824:     makeReady(*target, KE_RELEASE_WAIT, interruptSafe);
+  825:     publishSnapshot();
+  826:     return KE_OK;
+  827: }
+  828: 
+  829: void EeScheduler::transferIfRequested(bool interruptSafe)
+  830: {
+  831:     assertExecutor();
+  832:     if (interruptSafe || m_insideInterrupt || !m_rescheduleRequested)
+  833:     {
+  834:         return;
+  835:     }
+  836:     if (m_currentThreadId != 0)
+  837:     {
+  838:         GuestThread *self = currentThread();
+  839:         assert(self != nullptr);
+  840:         enqueueReady(*self, true);
+  841:         m_currentThreadId = 0;
+  842:     }
+  843:     m_rescheduleRequested = false;
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 845 =====
+  840:         enqueueReady(*self, true);
+  841:         m_currentThreadId = 0;
+  842:     }
+  843:     m_rescheduleRequested = false;
+  844:     m_timeSliceExpired = false;
+  845:     publishSnapshot();
+  846:     throw EeDispatcherTransfer{};
+  847: }
+  848: 
+  849: int EeScheduler::createSemaphore(int initCount, int maxCount, uint32_t attr, uint32_t option)
+  850: {
+  851:     assertExecutor();
+  852:     if (maxCount <= 0 || initCount < 0 || initCount > maxCount)
+  853:     {
+  854:         return KE_ERROR;
+  855:     }
+  856:     const int id = allocatePositiveId(m_nextSemaphoreId, m_semaphores);
+  857:     if (id == 0)
+  858:     {
+  859:         return KE_ERROR;
+  860:     }
+  861:     EeSemaphore semaphore{};
+  862:     semaphore.id = id;
+  863:     semaphore.count = initCount;
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 869 =====
+  864:     semaphore.maxCount = maxCount;
+  865:     semaphore.initCount = initCount;
+  866:     semaphore.attr = attr;
+  867:     semaphore.option = option;
+  868:     m_semaphores.emplace(id, std::move(semaphore));
+  869:     publishSnapshot();
+  870:     return id;
+  871: }
+  872: 
+  873: int EeScheduler::deleteSemaphore(int id, bool interruptSafe)
+  874: {
+  875:     assertExecutor();
+  876:     auto it = m_semaphores.find(id);
+  877:     if (it == m_semaphores.end())
+  878:     {
+  879:         return KE_UNKNOWN_SEMID;
+  880:     }
+  881:     std::deque<int> waiters = std::move(it->second.waiters);
+  882:     m_semaphores.erase(it);
+  883:     for (const int threadId : waiters)
+  884:     {
+  885:         if (GuestThread *waiter = thread(threadId))
+  886:         {
+  887:             makeReady(*waiter, KE_WAIT_DELETE, interruptSafe);
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 890 =====
+  885:         if (GuestThread *waiter = thread(threadId))
+  886:         {
+  887:             makeReady(*waiter, KE_WAIT_DELETE, interruptSafe);
+  888:         }
+  889:     }
+  890:     publishSnapshot();
+  891:     return id;
+  892: }
+  893: 
+  894: int EeScheduler::signalSemaphore(int id, bool interruptSafe)
+  895: {
+  896:     assertExecutor();
+  897:     EeSemaphore *object = semaphore(id);
+  898:     if (!object)
+  899:     {
+  900:         return KE_UNKNOWN_SEMID;
+  901:     }
+  902:     if (!object->waiters.empty())
+  903:     {
+  904:         const int waiterId = object->waiters.front();
+  905:         object->waiters.pop_front();
+  906:         GuestThread *waiter = thread(waiterId);
+  907:         assert(waiter != nullptr);
+  908:         makeReady(*waiter, id, interruptSafe);
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 909 =====
+  904:         const int waiterId = object->waiters.front();
+  905:         object->waiters.pop_front();
+  906:         GuestThread *waiter = thread(waiterId);
+  907:         assert(waiter != nullptr);
+  908:         makeReady(*waiter, id, interruptSafe);
+  909:         publishSnapshot();
+  910:         return id;
+  911:     }
+  912:     if (object->count == object->maxCount)
+  913:     {
+  914:         return KE_SEMA_OVF;
+  915:     }
+  916:     ++object->count;
+  917:     publishSnapshot();
+  918:     return id;
+  919: }
+  920: 
+  921: int EeScheduler::pollSemaphore(int id)
+  922: {
+  923:     assertExecutor();
+  924:     EeSemaphore *object = semaphore(id);
+  925:     if (!object)
+  926:     {
+  927:         return KE_UNKNOWN_SEMID;
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 917 =====
+  912:     if (object->count == object->maxCount)
+  913:     {
+  914:         return KE_SEMA_OVF;
+  915:     }
+  916:     ++object->count;
+  917:     publishSnapshot();
+  918:     return id;
+  919: }
+  920: 
+  921: int EeScheduler::pollSemaphore(int id)
+  922: {
+  923:     assertExecutor();
+  924:     EeSemaphore *object = semaphore(id);
+  925:     if (!object)
+  926:     {
+  927:         return KE_UNKNOWN_SEMID;
+  928:     }
+  929:     if (object->count == 0)
+  930:     {
+  931:         return KE_SEMA_ZERO;
+  932:     }
+  933:     --object->count;
+  934:     publishSnapshot();
+  935:     return id;
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 934 =====
+  929:     if (object->count == 0)
+  930:     {
+  931:         return KE_SEMA_ZERO;
+  932:     }
+  933:     --object->count;
+  934:     publishSnapshot();
+  935:     return id;
+  936: }
+  937: 
+  938: void EeScheduler::waitSemaphore(int id)
+  939: {
+  940:     assertExecutor();
+  941:     EeSemaphore *object = semaphore(id);
+  942:     if (!object)
+  943:     {
+  944:         GuestThread *self = currentThread();
+  945:         assert(self != nullptr);
+  946:         setReturnS32(&self->activeContext(), KE_UNKNOWN_SEMID);
+  947:         return;
+  948:     }
+  949:     if (object->count != 0)
+  950:     {
+  951:         --object->count;
+  952:         GuestThread *self = currentThread();
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 955 =====
+  950:     {
+  951:         --object->count;
+  952:         GuestThread *self = currentThread();
+  953:         assert(self != nullptr);
+  954:         setReturnS32(&self->activeContext(), id);
+  955:         publishSnapshot();
+  956:         return;
+  957:     }
+  958:     GuestThread *self = currentThread();
+  959:     assert(self != nullptr);
+  960:     object->waiters.push_back(self->id);
+  961:     blockCurrent(EeWaitState{EeWaitReason::Semaphore, EeSemaphoreWait{id}});
+  962: }
+  963: 
+  964: int EeScheduler::createEventFlag(uint32_t initialBits, uint32_t attr, uint32_t option)
+  965: {
+  966:     assertExecutor();
+  967:     const int id = allocatePositiveId(m_nextEventFlagId, m_eventFlags);
+  968:     if (id == 0)
+  969:     {
+  970:         return KE_ERROR;
+  971:     }
+  972:     EeEventFlag flag{};
+  973:     flag.id = id;
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 979 =====
+  974:     flag.attr = attr;
+  975:     flag.option = option;
+  976:     flag.initBits = initialBits;
+  977:     flag.bits = initialBits;
+  978:     m_eventFlags.emplace(id, std::move(flag));
+  979:     publishSnapshot();
+  980:     return id;
+  981: }
+  982: 
+  983: int EeScheduler::deleteEventFlag(int id, bool interruptSafe)
+  984: {
+  985:     assertExecutor();
+  986:     auto it = m_eventFlags.find(id);
+  987:     if (it == m_eventFlags.end())
+  988:     {
+  989:         return KE_UNKNOWN_EVFID;
+  990:     }
+  991:     std::deque<int> waiters = std::move(it->second.waiters);
+  992:     m_eventFlags.erase(it);
+  993:     for (const int threadId : waiters)
+  994:     {
+  995:         if (GuestThread *waiter = thread(threadId))
+  996:         {
+  997:             makeReady(*waiter, KE_WAIT_DELETE, interruptSafe);
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 1000 =====
+  995:         if (GuestThread *waiter = thread(threadId))
+  996:         {
+  997:             makeReady(*waiter, KE_WAIT_DELETE, interruptSafe);
+  998:         }
+  999:     }
+ 1000:     publishSnapshot();
+ 1001:     return KE_OK;
+ 1002: }
+ 1003: 
+ 1004: int EeScheduler::setEventFlag(int id, uint32_t bits, bool interruptSafe)
+ 1005: {
+ 1006:     assertExecutor();
+ 1007:     EeEventFlag *flag = eventFlag(id);
+ 1008:     if (!flag)
+ 1009:     {
+ 1010:         return KE_UNKNOWN_EVFID;
+ 1011:     }
+ 1012:     flag->bits |= bits;
+ 1013:     finishEventWaiters(*flag, interruptSafe);
+ 1014:     publishSnapshot();
+ 1015:     return KE_OK;
+ 1016: }
+ 1017: 
+ 1018: int EeScheduler::clearEventFlag(int id, uint32_t mask)
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 1014 =====
+ 1009:     {
+ 1010:         return KE_UNKNOWN_EVFID;
+ 1011:     }
+ 1012:     flag->bits |= bits;
+ 1013:     finishEventWaiters(*flag, interruptSafe);
+ 1014:     publishSnapshot();
+ 1015:     return KE_OK;
+ 1016: }
+ 1017: 
+ 1018: int EeScheduler::clearEventFlag(int id, uint32_t mask)
+ 1019: {
+ 1020:     assertExecutor();
+ 1021:     EeEventFlag *flag = eventFlag(id);
+ 1022:     if (!flag)
+ 1023:     {
+ 1024:         return KE_UNKNOWN_EVFID;
+ 1025:     }
+ 1026:     flag->bits &= mask;
+ 1027:     publishSnapshot();
+ 1028:     return KE_OK;
+ 1029: }
+ 1030: 
+ 1031: int EeScheduler::pollEventFlag(int id, uint32_t bits, uint32_t mode, uint32_t &observedBits)
+ 1032: {
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 1027 =====
+ 1022:     if (!flag)
+ 1023:     {
+ 1024:         return KE_UNKNOWN_EVFID;
+ 1025:     }
+ 1026:     flag->bits &= mask;
+ 1027:     publishSnapshot();
+ 1028:     return KE_OK;
+ 1029: }
+ 1030: 
+ 1031: int EeScheduler::pollEventFlag(int id, uint32_t bits, uint32_t mode, uint32_t &observedBits)
+ 1032: {
+ 1033:     assertExecutor();
+ 1034:     EeEventFlag *flag = eventFlag(id);
+ 1035:     if (!flag)
+ 1036:     {
+ 1037:         return KE_UNKNOWN_EVFID;
+ 1038:     }
+ 1039:     if (!eventCondition(flag->bits, bits, mode))
+ 1040:     {
+ 1041:         return KE_EVF_COND;
+ 1042:     }
+ 1043:     observedBits = flag->bits;
+ 1044:     if ((mode & WEF_CLEAR_ALL) != 0u)
+ 1045:     {
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 1052 =====
+ 1047:     }
+ 1048:     else if ((mode & WEF_CLEAR) != 0u)
+ 1049:     {
+ 1050:         flag->bits &= ~bits;
+ 1051:     }
+ 1052:     publishSnapshot();
+ 1053:     return KE_OK;
+ 1054: }
+ 1055: 
+ 1056: void EeScheduler::waitEventFlag(int id, uint32_t bits, uint32_t mode, uint32_t resultAddress)
+ 1057: {
+ 1058:     assertExecutor();
+ 1059:     EeEventFlag *flag = eventFlag(id);
+ 1060:     GuestThread *self = currentThread();
+ 1061:     assert(self != nullptr);
+ 1062:     if (!flag)
+ 1063:     {
+ 1064:         setReturnS32(&self->activeContext(), KE_UNKNOWN_EVFID);
+ 1065:         return;
+ 1066:     }
+ 1067:     if (eventCondition(flag->bits, bits, mode))
+ 1068:     {
+ 1069:         const uint32_t observed = flag->bits;
+ 1070:         writeGuestU32(resultAddress, observed);
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 1080 =====
+ 1075:         else if ((mode & WEF_CLEAR) != 0u)
+ 1076:         {
+ 1077:             flag->bits &= ~bits;
+ 1078:         }
+ 1079:         setReturnS32(&self->activeContext(), KE_OK);
+ 1080:         publishSnapshot();
+ 1081:         return;
+ 1082:     }
+ 1083:     flag->waiters.push_back(self->id);
+ 1084:     blockCurrent(EeWaitState{EeWaitReason::EventFlag,
+ 1085:                              EeEventFlagWait{id, bits, mode, resultAddress}});
+ 1086: }
+ 1087: 
+ 1088: int EeScheduler::setAlarm(uint16_t ticks,
+ 1089:                           uint32_t handler,
+ 1090:                           uint32_t argument,
+ 1091:                           uint32_t gp,
+ 1092:                           uint32_t sp)
+ 1093: {
+ 1094:     assertExecutor();
+ 1095:     if (handler == 0u || !m_runtime.hasFunction(handler))
+ 1096:     {
+ 1097:         return KE_ERROR;
+ 1098:     }
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 1148 =====
+ 1143:     {
+ 1144:         SET_GPR_U32(&invocation.context, 29, invocationStackTop());
+ 1145:     }
+ 1146:     invocation.sequence = ++m_invocationSequence;
+ 1147:     owner->invocations.push_back(std::move(invocation));
+ 1148:     publishSnapshot();
+ 1149:     throw EeDispatcherTransfer{};
+ 1150: }
+ 1151: 
+ 1152: [[noreturn]] void EeScheduler::invokeCurrentSequence(std::vector<GuestInvocation> invocations)
+ 1153: {
+ 1154:     assertExecutor();
+ 1155:     GuestThread *owner = currentThread();
+ 1156:     assert(owner != nullptr);
+ 1157:     assert(!invocations.empty());
+ 1158:     for (auto it = invocations.rbegin(); it != invocations.rend(); ++it)
+ 1159:     {
+ 1160:         if (getRegU32(&it->context, 29) == 0u)
+ 1161:         {
+ 1162:             SET_GPR_U32(&it->context, 29, invocationStackTop());
+ 1163:         }
+ 1164:         it->sequence = ++m_invocationSequence;
+ 1165:         owner->invocations.push_back(std::move(*it));
+ 1166:     }
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 1167 =====
+ 1162:             SET_GPR_U32(&it->context, 29, invocationStackTop());
+ 1163:         }
+ 1164:         it->sequence = ++m_invocationSequence;
+ 1165:         owner->invocations.push_back(std::move(*it));
+ 1166:     }
+ 1167:     publishSnapshot();
+ 1168:     throw EeDispatcherTransfer{};
+ 1169: }
+ 1170: 
+ 1171: bool EeScheduler::hasInvocation(GuestInvocationKind kind, uint64_t tag) const
+ 1172: {
+ 1173:     const GuestThread *owner = currentThread();
+ 1174:     if (!owner)
+ 1175:     {
+ 1176:         return false;
+ 1177:     }
+ 1178:     return std::any_of(owner->invocations.begin(), owner->invocations.end(),
+ 1179:                        [kind, tag](const GuestInvocation &invocation)
+ 1180:                        {
+ 1181:                            return invocation.kind == kind && invocation.tag == tag;
+ 1182:                        });
+ 1183: }
+ 1184: 
+ 1185: uint32_t EeScheduler::invocationStackTop()
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 1383 =====
+ 1378:         const int result = wait.fixedResult >= 0
+ 1379:                                ? wait.fixedResult
+ 1380:                                : static_cast<int>((tick - 1u) & 1u);
+ 1381:         makeReady(*waiter, result, false);
+ 1382:     }
+ 1383:     publishSnapshot();
+ 1384: }
+ 1385: 
+ 1386: void EeScheduler::completeExternalWait(uint32_t type, uint64_t token, int result)
+ 1387: {
+ 1388:     assertExecutor();
+ 1389:     std::vector<int> completed;
+ 1390:     for (const auto &[id, candidate] : m_threads)
+ 1391:     {
+ 1392:         if ((candidate.status != EeThreadStatus::Waiting && candidate.status != EeThreadStatus::WaitingSuspended) ||
+ 1393:             (candidate.wait.reason != EeWaitReason::External &&
+ 1394:              candidate.wait.reason != EeWaitReason::Mpeg))
+ 1395:         {
+ 1396:             continue;
+ 1397:         }
+ 1398:         const auto &external = std::get<EeExternalWait>(candidate.wait.payload);
+ 1399:         if (external.type == type && external.token == token)
+ 1400:         {
+ 1401:             completed.push_back(id);
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 1411 =====
+ 1406:     {
+ 1407:         GuestThread *waiter = thread(id);
+ 1408:         assert(waiter != nullptr);
+ 1409:         makeReady(*waiter, result, false);
+ 1410:     }
+ 1411:     publishSnapshot();
+ 1412: }
+ 1413: 
+ 1414: [[noreturn]] void EeScheduler::waitExternal(EeWaitReason reason,
+ 1415:                                             uint32_t type,
+ 1416:                                             uint64_t token,
+ 1417:                                             std::function<void(R5900Context &)> completion)
+ 1418: {
+ 1419:     EeWaitState wait{reason, EeExternalWait{type, token}, std::move(completion)};
+ 1420:     blockCurrent(std::move(wait));
+ 1421: }
+ 1422: 
+ 1423: GuestThread *EeScheduler::thread(int id)
+ 1424: {
+ 1425:     auto it = m_threads.find(id);
+ 1426:     return it == m_threads.end() ? nullptr : &it->second;
+ 1427: }
+ 1428: 
+ 1429: const GuestThread *EeScheduler::thread(int id) const
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 1513 =====
+ 1508: {
+ 1509:     std::lock_guard lock(m_snapshotMutex);
+ 1510:     return m_snapshot;
+ 1511: }
+ 1512: 
+ 1513: void EeScheduler::publishSnapshot()
+ 1514: {
+ 1515:     EeKernelSnapshot next{};
+ 1516:     next.sequence = ++m_snapshotSequence;
+ 1517:     next.eeCycle = m_eeCycle;
+ 1518:     next.sliceEndCycle = m_sliceEndCycle;
+ 1519:     next.nextEventCycle = m_nextDeadlineCycle.load(std::memory_order_acquire);
+ 1520:     next.runningThreadId = m_currentThreadId;
+ 1521:     next.threads.reserve(m_threads.size());
+ 1522:     for (const auto &[id, item] : m_threads)
+ 1523:     {
+ 1524:         if (id < 0)
+ 1525:         {
+ 1526:             continue;
+ 1527:         }
+ 1528:         EeThreadSnapshot snapshot{};
+ 1529:         snapshot.id = id;
+ 1530:         const R5900Context &context = item.activeContext();
+ 1531:         snapshot.pc = context.pc;
+
+===== SCHEDULER MATCH: publishSnapshot — LINE 1718 =====
+ 1713:     GuestThread *self = currentThread();
+ 1714:     assert(self != nullptr);
+ 1715:     self->wait = std::move(wait);
+ 1716:     self->status = self->suspendCount == 0 ? EeThreadStatus::Waiting : EeThreadStatus::WaitingSuspended;
+ 1717:     m_currentThreadId = 0;
+ 1718:     publishSnapshot();
+ 1719:     throw EeDispatcherTransfer{};
+ 1720: }
+ 1721: 
+ 1722: void EeScheduler::makeReady(GuestThread &item, int result, bool interruptSafe)
+ 1723: {
+ 1724:     auto completion = std::move(item.wait.completion);
+ 1725:     item.wait = {};
+ 1726:     setReturnS32(&item.activeContext(), result);
+ 1727:     item.resumeCompletion = std::move(completion);
+ 1728:     if (item.suspendCount != 0)
+ 1729:     {
+ 1730:         item.status = EeThreadStatus::Suspended;
+ 1731:         return;
+ 1732:     }
+ 1733:     enqueueReady(item);
+ 1734:     requestPreemptionIfHigher(item, interruptSafe);
+ 1735: }
+ 1736: 
+
+===== SCHEDULER MATCH: EeScheduler::semaphore — LINE 1435 =====
+ 1430: {
+ 1431:     auto it = m_threads.find(id);
+ 1432:     return it == m_threads.end() ? nullptr : &it->second;
+ 1433: }
+ 1434: 
+ 1435: EeSemaphore *EeScheduler::semaphore(int id)
+ 1436: {
+ 1437:     auto it = m_semaphores.find(id);
+ 1438:     return it == m_semaphores.end() ? nullptr : &it->second;
+ 1439: }
+ 1440: 
+ 1441: const EeSemaphore *EeScheduler::semaphore(int id) const
+ 1442: {
+ 1443:     auto it = m_semaphores.find(id);
+ 1444:     return it == m_semaphores.end() ? nullptr : &it->second;
+ 1445: }
+ 1446: 
+ 1447: EeEventFlag *EeScheduler::eventFlag(int id)
+ 1448: {
+ 1449:     auto it = m_eventFlags.find(id);
+ 1450:     return it == m_eventFlags.end() ? nullptr : &it->second;
+ 1451: }
+ 1452: 
+ 1453: const EeEventFlag *EeScheduler::eventFlag(int id) const
+
+===== SCHEDULER MATCH: EeScheduler::semaphore — LINE 1441 =====
+ 1436: {
+ 1437:     auto it = m_semaphores.find(id);
+ 1438:     return it == m_semaphores.end() ? nullptr : &it->second;
+ 1439: }
+ 1440: 
+ 1441: const EeSemaphore *EeScheduler::semaphore(int id) const
+ 1442: {
+ 1443:     auto it = m_semaphores.find(id);
+ 1444:     return it == m_semaphores.end() ? nullptr : &it->second;
+ 1445: }
+ 1446: 
+ 1447: EeEventFlag *EeScheduler::eventFlag(int id)
+ 1448: {
+ 1449:     auto it = m_eventFlags.find(id);
+ 1450:     return it == m_eventFlags.end() ? nullptr : &it->second;
+ 1451: }
+ 1452: 
+ 1453: const EeEventFlag *EeScheduler::eventFlag(int id) const
+ 1454: {
+ 1455:     auto it = m_eventFlags.find(id);
+ 1456:     return it == m_eventFlags.end() ? nullptr : &it->second;
+ 1457: }
+ 1458: 
+ 1459: GuestThread *EeScheduler::currentThread()
+
+ELAPSED SECONDS: 0.057
+SAFETY: NO FILES MODIFIED
