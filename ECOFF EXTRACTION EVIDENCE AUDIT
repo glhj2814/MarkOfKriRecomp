@@ -1,0 +1,2708 @@
+MARK OF KRI — ECOFF EXTRACTION EVIDENCE AUDIT
+PARSER SHA256: A0B2911D29B5798859215E2D203C6782F65E990EECFD2AF77B10F32B6F00E036
+GENERATOR SHA256: 6B10A2AE5915ACB2F6A3881AED1D9D8232D45160BC2529595E9783A11BCFA565
+ANALYZER SHA256: 0AD3A5DD341A6AA14EF1BF144EFF2A8145C147CFF7A94E27DEF465C3D58000A9
+
+=== ECOFF PARSER VALIDATION AND RECORD MAPPING ===
+SOURCE FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp
+MATCH COUNT: 28
+--- Lines 161-173 ---
+  161:                name != ".DVP.overlay" && name.rfind(".DVP.overlay.", 0) != 0;
+  162:     }
+  163: 
+  164:     std::vector<ps2recomp::Function> LoadEcoffMdebugFunctions(
+  165:         const ELFIO::elfio &elf, const std::string &filePath)
+  166:     {
+  167:         using ps2recomp::Function;
+  168:         std::vector<Function> functions;
+  169:         const ELFIO::section *mdebug = nullptr;
+  170:         for (ELFIO::Elf_Half i = 0; i < elf.sections.size(); ++i)
+  171:         {
+  172:             const ELFIO::section *section = elf.sections[i];
+  173:             if (section && section->get_name() == ".mdebug")
+--- Lines 207-219 ---
+  207:         uint16_t vstamp = 0;
+  208:         if (!ReadEcoffU16(bytes, sectionStart, magic) ||
+  209:             !ReadEcoffU16(bytes, sectionStart + 2, vstamp) ||
+  210:             magic != 0x7009)
+  211:             return functions;
+  212: 
+  213:         // HDRR offsets: counts and absolute file offsets, in 32-bit words after magic/vstamp.
+  214:         uint32_t ipdMax = 0, cbPdOffset = 0, isymMax = 0, cbSymOffset = 0;
+  215:         uint32_t issMax = 0, cbSsOffset = 0, ifdMax = 0, cbFdOffset = 0;
+  216:         if (!ReadEcoffU32(bytes, sectionStart + 24, ipdMax) ||
+  217:             !ReadEcoffU32(bytes, sectionStart + 28, cbPdOffset) ||
+  218:             !ReadEcoffU32(bytes, sectionStart + 32, isymMax) ||
+  219:             !ReadEcoffU32(bytes, sectionStart + 36, cbSymOffset) ||
+--- Lines 279-291 ---
+  279:                 !ReadEcoffU32(bytes, symAt + 8, packed))
+  280:                 return {};
+  281: 
+  282:             const uint32_t storageType = packed & 0x3Fu;
+  283:             const uint32_t storageClass = (packed >> 6) & 0x1Fu;
+  284:             if ((storageType != 6 && storageType != 14) || storageClass != 1)
+  285:                 continue;
+  286: 
+  287:             const EcoffFdr *owner = nullptr;
+  288:             for (const auto &fdr : fdrs)
+  289:             {
+  290:                 if (symbolIndex >= fdr.symbolBase && symbolIndex - fdr.symbolBase < fdr.symbolCount)
+  291:                 {
+--- Lines 280-292 ---
+  280:                 return {};
+  281: 
+  282:             const uint32_t storageType = packed & 0x3Fu;
+  283:             const uint32_t storageClass = (packed >> 6) & 0x1Fu;
+  284:             if ((storageType != 6 && storageType != 14) || storageClass != 1)
+  285:                 continue;
+  286: 
+  287:             const EcoffFdr *owner = nullptr;
+  288:             for (const auto &fdr : fdrs)
+  289:             {
+  290:                 if (symbolIndex >= fdr.symbolBase && symbolIndex - fdr.symbolBase < fdr.symbolCount)
+  291:                 {
+  292:                     if (owner)
+--- Lines 281-293 ---
+  281: 
+  282:             const uint32_t storageType = packed & 0x3Fu;
+  283:             const uint32_t storageClass = (packed >> 6) & 0x1Fu;
+  284:             if ((storageType != 6 && storageType != 14) || storageClass != 1)
+  285:                 continue;
+  286: 
+  287:             const EcoffFdr *owner = nullptr;
+  288:             for (const auto &fdr : fdrs)
+  289:             {
+  290:                 if (symbolIndex >= fdr.symbolBase && symbolIndex - fdr.symbolBase < fdr.symbolCount)
+  291:                 {
+  292:                     if (owner)
+  293:                         return {};
+--- Lines 297-309 ---
+  297:             if (!owner)
+  298:                 continue;
+  299: 
+  300:             const uint32_t localSymbolIndex = symbolIndex - owner->symbolBase;
+  301:             uint32_t matchedPdr = UINT32_MAX;
+  302:             for (uint32_t p = owner->procedureFirst; p < owner->procedureFirst + owner->procedureCount; ++p)
+  303:             {
+  304:                 uint32_t pdrSymbolIndex = 0;
+  305:                 const uint64_t pdrAt = static_cast<uint64_t>(cbPdOffset) + static_cast<uint64_t>(p) * PdrSize;
+  306:                 if (!ReadEcoffU32(bytes, pdrAt + 4, pdrSymbolIndex))
+  307:                     return {};
+  308:                 if (pdrSymbolIndex == localSymbolIndex)
+  309:                 {
+--- Lines 305-317 ---
+  305:                 const uint64_t pdrAt = static_cast<uint64_t>(cbPdOffset) + static_cast<uint64_t>(p) * PdrSize;
+  306:                 if (!ReadEcoffU32(bytes, pdrAt + 4, pdrSymbolIndex))
+  307:                     return {};
+  308:                 if (pdrSymbolIndex == localSymbolIndex)
+  309:                 {
+  310:                     if (matchedPdr != UINT32_MAX)
+  311:                         return {};
+  312:                     matchedPdr = p;
+  313:                 }
+  314:             }
+  315:             if (matchedPdr == UINT32_MAX)
+  316:                 continue;
+  317: 
+--- Lines 2242-2254 ---
+ 2242:     std::vector<Function> ElfParser::extractFunctions() const
+ 2243:     {
+ 2244:         std::vector<Function> functions;
+ 2245:         functions.reserve(m_symbols.size() + m_extraFunctions.size());
+ 2246: 
+ 2247:         std::unordered_map<uint32_t, size_t> indexByStart;
+ 2248:         indexByStart.reserve(functions.capacity());
+ 2249: 
+ 2250:         // Symbol table sizes are authoritative wwhen exist
+ 2251:         std::unordered_map<uint32_t, uint32_t> authoritativeEndByStart;
+ 2252:         authoritativeEndByStart.reserve(m_symbols.size());
+ 2253:         for (const auto &symbol : m_symbols)
+ 2254:         {
+--- Lines 2288-2300 ---
+ 2288:         }
+ 2289: 
+ 2290:         // Named debug/map functions with explicit bounds are authoritative too.
+ 2291:         for (const auto &extra : m_extraFunctions)
+ 2292:         {
+ 2293:             if (extra.start == 0 || extra.end <= extra.start || extra.name.empty() || IsAutoGeneratedName(extra.name))
+ 2294:             {
+ 2295:                 continue;
+ 2296:             }
+ 2297: 
+ 2298:             const Section *functionSection = FindFunctionSectionByAddress(m_sections, extra.start);
+ 2299:             if (!functionSection)
+ 2300:             {
+--- Lines 2444-2456 ---
+ 2444:             addOrMerge(func);
+ 2445:         }
+ 2446: 
+ 2447:         for (const auto &func : m_extraFunctions)
+ 2448:         {
+ 2449:             addOrMerge(func);
+ 2450:         }
+ 2451: 
+ 2452:         std::sort(functions.begin(), functions.end(),
+ 2453:                   [](const Function &a, const Function &b)
+ 2454:                   { return a.start < b.start; });
+ 2455: 
+ 2456:         for (size_t index = 0; index < functions.size(); ++index)
+--- Lines 2505-2517 ---
+ 2505: 
+ 2506:     std::vector<Function> ElfParser::extractExtraFunctions() const
+ 2507:     {
+ 2508:         return m_extraFunctions;
+ 2509:     }
+ 2510: 
+ 2511:     bool ElfParser::isValidAddress(uint32_t address) const
+ 2512:     {
+ 2513:         for (const auto &section : m_sections)
+ 2514:         {
+ 2515:             if (address >= section.address && address < (section.address + section.size))
+ 2516:             {
+ 2517:                 return true;
+--- Lines 2716-2728 ---
+ 2716:                 func.isStub = false;
+ 2717:                 func.isSkipped = false;
+ 2718: 
+ 2719:                 m_extraFunctions.push_back(std::move(func));
+ 2720:                 mapStarts.insert(start);
+ 2721:                 count++;
+ 2722:             }
+ 2723:             catch (...)
+ 2724:             {
+ 2725:                 continue;
+ 2726:             }
+ 2727:         }
+ 2728: 
+--- Lines 2749-2761 ---
+ 2749:                 }
+ 2750:             }
+ 2751: 
+ 2752:             m_extraFunctions.erase(
+ 2753:                 std::remove_if(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 2754:                                [&](const Function &func)
+ 2755:                                {
+ 2756:                                    return IsAutoGeneratedName(func.name) && !mapStarts.contains(func.start);
+ 2757:                                }),
+ 2758:                 m_extraFunctions.end());
+ 2759: 
+ 2760:             std::sort(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 2761:                       [](const Function &a, const Function &b)
+--- Lines 2750-2762 ---
+ 2750:             }
+ 2751: 
+ 2752:             m_extraFunctions.erase(
+ 2753:                 std::remove_if(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 2754:                                [&](const Function &func)
+ 2755:                                {
+ 2756:                                    return IsAutoGeneratedName(func.name) && !mapStarts.contains(func.start);
+ 2757:                                }),
+ 2758:                 m_extraFunctions.end());
+ 2759: 
+ 2760:             std::sort(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 2761:                       [](const Function &a, const Function &b)
+ 2762:                       {
+--- Lines 2755-2767 ---
+ 2755:                                {
+ 2756:                                    return IsAutoGeneratedName(func.name) && !mapStarts.contains(func.start);
+ 2757:                                }),
+ 2758:                 m_extraFunctions.end());
+ 2759: 
+ 2760:             std::sort(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 2761:                       [](const Function &a, const Function &b)
+ 2762:                       {
+ 2763:                           if (a.start != b.start)
+ 2764:                           {
+ 2765:                               return a.start < b.start;
+ 2766:                           }
+ 2767: 
+--- Lines 2757-2769 ---
+ 2757:                                }),
+ 2758:                 m_extraFunctions.end());
+ 2759: 
+ 2760:             std::sort(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 2761:                       [](const Function &a, const Function &b)
+ 2762:                       {
+ 2763:                           if (a.start != b.start)
+ 2764:                           {
+ 2765:                               return a.start < b.start;
+ 2766:                           }
+ 2767: 
+ 2768:                           const bool aAuto = IsAutoGeneratedName(a.name);
+ 2769:                           const bool bAuto = IsAutoGeneratedName(b.name);
+--- Lines 2780-2792 ---
+ 2780:                           return a.name < b.name;
+ 2781:                       });
+ 2782: 
+ 2783:             m_extraFunctions.erase(
+ 2784:                 std::unique(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 2785:                             [](const Function &a, const Function &b)
+ 2786:                             {
+ 2787:                                 if (a.start == b.start)
+ 2788:                                 {
+ 2789:                                     // pick the function with real name and not auto generated
+ 2790:                                     return true;
+ 2791:                                 }
+ 2792:                                 return false;
+--- Lines 2781-2793 ---
+ 2781:                       });
+ 2782: 
+ 2783:             m_extraFunctions.erase(
+ 2784:                 std::unique(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 2785:                             [](const Function &a, const Function &b)
+ 2786:                             {
+ 2787:                                 if (a.start == b.start)
+ 2788:                                 {
+ 2789:                                     // pick the function with real name and not auto generated
+ 2790:                                     return true;
+ 2791:                                 }
+ 2792:                                 return false;
+ 2793:                             }),
+--- Lines 2791-2803 ---
+ 2791:                                 }
+ 2792:                                 return false;
+ 2793:                             }),
+ 2794:                 m_extraFunctions.end());
+ 2795: 
+ 2796:             return true;
+ 2797:         }
+ 2798: 
+ 2799:         if (skippedNonExecutable > 0 || skippedInvalidRange > 0)
+ 2800:         {
+ 2801:             if (m_reporter)
+ 2802:             {
+ 2803:                 m_reporter->warning("ghidra-map", "Loaded 0 functions from Ghidra map after filtering (" + std::to_string(skippedNonExecutable) + " non-executable, " + std::to_string(skippedInvalidRange) + " invalid range).");
+--- Lines 3031-3043 ---
+ 3031: 
+ 3032:     void ElfParser::loadDebugFunctions()
+ 3033:     {
+ 3034:         m_extraFunctions.clear();
+ 3035:         m_hasLoadedGhidraMap = false;
+ 3036:         m_ghidraMapStarts.clear();
+ 3037: 
+ 3038:         if (HasDwarfSections(*m_elf))
+ 3039:         {
+ 3040: #if defined(_WIN32)
+ 3041:             const int fileDescriptor = _open(m_filePath.c_str(), _O_RDONLY | _O_BINARY);
+ 3042: #else
+ 3043:             const int fileDescriptor = ::open(m_filePath.c_str(), O_RDONLY);
+--- Lines 3087-3099 ---
+ 3087: 
+ 3088:                         if (cuDie != nullptr)
+ 3089:                         {
+ 3090:                             VisitDieTreeAndCollectFunctions(dbg, cuDie, this, m_extraFunctions);
+ 3091:                         }
+ 3092:                     }
+ 3093: 
+ 3094:                     dwarf_finish(dbg);
+ 3095:                 }
+ 3096: 
+ 3097: #if defined(_WIN32)
+ 3098:                 _close(fileDescriptor);
+ 3099: #else
+--- Lines 3105-3117 ---
+ 3105:         // ECOFF .mdebug contains authoritative procedure names and start addresses
+ 3106:         // in retail PS2 ELFs where conventional DWARF is absent.
+ 3107:         {
+ 3108:             auto ecoffFunctions = LoadEcoffMdebugFunctions(*m_elf, m_filePath);
+ 3109:             m_extraFunctions.insert(m_extraFunctions.end(),
+ 3110:                                     ecoffFunctions.begin(), ecoffFunctions.end());
+ 3111:         }
+ 3112: 
+ 3113:         // DWARF in retail ELFs is often partial.
+ 3114:         ScanFunctionStartsFallback(this, m_extraFunctions);
+ 3115: 
+ 3116:         std::sort(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 3117:                   [](const Function &a, const Function &b)
+--- Lines 3106-3118 ---
+ 3106:         // in retail PS2 ELFs where conventional DWARF is absent.
+ 3107:         {
+ 3108:             auto ecoffFunctions = LoadEcoffMdebugFunctions(*m_elf, m_filePath);
+ 3109:             m_extraFunctions.insert(m_extraFunctions.end(),
+ 3110:                                     ecoffFunctions.begin(), ecoffFunctions.end());
+ 3111:         }
+ 3112: 
+ 3113:         // DWARF in retail ELFs is often partial.
+ 3114:         ScanFunctionStartsFallback(this, m_extraFunctions);
+ 3115: 
+ 3116:         std::sort(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 3117:                   [](const Function &a, const Function &b)
+ 3118:                   {
+--- Lines 3111-3123 ---
+ 3111:         }
+ 3112: 
+ 3113:         // DWARF in retail ELFs is often partial.
+ 3114:         ScanFunctionStartsFallback(this, m_extraFunctions);
+ 3115: 
+ 3116:         std::sort(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 3117:                   [](const Function &a, const Function &b)
+ 3118:                   {
+ 3119:                       if (a.start != b.start)
+ 3120:                       {
+ 3121:                         return a.start < b.start;
+ 3122:                       }
+ 3123: 
+--- Lines 3113-3125 ---
+ 3113:         // DWARF in retail ELFs is often partial.
+ 3114:         ScanFunctionStartsFallback(this, m_extraFunctions);
+ 3115: 
+ 3116:         std::sort(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 3117:                   [](const Function &a, const Function &b)
+ 3118:                   {
+ 3119:                       if (a.start != b.start)
+ 3120:                       {
+ 3121:                         return a.start < b.start;
+ 3122:                       }
+ 3123: 
+ 3124:                       const bool aAuto = IsAutoGeneratedName(a.name);
+ 3125:                       const bool bAuto = IsAutoGeneratedName(b.name);
+--- Lines 3131-3140 ---
+ 3131:                       return a.end > b.end;
+ 3132:                   });
+ 3133: 
+ 3134:         m_extraFunctions.erase(
+ 3135:             std::unique(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 3136:                         [](const Function &a, const Function &b)
+ 3137:                         { return a.start == b.start; }),
+ 3138:             m_extraFunctions.end());
+ 3139:     }
+ 3140: }
+--- Lines 3132-3140 ---
+ 3132:                   });
+ 3133: 
+ 3134:         m_extraFunctions.erase(
+ 3135:             std::unique(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 3136:                         [](const Function &a, const Function &b)
+ 3137:                         { return a.start == b.start; }),
+ 3138:             m_extraFunctions.end());
+ 3139:     }
+ 3140: }
+--- Lines 3135-3140 ---
+ 3135:             std::unique(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 3136:                         [](const Function &a, const Function &b)
+ 3137:                         { return a.start == b.start; }),
+ 3138:             m_extraFunctions.end());
+ 3139:     }
+ 3140: }
+
+=== ECOFF FUNCTION OBJECT CONSTRUCTION ===
+SOURCE FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\src\lib\elf_parser.cpp
+MATCH COUNT: 68
+--- Lines 65-75 ---
+   65:             if (fileSize > 0)
+   66:             {
+   67:                 ps2recomp::Section load{};
+   68:                 load.name = "LOAD" + std::to_string(i);
+   69:                 load.address = static_cast<uint32_t>(vaddr);
+   70:                 load.size = static_cast<uint32_t>(fileSize);
+   71:                 load.offset = static_cast<uint32_t>(segment->get_offset());
+   72:                 load.isCode = (flags & ELFIO::PF_X) != 0;
+   73:                 load.isData = (flags & ELFIO::PF_W) != 0 || (flags & ELFIO::PF_R) != 0;
+   74:                 load.isBSS = false;
+   75:                 load.isReadOnly = (flags & ELFIO::PF_W) == 0;
+--- Lines 82-92 ---
+   82:             if (memSize > fileSize)
+   83:             {
+   84:                 ps2recomp::Section bss{};
+   85:                 bss.name = "LOAD" + std::to_string(i) + ".bss";
+   86:                 bss.address = static_cast<uint32_t>(vaddr + fileSize);
+   87:                 bss.size = static_cast<uint32_t>(memSize - fileSize);
+   88:                 bss.offset = static_cast<uint32_t>(segment->get_offset() + fileSize);
+   89:                 bss.isCode = false;
+   90:                 bss.isData = true;
+   91:                 bss.isBSS = true;
+   92:                 bss.isReadOnly = false;
+--- Lines 177-187 ---
+  177:             }
+  178:         }
+  179:         if (!mdebug || mdebug->get_size() < 96 || mdebug->get_type() == ELFIO::SHT_NOBITS)
+  180:             return functions;
+  181: 
+  182:         std::ifstream input(filePath, std::ios::binary);
+  183:         if (!input)
+  184:             return functions;
+  185:         input.seekg(0, std::ios::end);
+  186:         const std::streamoff length = input.tellg();
+  187:         if (length < 0)
+--- Lines 181-191 ---
+  181: 
+  182:         std::ifstream input(filePath, std::ios::binary);
+  183:         if (!input)
+  184:             return functions;
+  185:         input.seekg(0, std::ios::end);
+  186:         const std::streamoff length = input.tellg();
+  187:         if (length < 0)
+  188:             return functions;
+  189:         std::vector<uint8_t> bytes(static_cast<size_t>(length));
+  190:         input.seekg(0, std::ios::beg);
+  191:         if (!bytes.empty())
+--- Lines 185-195 ---
+  185:         input.seekg(0, std::ios::end);
+  186:         const std::streamoff length = input.tellg();
+  187:         if (length < 0)
+  188:             return functions;
+  189:         std::vector<uint8_t> bytes(static_cast<size_t>(length));
+  190:         input.seekg(0, std::ios::beg);
+  191:         if (!bytes.empty())
+  192:             input.read(reinterpret_cast<char *>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+  193:         if (!input && !bytes.empty())
+  194:             return functions;
+  195: 
+--- Lines 191-201 ---
+  191:         if (!bytes.empty())
+  192:             input.read(reinterpret_cast<char *>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+  193:         if (!input && !bytes.empty())
+  194:             return functions;
+  195: 
+  196:         // ECOFF MIPS structures in this format are 32-bit little-endian.
+  197:         if (bytes.size() < 6 || bytes[0] != 0x7F || bytes[1] != 'E' ||
+  198:             bytes[2] != 'L' || bytes[3] != 'F' || bytes[4] != 1 || bytes[5] != 1)
+  199:             return functions;
+  200: 
+  201:         const uint64_t sectionStart = mdebug->get_offset();
+--- Lines 196-206 ---
+  196:         // ECOFF MIPS structures in this format are 32-bit little-endian.
+  197:         if (bytes.size() < 6 || bytes[0] != 0x7F || bytes[1] != 'E' ||
+  198:             bytes[2] != 'L' || bytes[3] != 'F' || bytes[4] != 1 || bytes[5] != 1)
+  199:             return functions;
+  200: 
+  201:         const uint64_t sectionStart = mdebug->get_offset();
+  202:         const uint64_t sectionSize = mdebug->get_size();
+  203:         if (sectionStart > bytes.size() || sectionSize > bytes.size() - sectionStart || sectionSize < 96)
+  204:             return functions;
+  205: 
+  206:         uint16_t magic = 0;
+--- Lines 201-211 ---
+  201:         const uint64_t sectionStart = mdebug->get_offset();
+  202:         const uint64_t sectionSize = mdebug->get_size();
+  203:         if (sectionStart > bytes.size() || sectionSize > bytes.size() - sectionStart || sectionSize < 96)
+  204:             return functions;
+  205: 
+  206:         uint16_t magic = 0;
+  207:         uint16_t vstamp = 0;
+  208:         if (!ReadEcoffU16(bytes, sectionStart, magic) ||
+  209:             !ReadEcoffU16(bytes, sectionStart + 2, vstamp) ||
+  210:             magic != 0x7009)
+  211:             return functions;
+--- Lines 208-218 ---
+  208:         if (!ReadEcoffU16(bytes, sectionStart, magic) ||
+  209:             !ReadEcoffU16(bytes, sectionStart + 2, vstamp) ||
+  210:             magic != 0x7009)
+  211:             return functions;
+  212: 
+  213:         // HDRR offsets: counts and absolute file offsets, in 32-bit words after magic/vstamp.
+  214:         uint32_t ipdMax = 0, cbPdOffset = 0, isymMax = 0, cbSymOffset = 0;
+  215:         uint32_t issMax = 0, cbSsOffset = 0, ifdMax = 0, cbFdOffset = 0;
+  216:         if (!ReadEcoffU32(bytes, sectionStart + 24, ipdMax) ||
+  217:             !ReadEcoffU32(bytes, sectionStart + 28, cbPdOffset) ||
+  218:             !ReadEcoffU32(bytes, sectionStart + 32, isymMax) ||
+--- Lines 221-231 ---
+  221:             !ReadEcoffU32(bytes, sectionStart + 60, cbSsOffset) ||
+  222:             !ReadEcoffU32(bytes, sectionStart + 72, ifdMax) ||
+  223:             !ReadEcoffU32(bytes, sectionStart + 76, cbFdOffset))
+  224:             return functions;
+  225: 
+  226:         constexpr uint64_t PdrSize = 52;
+  227:         constexpr uint64_t SymrSize = 12;
+  228:         constexpr uint64_t FdrSize = 72;
+  229:         if (ipdMax == 0 || isymMax == 0 || ifdMax == 0 || issMax == 0 ||
+  230:             !EcoffRangeInMdebug(cbPdOffset, ipdMax, PdrSize, bytes.size(), sectionStart, sectionSize) ||
+  231:             !EcoffRangeInMdebug(cbSymOffset, isymMax, SymrSize, bytes.size(), sectionStart, sectionSize) ||
+--- Lines 231-241 ---
+  231:             !EcoffRangeInMdebug(cbSymOffset, isymMax, SymrSize, bytes.size(), sectionStart, sectionSize) ||
+  232:             !EcoffRangeInMdebug(cbFdOffset, ifdMax, FdrSize, bytes.size(), sectionStart, sectionSize) ||
+  233:             !EcoffRangeInMdebug(cbSsOffset, issMax, 1, bytes.size(), sectionStart, sectionSize))
+  234:             return functions;
+  235: 
+  236:         struct EcoffFdr
+  237:         {
+  238:             uint32_t address = 0;
+  239:             uint32_t symbolBase = 0;
+  240:             uint32_t symbolCount = 0;
+  241:             uint32_t procedureFirst = 0;
+--- Lines 356-366 ---
+  356:         {
+  357:             if (i > 0 && candidates[i - 1].address == candidates[i].address)
+  358:                 continue;
+  359:             Function function{};
+  360:             function.name = candidates[i].name;
+  361:             function.start = candidates[i].address;
+  362:             function.end = 0; // Existing function-boundary logic caps this at the next discovered start.
+  363:             function.isRecompiled = false;
+  364:             function.isStub = false;
+  365:             function.isSkipped = false;
+  366:             functions.push_back(std::move(function));
+--- Lines 357-367 ---
+  357:             if (i > 0 && candidates[i - 1].address == candidates[i].address)
+  358:                 continue;
+  359:             Function function{};
+  360:             function.name = candidates[i].name;
+  361:             function.start = candidates[i].address;
+  362:             function.end = 0; // Existing function-boundary logic caps this at the next discovered start.
+  363:             function.isRecompiled = false;
+  364:             function.isStub = false;
+  365:             function.isSkipped = false;
+  366:             functions.push_back(std::move(function));
+  367:         }
+--- Lines 358-368 ---
+  358:                 continue;
+  359:             Function function{};
+  360:             function.name = candidates[i].name;
+  361:             function.start = candidates[i].address;
+  362:             function.end = 0; // Existing function-boundary logic caps this at the next discovered start.
+  363:             function.isRecompiled = false;
+  364:             function.isStub = false;
+  365:             function.isSkipped = false;
+  366:             functions.push_back(std::move(function));
+  367:         }
+  368:         return functions;
+--- Lines 359-369 ---
+  359:             Function function{};
+  360:             function.name = candidates[i].name;
+  361:             function.start = candidates[i].address;
+  362:             function.end = 0; // Existing function-boundary logic caps this at the next discovered start.
+  363:             function.isRecompiled = false;
+  364:             function.isStub = false;
+  365:             function.isSkipped = false;
+  366:             functions.push_back(std::move(function));
+  367:         }
+  368:         return functions;
+  369:     }
+--- Lines 363-373 ---
+  363:             function.isRecompiled = false;
+  364:             function.isStub = false;
+  365:             function.isSkipped = false;
+  366:             functions.push_back(std::move(function));
+  367:         }
+  368:         return functions;
+  369:     }
+  370: }
+  371: 
+  372: namespace
+  373: {
+--- Lines 365-375 ---
+  365:             function.isSkipped = false;
+  366:             functions.push_back(std::move(function));
+  367:         }
+  368:         return functions;
+  369:     }
+  370: }
+  371: 
+  372: namespace
+  373: {
+  374:     using namespace ps2recomp;
+  375: 
+--- Lines 670-680 ---
+  670:                     {
+  671:                         if (FindCodeSectionByAddress(parser->getSections(), lowPc))
+  672:                         {
+  673:                             ps2recomp::Function func{};
+  674:                             func.name = ReadDieName(dbg, current, &error);
+  675:                             func.start = lowPc;
+  676:                             func.end = highPc;
+  677:                             func.isRecompiled = false;
+  678:                             func.isStub = false;
+  679:                             func.isSkipped = false;
+  680: 
+--- Lines 671-681 ---
+  671:                         if (FindCodeSectionByAddress(parser->getSections(), lowPc))
+  672:                         {
+  673:                             ps2recomp::Function func{};
+  674:                             func.name = ReadDieName(dbg, current, &error);
+  675:                             func.start = lowPc;
+  676:                             func.end = highPc;
+  677:                             func.isRecompiled = false;
+  678:                             func.isStub = false;
+  679:                             func.isSkipped = false;
+  680: 
+  681:                             if (func.name.empty())
+--- Lines 672-682 ---
+  672:                         {
+  673:                             ps2recomp::Function func{};
+  674:                             func.name = ReadDieName(dbg, current, &error);
+  675:                             func.start = lowPc;
+  676:                             func.end = highPc;
+  677:                             func.isRecompiled = false;
+  678:                             func.isStub = false;
+  679:                             func.isSkipped = false;
+  680: 
+  681:                             if (func.name.empty())
+  682:                             {
+--- Lines 673-683 ---
+  673:                             ps2recomp::Function func{};
+  674:                             func.name = ReadDieName(dbg, current, &error);
+  675:                             func.start = lowPc;
+  676:                             func.end = highPc;
+  677:                             func.isRecompiled = false;
+  678:                             func.isStub = false;
+  679:                             func.isSkipped = false;
+  680: 
+  681:                             if (func.name.empty())
+  682:                             {
+  683:                                 func.name = MakeAutoFunctionName(func.start);
+--- Lines 680-690 ---
+  680: 
+  681:                             if (func.name.empty())
+  682:                             {
+  683:                                 func.name = MakeAutoFunctionName(func.start);
+  684:                             }
+  685: 
+  686:                             outFunctions.push_back(std::move(func));
+  687:                         }
+  688:                     }
+  689:                 }
+  690:             }
+--- Lines 683-693 ---
+  683:                                 func.name = MakeAutoFunctionName(func.start);
+  684:                             }
+  685: 
+  686:                             outFunctions.push_back(std::move(func));
+  687:                         }
+  688:                     }
+  689:                 }
+  690:             }
+  691: 
+  692:             // Depth-first: child first
+  693:             Dwarf_Die child = nullptr;
+--- Lines 821-831 ---
+  821:             // `j`.  These addresses are only accepted by callers that already have
+  822:             // strong address-taken evidence (for example a clustered pointer table),
+  823:             // so recognizing the tail jump does not turn arbitrary code labels into
+  824:             // function starts.
+  825:             const bool isLeafReturn =
+  826:                 index < kStandardProbeWords &&
+  827:                 opcode == OPCODE_SPECIAL && FUNCTION(raw) == SPECIAL_JR && rs == GPR_RA;
+  828:             const uint32_t tailThunkProbeWords = restrictTailThunk ? 4u : kStandardProbeWords;
+  829:             const bool isShortTailThunk =
+  830:                 index < tailThunkProbeWords && opcode == OPCODE_J;
+  831:             if (allowLeafThunk && (isLeafReturn || isShortTailThunk))
+--- Lines 843-853 ---
+  843:         // prologue and is not required to return within an arbitrary linear
+  844:         // instruction window. Follow its reachable basic blocks instead. The
+  845:         // traversal itself is guarded against malformed code, while branches and
+  846:         // loops do not consume a caller-visible "function length" allowance.
+  847:         if (allowLeafThunk && allowLongLeaf &&
+  848:             HasReachableReturnByControlFlow(*section, startOffset))
+  849:         {
+  850:             return true;
+  851:         }
+  852: 
+  853:         return false;
+--- Lines 1304-1314 ---
+ 1304:                 }
+ 1305:                 else if ((delayTracked & kArgumentMask) != 0)
+ 1306:                 {
+ 1307:                     // A direct jump outside the current coarse function is a
+ 1308:                     // tail call, and observes the same argument registers.
+ 1309:                     return true;
+ 1310:                 }
+ 1311:                 continue;
+ 1312:             }
+ 1313: 
+ 1314:             if (OPCODE(raw) == OPCODE_SPECIAL && FUNCTION(raw) == SPECIAL_JR)
+--- Lines 1665-1675 ---
+ 1665:     // A C switch compiles to `lw rt, off(base + (index << 2)); jr rt` with the
+ 1666:     // table in .rodata.  Its entries are case labels inside the dispatching
+ 1667:     // function, and an epilogue label (`jr ra; addiu sp,sp,N`) passes the leaf
+ 1668:     // entry probe, so reading the table as function pointers would split the
+ 1669:     // function at its own case label.  This mirrors the dispatch shape the
+ 1670:     // control-flow analyzer resolves, so both passes agree on what a table is.
+ 1671:     SwitchJumpTables CollectSwitchJumpTables(const std::vector<ps2recomp::Section> &sections,
+ 1672:                                              const std::unordered_set<uint32_t> &knownStarts)
+ 1673:     {
+ 1674:         constexpr uint32_t kLoadLookbackWords = 20;
+ 1675:         constexpr uint32_t kAddLookbackWords = 10;
+--- Lines 1666-1676 ---
+ 1666:     // table in .rodata.  Its entries are case labels inside the dispatching
+ 1667:     // function, and an epilogue label (`jr ra; addiu sp,sp,N`) passes the leaf
+ 1668:     // entry probe, so reading the table as function pointers would split the
+ 1669:     // function at its own case label.  This mirrors the dispatch shape the
+ 1670:     // control-flow analyzer resolves, so both passes agree on what a table is.
+ 1671:     SwitchJumpTables CollectSwitchJumpTables(const std::vector<ps2recomp::Section> &sections,
+ 1672:                                              const std::unordered_set<uint32_t> &knownStarts)
+ 1673:     {
+ 1674:         constexpr uint32_t kLoadLookbackWords = 20;
+ 1675:         constexpr uint32_t kAddLookbackWords = 10;
+ 1676:         constexpr uint32_t kUpperLookbackWords = 20;
+--- Lines 1845-1855 ---
+ 1845:     }
+ 1846: 
+ 1847:     // True when the two words before `address` end a basic block (`jr`/`j`/unconditional `b` plus its
+ 1848:     // delay slot), so the address can only be entered fresh. A function that follows another function's
+ 1849:     // return looks like this; a label inside a function normally does not.
+ 1850:     bool FollowsControlTransfer(const std::vector<ps2recomp::Section> &sections, uint32_t address)
+ 1851:     {
+ 1852:         const ps2recomp::Section *section = FindCodeSectionByAddress(sections, address);
+ 1853:         if (!section || !section->data)
+ 1854:         {
+ 1855:             return false;
+--- Lines 1846-1856 ---
+ 1846: 
+ 1847:     // True when the two words before `address` end a basic block (`jr`/`j`/unconditional `b` plus its
+ 1848:     // delay slot), so the address can only be entered fresh. A function that follows another function's
+ 1849:     // return looks like this; a label inside a function normally does not.
+ 1850:     bool FollowsControlTransfer(const std::vector<ps2recomp::Section> &sections, uint32_t address)
+ 1851:     {
+ 1852:         const ps2recomp::Section *section = FindCodeSectionByAddress(sections, address);
+ 1853:         if (!section || !section->data)
+ 1854:         {
+ 1855:             return false;
+ 1856:         }
+--- Lines 2014-2024 ---
+ 2014:             // Handler tables keep one code pointer per fixed-size record, so their candidates sit at a
+ 2015:             // constant stride. Only the shortest handlers pass the conservative probe, which left the
+ 2016:             // battle command handlers of Mana Khemia (records of six words, returns 6 to 11 words in)
+ 2017:             // merged into the function before them and unreachable through jalr. Accept a candidate
+ 2018:             // when it and two equally spaced neighbours all start right after a control transfer and
+ 2019:             // reach a return: arrays of small integer pairs or ASCII text also produce equally spaced
+ 2020:             // code-range words, but three such words that all land on block starts do not happen.
+ 2021:             constexpr uint32_t kMaxRecordStrideBytes = 64u;
+ 2022:             std::vector<int8_t> entryLikeCache(candidates.size(), -1);
+ 2023:             auto entryLike = [&](size_t candidateIndex)
+ 2024:             {
+--- Lines 2091-2101 ---
+ 2091:         //   known_entry: jr ra        next_entry: jr ra
+ 2092:         //                <delay>                  <delay>
+ 2093:         //
+ 2094:         // A coarse function map can merge the middle accessor into its predecessor,
+ 2095:         // even when runtime tables call it directly.  Requiring the predecessor to
+ 2096:         // already be a known function start keeps this deliberately narrower than
+ 2097:         // treating every instruction after a return as a new function.
+ 2098:         constexpr uint32_t kLeafThunkBytes = 2u * MIPS_INSTRUCTION_SIZE;
+ 2099: 
+ 2100:         for (const auto &section : sections)
+ 2101:         {
+--- Lines 2093-2103 ---
+ 2093:         //
+ 2094:         // A coarse function map can merge the middle accessor into its predecessor,
+ 2095:         // even when runtime tables call it directly.  Requiring the predecessor to
+ 2096:         // already be a known function start keeps this deliberately narrower than
+ 2097:         // treating every instruction after a return as a new function.
+ 2098:         constexpr uint32_t kLeafThunkBytes = 2u * MIPS_INSTRUCTION_SIZE;
+ 2099: 
+ 2100:         for (const auto &section : sections)
+ 2101:         {
+ 2102:             if (!section.isCode || !section.data || section.size < (2u * kLeafThunkBytes))
+ 2103:             {
+--- Lines 2197-2207 ---
+ 2197:                 continue;
+ 2198:             }
+ 2199: 
+ 2200:             ps2recomp::Function func{};
+ 2201:             func.name = MakeAutoFunctionName(start);
+ 2202:             func.start = start;
+ 2203:             func.end = 0;
+ 2204:             func.isRecompiled = false;
+ 2205:             func.isStub = false;
+ 2206:             func.isSkipped = false;
+ 2207: 
+--- Lines 2198-2208 ---
+ 2198:             }
+ 2199: 
+ 2200:             ps2recomp::Function func{};
+ 2201:             func.name = MakeAutoFunctionName(start);
+ 2202:             func.start = start;
+ 2203:             func.end = 0;
+ 2204:             func.isRecompiled = false;
+ 2205:             func.isStub = false;
+ 2206:             func.isSkipped = false;
+ 2207: 
+ 2208:             outFunctions.push_back(std::move(func));
+--- Lines 2199-2209 ---
+ 2199: 
+ 2200:             ps2recomp::Function func{};
+ 2201:             func.name = MakeAutoFunctionName(start);
+ 2202:             func.start = start;
+ 2203:             func.end = 0;
+ 2204:             func.isRecompiled = false;
+ 2205:             func.isStub = false;
+ 2206:             func.isSkipped = false;
+ 2207: 
+ 2208:             outFunctions.push_back(std::move(func));
+ 2209:         }
+--- Lines 2200-2210 ---
+ 2200:             ps2recomp::Function func{};
+ 2201:             func.name = MakeAutoFunctionName(start);
+ 2202:             func.start = start;
+ 2203:             func.end = 0;
+ 2204:             func.isRecompiled = false;
+ 2205:             func.isStub = false;
+ 2206:             func.isSkipped = false;
+ 2207: 
+ 2208:             outFunctions.push_back(std::move(func));
+ 2209:         }
+ 2210:     }
+--- Lines 2205-2215 ---
+ 2205:             func.isStub = false;
+ 2206:             func.isSkipped = false;
+ 2207: 
+ 2208:             outFunctions.push_back(std::move(func));
+ 2209:         }
+ 2210:     }
+ 2211: }
+ 2212: 
+ 2213: namespace ps2recomp
+ 2214: {
+ 2215: 
+--- Lines 2226-2236 ---
+ 2226:         // Sony's PS2 linker marks embedded VU microprogram sections executable,
+ 2227:         // but their words use the VU ISA rather than the EE/R5900 ISA. Keep the
+ 2228:         // bytes in the parsed ELF while excluding these ABI-defined section
+ 2229:         // names from EE function discovery and recompilation.
+ 2230:         const std::string name = section->get_name();
+ 2231:         const bool vuText = name == ".vutext" || name.rfind(".vutext.", 0) == 0;
+ 2232:         const bool dvpOverlay = name == ".DVP.overlay" || name.rfind(".DVP.overlay.", 0) == 0;
+ 2233:         return !vuText && !dvpOverlay;
+ 2234:     }
+ 2235: 
+ 2236:     bool ElfParser::isDataSection(const ELFIO::section *section) const
+--- Lines 2290-2300 ---
+ 2290:         // Named debug/map functions with explicit bounds are authoritative too.
+ 2291:         for (const auto &extra : m_extraFunctions)
+ 2292:         {
+ 2293:             if (extra.start == 0 || extra.end <= extra.start || extra.name.empty() || IsAutoGeneratedName(extra.name))
+ 2294:             {
+ 2295:                 continue;
+ 2296:             }
+ 2297: 
+ 2298:             const Section *functionSection = FindFunctionSectionByAddress(m_sections, extra.start);
+ 2299:             if (!functionSection)
+ 2300:             {
+--- Lines 2349-2359 ---
+ 2349: 
+ 2350:         auto addOrMerge = [&](const Function &newFunction)
+ 2351:         {
+ 2352:             if (newFunction.start == 0)
+ 2353:             {
+ 2354:                 return;
+ 2355:             }
+ 2356: 
+ 2357:             if (!FindFunctionSectionByAddress(m_sections, newFunction.start))
+ 2358:             {
+ 2359:                 return;
+--- Lines 2372-2382 ---
+ 2372:             if (it == indexByStart.end())
+ 2373:             {
+ 2374:                 indexByStart.emplace(newFunction.start, functions.size());
+ 2375:                 functions.push_back(newFunction);
+ 2376: 
+ 2377:                 Function &insertedFunction = functions.back();
+ 2378:                 auto authoritativeIt = authoritativeEndByStart.find(insertedFunction.start);
+ 2379:                 if (authoritativeIt != authoritativeEndByStart.end())
+ 2380:                 {
+ 2381:                     insertedFunction.end = ClampFunctionEndToSection(
+ 2382:                         FindFunctionSectionByAddress(m_sections, insertedFunction.start),
+--- Lines 2378-2388 ---
+ 2378:                 auto authoritativeIt = authoritativeEndByStart.find(insertedFunction.start);
+ 2379:                 if (authoritativeIt != authoritativeEndByStart.end())
+ 2380:                 {
+ 2381:                     insertedFunction.end = ClampFunctionEndToSection(
+ 2382:                         FindFunctionSectionByAddress(m_sections, insertedFunction.start),
+ 2383:                         insertedFunction.start,
+ 2384:                         authoritativeIt->second);
+ 2385:                 }
+ 2386:                 return;
+ 2387:             }
+ 2388: 
+--- Lines 2392-2402 ---
+ 2392:             {
+ 2393:                 if (existing.name.empty() || (IsAutoGeneratedName(existing.name) && !IsAutoGeneratedName(newFunction.name)))
+ 2394:                 {
+ 2395:                     existing.name = newFunction.name;
+ 2396:                 }
+ 2397:             }
+ 2398: 
+ 2399:             auto authoritativeIt = authoritativeEndByStart.find(existing.start);
+ 2400:             if (authoritativeIt != authoritativeEndByStart.end())
+ 2401:             {
+ 2402:                 existing.end = ClampFunctionEndToSection(
+--- Lines 2399-2409 ---
+ 2399:             auto authoritativeIt = authoritativeEndByStart.find(existing.start);
+ 2400:             if (authoritativeIt != authoritativeEndByStart.end())
+ 2401:             {
+ 2402:                 existing.end = ClampFunctionEndToSection(
+ 2403:                     FindFunctionSectionByAddress(m_sections, existing.start),
+ 2404:                     existing.start,
+ 2405:                     authoritativeIt->second);
+ 2406:             }
+ 2407:             else if (newFunction.end > existing.end)
+ 2408:             {
+ 2409:                 existing.end = newFunction.end;
+--- Lines 2406-2416 ---
+ 2406:             }
+ 2407:             else if (newFunction.end > existing.end)
+ 2408:             {
+ 2409:                 existing.end = newFunction.end;
+ 2410:             }
+ 2411: 
+ 2412:             existing.isStub = existing.isStub || newFunction.isStub;
+ 2413:             existing.isSkipped = existing.isSkipped || newFunction.isSkipped;
+ 2414:         };
+ 2415: 
+ 2416:         for (const auto &symbol : m_symbols)
+--- Lines 2425-2435 ---
+ 2425:                 continue;
+ 2426:             }
+ 2427: 
+ 2428:             Function func;
+ 2429:             func.name = symbol.name;
+ 2430:             func.start = symbol.address;
+ 2431:             if (symbol.size > 0)
+ 2432:             {
+ 2433:                 const uint64_t end64 = static_cast<uint64_t>(symbol.address) + static_cast<uint64_t>(symbol.size);
+ 2434:                 func.end = (end64 > 0xFFFFFFFFull) ? 0xFFFFFFFFu : static_cast<uint32_t>(end64);
+ 2435:             }
+--- Lines 2426-2436 ---
+ 2426:             }
+ 2427: 
+ 2428:             Function func;
+ 2429:             func.name = symbol.name;
+ 2430:             func.start = symbol.address;
+ 2431:             if (symbol.size > 0)
+ 2432:             {
+ 2433:                 const uint64_t end64 = static_cast<uint64_t>(symbol.address) + static_cast<uint64_t>(symbol.size);
+ 2434:                 func.end = (end64 > 0xFFFFFFFFull) ? 0xFFFFFFFFu : static_cast<uint32_t>(end64);
+ 2435:             }
+ 2436:             else
+--- Lines 2427-2437 ---
+ 2427: 
+ 2428:             Function func;
+ 2429:             func.name = symbol.name;
+ 2430:             func.start = symbol.address;
+ 2431:             if (symbol.size > 0)
+ 2432:             {
+ 2433:                 const uint64_t end64 = static_cast<uint64_t>(symbol.address) + static_cast<uint64_t>(symbol.size);
+ 2434:                 func.end = (end64 > 0xFFFFFFFFull) ? 0xFFFFFFFFu : static_cast<uint32_t>(end64);
+ 2435:             }
+ 2436:             else
+ 2437:             {
+--- Lines 2431-2441 ---
+ 2431:             if (symbol.size > 0)
+ 2432:             {
+ 2433:                 const uint64_t end64 = static_cast<uint64_t>(symbol.address) + static_cast<uint64_t>(symbol.size);
+ 2434:                 func.end = (end64 > 0xFFFFFFFFull) ? 0xFFFFFFFFu : static_cast<uint32_t>(end64);
+ 2435:             }
+ 2436:             else
+ 2437:             {
+ 2438:                 func.end = 0;
+ 2439:             }
+ 2440:             func.isRecompiled = false;
+ 2441:             func.isStub = false;
+--- Lines 2435-2445 ---
+ 2435:             }
+ 2436:             else
+ 2437:             {
+ 2438:                 func.end = 0;
+ 2439:             }
+ 2440:             func.isRecompiled = false;
+ 2441:             func.isStub = false;
+ 2442:             func.isSkipped = false;
+ 2443: 
+ 2444:             addOrMerge(func);
+ 2445:         }
+--- Lines 2460-2470 ---
+ 2460:             auto authoritativeIt = authoritativeEndByStart.find(func.start);
+ 2461:             if (authoritativeIt != authoritativeEndByStart.end())
+ 2462:             {
+ 2463:                 func.end = authoritativeIt->second;
+ 2464:                 continue;
+ 2465:             }
+ 2466: 
+ 2467:             if (func.end > func.start)
+ 2468:             {
+ 2469:                 continue;
+ 2470:             }
+--- Lines 2482-2492 ---
+ 2482:                 }
+ 2483:             }
+ 2484: 
+ 2485:             func.end = (nextStart > func.start) ? nextStart : (func.start + 4);
+ 2486:         }
+ 2487: 
+ 2488:         return functions;
+ 2489:     }
+ 2490: 
+ 2491:     std::vector<Symbol> ElfParser::extractSymbols()
+ 2492:     {
+--- Lines 2485-2495 ---
+ 2485:             func.end = (nextStart > func.start) ? nextStart : (func.start + 4);
+ 2486:         }
+ 2487: 
+ 2488:         return functions;
+ 2489:     }
+ 2490: 
+ 2491:     std::vector<Symbol> ElfParser::extractSymbols()
+ 2492:     {
+ 2493:         return m_symbols;
+ 2494:     }
+ 2495: 
+--- Lines 2551-2561 ---
+ 2551:     {
+ 2552:         for (const auto &section : m_sections)
+ 2553:         {
+ 2554:             if (section.name == sectionName)
+ 2555:             {
+ 2556:                 return section.data;
+ 2557:             }
+ 2558:         }
+ 2559: 
+ 2560:         return nullptr;
+ 2561:     }
+--- Lines 2564-2574 ---
+ 2564:     {
+ 2565:         for (const auto &section : m_sections)
+ 2566:         {
+ 2567:             if (section.name == sectionName)
+ 2568:             {
+ 2569:                 return section.address;
+ 2570:             }
+ 2571:         }
+ 2572: 
+ 2573:         return 0;
+ 2574:     }
+--- Lines 2577-2587 ---
+ 2577:     {
+ 2578:         for (const auto &section : m_sections)
+ 2579:         {
+ 2580:             if (section.name == sectionName)
+ 2581:             {
+ 2582:                 return section.size;
+ 2583:             }
+ 2584:         }
+ 2585: 
+ 2586:         return 0;
+ 2587:     }
+--- Lines 2658-2668 ---
+ 2658:         {
+ 2659:             if (m_reporter)
+ 2660:             {
+ 2661:                 m_reporter->warning("ghidra-map", "Could not open Ghidra function map: " + mapPath);
+ 2662:             }
+ 2663:             return false;
+ 2664:         }
+ 2665: 
+ 2666:         std::string line;
+ 2667:         if (!std::getline(file, line))
+ 2668:         {
+--- Lines 2708-2718 ---
+ 2708:                     continue;
+ 2709:                 }
+ 2710: 
+ 2711:                 Function func{};
+ 2712:                 func.name = name;
+ 2713:                 func.start = start;
+ 2714:                 func.end = end;
+ 2715:                 func.isRecompiled = false;
+ 2716:                 func.isStub = false;
+ 2717:                 func.isSkipped = false;
+ 2718: 
+--- Lines 2709-2719 ---
+ 2709:                 }
+ 2710: 
+ 2711:                 Function func{};
+ 2712:                 func.name = name;
+ 2713:                 func.start = start;
+ 2714:                 func.end = end;
+ 2715:                 func.isRecompiled = false;
+ 2716:                 func.isStub = false;
+ 2717:                 func.isSkipped = false;
+ 2718: 
+ 2719:                 m_extraFunctions.push_back(std::move(func));
+--- Lines 2710-2720 ---
+ 2710: 
+ 2711:                 Function func{};
+ 2712:                 func.name = name;
+ 2713:                 func.start = start;
+ 2714:                 func.end = end;
+ 2715:                 func.isRecompiled = false;
+ 2716:                 func.isStub = false;
+ 2717:                 func.isSkipped = false;
+ 2718: 
+ 2719:                 m_extraFunctions.push_back(std::move(func));
+ 2720:                 mapStarts.insert(start);
+--- Lines 2711-2721 ---
+ 2711:                 Function func{};
+ 2712:                 func.name = name;
+ 2713:                 func.start = start;
+ 2714:                 func.end = end;
+ 2715:                 func.isRecompiled = false;
+ 2716:                 func.isStub = false;
+ 2717:                 func.isSkipped = false;
+ 2718: 
+ 2719:                 m_extraFunctions.push_back(std::move(func));
+ 2720:                 mapStarts.insert(start);
+ 2721:                 count++;
+--- Lines 2716-2726 ---
+ 2716:                 func.isStub = false;
+ 2717:                 func.isSkipped = false;
+ 2718: 
+ 2719:                 m_extraFunctions.push_back(std::move(func));
+ 2720:                 mapStarts.insert(start);
+ 2721:                 count++;
+ 2722:             }
+ 2723:             catch (...)
+ 2724:             {
+ 2725:                 continue;
+ 2726:             }
+--- Lines 2784-2794 ---
+ 2784:                 std::unique(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 2785:                             [](const Function &a, const Function &b)
+ 2786:                             {
+ 2787:                                 if (a.start == b.start)
+ 2788:                                 {
+ 2789:                                     // pick the function with real name and not auto generated
+ 2790:                                     return true;
+ 2791:                                 }
+ 2792:                                 return false;
+ 2793:                             }),
+ 2794:                 m_extraFunctions.end());
+--- Lines 2786-2796 ---
+ 2786:                             {
+ 2787:                                 if (a.start == b.start)
+ 2788:                                 {
+ 2789:                                     // pick the function with real name and not auto generated
+ 2790:                                     return true;
+ 2791:                                 }
+ 2792:                                 return false;
+ 2793:                             }),
+ 2794:                 m_extraFunctions.end());
+ 2795: 
+ 2796:             return true;
+--- Lines 2849-2859 ---
+ 2849:             ELFIO::section *psec = m_elf->sections[i];
+ 2850: 
+ 2851:             Section section;
+ 2852:             section.name = psec->get_name();
+ 2853:             section.address = psec->get_address();
+ 2854:             section.size = psec->get_size();
+ 2855:             section.offset = psec->get_offset();
+ 2856:             section.isCode = isExecutableSection(psec);
+ 2857:             section.isData = isDataSection(psec);
+ 2858:             section.isBSS = (psec->get_type() == ELFIO::SHT_NOBITS);
+ 2859:             section.isReadOnly = !(psec->get_flags() & ELFIO::SHF_WRITE);
+--- Lines 2927-2937 ---
+ 2927:                     }
+ 2928: 
+ 2929:                     Symbol symbol;
+ 2930:                     symbol.name = name;
+ 2931:                     symbol.address = static_cast<uint32_t>(value);
+ 2932:                     symbol.size = static_cast<uint32_t>(size);
+ 2933:                     symbol.isFunction = (type == ELFIO::STT_FUNC);
+ 2934: 
+ 2935:                     symbol.isImported = section_index == ELFIO::SHN_UNDEF;
+ 2936:                     symbol.isExported = (!symbol.isImported && bind == ELFIO::STB_GLOBAL);
+ 2937: 
+--- Lines 3134-3140 ---
+ 3134:         m_extraFunctions.erase(
+ 3135:             std::unique(m_extraFunctions.begin(), m_extraFunctions.end(),
+ 3136:                         [](const Function &a, const Function &b)
+ 3137:                         { return a.start == b.start; }),
+ 3138:             m_extraFunctions.end());
+ 3139:     }
+ 3140: }
+
+=== TOML GENERATOR FUNCTION SERIALIZATION ===
+SOURCE FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xAnalyzer\src\toml_generator.cpp
+MATCH COUNT: 43
+--- Lines 9-17 ---
+    9: #include <vector>
+   10: 
+   11: namespace fs = std::filesystem;
+   12: 
+   13: namespace ps2recomp
+   14: {
+   15:     bool TomlGenerator::generate(const TomlGeneratorInput &input, const std::string &outputPath)
+   16:     {
+   17:         std::ofstream file(outputPath);
+--- Lines 11-19 ---
+   11: namespace fs = std::filesystem;
+   12: 
+   13: namespace ps2recomp
+   14: {
+   15:     bool TomlGenerator::generate(const TomlGeneratorInput &input, const std::string &outputPath)
+   16:     {
+   17:         std::ofstream file(outputPath);
+   18:         if (!file)
+   19:         {
+--- Lines 13-21 ---
+   13: namespace ps2recomp
+   14: {
+   15:     bool TomlGenerator::generate(const TomlGeneratorInput &input, const std::string &outputPath)
+   16:     {
+   17:         std::ofstream file(outputPath);
+   18:         if (!file)
+   19:         {
+   20:             std::cerr << "Failed to open output file: " << outputPath << std::endl;
+   21:             return false;
+--- Lines 23-31 ---
+   23: 
+   24:         fs::path elfPathObj(input.elfPath);
+   25:         std::string elfFileName = elfPathObj.filename().string();
+   26: 
+   27:         fs::path outputPathObj(outputPath);
+   28:         fs::path outputDir = outputPathObj.parent_path();
+   29:         if (outputDir.empty())
+   30:         {
+   31:             outputDir = ".";
+--- Lines 40-48 ---
+   40:         }
+   41: 
+   42:         file << "# PS2Recomp configuration for: " << elfFileName << "\n";
+   43:         file << "# Generated by ElfAnalyzer\n\n";
+   44: 
+   45:         file << "[general]\n";
+   46:         file << "# Path to input ELF file\n";
+   47:         file << "input = \"" << escapeBackslashes(input.elfPath) << "\"\n\n";
+   48: 
+--- Lines 61-69 ---
+   61:         file << "patch_cache = true\n\n";
+   62: 
+   63:         std::unordered_map<std::string, size_t> functionNameCounts;
+   64:         functionNameCounts.reserve(input.context.functions.size());
+   65:         for (const auto &func : input.context.functions)
+   66:         {
+   67:             if (!func.name.empty())
+   68:             {
+   69:                 functionNameCounts[func.name]++;
+--- Lines 62-70 ---
+   62: 
+   63:         std::unordered_map<std::string, size_t> functionNameCounts;
+   64:         functionNameCounts.reserve(input.context.functions.size());
+   65:         for (const auto &func : input.context.functions)
+   66:         {
+   67:             if (!func.name.empty())
+   68:             {
+   69:                 functionNameCounts[func.name]++;
+   70:             }
+--- Lines 63-71 ---
+   63:         std::unordered_map<std::string, size_t> functionNameCounts;
+   64:         functionNameCounts.reserve(input.context.functions.size());
+   65:         for (const auto &func : input.context.functions)
+   66:         {
+   67:             if (!func.name.empty())
+   68:             {
+   69:                 functionNameCounts[func.name]++;
+   70:             }
+   71:         }
+--- Lines 65-73 ---
+   65:         for (const auto &func : input.context.functions)
+   66:         {
+   67:             if (!func.name.empty())
+   68:             {
+   69:                 functionNameCounts[func.name]++;
+   70:             }
+   71:         }
+   72: 
+   73:         auto makeSelector = [&](const std::string &name, uint32_t start) -> std::string
+--- Lines 67-75 ---
+   67:             if (!func.name.empty())
+   68:             {
+   69:                 functionNameCounts[func.name]++;
+   70:             }
+   71:         }
+   72: 
+   73:         auto makeSelector = [&](const std::string &name, uint32_t start) -> std::string
+   74:         {
+   75:             std::stringstream selector;
+--- Lines 71-79 ---
+   71:         }
+   72: 
+   73:         auto makeSelector = [&](const std::string &name, uint32_t start) -> std::string
+   74:         {
+   75:             std::stringstream selector;
+   76:             selector << name << "@0x"
+   77:                      << std::hex << std::uppercase << std::setw(8) << std::setfill('0')
+   78:                      << start;
+   79:             return selector.str();
+--- Lines 74-82 ---
+   74:         {
+   75:             std::stringstream selector;
+   76:             selector << name << "@0x"
+   77:                      << std::hex << std::uppercase << std::setw(8) << std::setfill('0')
+   78:                      << start;
+   79:             return selector.str();
+   80:         };
+   81: 
+   82:         auto collectFunctionSelectors =
+--- Lines 80-88 ---
+   80:         };
+   81: 
+   82:         auto collectFunctionSelectors =
+   83:             [&](const std::unordered_set<std::string> &nameSet) -> std::vector<std::string>
+   84:         {
+   85:             std::vector<const Function *> orderedFunctions;
+   86:             orderedFunctions.reserve(input.context.functions.size());
+   87:             for (const auto &func : input.context.functions)
+   88:             {
+--- Lines 81-89 ---
+   81: 
+   82:         auto collectFunctionSelectors =
+   83:             [&](const std::unordered_set<std::string> &nameSet) -> std::vector<std::string>
+   84:         {
+   85:             std::vector<const Function *> orderedFunctions;
+   86:             orderedFunctions.reserve(input.context.functions.size());
+   87:             for (const auto &func : input.context.functions)
+   88:             {
+   89:                 orderedFunctions.push_back(&func);
+--- Lines 83-91 ---
+   83:             [&](const std::unordered_set<std::string> &nameSet) -> std::vector<std::string>
+   84:         {
+   85:             std::vector<const Function *> orderedFunctions;
+   86:             orderedFunctions.reserve(input.context.functions.size());
+   87:             for (const auto &func : input.context.functions)
+   88:             {
+   89:                 orderedFunctions.push_back(&func);
+   90:             }
+   91: 
+--- Lines 84-92 ---
+   84:         {
+   85:             std::vector<const Function *> orderedFunctions;
+   86:             orderedFunctions.reserve(input.context.functions.size());
+   87:             for (const auto &func : input.context.functions)
+   88:             {
+   89:                 orderedFunctions.push_back(&func);
+   90:             }
+   91: 
+   92:             std::sort(orderedFunctions.begin(), orderedFunctions.end(),
+--- Lines 85-93 ---
+   85:             std::vector<const Function *> orderedFunctions;
+   86:             orderedFunctions.reserve(input.context.functions.size());
+   87:             for (const auto &func : input.context.functions)
+   88:             {
+   89:                 orderedFunctions.push_back(&func);
+   90:             }
+   91: 
+   92:             std::sort(orderedFunctions.begin(), orderedFunctions.end(),
+   93:                       [](const Function *a, const Function *b)
+--- Lines 87-95 ---
+   87:             for (const auto &func : input.context.functions)
+   88:             {
+   89:                 orderedFunctions.push_back(&func);
+   90:             }
+   91: 
+   92:             std::sort(orderedFunctions.begin(), orderedFunctions.end(),
+   93:                       [](const Function *a, const Function *b)
+   94:                       { return a->start < b->start; });
+   95: 
+--- Lines 90-98 ---
+   90:             }
+   91: 
+   92:             std::sort(orderedFunctions.begin(), orderedFunctions.end(),
+   93:                       [](const Function *a, const Function *b)
+   94:                       { return a->start < b->start; });
+   95: 
+   96:             std::vector<std::string> entries;
+   97:             std::unordered_set<std::string> seenEntries;
+   98:             std::unordered_set<std::string> coveredNames;
+--- Lines 96-104 ---
+   96:             std::vector<std::string> entries;
+   97:             std::unordered_set<std::string> seenEntries;
+   98:             std::unordered_set<std::string> coveredNames;
+   99: 
+  100:             for (const Function *func : orderedFunctions)
+  101:             {
+  102:                 if (!nameSet.contains(func->name))
+  103:                 {
+  104:                     continue;
+--- Lines 98-106 ---
+   98:             std::unordered_set<std::string> coveredNames;
+   99: 
+  100:             for (const Function *func : orderedFunctions)
+  101:             {
+  102:                 if (!nameSet.contains(func->name))
+  103:                 {
+  104:                     continue;
+  105:                 }
+  106: 
+--- Lines 100-108 ---
+  100:             for (const Function *func : orderedFunctions)
+  101:             {
+  102:                 if (!nameSet.contains(func->name))
+  103:                 {
+  104:                     continue;
+  105:                 }
+  106: 
+  107:                 coveredNames.insert(func->name);
+  108:                 const std::string entry = makeSelector(func->name, func->start);
+--- Lines 105-113 ---
+  105:                 }
+  106: 
+  107:                 coveredNames.insert(func->name);
+  108:                 const std::string entry = makeSelector(func->name, func->start);
+  109:                 if (seenEntries.insert(entry).second)
+  110:                 {
+  111:                     entries.push_back(entry);
+  112:                 }
+  113:             }
+--- Lines 106-114 ---
+  106: 
+  107:                 coveredNames.insert(func->name);
+  108:                 const std::string entry = makeSelector(func->name, func->start);
+  109:                 if (seenEntries.insert(entry).second)
+  110:                 {
+  111:                     entries.push_back(entry);
+  112:                 }
+  113:             }
+  114: 
+--- Lines 114-122 ---
+  114: 
+  115:             std::vector<std::string> leftovers;
+  116:             leftovers.reserve(nameSet.size());
+  117:             for (const auto &name : nameSet)
+  118:             {
+  119:                 if (!coveredNames.contains(name) && seenEntries.insert(name).second)
+  120:                 {
+  121:                     leftovers.push_back(name);
+  122:                 }
+--- Lines 115-123 ---
+  115:             std::vector<std::string> leftovers;
+  116:             leftovers.reserve(nameSet.size());
+  117:             for (const auto &name : nameSet)
+  118:             {
+  119:                 if (!coveredNames.contains(name) && seenEntries.insert(name).second)
+  120:                 {
+  121:                     leftovers.push_back(name);
+  122:                 }
+  123:             }
+--- Lines 117-125 ---
+  117:             for (const auto &name : nameSet)
+  118:             {
+  119:                 if (!coveredNames.contains(name) && seenEntries.insert(name).second)
+  120:                 {
+  121:                     leftovers.push_back(name);
+  122:                 }
+  123:             }
+  124:             std::sort(leftovers.begin(), leftovers.end());
+  125:             entries.insert(entries.end(), leftovers.begin(), leftovers.end());
+--- Lines 119-127 ---
+  119:                 if (!coveredNames.contains(name) && seenEntries.insert(name).second)
+  120:                 {
+  121:                     leftovers.push_back(name);
+  122:                 }
+  123:             }
+  124:             std::sort(leftovers.begin(), leftovers.end());
+  125:             entries.insert(entries.end(), leftovers.begin(), leftovers.end());
+  126: 
+  127:             return entries;
+--- Lines 128-136 ---
+  128:         };
+  129: 
+  130:         const std::vector<std::string> stubEntries = collectFunctionSelectors(input.libFunctions);
+  131:         const std::vector<std::string> untrackedStubEntries = collectFunctionSelectors(input.untrackedStubFunctions);
+  132: 
+  133:         file << "# Functions to stub (only names with runtime syscall/stub handlers)\n";
+  134:         file << "stubs = [\n";
+  135:         for (const auto &func : stubEntries)
+  136:         {
+--- Lines 129-137 ---
+  129: 
+  130:         const std::vector<std::string> stubEntries = collectFunctionSelectors(input.libFunctions);
+  131:         const std::vector<std::string> untrackedStubEntries = collectFunctionSelectors(input.untrackedStubFunctions);
+  132: 
+  133:         file << "# Functions to stub (only names with runtime syscall/stub handlers)\n";
+  134:         file << "stubs = [\n";
+  135:         for (const auto &func : stubEntries)
+  136:         {
+  137:             file << "  \"" << func << "\",\n";
+--- Lines 131-139 ---
+  131:         const std::vector<std::string> untrackedStubEntries = collectFunctionSelectors(input.untrackedStubFunctions);
+  132: 
+  133:         file << "# Functions to stub (only names with runtime syscall/stub handlers)\n";
+  134:         file << "stubs = [\n";
+  135:         for (const auto &func : stubEntries)
+  136:         {
+  137:             file << "  \"" << func << "\",\n";
+  138:         }
+  139:         file << "]\n\n";
+--- Lines 132-140 ---
+  132: 
+  133:         file << "# Functions to stub (only names with runtime syscall/stub handlers)\n";
+  134:         file << "stubs = [\n";
+  135:         for (const auto &func : stubEntries)
+  136:         {
+  137:             file << "  \"" << func << "\",\n";
+  138:         }
+  139:         file << "]\n\n";
+  140: 
+--- Lines 139-147 ---
+  139:         file << "]\n\n";
+  140: 
+  141:         file << "# Guest functions without runtime handlers that may be referenced by address.\n";
+  142:         file << "# PS2Recomp keeps their guest implementation and exposes exact callable entries.\n";
+  143:         file << "entry_points = [\n";
+  144:         for (const auto &func : untrackedStubEntries)
+  145:         {
+  146:             file << "  \"" << func << "\",\n";
+  147:         }
+--- Lines 151-159 ---
+  151:         file << "skip = []\n\n";
+  152: 
+  153:         if (!input.mmioByInstructionAddress.empty())
+  154:         {
+  155:             file << "# Detected MMIO accesses\n";
+  156:             file << "[mmio]\n";
+  157:             for (const auto &[instAddr, mmioAddr] : input.mmioByInstructionAddress)
+  158:             {
+  159:                 file << "\"0x" << std::hex << instAddr << "\" = \"0x" << mmioAddr << "\"\n"
+--- Lines 155-163 ---
+  155:             file << "# Detected MMIO accesses\n";
+  156:             file << "[mmio]\n";
+  157:             for (const auto &[instAddr, mmioAddr] : input.mmioByInstructionAddress)
+  158:             {
+  159:                 file << "\"0x" << std::hex << instAddr << "\" = \"0x" << mmioAddr << "\"\n"
+  160:                      << std::dec;
+  161:             }
+  162:             file << "\n";
+  163:         }
+--- Lines 171-179 ---
+  171:             {
+  172:                 file << "[[jump_tables.table]]\n";
+  173:                 file << "address = \"0x" << std::hex << jt.address << "\"\n"
+  174:                      << std::dec;
+  175:                 file << "entries = [\n";
+  176: 
+  177:                 for (const auto &[index, target] : jt.entries)
+  178:                 {
+  179:                     file << "  { index = " << index << ", target = \"0x"
+--- Lines 192-200 ---
+  192:             file << "# Individual instruction patches\n";
+  193:             file << "instructions = [\n";
+  194:             for (const auto &[address, value] : input.patches)
+  195:             {
+  196:                 auto reasonIt = input.patchReasons.find(address);
+  197:                 const std::string reason = reasonIt == input.patchReasons.end() ? "" : reasonIt->second;
+  198:                 file << "  { address = \"0x" << std::hex << address << "\", value = \"0x"
+  199:                      << std::hex << value << "\" },  # " << reason << "\n";
+  200:             }
+--- Lines 194-202 ---
+  194:             for (const auto &[address, value] : input.patches)
+  195:             {
+  196:                 auto reasonIt = input.patchReasons.find(address);
+  197:                 const std::string reason = reasonIt == input.patchReasons.end() ? "" : reasonIt->second;
+  198:                 file << "  { address = \"0x" << std::hex << address << "\", value = \"0x"
+  199:                      << std::hex << value << "\" },  # " << reason << "\n";
+  200:             }
+  201:             file << "]\n\n";
+  202:         }
+--- Lines 196-204 ---
+  196:                 auto reasonIt = input.patchReasons.find(address);
+  197:                 const std::string reason = reasonIt == input.patchReasons.end() ? "" : reasonIt->second;
+  198:                 file << "  { address = \"0x" << std::hex << address << "\", value = \"0x"
+  199:                      << std::hex << value << "\" },  # " << reason << "\n";
+  200:             }
+  201:             file << "]\n\n";
+  202:         }
+  203: 
+  204:         file << "# Performance critical functions (may need manual optimization)\n";
+--- Lines 202-210 ---
+  202:         }
+  203: 
+  204:         file << "# Performance critical functions (may need manual optimization)\n";
+  205:         file << "[performance]\n";
+  206:         file << "critical = [\n";
+  207:         for (const auto &func : input.context.functions)
+  208:         {
+  209:             auto reasonIt = input.performanceCriticalReasons.find(func.start);
+  210:             if (reasonIt != input.performanceCriticalReasons.end())
+--- Lines 205-213 ---
+  205:         file << "[performance]\n";
+  206:         file << "critical = [\n";
+  207:         for (const auto &func : input.context.functions)
+  208:         {
+  209:             auto reasonIt = input.performanceCriticalReasons.find(func.start);
+  210:             if (reasonIt != input.performanceCriticalReasons.end())
+  211:             {
+  212:                 file << "  \"" << func.name << "\", # " << reasonIt->second << "\n";
+  213:             }
+--- Lines 207-215 ---
+  207:         for (const auto &func : input.context.functions)
+  208:         {
+  209:             auto reasonIt = input.performanceCriticalReasons.find(func.start);
+  210:             if (reasonIt != input.performanceCriticalReasons.end())
+  211:             {
+  212:                 file << "  \"" << func.name << "\", # " << reasonIt->second << "\n";
+  213:             }
+  214:         }
+  215:         file << "]\n\n";
+--- Lines 210-218 ---
+  210:             if (reasonIt != input.performanceCriticalReasons.end())
+  211:             {
+  212:                 file << "  \"" << func.name << "\", # " << reasonIt->second << "\n";
+  213:             }
+  214:         }
+  215:         file << "]\n\n";
+  216: 
+  217:         std::cout << "Generated TOML configuration: " << outputPath << std::endl;
+  218:         return true;
+
+=== ANALYZER FUNCTION FLOW ===
+SOURCE FILE: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xAnalyzer\src\elf_analyzer.cpp
+MATCH COUNT: 33
+--- Lines 90-101 ---
+   90:         m_performanceCriticalReasons.clear();
+   91:         m_mmioByInstructionAddress.clear();
+   92: 
+   93:         m_context.functions = m_elfParser->extractFunctions();
+   94:         m_context.symbols = m_elfParser->extractSymbols();
+   95:         m_context.sections = m_elfParser->getSections();
+   96:         m_context.relocations = m_elfParser->getRelocations();
+   97:         m_context.buildFunctionIndex();
+   98: 
+   99:         std::cout << "Extracted " << m_context.functions.size() << " functions" << std::endl;
+  100:         std::cout << "Extracted " << m_context.symbols.size() << " symbols" << std::endl;
+  101:         std::cout << "Extracted " << m_context.sections.size() << " sections" << std::endl;
+--- Lines 96-107 ---
+   96:         m_context.relocations = m_elfParser->getRelocations();
+   97:         m_context.buildFunctionIndex();
+   98: 
+   99:         std::cout << "Extracted " << m_context.functions.size() << " functions" << std::endl;
+  100:         std::cout << "Extracted " << m_context.symbols.size() << " symbols" << std::endl;
+  101:         std::cout << "Extracted " << m_context.sections.size() << " sections" << std::endl;
+  102:         std::cout << "Extracted " << m_context.relocations.size() << " relocations" << std::endl;
+  103: 
+  104:         return true;
+  105:     }
+  106: 
+  107:     bool ElfAnalyzer::generateToml(const std::string &outputPath)
+--- Lines 97-108 ---
+   97:         m_context.buildFunctionIndex();
+   98: 
+   99:         std::cout << "Extracted " << m_context.functions.size() << " functions" << std::endl;
+  100:         std::cout << "Extracted " << m_context.symbols.size() << " symbols" << std::endl;
+  101:         std::cout << "Extracted " << m_context.sections.size() << " sections" << std::endl;
+  102:         std::cout << "Extracted " << m_context.relocations.size() << " relocations" << std::endl;
+  103: 
+  104:         return true;
+  105:     }
+  106: 
+  107:     bool ElfAnalyzer::generateToml(const std::string &outputPath)
+  108:     {
+--- Lines 98-109 ---
+   98: 
+   99:         std::cout << "Extracted " << m_context.functions.size() << " functions" << std::endl;
+  100:         std::cout << "Extracted " << m_context.symbols.size() << " symbols" << std::endl;
+  101:         std::cout << "Extracted " << m_context.sections.size() << " sections" << std::endl;
+  102:         std::cout << "Extracted " << m_context.relocations.size() << " relocations" << std::endl;
+  103: 
+  104:         return true;
+  105:     }
+  106: 
+  107:     bool ElfAnalyzer::generateToml(const std::string &outputPath)
+  108:     {
+  109:         const TomlGeneratorInput input{
+--- Lines 99-110 ---
+   99:         std::cout << "Extracted " << m_context.functions.size() << " functions" << std::endl;
+  100:         std::cout << "Extracted " << m_context.symbols.size() << " symbols" << std::endl;
+  101:         std::cout << "Extracted " << m_context.sections.size() << " sections" << std::endl;
+  102:         std::cout << "Extracted " << m_context.relocations.size() << " relocations" << std::endl;
+  103: 
+  104:         return true;
+  105:     }
+  106: 
+  107:     bool ElfAnalyzer::generateToml(const std::string &outputPath)
+  108:     {
+  109:         const TomlGeneratorInput input{
+  110:             m_elfPath,
+--- Lines 104-115 ---
+  104:         return true;
+  105:     }
+  106: 
+  107:     bool ElfAnalyzer::generateToml(const std::string &outputPath)
+  108:     {
+  109:         const TomlGeneratorInput input{
+  110:             m_elfPath,
+  111:             m_context,
+  112:             m_libFunctions,
+  113:             m_untrackedStubFunctions,
+  114:             m_mmioByInstructionAddress,
+  115:             m_jumpTables,
+--- Lines 106-117 ---
+  106: 
+  107:     bool ElfAnalyzer::generateToml(const std::string &outputPath)
+  108:     {
+  109:         const TomlGeneratorInput input{
+  110:             m_elfPath,
+  111:             m_context,
+  112:             m_libFunctions,
+  113:             m_untrackedStubFunctions,
+  114:             m_mmioByInstructionAddress,
+  115:             m_jumpTables,
+  116:             m_patches,
+  117:             m_patchReasons,
+--- Lines 194-205 ---
+  194:             function.name = match.name;
+  195:             function.start = match.address;
+  196:             function.end = discoveredEnd;
+  197:             m_context.functions.push_back(std::move(function));
+  198:             m_context.functionIndexByStart[match.address] = m_context.functions.size() - 1;
+  199:             addedFunctions++;
+  200:         }
+  201: 
+  202:         std::sort(m_context.functions.begin(), m_context.functions.end(),
+  203:                   [](const Function &a, const Function &b)
+  204:                   {
+  205:                       return a.start < b.start;
+--- Lines 195-206 ---
+  195:             function.start = match.address;
+  196:             function.end = discoveredEnd;
+  197:             m_context.functions.push_back(std::move(function));
+  198:             m_context.functionIndexByStart[match.address] = m_context.functions.size() - 1;
+  199:             addedFunctions++;
+  200:         }
+  201: 
+  202:         std::sort(m_context.functions.begin(), m_context.functions.end(),
+  203:                   [](const Function &a, const Function &b)
+  204:                   {
+  205:                       return a.start < b.start;
+  206:                   });
+--- Lines 199-210 ---
+  199:             addedFunctions++;
+  200:         }
+  201: 
+  202:         std::sort(m_context.functions.begin(), m_context.functions.end(),
+  203:                   [](const Function &a, const Function &b)
+  204:                   {
+  205:                       return a.start < b.start;
+  206:                   });
+  207: 
+  208:         buildFunctionIndex();
+  209:         clearDecodedInstructionCache();
+  210: 
+--- Lines 251-262 ---
+  251:     void ElfAnalyzer::analyzeEntryPoint()
+  252:     {
+  253:         const uint32_t entryAddress = m_elfParser->getEntryPoint();
+  254:         const int entryIndex = findEntryFunctionIndexForHeuristics(m_context.functions, entryAddress);
+  255:         if (entryIndex >= 0)
+  256:         {
+  257:             const Function &entryFunction = m_context.functions[static_cast<size_t>(entryIndex)];
+  258:             std::cout << "Found entry point from ELF header: 0x" << std::hex << entryAddress
+  259:                       << " in function " << entryFunction.name << " (starts at 0x" << entryFunction.start << ")"
+  260:                       << std::dec << std::endl;
+  261: 
+  262:             m_forceRecompileStarts.insert(entryFunction.start);
+--- Lines 254-265 ---
+  254:         const int entryIndex = findEntryFunctionIndexForHeuristics(m_context.functions, entryAddress);
+  255:         if (entryIndex >= 0)
+  256:         {
+  257:             const Function &entryFunction = m_context.functions[static_cast<size_t>(entryIndex)];
+  258:             std::cout << "Found entry point from ELF header: 0x" << std::hex << entryAddress
+  259:                       << " in function " << entryFunction.name << " (starts at 0x" << entryFunction.start << ")"
+  260:                       << std::dec << std::endl;
+  261: 
+  262:             m_forceRecompileStarts.insert(entryFunction.start);
+  263: 
+  264:             const auto &instructions = getDecodedInstructions(entryFunction);
+  265: 
+--- Lines 280-291 ---
+  280:         else
+  281:         {
+  282:             std::cout << "Entry point 0x" << std::hex << entryAddress
+  283:                       << " not mapped to an extracted function" << std::dec << std::endl;
+  284: 
+  285:             const int fallbackIndex = findFallbackEntryFunctionIndexForHeuristics(m_context.functions);
+  286:             if (fallbackIndex >= 0)
+  287:             {
+  288:                 const Function &fallbackEntry = m_context.functions[static_cast<size_t>(fallbackIndex)];
+  289:                 std::cout << "Found potential entry point by address: " << fallbackEntry.name
+  290:                           << " at 0x" << std::hex << fallbackEntry.start << std::dec << std::endl;
+  291:                 m_forceRecompileStarts.insert(fallbackEntry.start);
+--- Lines 282-293 ---
+  282:             std::cout << "Entry point 0x" << std::hex << entryAddress
+  283:                       << " not mapped to an extracted function" << std::dec << std::endl;
+  284: 
+  285:             const int fallbackIndex = findFallbackEntryFunctionIndexForHeuristics(m_context.functions);
+  286:             if (fallbackIndex >= 0)
+  287:             {
+  288:                 const Function &fallbackEntry = m_context.functions[static_cast<size_t>(fallbackIndex)];
+  289:                 std::cout << "Found potential entry point by address: " << fallbackEntry.name
+  290:                           << " at 0x" << std::hex << fallbackEntry.start << std::dec << std::endl;
+  291:                 m_forceRecompileStarts.insert(fallbackEntry.start);
+  292:             }
+  293:         }
+--- Lines 285-296 ---
+  285:             const int fallbackIndex = findFallbackEntryFunctionIndexForHeuristics(m_context.functions);
+  286:             if (fallbackIndex >= 0)
+  287:             {
+  288:                 const Function &fallbackEntry = m_context.functions[static_cast<size_t>(fallbackIndex)];
+  289:                 std::cout << "Found potential entry point by address: " << fallbackEntry.name
+  290:                           << " at 0x" << std::hex << fallbackEntry.start << std::dec << std::endl;
+  291:                 m_forceRecompileStarts.insert(fallbackEntry.start);
+  292:             }
+  293:         }
+  294:     }
+  295: 
+  296:     void ElfAnalyzer::analyzeLibraryFunctions()
+--- Lines 321-332 ---
+  321:             }
+  322:         }
+  323: 
+  324:         for (const auto &func : m_context.functions)
+  325:         {
+  326:             if (!FunctionClassifier::isReliableSymbolName(func.name))
+  327:             {
+  328:                 continue;
+  329:             }
+  330: 
+  331:             if (isLibraryFunction(func.name))
+  332:             {
+--- Lines 351-362 ---
+  351: 
+  352:         std::map<uint32_t, std::set<std::string>> memoryAccessMap;
+  353: 
+  354:         for (const auto &func : m_context.functions)
+  355:         {
+  356:             if (m_libFunctions.contains(func.name))
+  357:             {
+  358:                 continue;
+  359:             }
+  360: 
+  361:             const auto &instructions = getDecodedInstructions(func);
+  362:             ConstantRegisterState constantRegisters;
+--- Lines 489-500 ---
+  489:             }
+  490:         }
+  491: 
+  492:         for (const auto &func : m_context.functions)
+  493:         {
+  494:             if (m_libFunctions.contains(func.name))
+  495:             {
+  496:                 continue;
+  497:             }
+  498: 
+  499:             const auto &instructions = getDecodedInstructions(func);
+  500: 
+--- Lines 526-537 ---
+  526:     {
+  527:         std::cout << "Identifying potential patches..." << std::endl;
+  528: 
+  529:         for (const auto &func : m_context.functions)
+  530:         {
+  531:             const auto &instructions = getDecodedInstructions(func);
+  532: 
+  533:             for (size_t index = 0; index + 1 < instructions.size(); ++index)
+  534:             {
+  535:                 tryPatchSelfModifyingStore(func, instructions, index);
+  536:             }
+  537:         }
+--- Lines 669-680 ---
+  669:     {
+  670:         std::cout << "Analyzing control flow of functions..." << std::endl;
+  671: 
+  672:         for (const auto &func : m_context.functions)
+  673:         {
+  674:             if (m_libFunctions.contains(func.name))
+  675:             {
+  676:                 continue;
+  677:             }
+  678: 
+  679:             CFG cfg = buildCFG(func);
+  680:             m_functionCFGs[func.start] = cfg;
+--- Lines 727-738 ---
+  727:     {
+  728:         std::cout << "Detecting jump tables..." << std::endl;
+  729: 
+  730:         for (const auto &func : m_context.functions)
+  731:         {
+  732:             if (m_libFunctions.contains(func.name))
+  733:             {
+  734:                 continue;
+  735:             }
+  736: 
+  737:             const auto &instructions = getDecodedInstructions(func);
+  738:             std::vector<JumpTable> detectedTables = detectJumpTablesForHeuristics(
+--- Lines 763-774 ---
+  763:         std::cout << "Analyzing performance-critical paths..." << std::endl;
+  764:         m_performanceCriticalReasons.clear();
+  765: 
+  766:         for (const auto &func : m_context.functions)
+  767:         {
+  768:             if (m_libFunctions.contains(func.name))
+  769:             {
+  770:                 continue;
+  771:             }
+  772: 
+  773:             const auto &instructions = getDecodedInstructions(func);
+  774:             if (hasMMIInstructions(func) || hasVUInstructions(func))
+--- Lines 834-845 ---
+  834: 
+  835:         // Library stubs are runtime-owned and do not need analyzer graph work.
+  836:         std::unordered_set<std::string> eligible;
+  837:         eligible.reserve(m_context.functions.size());
+  838: 
+  839:         for (const auto &func : m_context.functions)
+  840:         {
+  841:             if (m_libFunctions.contains(func.name))
+  842:             {
+  843:                 continue;
+  844:             }
+  845: 
+--- Lines 836-847 ---
+  836:         std::unordered_set<std::string> eligible;
+  837:         eligible.reserve(m_context.functions.size());
+  838: 
+  839:         for (const auto &func : m_context.functions)
+  840:         {
+  841:             if (m_libFunctions.contains(func.name))
+  842:             {
+  843:                 continue;
+  844:             }
+  845: 
+  846:             eligible.insert(func.name);
+  847:         }
+--- Lines 849-860 ---
+  849:         std::unordered_map<std::string, std::vector<std::string>> callGraph;
+  850:         callGraph.reserve(eligible.size());
+  851: 
+  852:         for (const auto &func : m_context.functions)
+  853:         {
+  854:             if (!eligible.contains(func.name))
+  855:             {
+  856:                 continue;
+  857:             }
+  858: 
+  859:             auto itCalls = m_functionCalls.find(func.start);
+  860:             if (itCalls == m_functionCalls.end())
+--- Lines 897-908 ---
+  897:     {
+  898:         std::cout << "Analyzing register usage patterns..." << std::endl;
+  899: 
+  900:         for (const auto &func : m_context.functions)
+  901:         {
+  902:             if (m_libFunctions.contains(func.name))
+  903:             {
+  904:                 continue;
+  905:             }
+  906: 
+  907:             const auto &instructions = getDecodedInstructions(func);
+  908:             std::set<uint32_t> regsRead, regsWritten;
+--- Lines 995-1006 ---
+  995:     {
+  996:         std::cout << "Analyzing function signatures..." << std::endl;
+  997: 
+  998:         for (const auto &func : m_context.functions)
+  999:         {
+ 1000:             if (m_libFunctions.contains(func.name))
+ 1001:             {
+ 1002:                 continue;
+ 1003:             }
+ 1004: 
+ 1005:             const auto &instructions = getDecodedInstructions(func);
+ 1006: 
+--- Lines 1503-1514 ---
+ 1503:     void ElfAnalyzer::decodeAllFunctionsOnce()
+ 1504:     {
+ 1505:         m_context.instructionCache.clear();
+ 1506:         for (auto &func : m_context.functions)
+ 1507:         {
+ 1508:             if (m_libFunctions.contains(func.name) ||
+ 1509:                 func.start >= func.end)
+ 1510:             {
+ 1511:                 continue;
+ 1512:             }
+ 1513: 
+ 1514:             if (func.instructions.empty())
+--- Lines 1520-1531 ---
+ 1520: 
+ 1521:     void ElfAnalyzer::classifyFunctions()
+ 1522:     {
+ 1523:         for (auto &func : m_context.functions)
+ 1524:         {
+ 1525:             if (m_libFunctions.contains(func.name))
+ 1526:             {
+ 1527:                 continue;
+ 1528:             }
+ 1529: 
+ 1530:             categorizeFunction(func);
+ 1531:         }
+--- Lines 1817-1828 ---
+ 1817: 
+ 1818:             // Update existing function or create new one
+ 1819:             bool found = false;
+ 1820:             for (auto &func : m_context.functions)
+ 1821:             {
+ 1822:                 if (func.start == startAddr)
+ 1823:                 {
+ 1824:                     // Update with Ghidra's more accurate boundaries
+ 1825:                     func.name = name;
+ 1826:                     func.end = endAddr;
+ 1827:                     found = true;
+ 1828:                     importedCount++;
+--- Lines 1837-1848 ---
+ 1837:                 newFunc.name = name;
+ 1838:                 newFunc.start = startAddr;
+ 1839:                 newFunc.end = endAddr;
+ 1840:                 m_context.functions.push_back(newFunc);
+ 1841:                 importedCount++;
+ 1842:             }
+ 1843:         }
+ 1844: 
+ 1845:         clearDecodedInstructionCache();
+ 1846:         std::sort(m_context.functions.begin(), m_context.functions.end(),
+ 1847:                   [](const Function &a, const Function &b)
+ 1848:                   {
+--- Lines 1843-1854 ---
+ 1843:         }
+ 1844: 
+ 1845:         clearDecodedInstructionCache();
+ 1846:         std::sort(m_context.functions.begin(), m_context.functions.end(),
+ 1847:                   [](const Function &a, const Function &b)
+ 1848:                   {
+ 1849:                       return a.start < b.start;
+ 1850:                   });
+ 1851:         buildFunctionIndex();
+ 1852: 
+ 1853:         std::cout << "Imported " << importedCount << " functions from Ghidra CSV: " << csvPath << std::endl;
+ 1854:         return true;
+--- Lines 1856-1861 ---
+ 1856: 
+ 1857:     const std::vector<Function>& ElfAnalyzer::getFunctions() const
+ 1858:     {
+ 1859:         return m_context.functions;
+ 1860:     }
+ 1861: }
+
+=== LATEST ANALYZER LOG: D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_ECOFF_CORRECTED_20261127_180455.output.log ===
+SCE symbol DB: embedded
+Analyzing ELF file: D:\Games\MarkOfKriRecomp\original\SCUS_971.40
+Extracted 7226 functions
+Extracted 11235 symbols
+Extracted 49 sections
+Extracted 0 relocations
+- renamed 7 existing function(s)
+- added 0 function(s)
+Found entry point from ELF header: 0x100008 in function _start (starts at 0x100008)
+Function snd_StreamSafeCdGetError directly accesses reads from data symbol gStreamingInited at 0x3e9488
+Function snd_StreamSafeCdGetError directly accesses reads from data symbol gStats at 0x3ecb90
+Function _Error directly accesses reads from data symbol _theSceMpeg at 0x3fad84
+Function _motionComp0 directly accesses writes to data symbol _isError at 0x3faec8
+Function _slice0 directly accesses writes to data symbol _isError at 0x3faec8
+Function _decMB0 directly accesses writes to data symbol _isError at 0x3faec8
+Function _decMB0 directly accesses reads from data symbol _isError at 0x3faec8
+Function _ch3dmaCSC directly accesses writes to data symbol _isCSCerror at 0x3fb778
+Function _doCSC2 directly accesses writes to data symbol _isCSCerror at 0x3fb778
+Function LoadLevelSettings__F6eLevelR14LevelStartInfo calls Error__9sysStatusPCce at 0x00102dbc
+Function LoadLevelSettings__F6eLevelR14LevelStartInfo calls Error__9sysStatusPCce at 0x00102e24
+Function initStoryMode__6Cameraii calls Error__9sysStatusPCce at 0x00109ca8
+Function EndDrawAll__5Flare calls Error__9sysStatusPCce at 0x001175d8
+Function EndDrawAll__5Flare calls Error__9sysStatusPCce at 0x00117820
+Function EndDrawAll__5Flare calls Error__9sysStatusPCce at 0x00117894
+Function EndDrawAll__5Flare calls Error__9sysStatusPCce at 0x001179f0
+Function EndDraw__5Flare calls Error__9sysStatusPCce at 0x00118de0
+Function CalculateInterpolationInfo__5FlareiP22FlareInterpolationInfo calls Error__9sysStatusPCce at 0x00119334
+Function msc_saveToFile__FPUcUiPc calls Error__9sysStatusPCce at 0x0011bcb8
+Function msc_loadFileToAddr__FPcPUcUi calls Error__9sysStatusPCce at 0x0011bd88
+Function msc_loadFile__FPcPUi calls Error__9sysStatusPCce at 0x0011be60
+Function mscai_actorGetLadderTargetPosAndDir__FP5ActorP7Point4d4eDir calls Error__9sysStatusPCce at 0x001244cc
+Function menu_printMenuString__FiiPcUc calls Error__9sysStatusPCce at 0x00165fa8
+Function init__17EnvParticleSystem calls Error__9sysStatusPCce at 0x00168e04
+Function checkAttachToParent__5Obj3D calls Error__9sysStatusPCce at 0x0016c7f0
+Function getBoneEndPoints__5ShapeUsP7Point4dT2 calls Error__9sysStatusPCce at 0x0016f5c0
+Function getBoneEndPoints__5ShapeUsP7Point4dT2 calls Error__9sysStatusPCce at 0x0016f5f4
+Function getPickup__5ActorP6Mscobj calls Error__9sysStatusPCce at 0x00174db4
+Function processAnimTriggers__5Actor calls Error__9sysStatusPCce at 0x00175fd8
+Function createObj__10ObjManager4eObjPcPFv_v6eObjIdT2P18envLevelObjectBaseUiP13CreateRequest calls Error__9sysStatusPCce at 0x00179d90
+Function AddExtraModelInstanceToDrawList__10ObjManagerP8modModelPC6MatrixT2T2 calls Error__9sysStatusPCce at 0x00181724
+Function initBridge__FP5Actor calls Error__9sysStatusPCce at 0x00181a64
+Function initBridgeInfo__FR6BridgeRC19envYWorldObjectDataP21envYPolysetStripInfo1P8ColliderUc calls Error__9sysStatusPCce at 0x00181c2c
+Function updateBridge__FP8Colliderb calls Error__9sysStatusPCce at 0x001821ac
+Function updateBridge__FP8Colliderb calls Error__9sysStatusPCce at 0x00182290
+Function AddExtraModelToDrawList__10ObjManagerP8EngModelPC6MatrixT2 calls Error__9sysStatusPCce at 0x00182478
+Function closestCharToSluggo__Fv calls Error__9sysStatusPCce at 0x001fd794
+Function scene_loadBackGround__F6eLevelRC9envYState calls Error__9sysStatusPCce at 0x0021bbd0
+Function destroy__12SoundManager calls Error__9sysStatusPCce at 0x0021e0cc
+Function parseHeader__12SoundManageriPUciP14SoundRemapInfoiRi calls Error__9sysStatusPCce at 0x0021f9d0
+Function resolveSounds__12SoundManager calls Error__9sysStatusPCce at 0x0021fab0
+Function resolveSounds__12SoundManager calls Error__9sysStatusPCce at 0x0021faf4
+Function resolveSounds__12SoundManager calls Error__9sysStatusPCce at 0x0021fb60
+Function resolveContext__12SoundManagerR12SoundContextPP12SoundBankSeti calls Error__9sysStatusPCce at 0x0021fd20
+Function activateContext__12SoundManagerUc calls Error__9sysStatusPCce at 0x0021ffe0
+Function loadSounds__12SoundManagerUc calls Error__9sysStatusPCce at 0x00220130
+Function changeBanks__12SoundManageri calls Error__9sysStatusPCce at 0x00221840
+Function setContextId__12SoundManageriUi calls Error__9sysStatusPCce at 0x00221be4
+Function addSoundBankSet__12SoundManagerUcP12SoundBankSet calls Error__9sysStatusPCce at 0x00221c94
+Function addSoundBankSet__12SoundManagerUcP12SoundBankSet calls Error__9sysStatusPCce at 0x00221cc8
+Function loadStaticScreen__10SfxManagerPCc9eScreenUV calls Error__9sysStatusPCce at 0x00225d28
+Function FootPrintTexInit__10SfxManager calls Error__9sysStatusPCce at 0x00226258
+Function drawFootPrints__10SfxManagerRC7Point4dRC8Vector3dRC6MatrixUcPfP6MatrixUlPUc calls Error__9sysStatusPCce at 0x0022761c
+Function drawFootPrints__10SfxManagerRC7Point4dRC8Vector3dRC6MatrixUcPfP6MatrixUlPUc calls Error__9sysStatusPCce at 0x0022768c
+Function drawFootPrints__10SfxManagerRC7Point4dRC8Vector3dRC6MatrixUcPfP6MatrixUlPUc calls Error__9sysStatusPCce at 0x002277e8
+Function updateFootPrints__10SfxManager calls Error__9sysStatusPCce at 0x002279d4
+Function updateFootPrints__10SfxManager calls Error__9sysStatusPCce at 0x00227a74
+Function drawPlanarBlood__10SfxManagerRC7Point4dRC8Vector3dUcPCfP6MatrixfUlPUcf calls Error__9sysStatusPCce at 0x00228b00
+Function drawPlanarBlood__10SfxManagerRC7Point4dRC8Vector3dUcPCfP6MatrixfUlPUcf calls Error__9sysStatusPCce at 0x00228b74
+Function drawPlanarBlood__10SfxManagerRC7Point4dRC8Vector3dUcPCfP6MatrixfUlPUcf calls Error__9sysStatusPCce at 0x00228cd0
+Function drawPoolBlood__10SfxManagerRC7Point4dRC8Vector3dUcPCfP6MatrixUlPUcffUcUc calls Error__9sysStatusPCce at 0x0022a4f0
+Function drawPoolBlood__10SfxManagerRC7Point4dRC8Vector3dUcPCfP6MatrixUlPUcffUcUc calls Error__9sysStatusPCce at 0x0022a564
+Function drawPoolBlood__10SfxManagerRC7Point4dRC8Vector3dUcPCfP6MatrixUlPUcffUcUc calls Error__9sysStatusPCce at 0x0022a6c0
+Function RenderLockBeamHeat__10SfxManagerfUifUc calls Error__9sysStatusPCce at 0x0022e368
+Function CalcDistortUVs__FG8Vector3dPfT1 calls Error__9sysStatusPCce at 0x0022f6d0
+Function updateRipGridQ__FP7Point4dff calls Error__9sysStatusPCce at 0x00230d84
+Function drawFogLayer__FG8Vector3dT0UcUcUcUcUc calls Error__9sysStatusPCce at 0x00231b10
+Function drawFogLayer1__FG8Vector3dT0UcUcUcUcUcffff calls Error__9sysStatusPCce at 0x00232628
+Function DrawBirdEye__10SfxManager calls Error__9sysStatusPCce at 0x002366c0
+Function DrawBirdEye__10SfxManager calls Error__9sysStatusPCce at 0x00236734
+Function DrawBirdEye__10SfxManager calls Error__9sysStatusPCce at 0x00236890
+Function BirdEyeTexInit__Fv calls Error__9sysStatusPCce at 0x002369e0
+Function TexInit__FP12texPS2Image2PcPUcUc calls Error__9sysStatusPCce at 0x00236bd4
+Function fx28_DrawTrail2__FP7Point4diPUi calls Error__9sysStatusPCce at 0x0023b730
+Function fx28_DrawTrail2__FP7Point4diPUi calls Error__9sysStatusPCce at 0x0023b7a4
+Function fx28_DrawTrail2__FP7Point4diPUi calls Error__9sysStatusPCce at 0x0023b900
+Function birdBeam__10SfxManagerP7Point4dffiUiPUcUif calls Error__9sysStatusPCce at 0x0023f914
+Function birdBeam__10SfxManagerP7Point4dffiUiPUcUif calls Error__9sysStatusPCce at 0x0023f984
+Function birdBeam__10SfxManagerP7Point4dffiUiPUcUif calls Error__9sysStatusPCce at 0x0023fae0
+Function UpdateSluggoBlur1Q__FP7Point4dffUiUif calls Error__9sysStatusPCce at 0x00240918
+Function UpdateDistortSpriteQ__FP7Point4dffPUcT3T3UiPUI80 calls Error__9sysStatusPCce at 0x0024166c
+Function UpdateTwistDistortSprite__FP7Point4dff calls Error__9sysStatusPCce at 0x00242ce4
+Function UpdateRippleSpriteQ__FP7Point4dfffUc calls Error__9sysStatusPCce at 0x00244168
+Function UpdateEndofLevelEffectQ__10SfxManagerP7Point4d calls Error__9sysStatusPCce at 0x0024611c
+Function UpdateFlickerSpriteQ__FP7Point4dffPfPUiUcT3f calls Error__9sysStatusPCce at 0x00248de8
+Function UpdateFlickerSpriteQ__FP7Point4dffPfPUiUcT3f calls Error__9sysStatusPCce at 0x00248e5c
+Function UpdateFlickerSpriteQ__FP7Point4dffPfPUiUcT3f calls Error__9sysStatusPCce at 0x00248fb8
+Function UpdateTwirlSprite__10SfxManagerP7Point4dfffUc calls Error__9sysStatusPCce at 0x00249cac
+Function fx27_DrawTrail2__FP7Point4diUc calls Error__9sysStatusPCce at 0x0024b094
+Function fx27_DrawTrail2__FP7Point4diUc calls Error__9sysStatusPCce at 0x0024b104
+Function fx27_DrawTrail2__FP7Point4diUc calls Error__9sysStatusPCce at 0x0024b260
+Function Draw__7ProcFogUc calls Error__9sysStatusPCce at 0x0024c2f8
+Function fe_loadandinclude__15FrontendManagerPCc calls Error__9sysStatusPCce at 0x002a2228
+Function fe_loadandinclude__15FrontendManagerPCc calls Error__9sysStatusPCce at 0x002a2264
+Function fe_loadandinclude__15FrontendManagerPCc calls Error__9sysStatusPCce at 0x002a23c4
+Function fe_set_script__15FrontendManagerPCc calls Error__9sysStatusPCce at 0x002a2554
+Function InitDustDevilTravel__FP10LeafSystem calls Error__9sysStatusPCce at 0x002a9f88
+Function CreateLeaves__FP18envLevelObjectBaseUi calls Error__9sysStatusPCce at 0x002aa198
+Function getLevelChallenges__12LevelManagerP15eLevelChallengeUib calls Error__9sysStatusPCce at 0x002b00d8
+Function convertToLevelFile__12LevelManagerPUciRC14LevelStartInfo calls Error__9sysStatusPCce at 0x002b1708
+Function menu_newSprite__FUc calls Error__9sysStatusPCce at 0x002b529c
+Function DrawAllShadows__6Shadow calls Error__9sysStatusPCce at 0x002bae54
+Function DrawAllShadows__6Shadow calls Error__9sysStatusPCce at 0x002baec0
+Function DrawAllShadows__6Shadow calls Error__9sysStatusPCce at 0x002bb038
+Function get_new_shadow_texture__6ShadowPc calls Error__9sysStatusPCce at 0x002bb140
+Function get_new_shadow_texture__6ShadowPc calls Error__9sysStatusPCce at 0x002bb220
+Function StartSearch__17VisibilityManagerRC13vmSearchInput calls Error__9sysStatusPCce at 0x002c0db0
+Function Update__17VisibilityManageriR14vmSearchResult calls Error__9sysStatusPCce at 0x002c0ef4
+Function LoadWadFile__12WadFileCachePCc calls Error__9sysStatusPCce at 0x002c1a18
+Function LoadWadFile__12WadFileCachePCc calls Error__9sysStatusPCce at 0x002c1a48
+Function LoadWadFile__12WadFileCachePCc calls Error__9sysStatusPCce at 0x002c1ac8
+Function ResolveFileSectorsFromWad__FR10StreamData calls Error__9sysStatusPCce at 0x002c1f80
+Function ResolveFileSectorsFromWad__FR10StreamData calls Error__9sysStatusPCce at 0x002c2000
+Function ResolveFileSectorsFromWad__FR10StreamData calls Error__9sysStatusPCce at 0x002c2114
+Function ResolveFileSectorsFromWad__FR10StreamData calls Error__9sysStatusPCce at 0x002c2194
+Function FindFile__12WadFileCachePCc calls Error__9sysStatusPCce at 0x002c7224
+Function play__12MovieManageriRC10mmSettings calls Error__9sysStatusPCce at 0x002c74e8
+Function play__12MovieManageriRC10mmSettings calls Error__9sysStatusPCce at 0x002c75b8
+Function play__12MovieManageriRC10mmSettings calls Error__9sysStatusPCce at 0x002c7850
+Function saveTextures__12MovieManagerP14movMoviePlayerii calls Error__9sysStatusPCce at 0x002c7c34
+Function saveTextures__12MovieManagerP14movMoviePlayerii calls Error__9sysStatusPCce at 0x002c7c68
+Function saveTextures__12MovieManagerP14movMoviePlayerii calls Error__9sysStatusPCce at 0x002c7cf4
+Function saveTextures__12MovieManagerP14movMoviePlayerii calls Error__9sysStatusPCce at 0x002c7dcc
+Function saveTextures__12MovieManagerP14movMoviePlayerii calls Error__9sysStatusPCce at 0x002c7e90
+Function mcgGetStatus__FR16mcgCommandResult calls Error__9sysStatusPCce at 0x002c863c
+Function mcgGetStatus__FR16mcgCommandResult calls Error__9sysStatusPCce at 0x002c8664
+Function mcgGetSpaceNeeded__Fv calls Error__9sysStatusPCce at 0x002cb7a0
+Function AddSnowBlowerSystem__14WeatherManagerP14ParticleSystem calls Error__9sysStatusPCce at 0x002ce5b0
+Function AddSnowBlowerSystem__14WeatherManagerP14ParticleSystem calls Error__9sysStatusPCce at 0x002ce5e4
+Function DrawBackdrop__14WeatherManagerPUciUcP12texPS2Image2ffffi calls Error__9sysStatusPCce at 0x002ce940
+Function DrawBackdrop__14WeatherManagerPUciUcP12texPS2Image2ffffi calls Error__9sysStatusPCce at 0x002ceb44
+Function DrawBackdrop__14WeatherManagerPUciUcP12texPS2Image2ffffi calls Error__9sysStatusPCce at 0x002cebb4
+Function DrawBackdrop__14WeatherManagerPUciUcP12texPS2Image2ffffi calls Error__9sysStatusPCce at 0x002ced10
+Function DrawNearRain__14WeatherManager calls Error__9sysStatusPCce at 0x002d016c
+Function DrawNearRain__14WeatherManager calls Error__9sysStatusPCce at 0x002d01dc
+Function DrawNearRain__14WeatherManager calls Error__9sysStatusPCce at 0x002d0338
+Function DrawLensRain__14WeatherManager calls Error__9sysStatusPCce at 0x002d0fe4
+Function DrawLensRain__14WeatherManager calls Error__9sysStatusPCce at 0x002d156c
+Function DrawLensRain__14WeatherManager calls Error__9sysStatusPCce at 0x002d15dc
+Function DrawLensRain__14WeatherManager calls Error__9sysStatusPCce at 0x002d1738
+Function RemoveSnowBlowerSystem__14WeatherManagerP14ParticleSystem calls Error__9sysStatusPCce at 0x002d1ef4
+Function DisplayImages__12SplashScreenPC21ssStaticImageSettingsi calls Error__9sysStatusPCce at 0x002d2798
+Function DisplayImages__12SplashScreenPC21ssStaticImageSettingsi calls Error__9sysStatusPCce at 0x002d298c
+Function CreatePacket__9Shimmer2DfUcf calls Error__9sysStatusPCce at 0x002d66a8
+Function LogoSpriteEffect__9GameShellUciP15Sprite_TexNoRot calls Error__9sysStatusPCce at 0x002daa10
+Function UpdateDrawFrontEnd__9GameShell calls Error__9sysStatusPCce at 0x002dabe4
+Function UpdateNewImage__13InfoSlideShow calls Error__9sysStatusPCce at 0x002ddfa4
+Function UpdateNewImage__13InfoSlideShow calls Error__9sysStatusPCce at 0x002ddfdc
+Function UpdateNewImage__13InfoSlideShow calls Error__9sysStatusPCce at 0x002de040
+Function UpdateNewImage__13InfoSlideShow calls Error__9sysStatusPCce at 0x002de08c
+Function LoadFileThread__13InfoSlideShowPv calls Error__9sysStatusPCce at 0x002de2c0
+Function UpdateFinishedLoadingData__13InfoSlideShow calls Error__9sysStatusPCce at 0x002de3dc
+Function UpdateFinishedLoadingData__13InfoSlideShow calls Error__9sysStatusPCce at 0x002de460
+Function Draw__13InfoSlideShow calls Error__9sysStatusPCce at 0x002de5e8
+Function Draw__13InfoSlideShow calls Error__9sysStatusPCce at 0x002de65c
+Function Draw__13InfoSlideShow calls Error__9sysStatusPCce at 0x002de7b8
+Function GetBuffer__13InfoSlideShowi calls Error__9sysStatusPCce at 0x002df610
+Function engReserveFrameBuffers__Fv calls Error__9sysStatusPCce at 0x002e1e34
+Function engSetupCamera__FP7tCamera14eCameraContext calls Error__9sysStatusPCce at 0x002e2258
+Function Activate__16engLoadIndicatorUcb calls Error__9sysStatusPCce at 0x002e2378
+Function ActivateMinimal__16engLoadIndicator calls Error__9sysStatusPCce at 0x002e2480
+Function ActivateMinimal__16engLoadIndicator calls Error__9sysStatusPCce at 0x002e2504
+Function LoadCursorTexture__16engLoadIndicator calls Error__9sysStatusPCce at 0x002e2614
+Function LoadCursorTexture__16engLoadIndicator calls Error__9sysStatusPCce at 0x002e2670
+Function UpdateDraw__16engLoadIndicator calls Error__9sysStatusPCce at 0x002e32b0
+Function UpdateDrawFullScreen__16engLoadIndicator calls Error__9sysStatusPCce at 0x002e34a8
+Function DrawLoadingBox__16engLoadIndicatorRC12IColorVector calls Error__9sysStatusPCce at 0x002e393c
+Function SendImage__16engLoadIndicatorRC12engImageInfo calls Error__9sysStatusPCce at 0x002e3a7c
+Function SendImage__16engLoadIndicatorRC12engImageInfo calls Error__9sysStatusPCce at 0x002e3aa8
+Function SendImage__16engLoadIndicatorRC12engImageInfo calls Error__9sysStatusPCce at 0x002e3b70
+Function SendImage__16engLoadIndicatorRC12engImageInfo calls Error__9sysStatusPCce at 0x002e3dbc
+Function DrawInitialImage__16engLoadIndicatorPUcUcUcUcUcb calls Error__9sysStatusPCce at 0x002e47a0
+Function DrawInitialImage__16engLoadIndicatorPUcUcUcUcUcb calls Error__9sysStatusPCce at 0x002e4a74
+Function BuildStaticImagePacket__16engLoadIndicatorPUI80iPPUcUcb calls Error__9sysStatusPCce at 0x002e4c20
+Function ActivateSlideShow__16engLoadIndicator calls Error__9sysStatusPCce at 0x002e52c4
+Function ActivateSlideShow__16engLoadIndicator calls Error__9sysStatusPCce at 0x002e5350
+Function ServiceSlideShow__16engLoadIndicator calls Error__9sysStatusPCce at 0x002e561c
+Function ServiceSlideShow__16engLoadIndicator calls Error__9sysStatusPCce at 0x002e56a8
+Function eliDuplicateFrameBuffers__Fi calls Error__9sysStatusPCce at 0x002e5994
+Function eliDuplicateFrameBuffers__Fi calls Error__9sysStatusPCce at 0x002e5d8c
+Function eliLoadFiles__FPUcPCciPPUc calls Error__9sysStatusPCce at 0x002e6004
+Function LoadInitialImageFiles__16engLoadIndicatorPCcPUci calls Error__9sysStatusPCce at 0x002e627c
+Function LoadInitialImageFiles__16engLoadIndicatorPCcPUci calls Error__9sysStatusPCce at 0x002e62d4
+Function sCreate__17modModelResourcesPCc calls Error__9sysStatusPCce at 0x002e66a0
+Function sCreate__17modModelResourcesPCc calls Error__9sysStatusPCce at 0x002e66dc
+Function sCreate__17modModelResourcesPCc calls Error__9sysStatusPCce at 0x002e6700
+Function Load__17modModelResourcesPUcb calls Error__9sysStatusPCce at 0x002e6880
+Function Load__17modModelResourcesPUcb calls Error__9sysStatusPCce at 0x002e68b0
+Function ParseTexture2Chunk__17modModelResourcesPUcb calls Error__9sysStatusPCce at 0x002e6b84
+Function ParseTexture2Chunk__17modModelResourcesPUcb calls Error__9sysStatusPCce at 0x002e6be0
+Function ParseTexture2Chunk__17modModelResourcesPUcb calls Error__9sysStatusPCce at 0x002e6c58
+Function ParseTexture2Chunk__17modModelResourcesPUcb calls Error__9sysStatusPCce at 0x002e6d3c
+Function ResolveMaterials2__17modModelResources calls Error__9sysStatusPCce at 0x002e6f20
+Function LoadImage__17modModelResourcesPCcT1b calls Error__9sysStatusPCce at 0x002e7450
+Function SetupRender2__17modModelResources calls Error__9sysStatusPCce at 0x002e76bc
+Function SetupRender2__17modModelResources calls Error__9sysStatusPCce at 0x002e7760
+Function SetupRender2__17modModelResources calls Error__9sysStatusPCce at 0x002e77b0
+Function SetupRender2__17modModelResources calls Error__9sysStatusPCce at 0x002e784c
+Function LoadTempTextures__17modModelResources calls Error__9sysStatusPCce at 0x002e7a64
+Function BasicInit__8modModelPCc calls Error__9sysStatusPCce at 0x002e7ffc
+Function BasicInit__8modModelPCc calls Error__9sysStatusPCce at 0x002e8038
+Function InitInstanceStrips__8modModel calls Error__9sysStatusPCce at 0x002e8174
+Function InitInstanceStrips__8modModel calls Error__9sysStatusPCce at 0x002e8268
+Function EnableIndividualObjectMatrices__8modModelb calls Error__9sysStatusPCce at 0x002e836c
+Function EndDraw2__8modModel calls Error__9sysStatusPCce at 0x002e8524
+Function EndDraw2__8modModel calls Error__9sysStatusPCce at 0x002e8550
+Function EndDraw2__8modModel calls Error__9sysStatusPCce at 0x002e8578
+Function EndDraw2__8modModel calls Error__9sysStatusPCce at 0x002e86e0
+Function EndDraw2__8modModel calls Error__9sysStatusPCce at 0x002e8750
+Function EndDraw2__8modModel calls Error__9sysStatusPCce at 0x002e88c8
+Function DrawModel2__8modModelPC6MatrixT1T1T1T1 calls Error__9sysStatusPCce at 0x002e8f8c
+Function Test__8modModelRC6MatrixRC15modCollideInputR16modCollideResult calls Error__9sysStatusPCce at 0x002e9ea4
+Function TestCylinder__8modModelRC6MatrixRC23modCollideCylinderInputR24modCollideCylinderResult calls Error__9sysStatusPCce at 0x002eae40
+Function modCreate__FPC11modSettings calls Error__9sysStatusPCce at 0x002ec194
+Function modCreate__FPC11modSettings calls Error__9sysStatusPCce at 0x002ec1dc
+Function BeginDraw2__8modModel calls Error__9sysStatusPCce at 0x002ec624
+Function GetStripSt__17modModelResourcesP14modStripHeader calls Error__9sysStatusPCce at 0x002eca08
+Function GetStripRgba__17modModelResourcesP14modStripHeader calls Error__9sysStatusPCce at 0x002eca38
+Function ParseMaterialPointerChunk__17modModelResourcesPUcT1 calls Error__9sysStatusPCce at 0x002ecbf8
+Function ParseGeoChunk__17modModelResourcesPUc calls Error__9sysStatusPCce at 0x002eccfc
+Function __19modObjectMemManagerUiUi calls Error__9sysStatusPCce at 0x002edb68
+Function __19modObjectMemManagerUiUi calls Error__9sysStatusPCce at 0x002edb98
+Function __19modObjectMemManagerUiUi calls Error__9sysStatusPCce at 0x002edbc4
+Function Release__19modObjectMemManagerPv calls Error__9sysStatusPCce at 0x002ede54
+Function Release__19modObjectMemManagerPv calls Error__9sysStatusPCce at 0x002edec0
+Function Release__19modObjectMemManagerPv calls Error__9sysStatusPCce at 0x002edf50
+Function Init__21modInstanceMemManagerPC19modInstancePoolInfoi calls Error__9sysStatusPCce at 0x002ee374
+Function Update__23modSpecialVertexManagerRC6Matrix calls Error__9sysStatusPCce at 0x002ee6c4
+Function ParseFur__23modSpecialVertexManagerPUcUs calls Error__9sysStatusPCce at 0x002eecd8
+Function ParseChunk__23modSpecialVertexManagerPUc calls Error__9sysStatusPCce at 0x002eedd4
+Function parseShadowFile__8EngObj3DPCc calls Error__9sysStatusPCce at 0x002ef204
+Function parseShadowFile__8EngObj3DPCc calls Error__9sysStatusPCce at 0x002ef278
+Function parseLodFile__8EngObj3DPCc calls Error__9sysStatusPCce at 0x002ef358
+Function parseLodFile__8EngObj3DPCc calls Error__9sysStatusPCce at 0x002ef3e0
+Function parseLodFile__8EngObj3DPCc calls Error__9sysStatusPCce at 0x002ef444
+Function parseLodFile__8EngObj3DPCc calls Error__9sysStatusPCce at 0x002ef46c
+Function parseLodFile__8EngObj3DPCc calls Error__9sysStatusPCce at 0x002ef4a8
+Function parseLodFile__8EngObj3DPCc calls Error__9sysStatusPCce at 0x002ef538
+Function parseLodFile__8EngObj3DPCc calls Error__9sysStatusPCce at 0x002ef580
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002ef690
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002ef74c
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002ef7b0
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002ef7dc
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002ef81c
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002ef924
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002ef9c8
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002ef9fc
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002efb30
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002efc68
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002eff84
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002f0204
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002f0238
+Function parseDataFile__8EngObj3DPCcb calls Error__9sysStatusPCce at 0x002f026c
+Function init__8EngObj3DPci calls Error__9sysStatusPCce at 0x002f0478
+Function init__8EngObj3DPci calls Error__9sysStatusPCce at 0x002f04ac
+Function init__8EngObj3DPci calls Error__9sysStatusPCce at 0x002f04f4
+Function init__8EngObj3DPPcii calls Error__9sysStatusPCce at 0x002f0978
+Function init__8EngObj3DPPcii calls Error__9sysStatusPCce at 0x002f09cc
+Function init__8EngObj3DPPcii calls Error__9sysStatusPCce at 0x002f0b28
+Function init__8EngObj3DPPcii calls Error__9sysStatusPCce at 0x002f0b7c
+Function loadAnimSet__8EngObj3DiPcUiUiUi calls Error__9sysStatusPCce at 0x002f0d1c
+Function destroy__8EngObj3D calls Error__9sysStatusPCce at 0x002f0ee0
+Function draw3__8EngObj3DP10tRenderEnvP6MatrixT2 calls Error__9sysStatusPCce at 0x002f1eb4
+Function setBloodStage__8EngObj3DUiUi calls Error__9sysStatusPCce at 0x002f3140
+Function parseTEX1__8EngObj3DPUcP8HierInfoiP14EngObj3DHeaderb calls Error__9sysStatusPCce at 0x002f3300
+Function parseTEX1__8EngObj3DPUcP8HierInfoiP14EngObj3DHeaderb calls Error__9sysStatusPCce at 0x002f3490
+Function setLighting__8EngObj3DPCciff calls Error__9sysStatusPCce at 0x002f35f0
+Function Recycle__12HierRecycler calls Error__9sysStatusPCce at 0x002f3978
+Function getColliderInfo__8EngObj3DP7Point4dPfT2 calls Error__9sysStatusPCce at 0x002f3c58
+Function _$_4Hier calls Error__9sysStatusPCce at 0x002f59e0
+Function InitMesh__4HierP8HierInfoPUcUi calls Error__9sysStatusPCce at 0x002f7f84
+Function GetInvalidShadowJoints__4HierPUii calls Error__9sysStatusPCce at 0x002f8394
+Function GetStrip2__FPUcb calls Error__9sysStatusPCce at 0x002f8508
+Function GetStrip2__FPUcb calls Error__9sysStatusPCce at 0x002f855c
+Function GetStrip2__FPUcb calls Error__9sysStatusPCce at 0x002f8594
+Function GetStrip3__FPUc calls Error__9sysStatusPCce at 0x002f860c
+Function GetStrip3__FPUc calls Error__9sysStatusPCce at 0x002f8644
+Function GetStrip3__FPUc calls Error__9sysStatusPCce at 0x002f86a0
+Function BeginDraw3__4Hier calls Error__9sysStatusPCce at 0x002f8c74
+Function EndDraw3__4Hier calls Error__9sysStatusPCce at 0x002f8d7c
+Function EndDraw3__4Hier calls Error__9sysStatusPCce at 0x002f8e8c
+Function EndDraw3__4Hier calls Error__9sysStatusPCce at 0x002f8ef8
+Function EndDraw3__4Hier calls Error__9sysStatusPCce at 0x002f9070
+Function LoadTempTextures__4HierP13ExtraHierInfoii calls Error__9sysStatusPCce at 0x002f93d4
+Function BuildCachedPackets__4Hier calls Error__9sysStatusPCce at 0x002f9dd8
+Function CreateDefaultReflectionMap__4Hier calls Error__9sysStatusPCce at 0x002f9ea4
+Function ParseJointGroups__4HierPUc calls Error__9sysStatusPCce at 0x002fa034
+Function ParseJointGroups__4HierPUc calls Error__9sysStatusPCce at 0x002fa068
+Function GetStrip1__FPUc calls Error__9sysStatusPCce at 0x002fa5ec
+Function GetStrip1__FPUc calls Error__9sysStatusPCce at 0x002fa624
+Function SetBloodStage__4HierUi calls Error__9sysStatusPCce at 0x002fa808
+Function LoadAnimSet__4HierP8HierInfoUiUiUi calls Error__9sysStatusPCce at 0x002fa9e4
+Function SetAnimSetPriority__4HierUiUi calls Error__9sysStatusPCce at 0x002fb31c
+Function chrMemPushFrame__Fv calls Error__9sysStatusPCce at 0x002fb8e0
+Function chrMemPopFrame__Fv calls Error__9sysStatusPCce at 0x002fb918
+Function chrMemAllocate__FUiUi calls Error__9sysStatusPCce at 0x002fb998
+Function GetBuffer__16chrMemBufManagerUi calls Error__9sysStatusPCce at 0x002fbd80
+Function ComputeAABoundingBox__4SkinRC7Point4dR8Vector3dT2 calls Error__9sysStatusPCce at 0x002fe720
+Function FinishBootFur__23chrSpecialVertexManager calls Error__9sysStatusPCce at 0x002ff0e8
+Function Update__23chrSpecialVertexManagerRC6Matrixb calls Error__9sysStatusPCce at 0x002ff204
+Function ParseBootFur__23chrSpecialVertexManagerPUcUs calls Error__9sysStatusPCce at 0x002ff9f0
+Function ParseChunk__23chrSpecialVertexManagerPUc calls Error__9sysStatusPCce at 0x002ffaec
+Function Update__13SpriteManagerP10tRenderEnvP8sysClock calls Error__9sysStatusPCce at 0x00301d54
+Function Update__13SpriteManagerP10tRenderEnvP8sysClock calls Error__9sysStatusPCce at 0x00301dc0
+Function Update__13SpriteManagerP10tRenderEnvP8sysClock calls Error__9sysStatusPCce at 0x00301f38
+Function Init__4LeafP15ParticleManagerP8SpriteEd calls Error__9sysStatusPCce at 0x00313764
+Function Update__4LeafP10tRenderEnvP15ParticleManager calls Error__9sysStatusPCce at 0x00314788
+Function PrintString__11FontManageriiPCcf calls Error__9sysStatusPCce at 0x00317204
+Function PrintString__11FontManageriiPCcf calls Error__9sysStatusPCce at 0x00317290
+Function PrintString__11FontManagerP9IVector3dPCcfP11TextEffects calls Error__9sysStatusPCce at 0x003173e4
+Function PrintString__11FontManagerP9IVector3dPCcfP11TextEffects calls Error__9sysStatusPCce at 0x00317470
+Function SetDefaultFont__11FontManagerPCc calls Error__9sysStatusPCce at 0x00317690
+Function SetDefaultFont__11FontManagerPCc calls Error__9sysStatusPCce at 0x0031770c
+Function Update__11FontManager calls Error__9sysStatusPCce at 0x003179ec
+Function SetDefaultFont__11FontManagerUc calls Error__9sysStatusPCce at 0x00317c28
+Function AllocString__11FontManager calls Error__9sysStatusPCce at 0x00317d0c
+Function Init__5Fader calls Error__9sysStatusPCce at 0x00318be0
+Function ParseGlobalTextureFile__FPcT0UcPPc calls Error__9sysStatusPCce at 0x00318dbc
+Function ParseLoadedData__8SpriteEd calls Error__9sysStatusPCce at 0x00319324
+Function ParseLoadedData__8SpriteEd calls Error__9sysStatusPCce at 0x00319358
+Function ParseLoadedData__8SpriteEd calls Error__9sysStatusPCce at 0x00319498
+Function init__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a188
+Function init__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a2c8
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a4a8
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a4ec
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a5a4
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a5ec
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a63c
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a684
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a6d4
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a71c
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a76c
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a7b4
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a804
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a84c
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a898
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a8d8
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a920
+Function save__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031a940
+Function load__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031aa68
+Function load__8SpriteEdPCc calls Error__9sysStatusPCce at 0x0031aaa4
+Function CreateParticleSystem__8SpriteEdP8EdSystemP15ParticleManagerRC7Point4d calls Error__9sysStatusPCce at 0x0031afb4
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b46c
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b4cc
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b528
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b584
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b5a4
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b6a4
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b704
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b760
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b7bc
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b7dc
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b8e4
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b944
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b9a0
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031b9fc
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031ba1c
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031bb28
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031bb88
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031bbe4
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031bc40
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031bc60
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031bda4
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031be0c
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031be74
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031bed8
+Function saveSubset__8SpriteEdRC23SpriteEdSubsetSpecifierPCc calls Error__9sysStatusPCce at 0x0031befc
+Function loadSpriteSet__8SpriteEdPCcT1 calls Error__9sysStatusPCce at 0x0031c61c
+Function loadSpriteSet__8SpriteEdPCcT1 calls Error__9sysStatusPCce at 0x0031c658
+Function DestroyParticleSystem__8SpriteEdP14ParticleSystemP15ParticleManager calls Error__9sysStatusPCce at 0x0031cab8
+Function LoadFile__FPCc calls Error__9sysStatusPCce at 0x0031cf44
+Function InitLensFlareEffectFunction__FP13GenericSystemRC17LensFlareSettings calls Error__9sysStatusPCce at 0x0031cfc8
+Function InitLensFlareEffectFunction__FP13GenericSystemRC17LensFlareSettings calls Error__9sysStatusPCce at 0x0031d068
+Function GetRecentZBufferEntry__FP13GenericSystem calls Error__9sysStatusPCce at 0x0031d594
+Function Load__6envJm4Pv calls Error__9sysStatusPCce at 0x0031d938
+Function Load__6envJm4Pv calls Error__9sysStatusPCce at 0x0031da8c
+Function LoadGeometry__9envYModelPCc calls Error__9sysStatusPCce at 0x00321890
+Function LoadGeometry__9envYModelPCc calls Error__9sysStatusPCce at 0x003218d4
+Function LoadGeometry__9envYModelPCc calls Error__9sysStatusPCce at 0x0032191c
+Function LoadGeometry__9envYModelPCc calls Error__9sysStatusPCce at 0x00321960
+Function LoadGeometry__9envYModelPCc calls Error__9sysStatusPCce at 0x00321a48
+Function LoadGeometry__9envYModelPCc calls Error__9sysStatusPCce at 0x00321a7c
+Function LoadGeometry__9envYModelPCc calls Error__9sysStatusPCce at 0x00321af8
+Function LoadGeometry__9envYModelPCc calls Error__9sysStatusPCce at 0x00321d00
+Function ParseGeo0Chunk__9envYModelPUc calls Error__9sysStatusPCce at 0x00321ffc
+Function ParseGeo0Chunk__9envYModelPUc calls Error__9sysStatusPCce at 0x00322060
+Function ParseGeo0Chunk__9envYModelPUc calls Error__9sysStatusPCce at 0x0032210c
+Function ParseGeo0Chunk__9envYModelPUc calls Error__9sysStatusPCce at 0x0032221c
+Function ParseGeo1Chunk__9envYModelPUc calls Error__9sysStatusPCce at 0x0032269c
+Function ParseGeo1Chunk__9envYModelPUc calls Error__9sysStatusPCce at 0x003226f0
+Function ParseGeo1Chunk__9envYModelPUc calls Error__9sysStatusPCce at 0x00322760
+Function ParseGeo1Chunk__9envYModelPUc calls Error__9sysStatusPCce at 0x00322844
+Function ParseTexture2Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x00322e44
+Function ParseTexture2Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x00322ec0
+Function ParseTexture2Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x00322f40
+Function ParseTexture2Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x00322f9c
+Function ParseTexture2Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x00322fd0
+Function ParseTexture2Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x00322ff0
+Function ParseTexture2Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x00323058
+Function ParseTexture3Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x003230f8
+Function ParseTexture3Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x0032312c
+Function ParseTexture3Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x00323178
+Function ParseTexture3Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x003231f4
+Function ParseTexture3Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x00323274
+Function ParseTexture3Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x003232d0
+Function ParseTexture3Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x00323304
+Function ParseTexture3Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x00323324
+Function ParseTexture3Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x003233c4
+Function ParseTexture3Chunk__9envYModelPUcPCcT2 calls Error__9sysStatusPCce at 0x0032344c
+Function LoadSet08HBlocks__9envYModelPCcT1 calls Error__9sysStatusPCce at 0x00323688
+Function LoadSet08HBlocks__9envYModelPCcT1 calls Error__9sysStatusPCce at 0x0032374c
+Function LoadSet08HBlocks__9envYModelPCcT1 calls Error__9sysStatusPCce at 0x00323778
+Function ResolveTextureReferences2__9envYModel calls Error__9sysStatusPCce at 0x003238f0
+Function ResolveTextureReferences2__9envYModel calls Error__9sysStatusPCce at 0x00323940
+Function ResolveTextureReferences2__9envYModel calls Error__9sysStatusPCce at 0x00323974
+Function ResolveTextureReferences2__9envYModel calls Error__9sysStatusPCce at 0x00323be4
+Function ResolveAnimatedMaterials__9envYModelPCcT1 calls Error__9sysStatusPCce at 0x00323d30
+Function ResolveAnimatedMaterials__9envYModelPCcT1 calls Error__9sysStatusPCce at 0x00323d80
+Function ResolveAnimatedMaterials__9envYModelPCcT1 calls Error__9sysStatusPCce at 0x00323e2c
+Function ResolveAnimatedMaterials__9envYModelPCcT1 calls Error__9sysStatusPCce at 0x00323e64
+Function ParseAtxFile__9envYModelPUc calls Error__9sysStatusPCce at 0x00323f30
+Function ParseAtxFile__9envYModelPUc calls Error__9sysStatusPCce at 0x00323f5c
+Function ParseAtxFile__9envYModelPUc calls Error__9sysStatusPCce at 0x00323f94
+Function ParseAtxFile__9envYModelPUc calls Error__9sysStatusPCce at 0x00323fc0
+Function ParseAtxFile__9envYModelPUc calls Error__9sysStatusPCce at 0x0032400c
+Function LoadTextureSet__9envYModelib calls Error__9sysStatusPCce at 0x00324108
+Function LoadTextureSet__9envYModelib calls Error__9sysStatusPCce at 0x00324180
+Function UpdateMovingObject__9envYModelP21envYPolysetStripInfo1 calls Error__9sysStatusPCce at 0x00325430
+Function UpdateMovingObject__9envYModelP21envYPolysetStripInfo1 calls Error__9sysStatusPCce at 0x0032555c
+Function Draw__9envYModelP10tRenderEnv calls Error__9sysStatusPCce at 0x0032670c
+Function Draw__9envYModelP10tRenderEnv calls Error__9sysStatusPCce at 0x00326778
+Function Draw__9envYModelP10tRenderEnv calls Error__9sysStatusPCce at 0x00326900
+Function Draw__9envYModelP10tRenderEnv calls Error__9sysStatusPCce at 0x00326c70
+Function Draw__9envYModelP10tRenderEnv calls Error__9sysStatusPCce at 0x00327420
+Function Draw__9envYModelP10tRenderEnv calls Error__9sysStatusPCce at 0x00327490
+Function Draw__9envYModelP10tRenderEnv calls Error__9sysStatusPCce at 0x0032761c
+Function Draw__9envYModelP10tRenderEnv calls Error__9sysStatusPCce at 0x0032781c
+Function Draw__9envYModelP10tRenderEnv calls Error__9sysStatusPCce at 0x00327888
+Function Draw__9envYModelP10tRenderEnv calls Error__9sysStatusPCce at 0x00327a10
+Function DrawSpecialStrip__9envYModelP16envYPolysetStripiUcP21envYPolysetStripInfo1 calls Error__9sysStatusPCce at 0x00327e6c
+Function AddTransparentStrip__9envYModelP16envYPolysetStripUcP10tRenderEnv calls Error__9sysStatusPCce at 0x0032a664
+Function Update__15envYEnvironment calls Error__9sysStatusPCce at 0x0032ce18
+Function DrawTransparent__15envYEnvironment calls Error__9sysStatusPCce at 0x0032d74c
+Function DrawTransparent__15envYEnvironment calls Error__9sysStatusPCce at 0x0032d7b8
+Function DrawTransparent__15envYEnvironment calls Error__9sysStatusPCce at 0x0032d930
+Function InitializeMovingObjects__9envYModel calls Error__9sysStatusPCce at 0x0032e098
+Function InitializeBlendShapes__9envYModel calls Error__9sysStatusPCce at 0x0032e200
+Function ParseAnimatedMaterial0Chunk__9envYModelPUc calls Error__9sysStatusPCce at 0x0032f4e0
+Function ParseCellVisibilityChunk__9envYModelPUc calls Error__9sysStatusPCce at 0x0032f5d8
+Function __11envYCollide calls Error__9sysStatusPCce at 0x0032ff64
+Function EndCollide__11envYCollideR13CollideResult calls Error__9sysStatusPCce at 0x003319c4
+Function Precapture__11envYCollideRC7Point4df calls Error__9sysStatusPCce at 0x00334e90
+Function Init__11envYCollideP9envYModelPUcUcT2Uc calls Error__9sysStatusPCce at 0x00335140
+Function Init__13envObjectDataPCc calls Error__9sysStatusPCce at 0x00335220
+Function Init__13envObjectDataPCc calls Error__9sysStatusPCce at 0x00335254
+Function Init__13envObjectDataPCc calls Error__9sysStatusPCce at 0x00335298
+Function ParseFileData__13envObjectData calls Error__9sysStatusPCce at 0x003353d4
+Function ParseFileData__13envObjectData calls Error__9sysStatusPCce at 0x00335414
+Function ParseObjectChunk__13envObjectDataPUc calls Error__9sysStatusPCce at 0x003355b0
+Function GetObjectIndices__13envObjectDataRC7Point4dfbPUiiPC7Point4d calls Error__9sysStatusPCce at 0x00335bec
+Function AddIndexToList__13envObjectDataiRC7Point4dfbPfPUiRiPC7Point4d calls Error__9sysStatusPCce at 0x00336040
+Function MoveLevelObject__13envObjectDataUiRC7Point4d calls Error__9sysStatusPCce at 0x00336740
+Function PutIntoGrid__13envObjectDataRC7Point4dUi calls Error__9sysStatusPCce at 0x00336994
+Function MoveLevelObject__16envObjectManagerUiPC18envLevelObjectBaseRC7Point4d calls Error__9sysStatusPCce at 0x003383a0
+Function MoveLevelObject__16envObjectManagerUiPC18envLevelObjectBaseRC7Point4d calls Error__9sysStatusPCce at 0x00338628
+Function MoveLevelObject__16envObjectManagerUiPC18envLevelObjectBaseRC7Point4d calls Error__9sysStatusPCce at 0x00338890
+Function SetGeoVersion__16envMotionManagerUc calls Error__9sysStatusPCce at 0x00339964
+Function InitEnvironmentLighting__18EnvironmentLighter calls Error__9sysStatusPCce at 0x0033ac78
+Function Unregister__18EnvironmentLighteri calls Error__9sysStatusPCce at 0x0033b9b8
+Function Register__18EnvironmentLighter calls Error__9sysStatusPCce at 0x0033ba38
+Function Start__16envTextureLoaderP16envYTexture3DataP24envTextureLoaderSettings calls Error__9sysStatusPCce at 0x0033bb34
+Function Start__16envTextureLoader calls Error__9sysStatusPCce at 0x0033bee4
+Function Start__16envTextureLoader calls Error__9sysStatusPCce at 0x0033bf10
+Function StartLoadingFile__16envTextureLoaderPCcUc calls Error__9sysStatusPCce at 0x0033c054
+Function StartLoadingFile__16envTextureLoaderPCcUc calls Error__9sysStatusPCce at 0x0033c08c
+Function StartLoadingFile__16envTextureLoaderPCcUc calls Error__9sysStatusPCce at 0x0033c0e4
+Function StartLoadingFile__16envTextureLoaderPCcUc calls Error__9sysStatusPCce at 0x0033c128
+Function SendTexture__16envTextureLoaderUcUci calls Error__9sysStatusPCce at 0x0033c7a0
+Function SendTexture__16envTextureLoaderUcUci calls Error__9sysStatusPCce at 0x0033c7c4
+Function SendNextTextureChunk__16envTextureLoaderUci calls Error__9sysStatusPCce at 0x0033ca68
+Function LoadFileThread__16envTextureLoaderPv calls Error__9sysStatusPCce at 0x0033ccfc
+Function ParseTriggerChunk__17envTriggerManagerPUcUc calls Error__9sysStatusPCce at 0x0033cf48
+Function ParseTriggerChunk__17envTriggerManagerPUcUc calls Error__9sysStatusPCce at 0x0033cf74
+Function ParseTriggerChunk__17envTriggerManagerPUcUc calls Error__9sysStatusPCce at 0x0033cfcc
+Function ParseTriggerChunk__17envTriggerManagerPUcUc calls Error__9sysStatusPCce at 0x0033d01c
+Function LoadTimFile__FPCcP11TextureInfo calls Error__9sysStatusPCce at 0x0033dc30
+Function LoadTimFile__FPCcP11TextureInfo calls Error__9sysStatusPCce at 0x0033dc6c
+Function LoadTimFile__FPCcP11TextureInfo calls Error__9sysStatusPCce at 0x0033dcc0
+Function LoadTimFile__FPCcP11TextureInfo calls Error__9sysStatusPCce at 0x0033dd18
+Function LoadTimFile__FPCcP11TextureInfo calls Error__9sysStatusPCce at 0x0033dd48
+Function LoadTimFile__FPCcP11TextureInfo calls Error__9sysStatusPCce at 0x0033dd78
+Function LoadTimFile__FPCcP11TextureInfo calls Error__9sysStatusPCce at 0x0033de98
+Function LoadTimFile__FPCcP11TextureInfo calls Error__9sysStatusPCce at 0x0033ded4
+Function LoadTimFile__FPCcP11TextureInfo calls Error__9sysStatusPCce at 0x0033dfb4
+Function __12texPS2Image2P15texAlignedImageb calls Error__9sysStatusPCce at 0x0033e294
+Function _$_12texPS2Image2 calls Error__9sysStatusPCce at 0x0033e37c
+Function VerifyTexture__15texVramManager213texImageDepthiiUi calls Error__9sysStatusPCce at 0x0033e850
+Function VerifyTexture__15texVramManager213texImageDepthiiUi calls Error__9sysStatusPCce at 0x0033e8d4
+Function GetBlockOffsets__15texVramManager213texImageDepthiiPUsi calls Error__9sysStatusPCce at 0x0033ea68
+Function GetBlockOffsets__15texVramManager213texImageDepthiiPUsi calls Error__9sysStatusPCce at 0x0033eb08
+Function GetBlockOffsets__15texVramManager213texImageDepthiiPUsi calls Error__9sysStatusPCce at 0x0033eb78
+Function StopTrackingTextures__15texVramManager2i calls Error__9sysStatusPCce at 0x0033f490
+Function RequestReadGsBlock__15texVramManager2iiiiii calls Error__9sysStatusPCce at 0x0033f630
+Function RequestReadGsBlock__15texVramManager2iiiiii calls Error__9sysStatusPCce at 0x0033f658
+Function GetNumBlocks__15texVramManager213texImageDepthii calls Error__9sysStatusPCce at 0x0033f9a4
+Function __16texAlignedImage2PCc calls Error__9sysStatusPCce at 0x0033fe70
+Function __16texAlignedImage2PCc calls Error__9sysStatusPCce at 0x0033fee4
+Function __16texAlignedImage2PCc calls Error__9sysStatusPCce at 0x00340054
+Function __16texAlignedImage2PCc calls Error__9sysStatusPCce at 0x00340094
+Function RegisterModule__9vuManagerUiPCcPv calls Error__9sysStatusPCce at 0x0034024c
+Function Vif1Callback__10dmaManager calls Error__9sysStatusPCce at 0x003404fc
+Function SendEndOfFrameChains__10dmaManager calls Error__9sysStatusPCce at 0x003406e8
+Function AddChainToEndOfFrameQueue__10dmaManageriUiPFv_vT3 calls Error__9sysStatusPCce at 0x00340a90
+Function AddChainToEndOfFrameQueue__10dmaManageriUiPFv_vT3 calls Error__9sysStatusPCce at 0x00340ab4
+Function AddChainToEndOfFrameQueue__10dmaManageriUiPFv_vT3 calls Error__9sysStatusPCce at 0x00340b1c
+Function __10resManagerUi calls Error__9sysStatusPCce at 0x00341850
+Function __10resManagerUi calls Error__9sysStatusPCce at 0x00341884
+Function DefaultCreator__10resManagerPCc calls Error__9sysStatusPCce at 0x00341b00
+Function DefaultCreator__10resManagerPCc calls Error__9sysStatusPCce at 0x00341b38
+Function Get__10resManagerPCcPFPCc_PUcPFPUc_vb calls Error__9sysStatusPCce at 0x00341c6c
+Function LoadResident__19ResidentFileManagerPCciii calls Error__9sysStatusPCce at 0x00341e7c
+Function LoadResident__19ResidentFileManagerPCciii calls Error__9sysStatusPCce at 0x00341eb4
+Function LoadResident__19ResidentFileManagerPCciii calls Error__9sysStatusPCce at 0x00341f10
+Function LoadNormal__19ResidentFileManagerPCciii calls Error__9sysStatusPCce at 0x00342090
+Function PopFrame__20memGrabAndHoldBuffer calls Error__9sysStatusPCce at 0x00344e44
+Function PushFrame__20memGrabAndHoldBuffer calls Error__9sysStatusPCce at 0x00344ea8
+Function Get__20memGrabAndHoldBufferUiUi calls Error__9sysStatusPCce at 0x00344f50
+Function Get__20memGrabAndHoldBufferUiUi calls Error__9sysStatusPCce at 0x00344f98
+Function Init__20memGrabAndHoldBufferPvUi calls Error__9sysStatusPCce at 0x00345044
+Function memLockTempBuffer__Fv calls Error__9sysStatusPCce at 0x00345150
+Function memDestroyTempBuffer__Fv calls Error__9sysStatusPCce at 0x00345198
+Function memInitTempBuffer__Fv calls Error__9sysStatusPCce at 0x0034520c
+Function init__13memListBufferUiUiP20memGrabAndHoldBuffer calls Error__9sysStatusPCce at 0x0034560c
+Function getColliderInfo__10EngObjBaseP7Point4dPfT2 calls Error__9sysStatusPCce at 0x00346a98
+Function getSizeInfo__10EngObjBasePfT1T1 calls Error__9sysStatusPCce at 0x00346ac8
+Function InitializeImage__9objShadow calls Error__9sysStatusPCce at 0x00348bf4
+Function __14movMoviePlayer calls Error__9sysStatusPCce at 0x0034a4e4
+Function __14movMoviePlayer calls Error__9sysStatusPCce at 0x0034a508
+Function Destroy__14movMoviePlayer calls Error__9sysStatusPCce at 0x0034a704
+Function Init__14movMoviePlayerPviRC16movMovieSettings calls Error__9sysStatusPCce at 0x0034a924
+Function Init__14movMoviePlayerPviRC16movMovieSettings calls Error__9sysStatusPCce at 0x0034a948
+Function Init__14movMoviePlayerPviRC16movMovieSettings calls Error__9sysStatusPCce at 0x0034a990
+Function Init__14movMoviePlayerPviRC16movMovieSettings calls Error__9sysStatusPCce at 0x0034ac0c
+Function Init__14movMoviePlayerPviRC16movMovieSettings calls Error__9sysStatusPCce at 0x0034afc4
+Function VideoCallback__14movMoviePlayerP7sceMpegP16sceMpegCbDataStrPv calls Error__9sysStatusPCce at 0x0034b304
+Function DecodeBitstream0__FP11movVideoDec calls Error__9sysStatusPCce at 0x0034bfa4
+Function mpegError__11movVideoDecP7sceMpegP18sceMpegCbDataErrorPv calls printf at 0x0034c7c0
+Function AddDMA__8movViBuf calls Error__9sysStatusPCce at 0x0034c9b0
+Function Create__8movViBufPUI80T1iiP12movTimeStampi calls Error__9sysStatusPCce at 0x0034d730
+Function Open__10movStrFilePCc calls Error__9sysStatusPCce at 0x0034df6c
+Function sysCreate__FPC11sysSettings calls Error__9sysStatusPCce at 0x00351938
+Function Error__9sysStatusPCce calls vsprintf at 0x00352b44
+Function Error__9sysStatusPCce calls Printf__FPCce at 0x00352b54
+Function Error__9sysStatusPCce calls Printf__10sysConsolePCce at 0x00352bb0
+Function Error__9sysStatusPCce calls Draw__10sysConsole at 0x00352bb8
+Function PrintXY__12sysProfTimeriiPCc calls Error__9sysStatusPCce at 0x00353b7c
+Function ReadController__13sysController calls Error__9sysStatusPCce at 0x003569e8
+Function InitControllers__16sysControlSystemi calls Error__9sysStatusPCce at 0x00356f94
+Function InitControllers__16sysControlSystemi calls Error__9sysStatusPCce at 0x00357098
+Function ReInitControllers__16sysControlSystemi calls Error__9sysStatusPCce at 0x003572c0
+Function InitController__13sysControllerii calls Error__9sysStatusPCce at 0x00357654
+Function GetFileSize__13FileInterfacePCci calls Error__9sysStatusPCce at 0x00357ce4
+Function LoadFile__13FileInterfacePCciPvPFPv_vT3 calls Error__9sysStatusPCce at 0x00357e1c
+Function EnterFSCriticalSection__13FileInterface calls Error__9sysStatusPCce at 0x00357f78
+Function CreateFileSystemSema__13FileInterface calls Error__9sysStatusPCce at 0x00357ff4
+Function Write__9sysCDFileR7sysFILEPvi calls Error__9sysStatusPCce at 0x003588f8
+Function LoadBank__14sysSoundSystemPCcPFUiUl_vPPv calls Error__9sysStatusPCce at 0x00359234
+Function StopSound__14sysSoundSystemi calls Error__9sysStatusPCce at 0x00359300
+Function ReplaceBank__14sysSoundSystemPCcT1PFUi_vUi calls Error__9sysStatusPCce at 0x0035978c
+Function ReplaceBank__14sysSoundSystemPCcT1PFUi_vUi calls Error__9sysStatusPCce at 0x003597c0
+Function SetSettings__14sysSoundSystemRC22sysSoundSystemSettings calls Error__9sysStatusPCce at 0x0035a710
+Function snd_GetLastLoadError calls snd_SendIOPCommandAndWait at 0x0035bcf0
+Function snd_StreamSafeCdGetError calls sceCdGetError at 0x0035cd1c
+Function __11texPS2ImageP15texAlignedImage calls Error__9sysStatusPCce at 0x0035def0
+Function SendImage__11texPS2ImageP15texAlignedImage calls Error__9sysStatusPCce at 0x0035e118
+Function IssueCommand__16mcMemCardManageriii calls Error__9sysStatusPCce at 0x00364498
+Function IssueGetDirectory__16mcMemCardManagerPC19mcGetDirectoryInputP20mcGetDirectoryResult calls Error__9sysStatusPCce at 0x003645f4
+Function _PES_packet calls _Error at 0x0036e264
+Function _alalcAlloc calls _Error at 0x0036eb60
+Function _getpic calls _Error1 at 0x0036ebd8
+Function _lastFrame calls _Error at 0x0036f090
+Function _Error1 calls sprintf at 0x0036f230
+Function _Error1 calls _Error at 0x0036f238
+Function _Error calls _dispatchMpegCallback at 0x0036f284
+Function _Error calls _ErrMessage at 0x0036f294
+Function _sequenceHeader calls _Error at 0x0036f410
+Function _sequenceExtension calls _Error at 0x0036fa54
+Function _sequenceExtension calls _Error at 0x0036facc
+Function _motionComp0 calls _Error1 at 0x0036fd00
+Function _getAllRefs calls _Error1 at 0x003701e0
+Function _getAllRefs calls _Error1 at 0x00370424
+Function _getAllRefs calls _Error1 at 0x00370600
+Function _doMC calls _Error at 0x00370b20
+Function _waitBdecOut calls _Error at 0x00371b10
+Function _mbAddressIncrement calls _Error1 at 0x00371e30
+Function _pictureData0 calls _Error at 0x00371f74
+Function _sliceA0 calls _Error1 at 0x00372000
+Function _sliceA0 calls _Error at 0x0037203c
+Function _slice0 calls _Error at 0x003721cc
+Function _skipMB0 calls _Error at 0x0037236c
+Function _decMB0 calls _Error at 0x00372428
+Function _quantMatrixExtension calls _Error at 0x00373b2c
+Function _decPicture calls _Error at 0x00373d44
+Function _decPicture calls _Error at 0x00373dac
+Function _isOutSizeOK calls _Error at 0x00374300
+Function _doCSC2 calls _Error at 0x00374d4c
+Found tight loop in function Error__9sysStatusPCce from 0x00352b68 to 0x00352b7c (size: 6 instructions)
+Function mpegError__11movVideoDecP7sceMpegP18sceMpegCbDataErrorPv allocates a stack frame
+Function Error__9sysStatusPCce allocates a stack frame
+Function snd_GetLastLoadError allocates a stack frame
+Function snd_StreamSafeCdGetError allocates a stack frame
+Function _Error1 allocates a stack frame
+Function _Error allocates a stack frame
+Function mpegError__11movVideoDecP7sceMpegP18sceMpegCbDataErrorPv signature analysis:
+Function Error__9sysStatusPCce signature analysis:
+Function SetErrorBehavior__13FileInterfaceUi signature analysis:
+Function GetErrorBehavior__13FileInterface signature analysis:
+Function snd_GetLastLoadError signature analysis:
+Function snd_StreamSafeCdGetError signature analysis:
+Function MCgetExtenedError signature analysis:
+Function _Error1 signature analysis:
+Function _Error signature analysis:
+
+LATEST TOML: D:\Downloads\MarkOfKri_Audits\MARK_OF_KRI_ECOFF_CORRECTED_20261127_180455.toml
+TOML SIZE: 87458
+TOML HEADERS:
+[general]
+stubs = [
+[mmio]
+[performance]
+
+AUDIT MODE: READ ONLY
+GAME ELF MODIFIED: NO
+ELAPSED SECONDS: 1.682
