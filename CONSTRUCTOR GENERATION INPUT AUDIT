@@ -1,0 +1,769 @@
+MARK OF KRI — CONSTRUCTOR GENERATION INPUT AUDIT
+Started: 2026-11-28 04:57:53
+READ-ONLY — no generator, analyzer, Ghidra, build, or source modification.
+Targets: 0x1048E0, 0x104920, 0x37F9A8, 0x37FA00
+
+===== GHIDRA / RECOMP INPUT FILES =====
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\DOORRESET_NEXT_FUNCTION_AUDIT_20261125_133048.txt | 1719 bytes | 11/25/2026 13:30:49
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\NEXT_FUNCTION_EVIDENCE_20261125_134215.txt | 4104 bytes | 11/25/2026 13:43:03
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\NEXT_FUNCTION_INTEGRATION_PREFLIGHT_20261125_125022.txt | 48406 bytes | 11/25/2026 12:50:22
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\NEXT_TWO_FUNCTION_CODEGEN_20261125_125951.txt | 9150 bytes | 11/25/2026 12:59:54
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\NEXT_TWO_FUNCTION_CODEGEN_CPP20_20261125_130043.txt | 4170 bytes | 11/25/2026 13:00:48
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\PS2RECOMP_BUILD_FAILURE_INSPECTION_20261125_123155.txt | 8375 bytes | 11/25/2026 12:31:55
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\PS2RECOMP_CMAKE_INCLUDE_INSPECTION_20261125_123246.txt | 3515 bytes | 11/25/2026 12:32:46
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\PS2RECOMP_ISOLATED_BUILD_RESULT_20261125_124701.txt | 28263 bytes | 11/25/2026 12:47:01
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\PS2RECOMP_PROCESS_DIAGNOSTIC_20261125_124425.txt | 1695 bytes | 11/25/2026 12:44:26
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\PS2RECOMP_STUB_HEADER_INSPECTION_20261125_132814.txt | 12275 bytes | 11/25/2026 13:28:14
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_EXECUTION_20261125_134117.txt | 2296 bytes | 11/25/2026 13:41:19
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_EXECUTION_FIX_20261125_132344.txt | 1009 bytes | 11/25/2026 13:23:45
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_EXECUTION_INTERFACE_REVIEW_20261125_131703.txt | 38542 bytes | 11/25/2026 13:17:03
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_EXECUTION_RESULT_20261125_132205.txt | 10437 bytes | 11/25/2026 13:22:06
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_EXECUTION_RETRY_20261125_132538.txt | 12354 bytes | 11/25/2026 13:25:43
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_INCLUDE_RETRY_20261125_132646.txt | 7666 bytes | 11/25/2026 13:26:52
+.TXT | D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_KERNEL_INCLUDE_20261125_132934.txt | 5276 bytes | 11/25/2026 13:29:41
+.TOML | D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ECOFF_ROW_MATCH_TEMP.toml | 87248 bytes | 11/27/2026 18:38:21
+.TOML | D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xStudio\config.toml | 247 bytes | 11/27/2026 18:52:55
+.TXT | D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\ps2xTest\ps2_test_function_table.dir\Release\ps2_test_function_table.vcxproj.FileListAbsolute.txt | 155 bytes | 11/27/2026 21:21:17
+.TXT | D:\Games\MarkOfKriRecomp\external\PS2Recomp\PS2RECOMP_BUILD_ARTIFACT_DISCOVERY.txt | 27472 bytes | 11/25/2026 11:46:01
+.JAVA | D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\tools\ghidra\ExportPS2Functions.java | 52649 bytes | 11/24/2026 15:56:08
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriAnomalyAudit.java | 13777 bytes | 11/24/2026 08:10:26
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriCodegenSliceDiscovery_20261124_220110.java | 7179 bytes | 11/24/2026 22:01:10
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriConstructorCallTrace.java | 6843 bytes | 11/24/2026 08:51:38
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriCoverageAudit.java | 9314 bytes | 11/24/2026 08:13:29
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriDatabaseAudit.java | 6014 bytes | 11/24/2026 07:57:54
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriDataProfileAudit.java | 10341 bytes | 11/24/2026 08:27:16
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriEncodingAudit.java | 9148 bytes | 11/24/2026 08:12:12
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriFunctionDataDependencyAudit.java | 10702 bytes | 11/24/2026 08:31:18
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriGlobalDataLayoutAudit.java | 15597 bytes | 11/24/2026 08:32:35
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriGlobalManagerInitializationAudit.java | 13544 bytes | 11/24/2026 08:42:48
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriGlobalManagerRelationshipAudit.java | 14618 bytes | 11/24/2026 08:41:26
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriGlobalObjectRecoveryAudit.java | 17093 bytes | 11/24/2026 08:35:28
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriGlobalPointerAudit.java | 11264 bytes | 11/24/2026 08:30:14
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriGlobalStructureClassificationAudit.java | 17459 bytes | 11/24/2026 08:34:50
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriManagerCRecovery.java | 8462 bytes | 11/24/2026 09:06:06
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriManagerInitializationTrace.java | 8956 bytes | 11/24/2026 08:48:37
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriManagerInitializerBodies.java | 5592 bytes | 11/24/2026 08:55:00
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriManagerMemberAccessAudit.java | 12607 bytes | 11/24/2026 09:13:39
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriManagerObjectConstructionAudit.java | 23030 bytes | 11/24/2026 08:46:18
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriManagerStoreContextAudit.java | 13483 bytes | 11/24/2026 08:43:32
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriMissingFunctionClassification.java | 10744 bytes | 11/24/2026 08:21:43
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriMutableGlobalStructureAudit.java | 15894 bytes | 11/24/2026 08:33:15
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriNonExecutableReferenceAudit.java | 9327 bytes | 11/24/2026 08:24:29
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriObjectLayoutRecoveryAudit.java | 21088 bytes | 11/24/2026 08:39:21
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriReadinessAudit.java | 17417 bytes | 11/24/2026 08:07:03
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriReferenceSpaceAudit.java | 7532 bytes | 11/24/2026 08:23:30
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriStringCatalogAudit.java | 8759 bytes | 11/24/2026 08:29:31
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriTargetFunctionAudit.java | 10748 bytes | 11/24/2026 08:17:08
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriUncoveredAudit.java | 9640 bytes | 11/24/2026 08:15:54
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriUndefinedDataProfileAudit.java | 14478 bytes | 11/24/2026 08:31:58
+.JAVA | D:\Games\MarkOfKriRecomp\ghidra\scripts\MarkOfKriUnmappedReferenceAudit.java | 6709 bytes | 11/24/2026 08:22:38
+.TXT | D:\Games\MarkOfKriRecomp\inventory_cleanup_review\MARK_OF_KRI_CLEANUP_REVIEW_20261124_152822.txt | 43479 bytes | 11/24/2026 15:28:37
+.TXT | D:\Games\MarkOfKriRecomp\MANAGER PARAM ACCESS FUNCTION TRIAGE RUN.txt | 374 bytes | 11/24/2026 13:18:12
+.TXT | D:\Games\MarkOfKriRecomp\MANAGER_PARAM_ACCESS_COMPLETE_FUNCTION_INDEX_RUN.txt | 353 bytes | 11/24/2026 13:19:38
+.TXT | D:\Games\MarkOfKriRecomp\MANAGER_PARAM_ACCESS_FUNCTION_TRIAGE_RUN.txt | 380 bytes | 11/24/2026 13:18:45
+.TXT | D:\Games\MarkOfKriRecomp\MARK_OF_KRI_HEADLESS_EXECUTION_LEDGER.txt | 29645 bytes | 11/24/2026 14:29:26
+.TXT | D:\Games\MarkOfKriRecomp\MARK_OF_KRI_HEADLESS_EXECUTION_LEDGER_DIAGNOSTIC.txt | 356 bytes | 11/24/2026 14:29:26
+.TXT | D:\Games\MarkOfKriRecomp\MARK_OF_KRI_NORMALIZED_INVENTORY_ALIAS_RESOLUTION_AUDIT.txt | 11760 bytes | 11/24/2026 20:40:18
+.CSV | D:\Games\MarkOfKriRecomp\MARK_OF_KRI_NORMALIZED_INVENTORY_DERIVATION_MISMATCHES.csv | 375907 bytes | 11/24/2026 20:34:53
+.TXT | D:\Games\MarkOfKriRecomp\MARK_OF_KRI_NORMALIZED_INVENTORY_DIRECT_DERIVATION_AUDIT.txt | 2564 bytes | 11/24/2026 20:34:43
+.TXT | D:\Games\MarkOfKriRecomp\MARK_OF_KRI_NORMALIZED_INVENTORY_GENERATOR_PROVENANCE_20261124_200756.txt | 11900 bytes | 11/24/2026 20:08:03
+.TXT | D:\Games\MarkOfKriRecomp\MARK_OF_KRI_NORMALIZED_INVENTORY_MISMATCH_DIAGNOSTIC.txt | 17778 bytes | 11/24/2026 20:38:11
+.TXT | D:\Games\MarkOfKriRecomp\MARK_OF_KRI_SCRIPT_EXECUTION_EVIDENCE.txt | 10754 bytes | 11/24/2026 14:28:55
+.TXT | D:\Games\MarkOfKriRecomp\MARK_OF_KRI_SCRIPT_EXECUTION_EVIDENCE_DIAGNOSTIC.txt | 335 bytes | 11/24/2026 14:28:55
+.TXT | D:\Games\MarkOfKriRecomp\MARK_OF_KRI_SCRIPT_INVENTORY.txt | 35403 bytes | 11/24/2026 14:28:24
+.TXT | D:\Games\MarkOfKriRecomp\MARK_OF_KRI_SCRIPT_INVENTORY_DIAGNOSTIC.txt | 481 bytes | 11/24/2026 14:28:24
+.TXT | D:\Games\MarkOfKriRecomp\MARK_OF_KRI_SCRIPT_RUN_COUNT_AUDIT.txt | 139822 bytes | 11/24/2026 14:29:56
+.TXT | D:\Games\MarkOfKriRecomp\MARK_OF_KRI_SCRIPT_RUN_COUNT_DIAGNOSTIC.txt | 264 bytes | 11/24/2026 14:29:56
+.TXT | D:\Games\MarkOfKriRecomp\native\build\codegen_smoke_vs2026\markofkri_real_function_compile.dir\Debug\markofkri_real_function_compile.vcxproj.FileListAbsolute.txt | 138 bytes | 11/26/2026 22:35:46
+.TXT | D:\Games\MarkOfKriRecomp\native\build\codegen_smoke_vs2026\markofkri_real_function_compile.dir\Release\markofkri_real_function_compile.vcxproj.FileListAbsolute.txt | 140 bytes | 11/24/2026 22:18:41
+.CSV | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_CONTROLLED_TEST_INSTRUCTIONS_20261124_230706.csv | 3636 bytes | 11/24/2026 23:07:06
+.CSV | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_CONTROLLED_TEST_MANIFEST_20261124_230706.csv | 1034 bytes | 11/24/2026 23:07:06
+.CSV | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_FUNCTION_CANDIDATES_20261124_220601.csv | 269856 bytes | 11/24/2026 22:06:07
+.CSV | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_MULTIFUNCTION_CANDIDATES_20261124_224040.csv | 129613 bytes | 11/24/2026 22:40:48
+.CSV | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_MULTIFUNCTION_INSTRUCTIONS_20261124_224040.csv | 32145 bytes | 11/24/2026 22:40:48
+.CSV | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_NEXT_CONTROLLED_CANDIDATES_20261125_111116.csv | 795 bytes | 11/25/2026 11:11:16
+.CSV | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_NEXT_GENERATION_INSTRUCTIONS_20261125_112210.csv | 2204 bytes | 11/25/2026 11:22:10
+.CSV | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_NEXT_GENERATION_MANIFEST_20261125_112210.csv | 337 bytes | 11/25/2026 11:22:10
+.CSV | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_NEXT_SLICE_INSTRUCTIONS_20261125_111845.csv | 7942 bytes | 11/25/2026 11:18:51
+.CSV | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_TOP_FUNCTION_INSTRUCTIONS_20261124_220601.csv | 3759 bytes | 11/24/2026 22:06:07
+.TXT | D:\Games\MarkOfKriRecomp\native\tests\recomp\next_two_function_codegen_20261125_114147\PS2RECOMP_INCLUDE_DIAGNOSTIC.txt | 4851 bytes | 11/25/2026 11:44:32
+.TXT | D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\shimmer_configure_diagnostic_20261125_150438.txt | 17297 bytes | 11/25/2026 15:04:41
+.TXT | D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_fpu_execution\shimmer_probe_configure_20261125_151919.txt | 157 bytes | 11/25/2026 15:19:22
+.TXT | D:\Games\MarkOfKriRecomp\native\tests\recomp\xz_distance_extraction_20261125_164027\ghidra_stdout.txt | 6470 bytes | 11/25/2026 16:40:32
+.TXT | D:\Games\MarkOfKriRecomp\native\tests\recomp\xz_distance_extraction_20261125_164027\PS2RECOMP_XZ_FPU_SUPPORT_AUDIT.txt | 45464 bytes | 11/25/2026 16:43:12
+.TXT | D:\Games\MarkOfKriRecomp\native\tests\recomp\xz_distance_extraction_20261125_164027\XZ_DISTANCE_FUNCTION_DISASSEMBLY_REVIEW.txt | 3035 bytes | 11/25/2026 16:41:05
+.JAVA | D:\Games\MarkOfKriRecomp\native\tools\ghidra_codegen_discovery\MarkOfKriCodegenSliceDiscovery.java | 5799 bytes | 11/24/2026 22:06:01
+.JAVA | D:\Games\MarkOfKriRecomp\native\tools\ghidra_multifunction_discovery_20261124_224040\MarkOfKriMultiFunctionSliceDiscovery.java | 9264 bytes | 11/24/2026 22:40:40
+.TXT | D:\Games\MarkOfKriRecomp\native\tools\ghidra_next_slice_instruction_extraction\ghidra_stderr_20261125_111352.txt | 0 bytes | 11/25/2026 11:14:07
+.TXT | D:\Games\MarkOfKriRecomp\native\tools\ghidra_next_slice_instruction_extraction\ghidra_stderr_20261125_111451.txt | 0 bytes | 11/25/2026 11:14:57
+.TXT | D:\Games\MarkOfKriRecomp\native\tools\ghidra_next_slice_instruction_extraction\ghidra_stderr_20261125_111651.txt | 0 bytes | 11/25/2026 11:16:57
+.TXT | D:\Games\MarkOfKriRecomp\native\tools\ghidra_next_slice_instruction_extraction\ghidra_stderr_20261125_111845.txt | 0 bytes | 11/25/2026 11:18:51
+.TXT | D:\Games\MarkOfKriRecomp\native\tools\ghidra_next_slice_instruction_extraction\ghidra_stdout_20261125_111352.txt | 5955 bytes | 11/25/2026 11:14:07
+.TXT | D:\Games\MarkOfKriRecomp\native\tools\ghidra_next_slice_instruction_extraction\ghidra_stdout_20261125_111451.txt | 5838 bytes | 11/25/2026 11:14:57
+.TXT | D:\Games\MarkOfKriRecomp\native\tools\ghidra_next_slice_instruction_extraction\ghidra_stdout_20261125_111651.txt | 6789 bytes | 11/25/2026 11:16:57
+.TXT | D:\Games\MarkOfKriRecomp\native\tools\ghidra_next_slice_instruction_extraction\ghidra_stdout_20261125_111845.txt | 5612 bytes | 11/25/2026 11:18:51
+.JAVA | D:\Games\MarkOfKriRecomp\native\tools\ghidra_next_slice_instruction_extraction\MarkOfKriNextSliceInstructionExtraction.java | 13238 bytes | 11/25/2026 11:18:45
+.CSV | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_ELF_PROGRAM_SEGMENTS_20261124_154648.csv | 336 bytes | 11/24/2026 15:46:49
+.TXT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_EXISTING_BUILD_MANIFESTS_20261124_154648.txt | 3164 bytes | 11/24/2026 15:46:48
+.CSV | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_IMPLEMENTATION_WORKSTREAM_MATRIX_20261124_154648.csv | 3603 bytes | 11/24/2026 15:46:49
+.CSV | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv | 194650481 bytes | 11/24/2026 15:43:20
+.TXT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_FOUNDATION_20261124_154147.txt | 375644 bytes | 11/24/2026 15:43:10
+.TXT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RUNTIME_ARCHITECTURE_AUDIT_20261124_154648.txt | 9274 bytes | 11/24/2026 15:46:49
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_EXECUTION_20261125_160248.txt | 699 bytes | 11/25/2026 16:02:49
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_GENERATION_20261125_160813.txt | 22830 bytes | 11/25/2026 16:08:16
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_RECOVERY_20261125_160356.txt | 983 bytes | 11/25/2026 16:03:56
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_ATTACK_ZONE_SOURCE_REVIEW_20261125_160710.txt | 16381 bytes | 11/25/2026 16:07:10
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_EXISTING_COMPILER_ENVIRONMENT_20261125_160639.txt | 2411 bytes | 11/25/2026 16:06:40
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_LINK_DEPENDENCY_INSPECTION_20261125_160904.txt | 713557 bytes | 11/25/2026 16:09:05
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_VS_INSTALLATION_INSPECTION_20261125_160544.txt | 2748 bytes | 11/25/2026 16:05:44
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_VSDEVCMD_DIAGNOSTIC_20261125_160449.txt | 526 bytes | 11/25/2026 16:04:49
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_inspection_20261125_155842\MARK_OF_KRI_ATTACK_ZONE_IMPLEMENTATION_INSPECTION_20261125_155842.txt | 126668 bytes | 11/25/2026 15:58:42
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\exact_translator_contract_audit\MARK_OF_KRI_EXACT_TRANSLATOR_CONTRACT_AUDIT_20261125_112246.txt | 48110 bytes | 11/25/2026 11:22:54
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\exact_translator_contract_audit\MARK_OF_KRI_EXACT_TRANSLATOR_CONTRACT_AUDIT_20261125_112357.txt | 48110 bytes | 11/25/2026 11:23:59
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_EVIDENCE_20261125_155026.txt | 110482 bytes | 11/25/2026 15:50:30
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_HARNESS_TEMPLATES_20261125_155214.txt | 220662 bytes | 11/25/2026 15:52:15
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_BEQ_PROVENANCE_20261124_184031.csv | 1222730 bytes | 11/24/2026 18:40:33
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_BEQ_PROVENANCE_20261124_184514.csv | 773327 bytes | 11/24/2026 18:45:20
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_BEQ_PROVENANCE_GROUPS_20261124_184031.csv | 769315 bytes | 11/24/2026 18:40:36
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_BEQ_PROVENANCE_JR_INVESTIGATION_20261124_184031.txt | 1632159 bytes | 11/24/2026 18:40:36
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_BEQ_PROVENANCE_JR_INVESTIGATION_20261124_184514.txt | 38364 bytes | 11/24/2026 18:45:38
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CANDIDATE_MANIFEST_INVENTORY_20261125_162739.txt | 13633 bytes | 11/25/2026 16:27:41
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CANONICAL_INSTRUCTION_PS2RECOMP_COMPARISON_20261124_180951.csv | 1057 bytes | 11/24/2026 18:09:55
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CANONICAL_INSTRUCTION_PS2RECOMP_COMPARISON_20261124_180951.txt | 8218 bytes | 11/24/2026 18:09:55
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CANONICAL_WORD_DECODE_20261124_180951.csv | 1025313 bytes | 11/24/2026 18:09:55
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CMAKE_ENVIRONMENT_REVIEW_20261124_212218.txt | 10054 bytes | 11/24/2026 21:22:18
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CMAKE_FULL_DOWNLOADS_SEARCH_20261124_211432.txt | 2106 bytes | 11/24/2026 21:14:41
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SMOKE_CORRECTED_20261124_215006.txt | 6374 bytes | 11/24/2026 21:51:09
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SMOKE_DIAGNOSTICS_20261124.txt | 7568 bytes | 11/24/2026 21:32:48
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SMOKE_EXECUTION_20261124_215517.txt | 2005 bytes | 11/24/2026 21:55:17
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SMOKE_HARNESS_20261124_210823.txt | 1125 bytes | 11/24/2026 21:08:23
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SMOKE_RETRY_20261124_213506.txt | 5944 bytes | 11/24/2026 21:36:53
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SMOKE_VS2026_20261124_212403.txt | 1300 bytes | 11/24/2026 21:25:21
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SOURCE_CONTRACT_20261124_231217.txt | 61929 bytes | 11/24/2026 23:12:17
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CODEGEN_SYMBOL_FIX_20261124_215606.txt | 3484 bytes | 11/24/2026 21:56:10
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_COMPACT_INVENTORY_GENERATOR_HITS_20261124_195317.csv | 250115 bytes | 11/24/2026 19:54:03
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_COMPACT_INVENTORY_GENERATOR_PROVENANCE_20261124_195317.txt | 13309 bytes | 11/24/2026 19:53:57
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CONTROLLED_TEST_MANIFEST_20261124_230706.txt | 3463 bytes | 11/24/2026 23:07:06
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CORRECTED_PROVENANCE_CHAIN_AUDIT_20261124_190311.txt | 51693 bytes | 11/24/2026 19:03:35
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CORRECTED_PROVENANCE_CHAIN_ROWS_20261124_190311.csv | 1394188 bytes | 11/24/2026 19:03:35
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CRITICAL_RAW_EVIDENCE_LOCATION_LOOKUP_20261124_174221.csv | 2555659 bytes | 11/24/2026 17:42:21
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_CRITICAL_RAW_EVIDENCE_LOCATION_LOOKUP_20261124_174221.txt | 2269351 bytes | 11/24/2026 17:42:22
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_DECODER_INTERFACE_INSPECTION_20261124_232442.txt | 54669 bytes | 11/24/2026 23:24:43
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_DECODER_TRACE_HEADER_20261124_184437.txt | 91 bytes | 11/24/2026 18:44:39
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ENCODING_REPORT_DISCOVERY_20261124_161243.csv | 86847 bytes | 11/24/2026 16:13:02
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ENVGRID_64BIT_BOUNDARY_20261125_154453.txt | 2869 bytes | 11/25/2026 15:44:56
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ENVGRID_EXECUTION_RECOVERY_20261125_154534.txt | 4552 bytes | 11/25/2026 15:45:34
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_EXACT_SINGLE_KEY_INSTRUCTION_SUMMARY_20261124_180711.csv | 758701 bytes | 11/24/2026 18:07:11
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_EXACT_SINGLE_KEY_INSTRUCTION_SUMMARY_20261124_180711.txt | 371135 bytes | 11/24/2026 18:07:11
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_EXPLICIT_RAW_WORD_CANDIDATES_20261124_180121.csv | 2320645 bytes | 11/24/2026 18:01:21
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_EXPLICIT_RAW_WORD_CANDIDATES_20261124_180121.txt | 260428 bytes | 11/24/2026 18:01:22
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_EXTRACTION_ARGUMENT_REVIEW_20261125_163431.txt | 8456 bytes | 11/25/2026 16:34:31
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FINAL_BUILD_GOALS_AMENDMENT_20261124_204704.txt | 4358 bytes | 11/24/2026 20:47:04
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FINAL_RAW_WORD_PROVENANCE_SOURCE_ROWS_20261124_190636.csv | 714522 bytes | 11/24/2026 19:10:08
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FINAL_RAW_WORD_PROVENANCE_SOURCE_TRACE_20261124_190636.txt | 137284 bytes | 11/24/2026 19:10:08
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FIVE_INSTRUCTION_COMPATIBILITY_MATRIX_20261124_182541.csv | 982 bytes | 11/24/2026 18:25:42
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FIVE_INSTRUCTION_COMPATIBILITY_MATRIX_20261124_182852.csv | 1246 bytes | 11/24/2026 18:28:56
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FIVE_INSTRUCTION_FIELD_AUDIT_20261124_182852.csv | 891769 bytes | 11/24/2026 18:28:56
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FIVE_INSTRUCTION_RAW_WORD_MATRIX_20261124_182541.csv | 176 bytes | 11/24/2026 18:25:42
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FIVE_INSTRUCTION_RAW_WORD_MATRIX_20261124_182852.csv | 298467 bytes | 11/24/2026 18:28:56
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FIVE_INSTRUCTION_RUNTIME_TEST_PLAN_20261124_182541.csv | 3859 bytes | 11/24/2026 18:25:42
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FIVE_INSTRUCTION_RUNTIME_TEST_PLAN_20261124_182852.csv | 3674 bytes | 11/24/2026 18:28:56
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FIVE_INSTRUCTION_SEMANTIC_MATRIX_20261124_182541.txt | 45761 bytes | 11/24/2026 18:25:42
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_FIVE_INSTRUCTION_SEMANTIC_VERIFICATION_20261124_182852.txt | 357801 bytes | 11/24/2026 18:28:57
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_GENERATOR_CONTRACT_DISCOVERY_20261125_112807.txt | 22181 bytes | 11/25/2026 11:28:07
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_GENERATOR_CONTRACT_DISCOVERY_20261125_113249.txt | 22181 bytes | 11/25/2026 11:32:50
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_GENERATOR_SOURCE_CONTRACT_EVIDENCE_20261125_113505.txt | 18852 bytes | 11/25/2026 11:35:05
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_GHIDRA_EXTRACTION_METHODS_20261125_162858.txt | 88098 bytes | 11/25/2026 16:31:12
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_GHIDRA_EXTRACTION_SOURCE_REVIEW_20261125_163140.txt | 20987 bytes | 11/25/2026 16:31:40
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_INSTRUCTION_COVERAGE_PREPARATION_20261124_160800.txt | 138782 bytes | 11/24/2026 16:08:04
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_INSTRUCTION_EVIDENCE_CANDIDATES_20261124_160235.csv | 2039 bytes | 11/24/2026 16:02:44
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_INSTRUCTION_FAMILY_PRIORITIES_20261124_162128.txt | 12639 bytes | 11/24/2026 16:21:37
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_INSTRUCTION_SOURCE_INVENTORY_20261124_160800.csv | 5874 bytes | 11/24/2026 16:08:00
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_INVENTORY_CREATION_NEIGHBORHOOD_TRACE_20261124_195645.txt | 15765 bytes | 11/24/2026 19:56:45
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_JR_00100048_CONTEXT_20261124_184031.csv | 6334 bytes | 11/24/2026 18:40:36
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_JR_00100048_PROVENANCE_20261124_184514.csv | 699 bytes | 11/24/2026 18:45:20
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_JR_SOURCE_CONTEXT_20261124_184031.csv | 288 bytes | 11/24/2026 18:40:36
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_LIVE_BUILD_DIAGNOSTICS.txt | 13117 bytes | 11/24/2026 21:47:47
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_LOAD_ENVGRID_EXECUTION_20261125_153935.txt | 544 bytes | 11/25/2026 15:39:35
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_LOAD_ENVGRID_FINAL_20261125_154325.txt | 9510 bytes | 11/25/2026 15:43:31
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_LOAD_ENVGRID_LDL_LDR_SDL_SDR_REVIEW_20261125_152704.txt | 148580 bytes | 11/25/2026 15:29:22
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_LOAD_ENVGRID_PATH_REPAIR_20261125_154156.txt | 296 bytes | 11/25/2026 15:41:56
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_LOAD_ENVGRID_RECOVERY_20261125_154054.txt | 2529 bytes | 11/25/2026 15:40:59
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_DISCOVERY_RUN_20261124_224040.txt | 23423 bytes | 11/24/2026 22:40:48
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt | 47045 bytes | 11/24/2026 23:08:50
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_SLICE_DISCOVERY_20261124_224040.txt | 17209 bytes | 11/24/2026 22:40:48
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_NATIVE_RECOMPILATION_IMPLEMENTATION_BASELINE_20261124_204409.txt | 39954 bytes | 11/24/2026 20:44:39
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_NATIVE_WORKSPACE_CREATION_20261124_210706.txt | 1640 bytes | 11/24/2026 21:07:06
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_NEXT_FUNCTION_COVERAGE_RANKING_20261125_162832.txt | 5428 bytes | 11/25/2026 16:28:32
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_NORMALIZED_INSTRUCTION_INVENTORY_20261124_162128.csv | 9854218 bytes | 11/24/2026 16:21:35
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_NORMALIZED_INVENTORY_GENERATOR_PROVENANCE_20261124_194429.txt | 29743505 bytes | 11/24/2026 19:45:00
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_NORMALIZED_INVENTORY_GENERATOR_REFERENCES_20261124_194429.csv | 70334429 bytes | 11/24/2026 19:45:00
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_NORMALIZED_INVENTORY_HEADER_20261124_184437.txt | 208 bytes | 11/24/2026 18:44:39
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_NORMALIZED_INVENTORY_IMMEDIATE_PREDECESSOR_TRACE_20261124_195709.txt | 17732 bytes | 11/24/2026 19:57:10
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ORIGINAL_GAME_BEQ_PROVENANCE_20261124_190132.csv | 1391586 bytes | 11/24/2026 19:01:47
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ORIGINAL_GAME_JR_PROVENANCE_20261124_190132.csv | 1230 bytes | 11/24/2026 19:01:47
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ORIGINAL_GAME_PROVENANCE_ROWS_20261124_190132.csv | 1397061 bytes | 11/24/2026 19:01:46
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ORIGINAL_GAME_PROVENANCE_SOURCE_FILES_20261124_190132.csv | 271 bytes | 11/24/2026 19:01:46
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ORIGINAL_GAME_PROVENANCE_TRACE_20261124_190132.txt | 4830 bytes | 11/24/2026 19:01:46
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PROVENANCE_BRIDGE_SCHEMA_AUDIT_20261124_190226.txt | 18442 bytes | 11/24/2026 19:02:26
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_ARCHITECTURE_GAP_REVIEW_20261124_160235.txt | 20318 bytes | 11/24/2026 16:02:44
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_CMAKE_TARGET_DISCOVERY_20261125.txt | 7495 bytes | 11/25/2026 11:46:31
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_COMPATIBILITY_ASSESSMENT_20261124_155846.txt | 42773 bytes | 11/24/2026 15:58:49
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_COMPATIBILITY_ASSESSMENT_20261124_160014.txt | 42773 bytes | 11/24/2026 16:00:17
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_CRITICAL_RAW_ENCODING_AUDIT_20261124_173644.csv | 7681 bytes | 11/24/2026 17:36:44
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_CRITICAL_RAW_ENCODING_AUDIT_20261124_173644.txt | 990 bytes | 11/24/2026 17:36:44
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_CRITICAL_SEMANTIC_AUDIT_REPORT_20261124_173229.txt | 2194 bytes | 11/24/2026 17:32:29
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_CRITICAL_SEMANTIC_COMPATIBILITY_MATRIX_20261124_173229.csv | 7511 bytes | 11/24/2026 17:32:29
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_CRITICAL_SEMANTIC_FAMILY_SUMMARY_20261124_173229.csv | 254 bytes | 11/24/2026 17:32:29
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_CRITICAL_SEMANTIC_MANUAL_REVIEW_20261124_173229.csv | 4802 bytes | 11/24/2026 17:32:29
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_CRITICAL_SOURCE_BUNDLE_20261124_173140.txt | 74119 bytes | 11/24/2026 17:31:41
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_CRITICAL_SOURCE_REVIEW_20261124_173140.csv | 54239 bytes | 11/24/2026 17:31:41
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_DECODER_TRACE_20261124_171746.csv | 624738 bytes | 11/24/2026 17:17:54
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_DECODER_TRACE_20261124_171926.csv | 624738 bytes | 11/24/2026 17:19:33
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_DECODER_TRACE_REPORT_20261124_171926.txt | 1076 bytes | 11/24/2026 17:19:33
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_DECODER_UNMATCHED_20261124_171746.csv | 6294 bytes | 11/24/2026 17:17:54
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_DECODER_UNMATCHED_20261124_171926.csv | 6294 bytes | 11/24/2026 17:19:33
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_HIGH_SOURCE_BUNDLE_20261124_173140.txt | 456158 bytes | 11/24/2026 17:31:41
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_HIGH_SOURCE_REVIEW_20261124_173140.csv | 370074 bytes | 11/24/2026 17:31:41
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_INSTRUCTION_COMPARISON_20261124_161243.txt | 1156 bytes | 11/24/2026 16:13:04
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_INSTRUCTION_REVIEW_BUNDLE_20261124_161243.txt | 160559 bytes | 11/24/2026 16:14:02
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_INTEGRATION_CONTRACT_20261124_205933.txt | 224990 bytes | 11/24/2026 20:59:38
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_INTERFACE_EXTRACTION_20261124_204811.txt | 458539 bytes | 11/24/2026 20:48:12
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_ISOLATED_BUILD_20261125_121646.txt | 7096 bytes | 11/25/2026 12:31:57
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_MINIMAL_BUILD_AUDIT_20261125_121300.txt | 29880 bytes | 11/25/2026 12:13:00
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_SEMANTIC_FAMILY_SUMMARY_20261124_173027.csv | 617 bytes | 11/24/2026 17:30:27
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_SEMANTIC_PRIORITY_REVIEW_20261124_173027.csv | 77588 bytes | 11/24/2026 17:30:27
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_SEMANTIC_REVIEW_20261124_161816.txt | 434807 bytes | 11/24/2026 16:18:17
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_SEMANTIC_REVIEW_20261124_173027.csv | 105547 bytes | 11/24/2026 17:30:27
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_SEMANTIC_REVIEW_REPORT_20261124_173027.txt | 1870 bytes | 11/24/2026 17:30:28
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_SOURCE_IDENTIFIER_HITS_20261124_180951.csv | 36598 bytes | 11/24/2026 18:09:55
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_TARGETED_CONTRACT_20261124_210401.txt | 162378 bytes | 11/24/2026 21:04:02
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_PS2RECOMP_TARGETED_SOURCE_REVIEW_REPORT_20261124_173140.txt | 2409 bytes | 11/24/2026 17:31:41
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_RAW_INSTRUCTION_RECORD_CANDIDATES_20261124_175503.csv | 4941990 bytes | 11/24/2026 17:55:03
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_RAW_INSTRUCTION_RECORD_CANDIDATES_20261124_175503.txt | 412892 bytes | 11/24/2026 17:55:04
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_RAW_WORD_DECODER_IDENTITY_AUDIT_20261124_180415.csv | 2904576 bytes | 11/24/2026 18:04:15
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_RAW_WORD_DECODER_IDENTITY_AUDIT_20261124_180415.txt | 5074 bytes | 11/24/2026 18:04:16
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220725.txt | 884 bytes | 11/24/2026 22:07:25
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt | 5211 bytes | 11/24/2026 22:08:51
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_COMPILE_RETRY_20261124_221102.txt | 3663 bytes | 11/24/2026 22:11:27
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_EXECUTION_20261124_222559.txt | 3483 bytes | 11/24/2026 22:26:25
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_EXECUTION_RESULT_20261124_222830.txt | 1213 bytes | 11/24/2026 22:28:32
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_IOP_FIX_20261124_221356.txt | 6820 bytes | 11/24/2026 22:14:20
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_OBJECT_COMPILE_20261124_221820.txt | 3440 bytes | 11/24/2026 22:18:44
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_SLICE_DISCOVERY_20261124_220110.txt | 11838 bytes | 11/24/2026 22:01:22
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_SLICE_DISCOVERY_20261124_220601.txt | 10672 bytes | 11/24/2026 22:06:08
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_STUB_INCLUDE_20261124_221544.txt | 7248 bytes | 11/24/2026 22:16:08
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_RECOMPATIBILITY_EVIDENCE_FILES_20261124_155846.csv | 2470 bytes | 11/24/2026 15:58:49
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_RECOMPATIBILITY_EVIDENCE_FILES_20261124_160014.csv | 2470 bytes | 11/24/2026 16:00:17
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_RUNTIME_EXECUTION_PREREQUISITES_20261124_221945.txt | 1882556 bytes | 11/24/2026 22:19:45
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_SHIMMER_FPU_CMAKE_REPAIR_20261125_145256.txt | 5903 bytes | 11/25/2026 14:52:59
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_SHIMMER_FPU_EXECUTION_20261125_145210.txt | 4452 bytes | 11/25/2026 14:52:21
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_SHIMMER_FPU_INCLUDE_REPAIR_20261125_145337.txt | 6655 bytes | 11/25/2026 14:54:30
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_SHIMMER_GENERATOR_EXECUTION_20261125_145049.txt | 3962 bytes | 11/25/2026 14:50:49
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_TARGETED_16_WORD_SEMANTIC_VERIFICATION_20261124_183722.txt | 335170 bytes | 11/24/2026 18:37:24
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_TARGETED_16_WORD_SOURCE_EVIDENCE_20261124_183722.csv | 113395 bytes | 11/24/2026 18:37:24
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_TARGETED_16_WORDS_20261124_183722.csv | 793123 bytes | 11/24/2026 18:37:24
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_TARGETED_COP2_TRANSFER_ANALYSIS_20261124_183722.csv | 1325 bytes | 11/24/2026 18:37:24
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_TARGETED_JR_ENCODING_ANALYSIS_20261124_183722.csv | 547 bytes | 11/24/2026 18:37:24
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_TRUE_INVENTORY_GENERATOR_CANDIDATES_20261124_195553.csv | 271 bytes | 11/24/2026 19:56:16
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_TRUE_INVENTORY_GENERATOR_PROVENANCE_20261124_195553.txt | 4030 bytes | 11/24/2026 19:56:16
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_XZ_CANDIDATE_AND_HEADLESS_REVIEW_20261125_163631.txt | 7917 bytes | 11/25/2026 16:36:31
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_XZ_DISTANCE_EXTRACTION_20261125_164027.txt | 3764 bytes | 11/25/2026 16:40:32
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_ADDSPIRIT_FINAL_SCOPE_FIX_20261125_105622.txt | 3037 bytes | 11/25/2026 10:56:27
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_ADDSPIRIT_HANDLE_CHECK_INSPECTION_20261125_100141.txt | 14263 bytes | 11/25/2026 10:01:41
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_ADDSPIRIT_INDEXED_HANDLE_FIX_20261125_100241.txt | 3571 bytes | 11/25/2026 10:02:44
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_CMAKE_EXECUTION_TARGET_INSPECTION_20261125_001527.txt | 22688 bytes | 11/25/2026 00:15:27
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_GPR_CONTEXT_DIAGNOSTIC_20261125_002500.txt | 9520 bytes | 11/25/2026 00:25:00
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_GPR_HARNESS_FIX_20261125_094619.txt | 746 bytes | 11/25/2026 09:46:20
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_MULTIFUNCTION_EXECUTION_20261125_000921.txt | 1515 bytes | 11/25/2026 00:09:21
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_MULTIFUNCTION_EXECUTION_20261125_001937.txt | 4373 bytes | 11/25/2026 00:19:43
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_MULTIFUNCTION_EXECUTION_20261125_002325.txt | 10841 bytes | 11/25/2026 00:23:36
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_MULTIFUNCTION_EXECUTION_CURRENT_BINARY_20261125_100119.txt | 2308 bytes | 11/25/2026 10:01:19
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_MULTIFUNCTION_GPR_FIX_20261125_095553.txt | 5532 bytes | 11/25/2026 09:56:01
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_MULTIFUNCTION_HARNESS_FORENSICS_20261125_095235.txt | 11849 bytes | 11/25/2026 09:52:35
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_MULTIFUNCTION_HARNESS_SOURCE_20261125_104743.txt | 17002 bytes | 11/25/2026 10:47:43
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_MULTIFUNCTION_REBUILD_20261125_094659.txt | 9452 bytes | 11/25/2026 09:47:08
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_MULTIFUNCTION_RUNTIME_BOUNDARY_FIX_20261125_095734.txt | 4458 bytes | 11/25/2026 09:57:38
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_MULTIFUNCTION_RUNTIME_BOUNDARY_INSPECTION_20261125_095704.txt | 10780 bytes | 11/25/2026 09:57:04
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_RUNTIME_BOUNDARY_FULL_INSPECTION_20261125_095908.txt | 4140 bytes | 11/25/2026 09:59:08
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_RUNTIME_BOUNDARY_LINK_FORENSICS_20261125_100058.txt | 13986 bytes | 11/25/2026 10:00:58
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_generation\MARK_OF_KRI_CONTROLLED_CANDIDATE_DIAGNOSTIC_20261125_111050.txt | 3815 bytes | 11/25/2026 11:10:50
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_generation\MARK_OF_KRI_MULTIFUNCTION_GENERATION_20261124_234441.txt | 21289 bytes | 11/24/2026 23:44:41
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_generation\MARK_OF_KRI_MULTIFUNCTION_SEMANTIC_AUDIT_20261124_234520.txt | 10181 bytes | 11/24/2026 23:45:20
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_generation\MARK_OF_KRI_NEXT_CONTROLLED_SLICE_SELECTION_20261125_111116.txt | 1864 bytes | 11/25/2026 11:11:16
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_generation\MARK_OF_KRI_NEXT_SLICE_GHIDRA_EXTRACTION_20261125_111352.txt | 7198 bytes | 11/25/2026 11:14:07
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_generation\MARK_OF_KRI_NEXT_SLICE_GHIDRA_EXTRACTION_20261125_111451.txt | 6880 bytes | 11/25/2026 11:14:57
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_generation\MARK_OF_KRI_NEXT_SLICE_GHIDRA_EXTRACTION_20261125_111651.txt | 7797 bytes | 11/25/2026 11:16:57
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_generation\MARK_OF_KRI_NEXT_SLICE_GHIDRA_EXTRACTION_20261125_111845.txt | 6577 bytes | 11/25/2026 11:18:51
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_generation\MARK_OF_KRI_NEXT_SLICE_INSTRUCTION_INSPECTION_20261125_111236.txt | 3980 bytes | 11/25/2026 11:12:36
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_generation\MARK_OF_KRI_PS2RECOMP_MULT_MOVN_TRANSLATOR_TRACE_20261124_235014.txt | 650045 bytes | 11/24/2026 23:50:17
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_resume\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_DIAGNOSTIC_20261124_234220.txt | 16006 bytes | 11/24/2026 23:42:23
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_resume\MARK_OF_KRI_MULTIFUNCTION_OUTPUT_LOCATION_20261124_234319.txt | 12973 bytes | 11/24/2026 23:43:20
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\next_controlled_translator_audit\MARK_OF_KRI_NEXT_CONTROLLED_TRANSLATOR_AUDIT_20261125_112210.txt | 4105 bytes | 11/25/2026 11:22:10
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\next_slice_semantic_inspection\MARK_OF_KRI_NEXT_SLICE_SEMANTIC_INSPECTION_20261125_112113.txt | 12821 bytes | 11/25/2026 11:21:13
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\PS2RECOMP_COMPATIBILITY_KEYWORD_INDEX_20261124_155606.csv | 154081 bytes | 11/24/2026 15:56:22
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\PS2RECOMP_DECODER_IMPLEMENTATION_CANDIDATES_20261124_161243.csv | 17384 bytes | 11/24/2026 16:13:04
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\PS2RECOMP_DECODER_SOURCE_EXCERPTS_20261124_161243.txt | 292497 bytes | 11/24/2026 16:13:04
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\PS2RECOMP_DECODER_SOURCE_INVENTORY_20261124_160800.csv | 129619 bytes | 11/24/2026 16:08:04
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\PS2RECOMP_DECODER_SOURCE_LINE_INDEX_20261124_162345.csv | 14999935 bytes | 11/24/2026 16:23:48
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\PS2RECOMP_IMPLEMENTATION_MAP_20261124_160235.csv | 175184 bytes | 11/24/2026 16:02:44
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\PS2RECOMP_RELEVANT_SOURCE_FILES_20261124_155846.csv | 36837 bytes | 11/24/2026 15:58:49
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\PS2RECOMP_RELEVANT_SOURCE_FILES_20261124_160014.csv | 36837 bytes | 11/24/2026 16:00:17
+.TXT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\PS2RECOMP_SOURCE_ACQUISITION_20261124_155606.txt | 1580 bytes | 11/24/2026 15:56:22
+.CSV | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\PS2RECOMP_SOURCE_INVENTORY_20261124_155606.csv | 18545 bytes | 11/24/2026 15:56:22
+.TXT | D:\Games\MarkOfKriRecomp\R5900_FUNCTION_CLASSIFICATION_RESULT.txt | 5153 bytes | 11/24/2026 08:21:49
+.TXT | D:\Games\MarkOfKriRecomp\R5900_FUNCTION_CLASSIFICATION_STDERR.txt | 0 bytes | 11/24/2026 08:21:43
+.TXT | D:\Games\MarkOfKriRecomp\R5900_FUNCTION_CLASSIFICATION_STDOUT.txt | 9292 bytes | 11/24/2026 08:21:49
+.TXT | D:\Games\MarkOfKriRecomp\R5900_FUNCTION_DATA_DEPENDENCY_AUDIT.txt | 1067398 bytes | 11/24/2026 08:31:24
+.TXT | D:\Games\MarkOfKriRecomp\R5900_FUNCTION_DATA_DEPENDENCY_RESULT.txt | 5752 bytes | 11/24/2026 08:31:24
+.TXT | D:\Games\MarkOfKriRecomp\R5900_FUNCTION_DATA_DEPENDENCY_STDERR.txt | 0 bytes | 11/24/2026 08:31:18
+.TXT | D:\Games\MarkOfKriRecomp\R5900_FUNCTION_DATA_DEPENDENCY_STDOUT.txt | 9016 bytes | 11/24/2026 08:31:24
+.TXT | D:\Games\MarkOfKriRecomp\R5900_GAME_MANAGER_FUNCTION_SECTION_REVIEW.txt | 44560 bytes | 11/24/2026 12:42:15
+.TXT | D:\Games\MarkOfKriRecomp\R5900_GAME_MANAGER_SYMBOL_RESOLUTION_REVIEW.txt | 1980 bytes | 11/24/2026 12:41:47
+.TXT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_AUDIT_RESULT.txt | 663526 bytes | 11/24/2026 07:58:01
+.TXT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_AUDIT_STDERR.txt | 0 bytes | 11/24/2026 07:57:54
+.TXT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_AUDIT_STDOUT.txt | 8942 bytes | 11/24/2026 07:58:01
+.TXT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_DATABASE_AUDIT.txt | 663419 bytes | 11/24/2026 07:58:01
+.TXT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_IMPORT_LOG.txt | 16766 bytes | 11/24/2026 07:53:19
+.TXT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_IMPORT_STDERR.txt | 0 bytes | 11/24/2026 07:52:00
+.TXT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_IMPORT_STDOUT.txt | 32562 bytes | 11/24/2026 07:53:19
+.TXT | D:\Games\MarkOfKriRecomp\R5900_MANAGER_PARAM_ACCESS_COMPLETE_FUNCTION_INDEX.txt | 1016835 bytes | 11/24/2026 13:19:38
+.TXT | D:\Games\MarkOfKriRecomp\R5900_MANAGER_PARAM_ACCESS_FUNCTION_TRIAGE.txt | 319358 bytes | 11/24/2026 13:18:45
+.TXT | D:\Games\MarkOfKriRecomp\R5900_MISSING_FUNCTION_CLASSIFICATION_AUDIT.txt | 66655 bytes | 11/24/2026 08:21:49
+.TXT | D:\Games\MarkOfKriRecomp\R5900_NPCMASTER_CONSOLIDATED_INITIALIZATION_MAP.txt | 35944 bytes | 11/24/2026 10:29:48
+.TXT | D:\Games\MarkOfKriRecomp\R5900_NPCMASTER_FINAL_RESET_VALUE_MAP_CORRECTED.txt | 5127 bytes | 11/24/2026 10:19:43
+.TXT | D:\Games\MarkOfKriRecomp\R5900_NPCMASTER_RESET_HELPER_FUNCTIONS.txt | 1111 bytes | 11/24/2026 10:21:07
+.TXT | D:\Games\MarkOfKriRecomp\R5900_NPCMASTER_RESET_INITIALIZATION_MAP.txt | 5285 bytes | 11/24/2026 10:10:10
+.TXT | D:\Games\MarkOfKriRecomp\R5900_ORPHAN_FUNCTION_BODY_GAP_VALIDATION.txt | 343662 bytes | 11/24/2026 15:05:42
+.TXT | D:\Games\MarkOfKriRecomp\R5900_ORPHAN_FUNCTION_OWNERSHIP_RECONCILIATION.txt | 507958 bytes | 11/24/2026 15:04:14
+.TXT | D:\Games\MarkOfKriRecomp\R5900_RECOMPILATION_READINESS_AUDIT.txt | 13266402 bytes | 11/24/2026 08:07:12
+.TXT | D:\Games\MarkOfKriRecomp\R5900_TARGET_FUNCTION_AUDIT_RESULT.txt | 45205 bytes | 11/24/2026 08:17:16
+.TXT | D:\Games\MarkOfKriRecomp\R5900_TARGET_FUNCTION_AUDIT_STDERR.txt | 0 bytes | 11/24/2026 08:17:08
+.TXT | D:\Games\MarkOfKriRecomp\R5900_TARGET_FUNCTION_AUDIT_STDOUT.txt | 8954 bytes | 11/24/2026 08:17:15
+.TXT | D:\Games\MarkOfKriRecomp\R5900_TARGET_FUNCTION_BOUNDARY_AUDIT.txt | 17662518 bytes | 11/24/2026 08:17:15
+.TXT | D:\Games\MarkOfKriRecomp\R5900_UNMAPPED_REFERENCE_AUDIT.txt | 36180 bytes | 11/24/2026 08:22:43
+.TXT | D:\Games\MarkOfKriRecomp\R5900_UNMAPPED_REFERENCE_RESULT.txt | 4538 bytes | 11/24/2026 08:22:44
+.TXT | D:\Games\MarkOfKriRecomp\R5900_UNMAPPED_REFERENCE_STDERR.txt | 0 bytes | 11/24/2026 08:22:38
+.TXT | D:\Games\MarkOfKriRecomp\R5900_UNMAPPED_REFERENCE_STDOUT.txt | 8944 bytes | 11/24/2026 08:22:44
+.TXT | D:\Games\MarkOfKriRecomp\status_check\MARK_OF_KRI_READ_ONLY_STATUS_20261124_172729.txt | 2027 bytes | 11/24/2026 17:27:30
+.TXT | D:\Games\MarkOfKriRecomp\status_check\MARK_OF_KRI_SEMANTIC_DIAGNOSTIC_20261124_172949.txt | 2444 bytes | 11/24/2026 17:29:49
+.JAVA | D:\Games\MarkOfKriRecomp\tools\ExportDeepAnalysis.java | 4974 bytes | 11/24/2026 05:20:00
+.JAVA | D:\Games\MarkOfKriRecomp\tools\ExportFunctionRelationships.java | 4038 bytes | 11/24/2026 05:18:41
+.JAVA | D:\Games\MarkOfKriRecomp\tools\ExportGhidraInfo.java | 2419 bytes | 11/24/2026 04:55:15
+.JAVA | D:\Games\MarkOfKriRecomp\tools\ExportProjectInventory.java | 3955 bytes | 11/24/2026 05:14:57
+.JAVA | D:\Games\MarkOfKriRecomp\tools\ghidra\ExportReferenceGraph.java | 10443 bytes | 11/24/2026 05:35:08
+.JAVA | D:\Games\MarkOfKriRecomp\tools\isolated_ghidra_scripts\orphan_function_body_gap_validation\scripts\OrphanFunctionBodyGapValidation.java | 13104 bytes | 11/24/2026 15:05:17
+.JAVA | D:\Games\MarkOfKriRecomp\tools\isolated_ghidra_scripts\orphan_function_ownership_reconciliation\scripts\OrphanFunctionOwnershipReconciliation.java | 11676 bytes | 11/24/2026 15:03:49
+.JAVA | D:\Games\MarkOfKriRecomp\tools\MarkOfKri_ControlFlowAudit.java | 12926 bytes | 11/24/2026 05:58:14
+.JAVA | D:\Games\MarkOfKriRecomp\tools\MarkOfKri_FunctionEntryInspection.java | 12418 bytes | 11/24/2026 06:12:44
+.JAVA | D:\Games\MarkOfKriRecomp\tools\R5900_Function_Decompilation_Audit.java | 3449 bytes | 11/24/2026 07:20:42
+
+===== EXACT TARGET ADDRESS SEARCH =====
+TARGET HIT | D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ECOFF_ROW_MATCH_TEMP.toml:731 | "__register_frame_info_table@0x0037F9A8",
+TARGET HIT | D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ECOFF_ROW_MATCH_TEMP.toml:732 | "__deregister_frame_info@0x0037FA00",
+TARGET HIT | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_FUNCTION_CANDIDATES_20261124_220601.csv:1191 | "__register_frame_info_table","0037f9a8","0037f9a8","0037f9cf",10,40,false,false
+TARGET HIT | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_FUNCTION_CANDIDATES_20261124_220601.csv:1600 | "dereg_frame","00104920","00104920","00104957",14,56,false,false
+TARGET HIT | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_FUNCTION_CANDIDATES_20261124_220601.csv:1792 | "reg_frame","001048e0","001048e0","0010491f",16,64,false,false
+TARGET HIT | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_FUNCTION_CANDIDATES_20261124_220601.csv:2886 | "__deregister_frame_info","0037fa00","0037fa00","0037fa77",30,120,false,false
+TARGET HIT | D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_MULTIFUNCTION_CANDIDATES_20261124_224040.csv:839 | "__register_frame_info_table","0037f9a8",10,"0037f9a8","0037f9cc",198,"MEMORY+BRANCH_OR_JUMP"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:104858 | "R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","104920","DELAY_SLOT | transfer=00386494 | transfer_mnemonic=b | slot=00386498 | slot_mnemonic=_sb | slot_bytes=A2620000"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:107828 | "R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","107897","001048e0 | reg_frame | body_bytes=64 | thunk=false | external=false | signature_source=DEFAULT"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:107829 | "R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","107898","00104920 | dereg_frame | body_bytes=56 | thunk=false | external=false | signature_source=DEFAULT"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:114384 | "R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","114453","0037f9a8 | __register_frame_info_table | body_bytes=40 | thunk=false | external=false | signature_source=DEFAULT"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:114386 | "R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","114455","0037fa00 | __deregister_frame_info | body_bytes=120 | thunk=false | external=false | signature_source=DEFAULT"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:115193 | "R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","115688","INDIRECT_TRANSFER | source=00104918 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=reg_frame@001048e0"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:115194 | "R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","115689","INDIRECT_TRANSFER | source=00104950 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=dereg_frame@00104920"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:122825 | "R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","123482","INDIRECT_TRANSFER | source=0037f9c8 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=__register_frame_info_table@0037f9a8"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:122826 | "R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","123483","INDIRECT_TRANSFER | source=0037fa70 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=__deregister_frame_info@0037fa00"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:238126 | "R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","259893","FUNCTION reg_frame@001048e0 REACHED_ORPHANS=0 VISITED_INSTRUCTIONS=14 INVALID_EDGES=1 MISSING_INSTRUCTIONS=0 TRANSFERS=1 FALLTHROUGH_EDGES=14 FLOW_EDGES=1 DELAY_SLOT_CANDIDATES=1"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:238127 | "R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","259894","FUNCTION dereg_frame@00104920 REACHED_ORPHANS=0 VISITED_INSTRUCTIONS=12 INVALID_EDGES=1 MISSING_INSTRUCTIONS=0 TRANSFERS=1 FALLTHROUGH_EDGES=12 FLOW_EDGES=1 DELAY_SLOT_CANDIDATES=1"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:242661 | "R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt","264428","FUNCTION __deregister_frame_info@0037fa00 REACHED_ORPHANS=0 VISITED_INSTRUCTIONS=28 INVALID_EDGES=2 MISSING_INSTRUCTIONS=0 TRANSFERS=7 FALLTHROUGH_EDGES=26 FLOW_EDGES=7 DELAY_SLOT_CANDIDATES=7"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:423706 | "R5900_RECOMPILATION_READINESS_AUDIT.txt","R5900_RECOMPILATION_READINESS_AUDIT.txt","104920","DELAY_SLOT | transfer=00386b00 | transfer_mnemonic=bne | slot=00386b04 | slot_mnemonic=_addiu | slot_bytes=27B10020"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:426594 | "R5900_RECOMPILATION_READINESS_AUDIT.txt","R5900_RECOMPILATION_READINESS_AUDIT.txt","107815","001048e0 | reg_frame | body_bytes=64 | thunk=false | external=false | signature_source=DEFAULT"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:426595 | "R5900_RECOMPILATION_READINESS_AUDIT.txt","R5900_RECOMPILATION_READINESS_AUDIT.txt","107816","00104920 | dereg_frame | body_bytes=56 | thunk=false | external=false | signature_source=DEFAULT"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:433150 | "R5900_RECOMPILATION_READINESS_AUDIT.txt","R5900_RECOMPILATION_READINESS_AUDIT.txt","114371","0037f9a8 | __register_frame_info_table | body_bytes=40 | thunk=false | external=false | signature_source=DEFAULT"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:433152 | "R5900_RECOMPILATION_READINESS_AUDIT.txt","R5900_RECOMPILATION_READINESS_AUDIT.txt","114373","0037fa00 | __deregister_frame_info | body_bytes=120 | thunk=false | external=false | signature_source=DEFAULT"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:528601 | "R5900_INSTRUCTION_ENCODING_AUDIT.txt","R5900_INSTRUCTION_ENCODING_AUDIT.txt","104920","0xDFA40090 | ld | count=4"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:538754 | "R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt","R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt","72","INDIRECT_TRANSFER | source=00104918 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=reg_frame@001048e0"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:538755 | "R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt","R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt","73","INDIRECT_TRANSFER | source=00104950 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=dereg_frame@00104920"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:546386 | "R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt","R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt","7866","INDIRECT_TRANSFER | source=0037f9c8 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=__register_frame_info_table@0037f9a8"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:546387 | "R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt","R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt","7867","INDIRECT_TRANSFER | source=0037fa70 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=__deregister_frame_info@0037fa00"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:725017 | "R5900_ORPHAN_CFG_REACHABILITY_AUDIT.txt","R5900_ORPHAN_CFG_REACHABILITY_AUDIT.txt","72","FUNCTION reg_frame@001048e0 REACHED_ORPHANS=0 VISITED_INSTRUCTIONS=14 INVALID_EDGES=1 MISSING_INSTRUCTIONS=0 TRANSFERS=1 FALLTHROUGH_EDGES=14 FLOW_EDGES=1 DELAY_SLOT_CANDIDATES=1"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:725018 | "R5900_ORPHAN_CFG_REACHABILITY_AUDIT.txt","R5900_ORPHAN_CFG_REACHABILITY_AUDIT.txt","73","FUNCTION dereg_frame@00104920 REACHED_ORPHANS=0 VISITED_INSTRUCTIONS=12 INVALID_EDGES=1 MISSING_INSTRUCTIONS=0 TRANSFERS=1 FALLTHROUGH_EDGES=12 FLOW_EDGES=1 DELAY_SLOT_CANDIDATES=1"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:729552 | "R5900_ORPHAN_CFG_REACHABILITY_AUDIT.txt","R5900_ORPHAN_CFG_REACHABILITY_AUDIT.txt","4607","FUNCTION __deregister_frame_info@0037fa00 REACHED_ORPHANS=0 VISITED_INSTRUCTIONS=28 INVALID_EDGES=2 MISSING_INSTRUCTIONS=0 TRANSFERS=7 FALLTHROUGH_EDGES=26 FLOW_EDGES=7 DELAY_SLOT_CANDIDATES=7"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:730785 | "R5900_GHIDRA_DATABASE_AUDIT.txt","R5900_GHIDRA_DATABASE_AUDIT.txt","424","001048e0 | reg_frame | body_bytes=64 | thunk=false | external=false"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:730786 | "R5900_GHIDRA_DATABASE_AUDIT.txt","R5900_GHIDRA_DATABASE_AUDIT.txt","425","00104920 | dereg_frame | body_bytes=56 | thunk=false | external=false"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:737341 | "R5900_GHIDRA_DATABASE_AUDIT.txt","R5900_GHIDRA_DATABASE_AUDIT.txt","6980","0037f9a8 | __register_frame_info_table | body_bytes=40 | thunk=false | external=false"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:737343 | "R5900_GHIDRA_DATABASE_AUDIT.txt","R5900_GHIDRA_DATABASE_AUDIT.txt","6982","0037fa00 | __deregister_frame_info | body_bytes=120 | thunk=false | external=false"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:751490 | "R5900_GHIDRA_AUDIT_RESULT.txt","R5900_GHIDRA_AUDIT_RESULT.txt","424","001048e0 | reg_frame | body_bytes=64 | thunk=false | external=false"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:751491 | "R5900_GHIDRA_AUDIT_RESULT.txt","R5900_GHIDRA_AUDIT_RESULT.txt","425","00104920 | dereg_frame | body_bytes=56 | thunk=false | external=false"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:758046 | "R5900_GHIDRA_AUDIT_RESULT.txt","R5900_GHIDRA_AUDIT_RESULT.txt","6980","0037f9a8 | __register_frame_info_table | body_bytes=40 | thunk=false | external=false"
+TARGET HIT | D:\Games\MarkOfKriRecomp\native_recompilation\MARK_OF_KRI_NATIVE_RECOMPILATION_EVIDENCE_INDEX_20261124_154147.csv:758048 | "R5900_GHIDRA_AUDIT_RESULT.txt","R5900_GHIDRA_AUDIT_RESULT.txt","6982","0037fa00 | __deregister_frame_info | body_bytes=120 | thunk=false | external=false"
+TARGET HIT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_EVIDENCE_ACQUISITION_20261125_155554.txt:365 | 839: "__register_frame_info_table","0037f9a8",10,"0037f9a8","0037f9cc",198,"MEMORY+BRANCH_OR_JUMP"
+TARGET HIT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\GET_ATTACK_ZONE_RANGE_EVIDENCE.txt:359 | 839: "__register_frame_info_table","0037f9a8",10,"0037f9a8","0037f9cc",198,"MEMORY+BRANCH_OR_JUMP"
+TARGET HIT | D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_EVIDENCE_20261125_155026.txt:359 | 839: "__register_frame_info_table","0037f9a8",10,"0037f9a8","0037f9cc",198,"MEMORY+BRANCH_OR_JUMP"
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt:72 | INDIRECT_TRANSFER | source=00104918 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt:73 | INDIRECT_TRANSFER | source=00104950 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=dereg_frame@00104920
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt:7866 | INDIRECT_TRANSFER | source=0037f9c8 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=__register_frame_info_table@0037f9a8
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt:7867 | INDIRECT_TRANSFER | source=0037fa70 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=__deregister_frame_info@0037fa00
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt:9265 | Source function: reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt:9282 | Source function: reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt:9299 | Source function: dereg_frame@00104920
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt:9316 | Source function: dereg_frame@00104920
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:107897 | 001048e0 | reg_frame | body_bytes=64 | thunk=false | external=false | signature_source=DEFAULT
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:107898 | 00104920 | dereg_frame | body_bytes=56 | thunk=false | external=false | signature_source=DEFAULT
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:114453 | 0037f9a8 | __register_frame_info_table | body_bytes=40 | thunk=false | external=false | signature_source=DEFAULT
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:114455 | 0037fa00 | __deregister_frame_info | body_bytes=120 | thunk=false | external=false | signature_source=DEFAULT
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:115688 | INDIRECT_TRANSFER | source=00104918 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:115689 | INDIRECT_TRANSFER | source=00104950 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=dereg_frame@00104920
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:123482 | INDIRECT_TRANSFER | source=0037f9c8 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=__register_frame_info_table@0037f9a8
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:123483 | INDIRECT_TRANSFER | source=0037fa70 | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=__deregister_frame_info@0037fa00
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:124881 | Source function: reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:124898 | Source function: reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:124915 | Source function: dereg_frame@00104920
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:124932 | Source function: dereg_frame@00104920
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:259893 | FUNCTION reg_frame@001048e0 REACHED_ORPHANS=0 VISITED_INSTRUCTIONS=14 INVALID_EDGES=1 MISSING_INSTRUCTIONS=0 TRANSFERS=1 FALLTHROUGH_EDGES=14 FLOW_EDGES=1 DELAY_SLOT_CANDIDATES=1
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:259894 | FUNCTION dereg_frame@00104920 REACHED_ORPHANS=0 VISITED_INSTRUCTIONS=12 INVALID_EDGES=1 MISSING_INSTRUCTIONS=0 TRANSFERS=1 FALLTHROUGH_EDGES=12 FLOW_EDGES=1 DELAY_SLOT_CANDIDATES=1
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:264428 | FUNCTION __deregister_frame_info@0037fa00 REACHED_ORPHANS=0 VISITED_INSTRUCTIONS=28 INVALID_EDGES=2 MISSING_INSTRUCTIONS=0 TRANSFERS=7 FALLTHROUGH_EDGES=26 FLOW_EDGES=7 DELAY_SLOT_CANDIDATES=7
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:344817 | __deregister_frame_info@0037fa00 | 0037fa00 | 11 | 4 | 1 | 0 | 0 | 4 | 0 | 0 | 0 | 0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:345175 | reg_frame@001048e0 | 001048e0 | 5 | 2 | 2 | 0 | 0 | 1 | 1 | 0 | 0 | 0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:345698 | __register_frame_info_table@0037f9a8 | 0037f9a8 | 2 | 2 | 1 | 0 | 0 | 2 | 0 | 0 | 0 | 0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:345757 | dereg_frame@00104920 | 00104920 | 4 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:357451 | reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:361211 | __register_frame_info_table@0037f9a8
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:361219 | __deregister_frame_info@0037fa00
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:392207 | __deregister_frame_info@0037fa00
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:392208 | __register_frame_info_table@0037f9a8
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FINAL_DECOMPILATION_READINESS_ASSESSMENT.txt:397180 | reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FUNCTION_DATA_DEPENDENCY_AUDIT.txt:18078 | __deregister_frame_info@0037fa00 | 0037fa00 | 11 | 4 | 1 | 0 | 0 | 4 | 0 | 0 | 0 | 0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FUNCTION_DATA_DEPENDENCY_AUDIT.txt:18436 | reg_frame@001048e0 | 001048e0 | 5 | 2 | 2 | 0 | 0 | 1 | 1 | 0 | 0 | 0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FUNCTION_DATA_DEPENDENCY_AUDIT.txt:18959 | __register_frame_info_table@0037f9a8 | 0037f9a8 | 2 | 2 | 1 | 0 | 0 | 2 | 0 | 0 | 0 | 0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_FUNCTION_DATA_DEPENDENCY_AUDIT.txt:19018 | dereg_frame@00104920 | 00104920 | 4 | 1 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_AUDIT_RESULT.txt:424 | 001048e0 | reg_frame | body_bytes=64 | thunk=false | external=false
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_AUDIT_RESULT.txt:425 | 00104920 | dereg_frame | body_bytes=56 | thunk=false | external=false
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_AUDIT_RESULT.txt:6980 | 0037f9a8 | __register_frame_info_table | body_bytes=40 | thunk=false | external=false
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_AUDIT_RESULT.txt:6982 | 0037fa00 | __deregister_frame_info | body_bytes=120 | thunk=false | external=false
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_DATABASE_AUDIT.txt:424 | 001048e0 | reg_frame | body_bytes=64 | thunk=false | external=false
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_DATABASE_AUDIT.txt:425 | 00104920 | dereg_frame | body_bytes=56 | thunk=false | external=false
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_DATABASE_AUDIT.txt:6980 | 0037f9a8 | __register_frame_info_table | body_bytes=40 | thunk=false | external=false
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_GHIDRA_DATABASE_AUDIT.txt:6982 | 0037fa00 | __deregister_frame_info | body_bytes=120 | thunk=false | external=false
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_GLOBAL_DATA_LAYOUT_AUDIT.txt:7519 | reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_GLOBAL_DATA_LAYOUT_AUDIT.txt:11279 | __register_frame_info_table@0037f9a8
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_GLOBAL_DATA_LAYOUT_AUDIT.txt:11287 | __deregister_frame_info@0037fa00
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_MUTABLE_GLOBAL_STRUCTURE_AUDIT.txt:12297 | __deregister_frame_info@0037fa00
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_MUTABLE_GLOBAL_STRUCTURE_AUDIT.txt:12298 | __register_frame_info_table@0037f9a8
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_MUTABLE_GLOBAL_STRUCTURE_AUDIT.txt:17270 | reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_NONEXECUTABLE_REFERENCE_AUDIT.txt:126 | 001048f4 | reg_frame@001048e0 | PARAM | addiu a0,a0,0x1330
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_NONEXECUTABLE_REFERENCE_AUDIT.txt:127 | 00104934 | dereg_frame@00104920 | PARAM | addiu a0,a0,0x1330
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_NONEXECUTABLE_REFERENCE_AUDIT.txt:124962 | 001048fc | reg_frame@001048e0 | PARAM | addiu a1,a1,0x7e80
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_NONEXECUTABLE_REFERENCE_AUDIT.txt:169448 | 0037f9ac | __register_frame_info_table@0037f9a8 | READ | lw v0,0x7e90(v1)
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_NONEXECUTABLE_REFERENCE_AUDIT.txt:169449 | 0037f9b8 | __register_frame_info_table@0037f9a8 | WRITE | sw a1,0x7e90(v1)
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_ORPHAN_CFG_REACHABILITY_AUDIT.txt:72 | FUNCTION reg_frame@001048e0 REACHED_ORPHANS=0 VISITED_INSTRUCTIONS=14 INVALID_EDGES=1 MISSING_INSTRUCTIONS=0 TRANSFERS=1 FALLTHROUGH_EDGES=14 FLOW_EDGES=1 DELAY_SLOT_CANDIDATES=1
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_ORPHAN_CFG_REACHABILITY_AUDIT.txt:73 | FUNCTION dereg_frame@00104920 REACHED_ORPHANS=0 VISITED_INSTRUCTIONS=12 INVALID_EDGES=1 MISSING_INSTRUCTIONS=0 TRANSFERS=1 FALLTHROUGH_EDGES=12 FLOW_EDGES=1 DELAY_SLOT_CANDIDATES=1
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_ORPHAN_CFG_REACHABILITY_AUDIT.txt:4607 | FUNCTION __deregister_frame_info@0037fa00 REACHED_ORPHANS=0 VISITED_INSTRUCTIONS=28 INVALID_EDGES=2 MISSING_INSTRUCTIONS=0 TRANSFERS=7 FALLTHROUGH_EDGES=26 FLOW_EDGES=7 DELAY_SLOT_CANDIDATES=7
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_RECOMPILATION_READINESS_AUDIT.txt:107815 | 001048e0 | reg_frame | body_bytes=64 | thunk=false | external=false | signature_source=DEFAULT
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_RECOMPILATION_READINESS_AUDIT.txt:107816 | 00104920 | dereg_frame | body_bytes=56 | thunk=false | external=false | signature_source=DEFAULT
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_RECOMPILATION_READINESS_AUDIT.txt:114371 | 0037f9a8 | __register_frame_info_table | body_bytes=40 | thunk=false | external=false | signature_source=DEFAULT
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_RECOMPILATION_READINESS_AUDIT.txt:114373 | 0037fa00 | __deregister_frame_info | body_bytes=120 | thunk=false | external=false | signature_source=DEFAULT
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_REFERENCE_ADDRESS_SPACE_AUDIT.txt:334 | Function: reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_REFERENCE_ADDRESS_SPACE_AUDIT.txt:339 | Function: dereg_frame@00104920
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_REFERENCE_ADDRESS_SPACE_AUDIT.txt:375 | Function: reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_REFERENCE_ADDRESS_SPACE_AUDIT.txt:380 | Function: dereg_frame@00104920
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_UNMAPPED_REFERENCE_AUDIT.txt:486 | Source function: reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_UNMAPPED_REFERENCE_AUDIT.txt:494 | Source function: dereg_frame@00104920
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_UNMAPPED_REFERENCE_AUDIT.txt:580 | Source function: reg_frame@001048e0
+TARGET HIT | D:\Games\MarkOfKriRecomp\R5900_UNMAPPED_REFERENCE_AUDIT.txt:588 | Source function: dereg_frame@00104920
+
+Total target hits: 114
+
+===== GHIDRA EXPORTER =====
+Exporter: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRecomp\tools\ghidra\ExportPS2Functions.java
+Size: 52649
+LastWrite: 11/24/2026 15:56:08
+Relevant exporter lines: 150
+  // Exports PS2Recomp TOML config (+ optional CSV) from Ghidra
+  import ghidra.program.model.address.Address;
+  import ghidra.program.model.address.AddressSet;
+  import ghidra.program.model.address.AddressSetView;
+  import ghidra.program.model.listing.Function;
+  import ghidra.program.model.listing.FunctionIterator;
+  import ghidra.program.model.listing.FunctionManager;
+  public class ExportPS2Functions extends GhidraScript {
+  // Names and values mirror ps2recomp::MipsOpcodes/SpecialFunctions/GprRegisters.
+  // For now I have to copy all functions from the runtime handler list
+  "QueryBootMode", "GetThreadTLS", "Copy", "GetEntryAddress", "RegisterExitHandler", "ret0", "ret1", "reta0",
+  "sceSifRpcLoop", "sceSifSearchModuleByAddress", "sceSifSetCmdBuffer", "sceSifSetDChain", "sceSifSetDma", "isceSifSetDChain", "isceSifSetDma",
+  + "(?:Thread|Sema|EventFlag|Alarm|Intc|IntcHandler2|Dmac|DmacHandler2|OsdConfigParam|MemorySize|VSyncFlag|Heap|TLS|Status|Cache|Syscall|TLB|TLBEntry|GsCrt)"
+  private static final class FunctionRecord {
+  boolean syntheticEntry = false;
+  private static final class AddressTakenCandidate {
+  AddressTakenCandidate(long sourceOffset, long target) {
+  private static int function(long raw) {
+  private static String tomlString(String value) {
+  // TOML expects "D:/path/to/elf" for this field.
+  name.startsWith("entry_") || name.startsWith("function_") || name.startsWith("LAB_")) {
+  private static boolean isLibraryFunctionName(String name) {
+  private static ClassificationResult classifyFunction(Function function) {
+  if (function == null) {
+  String name = function.getName();
+  if (function.isThunk()) {
+  Function target = function.getThunkedFunction(true);
+  if (isLibraryFunctionName(targetName)) {
+  if (isLibraryFunctionName(name)) {
+  private static String makeSelector(String name, long start, boolean includeAddress) {
+  if (includeAddress) {
+  private boolean isExecutableAddress(Address address) {
+  if (address == null) {
+  MemoryBlock block = currentProgram.getMemory().getBlock(address);
+  private boolean hasCallableLabelReference(Address address) {
+  if (address == null) {
+  ReferenceIterator refs = currentProgram.getReferenceManager().getReferencesTo(address);
+  Address from = ref.getFromAddress();
+  private static String makeAnonymousEntryName(long start) {
+  return String.format("entry_%08x", start & UINT32_MASK);
+  private Long readWord(Address address) {
+  if (address == null) {
+  return ((long) currentProgram.getMemory().getInt(address)) & UINT32_MASK;
+  private Address addressFromOffset(long offset) {
+  return currentProgram.getAddressFactory().getDefaultAddressSpace().getAddress(offset & UINT32_MASK);
+  private boolean looksLikeCallableEntry(long target, boolean allowLeafThunk) {
+  Address address = addressFromOffset(target);
+  if (!isExecutableAddress(address) || currentProgram.getListing().getInstructionAt(address) == null) {
+  Address probe;
+  probe = address.add(index * (long) MIPS_INSTRUCTION_SIZE);
+  function(raw) == SPECIAL_JR && rs == GPR_RA) {
+  int function = function(raw);
+  return function == SPECIAL_JR || function == SPECIAL_JALR;
+  (opcode == OPCODE_SPECIAL && function(raw) == SPECIAL_JALR);
+  private void addSyntheticEntry(List<FunctionRecord> records, Set<Long> existingStarts, long target) {
+  FunctionRecord record = new FunctionRecord();
+  record.name = makeAnonymousEntryName(target);
+  record.syntheticEntry = true;
+  private void collectMaterializedCodeEntries(List<FunctionRecord> records, Set<Long> existingStarts) {
+  AddressSet executableAddresses = new AddressSet();
+  executableAddresses.addRange(block.getStart(), block.getEnd());
+  InstructionIterator instructions = currentProgram.getListing().getInstructions(executableAddresses, true);
+  Long upperRawValue = readWord(instruction.getAddress());
+  Address lowAddress;
+  lowAddress = instruction.getAddress().add(lookahead * (long) MIPS_INSTRUCTION_SIZE);
+  Long lowRawValue = readWord(lowAddress);
+  Long nextRaw = readWord(addressFromOffset(
+  lowAddress.getOffset() + MIPS_INSTRUCTION_SIZE));
+  if (looksLikeCallableEntry(target, materializedAsCallArgument)) {
+  addSyntheticEntry(records, existingStarts, target);
+  private static boolean isDedicatedFunctionPointerBlock(String name) {
+  private void collectDataFunctionPointerEntries(List<FunctionRecord> records, Set<Long> existingStarts) {
+  List<AddressTakenCandidate> candidates = new ArrayList<>();
+  Address source;
+  if (target != null && looksLikeCallableEntry(target, true)) {
+  candidates.add(new AddressTakenCandidate(offset, target));
+  boolean dedicatedPointerBlock = isDedicatedFunctionPointerBlock(block.getName());
+  AddressTakenCandidate candidate = candidates.get(index);
+  boolean clustered = dedicatedPointerBlock;
+  addSyntheticEntry(records, existingStarts, candidate.target);
+  private List<FunctionRecord> collectExecutableLabelRecords(List<FunctionRecord> functionRecords) {
+  List<FunctionRecord> labelRecords = new ArrayList<>();
+  for (FunctionRecord record : functionRecords) {
+  if (symbol.getSymbolType() == SymbolType.FUNCTION) {
+  Address address = symbol.getAddress();
+  if (!isExecutableAddress(address)) {
+  long start = address.getOffset();
+  Instruction instruction = currentProgram.getListing().getInstructionAt(address);
+  if (!hasCallableLabelReference(address)) {
+  FunctionRecord record = new FunctionRecord();
+  record.syntheticEntry = true;
+  AddressSet executableAddresses = new AddressSet();
+  executableAddresses.addRange(block.getStart(), block.getEnd());
+  InstructionIterator instructions = currentProgram.getListing().getInstructions(executableAddresses, true);
+  Address address = instruction.getAddress();
+  long start = address.getOffset();
+  if (!hasCallableLabelReference(address)) {
+  FunctionRecord record = new FunctionRecord();
+  record.name = makeAnonymousEntryName(start);
+  record.syntheticEntry = true;
+
+===== CONFIGURATION SCHEMA REFERENCES =====
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\PS2RECOMP_BUILD_ARTIFACT_DISCOVERY.txt:37: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xAnalyzer\include\ps2recomp\toml_generator.h
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\PS2RECOMP_BUILD_ARTIFACT_DISCOVERY.txt:45: D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xAnalyzer\src\toml_generator.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\README.md:12: * `ps2xAnalyzer`: scans ELF/functions and writes TOML config (`stubs`, `skip`, instruction patches).
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\README.md:13: * `ps2xRecomp`: reads TOML + ELF, decodes R5900 instructions, and generates C++ output.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\README.md:69: 3. Use the exported TOML and CSV map.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\README.md:70: 4. Recompile with the exported TOML:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\README.md:73: ./ps2_recomp config.toml
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\README.md:79: ./ps2_analyzer your_game.elf config.toml
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\README.md:88: Main fields in `config.toml`:
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\README.md:91: * `general.ghidra_output`: recommended function map CSV exported from Ghidra.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\README.md:108: * Before manual binding, prefer recompilation from a Ghidra-exported TOML/CSV first. The extra boundaries and synthetic entry points are usually more important than manual early triage.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\README.md:115: ```toml
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\README.md:200: * Uses toml11 for TOML parsing
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:404: // for toml11
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:405: FETCHCONTENT_SOURCE_DIR_TOML11:PATH=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:446: //Enables UPDATE_DISCONNECTED behavior just for population of toml11
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:447: FETCHCONTENT_UPDATES_DISCONNECTED_TOML11:BOOL=OFF
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:992: TOML11_ENABLE_ACCESS_CHECK:BOOL=OFF
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:994: //precompile toml11 library
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:995: TOML11_PRECOMPILE:BOOL=OFF
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1094: toml11_BINARY_DIR:STATIC=D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1097: toml11_IS_TOP_LEVEL:STATIC=OFF
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1100: toml11_SOURCE_DIR:STATIC=D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-src
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1427: //Test TOML11_COMPILER_SUPPORTS_WALL
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1428: TOML11_COMPILER_SUPPORTS_WALL:INTERNAL=1
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1429: //Test TOML11_COMPILER_SUPPORTS_WCONVERSION
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1430: TOML11_COMPILER_SUPPORTS_WCONVERSION:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1431: //Test TOML11_COMPILER_SUPPORTS_WDOUBLE_PROMOTION
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1432: TOML11_COMPILER_SUPPORTS_WDOUBLE_PROMOTION:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1433: //Test TOML11_COMPILER_SUPPORTS_WDUPLICATED_BRANCHES
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1434: TOML11_COMPILER_SUPPORTS_WDUPLICATED_BRANCHES:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1435: //Test TOML11_COMPILER_SUPPORTS_WDUPLICATED_COND
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1436: TOML11_COMPILER_SUPPORTS_WDUPLICATED_COND:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1437: //Test TOML11_COMPILER_SUPPORTS_WERROR
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1438: TOML11_COMPILER_SUPPORTS_WERROR:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1439: //Test TOML11_COMPILER_SUPPORTS_WEXTRA
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1440: TOML11_COMPILER_SUPPORTS_WEXTRA:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1441: //Test TOML11_COMPILER_SUPPORTS_WLOGICAL_OP
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1442: TOML11_COMPILER_SUPPORTS_WLOGICAL_OP:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1443: //Test TOML11_COMPILER_SUPPORTS_WPEDANTIC
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1444: TOML11_COMPILER_SUPPORTS_WPEDANTIC:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1445: //Test TOML11_COMPILER_SUPPORTS_WRANGE_LOOP_ANALYSIS
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1446: TOML11_COMPILER_SUPPORTS_WRANGE_LOOP_ANALYSIS:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1447: //Test TOML11_COMPILER_SUPPORTS_WSHADOW
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1448: TOML11_COMPILER_SUPPORTS_WSHADOW:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1449: //Test TOML11_COMPILER_SUPPORTS_WSIGN_CONVERSION
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1450: TOML11_COMPILER_SUPPORTS_WSIGN_CONVERSION:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1451: //Test TOML11_COMPILER_SUPPORTS_WUNDEF
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeCache.txt:1452: TOML11_COMPILER_SUPPORTS_WUNDEF:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ECOFF_ROW_MATCH_TEMP.toml:8: # Path to Ghidra exported function map (optional CSV)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ECOFF_ROW_MATCH_TEMP.toml:9: ghidra_output = ""
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:25: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/Experimental.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:26: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/Nightly.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:27: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/Continuous.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:28: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/NightlyMemoryCheck.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:29: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/NightlyStart.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:30: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/NightlyUpdate.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:31: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/NightlyConfigure.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:32: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/NightlyBuild.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:33: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/NightlyTest.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:34: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/NightlyCoverage.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:35: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/NightlyMemCheck.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:36: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/NightlySubmit.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:37: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ExperimentalStart.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:38: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ExperimentalUpdate.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:39: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ExperimentalConfigure.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:40: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ExperimentalBuild.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:41: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ExperimentalTest.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:42: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ExperimentalCoverage.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:43: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ExperimentalMemCheck.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:44: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ExperimentalSubmit.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:45: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ContinuousStart.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:46: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ContinuousUpdate.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:47: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ContinuousConfigure.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:48: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ContinuousBuild.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:49: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ContinuousTest.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:50: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ContinuousCoverage.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:51: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ContinuousMemCheck.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:52: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/ContinuousSubmit.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:53: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/package.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:54: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/package_source.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:55: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/edit_cache.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:56: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/rebuild_cache.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:57: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/list_install_components.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:58: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/install.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:59: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/CMakeFiles/install/local.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:60: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/src/CMakeFiles/package.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:61: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/src/CMakeFiles/package_source.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:62: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/src/CMakeFiles/edit_cache.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:63: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/src/CMakeFiles/rebuild_cache.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:64: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/src/CMakeFiles/list_install_components.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:65: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/src/CMakeFiles/install.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\CMakeFiles\TargetDirectories.txt:66: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/_deps/toml11-build/src/CMakeFiles/install/local.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include\libavutil\pixfmt.h:711: AVCHROMA_LOC_BOTTOMLEFT  = 5,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include\SDL2\SDL_pixels.h:520: * This function maps the RGB color value to the specified pixel format and
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include\SDL2\SDL_pixels.h:553: * This function maps the RGBA color value to the specified pixel format and
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include\SDL2\SDL_video.h:1724: SDL_HITTEST_RESIZE_BOTTOMLEFT,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:390: // for toml11
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:391: FETCHCONTENT_SOURCE_DIR_TOML11:PATH=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:432: //Enables UPDATE_DISCONNECTED behavior just for population of toml11
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:433: FETCHCONTENT_UPDATES_DISCONNECTED_TOML11:BOOL=OFF
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:978: TOML11_ENABLE_ACCESS_CHECK:BOOL=OFF
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:980: //precompile toml11 library
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:981: TOML11_PRECOMPILE:BOOL=OFF
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1080: toml11_BINARY_DIR:STATIC=D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/_deps/toml11-build
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1083: toml11_IS_TOP_LEVEL:STATIC=OFF
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1086: toml11_SOURCE_DIR:STATIC=D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/_deps/toml11-src
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1403: //Test TOML11_COMPILER_SUPPORTS_WALL
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1404: TOML11_COMPILER_SUPPORTS_WALL:INTERNAL=1
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1405: //Test TOML11_COMPILER_SUPPORTS_WCONVERSION
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1406: TOML11_COMPILER_SUPPORTS_WCONVERSION:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1407: //Test TOML11_COMPILER_SUPPORTS_WDOUBLE_PROMOTION
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1408: TOML11_COMPILER_SUPPORTS_WDOUBLE_PROMOTION:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1409: //Test TOML11_COMPILER_SUPPORTS_WDUPLICATED_BRANCHES
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1410: TOML11_COMPILER_SUPPORTS_WDUPLICATED_BRANCHES:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1411: //Test TOML11_COMPILER_SUPPORTS_WDUPLICATED_COND
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1412: TOML11_COMPILER_SUPPORTS_WDUPLICATED_COND:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1413: //Test TOML11_COMPILER_SUPPORTS_WERROR
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1414: TOML11_COMPILER_SUPPORTS_WERROR:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1415: //Test TOML11_COMPILER_SUPPORTS_WEXTRA
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1416: TOML11_COMPILER_SUPPORTS_WEXTRA:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1417: //Test TOML11_COMPILER_SUPPORTS_WLOGICAL_OP
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1418: TOML11_COMPILER_SUPPORTS_WLOGICAL_OP:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1419: //Test TOML11_COMPILER_SUPPORTS_WPEDANTIC
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1420: TOML11_COMPILER_SUPPORTS_WPEDANTIC:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1421: //Test TOML11_COMPILER_SUPPORTS_WRANGE_LOOP_ANALYSIS
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1422: TOML11_COMPILER_SUPPORTS_WRANGE_LOOP_ANALYSIS:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1423: //Test TOML11_COMPILER_SUPPORTS_WSHADOW
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1424: TOML11_COMPILER_SUPPORTS_WSHADOW:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1425: //Test TOML11_COMPILER_SUPPORTS_WSIGN_CONVERSION
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1426: TOML11_COMPILER_SUPPORTS_WSIGN_CONVERSION:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1427: //Test TOML11_COMPILER_SUPPORTS_WUNDEF
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeCache.txt:1428: TOML11_COMPILER_SUPPORTS_WUNDEF:INTERNAL=
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeFiles\TargetDirectories.txt:14: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/_deps/toml11-build/CMakeFiles/Experimental.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeFiles\TargetDirectories.txt:15: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/_deps/toml11-build/CMakeFiles/Nightly.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeFiles\TargetDirectories.txt:16: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/_deps/toml11-build/CMakeFiles/Continuous.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeFiles\TargetDirectories.txt:17: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/_deps/toml11-build/CMakeFiles/NightlyMemoryCheck.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeFiles\TargetDirectories.txt:18: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/_deps/toml11-build/CMakeFiles/PACKAGE.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeFiles\TargetDirectories.txt:19: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/_deps/toml11-build/CMakeFiles/INSTALL.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeFiles\TargetDirectories.txt:20: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/_deps/toml11-build/CMakeFiles/ALL_BUILD.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeFiles\TargetDirectories.txt:21: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/_deps/toml11-build/src/CMakeFiles/PACKAGE.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\CMakeFiles\TargetDirectories.txt:22: D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build_controlled_20261127_211522/_deps/toml11-build/src/CMakeFiles/INSTALL.dir
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include\libavutil\pixfmt.h:711: AVCHROMA_LOC_BOTTOMLEFT  = 5,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include\SDL2\SDL_pixels.h:520: * This function maps the RGB color value to the specified pixel format and
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include\SDL2\SDL_pixels.h:553: * This function maps the RGBA color value to the specified pixel format and
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\ThirdParty\ffmpeg-prefix\src\ffmpeg_external\include\SDL2\SDL_video.h:1724: SDL_HITTEST_RESIZE_BOTTOMLEFT,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xAnalyzer\CMakeLists.txt:23: src/toml_generator.cpp
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xAnalyzer\Readme.md:3: The PS2 ELF Analyzer Tool automates the creation of TOML configuration files for the PS2Recomp static recompiler. It identifies function boundaries, library stubs, and problematic instructions.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xAnalyzer\Readme.md:37: 2. Run it in Ghidra to export a CSV map of all functions.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xAnalyzer\Readme.md:38: 3. Let the script generate the TOML, and keep the CSV path in `ghidra_output = "path/to/map.csv"`.
+
+Configuration/schema hits: 358
+
+===== GENERATOR BINARIES =====
+ps2_recomp.exe
+  Path: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xRecomp\ps2_recomp.exe
+  Size: 3468288
+  SHA256: E1945E73537BAFBE99F58728C51178A30FADEC12D09B230E92B39C19424CBF84
+ps2_recomp.exe
+  Path: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\ps2xRecomp\Release\ps2_recomp.exe
+  Size: 1488896
+  SHA256: 121C568ADB68D58EE806123430B5F182E938325BC75AE5F82A2B77B975EAD2B0
+ps2_analyzer.exe
+  Path: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\ps2xAnalyzer\ps2_analyzer.exe
+  Size: 17122304
+  SHA256: 93E5B3AC108BAEFF56E8D3146576798446DA5EB2D311D4EFE4A77A66BF1523C7
+ps2_analyzer.exe
+  Path: D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build_controlled_20261127_211522\ps2xAnalyzer\Release\ps2_analyzer.exe
+  Size: 13053952
+  SHA256: 2F629E2AF8BA19CC2EA5015844A8C243C382F9D4ED92409F429D30FDADC67B0C
+
+===== CONTROLLED RUNNER =====
+Exists: YES
+Size: 2843136
+LastWrite: 11/28/2026 04:33:07
+SHA256: EBDACC23FC30535E7C5799D86B92CC1A8D4B4D5401BA434E0936FEDEF967661A
+Exact controlled runner processes: 0
+
+Actual elapsed: 16.91 seconds
+NO GENERATOR EXECUTED.
+NO ANALYZER EXECUTED.
+NO GHIDRA EXECUTED.
+NO SOURCE MODIFIED.
+NO BUILD STARTED.
