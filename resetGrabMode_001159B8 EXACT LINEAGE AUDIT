@@ -1,0 +1,337 @@
+MARK OF KRI — resetGrabMode_001159B8 EXACT LINEAGE AUDIT
+Generated: 2026-11-28 00:31:08
+Purpose: Identify the exact generated source, generator, inputs, and promotion lineage for resetGrabMode.
+Read-only: no files modified.
+
+===== RUNTIME TARGET =====
+Path:          D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+Length:        1415
+Created:       11/26/2026 8:46:28 PM
+Modified:      11/26/2026 8:27:40 PM
+SHA256:        D79D96EAC5A8EE46728BD784353AE11060598645389A191AE67757D7E57704A5
+
+----- RUNTIME SOURCE -----
+#include <stdexcept>
+#include "ps2_runtime_macros.h"
+#include "ps2_runtime.h"
+#include <ps2_recompiled_functions.h>
+#include <ps2_recompiled_stubs.h>
+
+#include "ps2_syscalls.h"
+#include "ps2_stubs.h"
+
+#ifdef PS2_FUNCTION_LOG_TRACKER
+#include "ps2_log.h"
+#endif
+
+// Function: resetGrabMode__6Camera
+// Address: 0x1159b8 - 0x1159c4
+void resetGrabMode__6Camera(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+#ifdef PS2_FUNCTION_LOG_TRACKER
+    PS_LOG_ENTRY("resetGrabMode__6Camera");
+#endif
+
+    ctx->pc = 0x1159b8u;
+
+    // 0x1159b8: 0xac8003bc  sw zero,0x3bc(a0)
+    ctx->pc = 0x1159b8u;
+    WRITE32(ADD32(GPR_U32(ctx, 4), 956), GPR_U32(ctx, 0));
+    // 0x1159bc: 0x3e00008  jr ra
+    ctx->pc = 0x1159BCu;
+    {
+        const uint32_t jumpTarget = GPR_U32(ctx, 31);
+        ctx->pc = 0x1159C0u;
+        ctx->in_delay_slot = true;
+        ctx->branch_pc = 0x1159BCu;
+        // 0x1159c0: 0x24020001  addiu v0,zero,1 (Delay Slot)
+        SET_GPR_S32(ctx, 2, (int32_t)ADD32(GPR_U32(ctx, 0), 1));
+        ctx->in_delay_slot = false;
+        ctx->pc = jumpTarget;
+        #if defined(PS2X_STRICT_RETURN_DIAGNOSTICS) && PS2X_STRICT_RETURN_DIAGNOSTICS
+        (void)runtime->dispatchGuestBranch(rdram, ctx, jumpTarget, 0x1159BCu, 0u, PS2Runtime::GuestBranchKind::Return, "JR $ra");
+        return;
+        #else
+        ctx->pc = jumpTarget;
+        return;
+        #endif
+    }
+    ctx->pc = 0x1159C4u;
+}
+
+
+===== EXACT FILENAME SEARCH =====
+FOUND: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+  Length:   2100
+  Created:  11/24/2026 10:08:46 PM
+  Modified: 11/24/2026 10:08:46 PM
+  SHA256:   88FA3654AD2A6061E62D1C9910F98C1D6EB0D29AE1D68104AD7CF2C616CCA59A
+FOUND: D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+  Length:   1415
+  Created:  11/26/2026 8:46:28 PM
+  Modified: 11/26/2026 8:27:40 PM
+  SHA256:   D79D96EAC5A8EE46728BD784353AE11060598645389A191AE67757D7E57704A5
+
+===== FUNCTION / ADDRESS SEARCH =====
+D:\Games\MarkOfKriRecomp\R5900_CONTROL_FLOW_ANOMALY_AUDIT.txt:L164: INDIRECT_TRANSFER | source=001159bc | instruction=jr | bytes=0800E003 | flow=TERMINATOR | function=resetGrabMode__6Camera@001159b8
+D:\Games\MarkOfKriRecomp\R5900_FUNCTION_DATA_DEPENDENCY_AUDIT.txt:L20073: resetGrabMode__6Camera@001159b8 | 001159b8 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+D:\Games\MarkOfKriRecomp\R5900_GHIDRA_AUDIT_RESULT.txt:L505: 001159b8 | resetGrabMode__6Camera | body_bytes=12 | thunk=false | external=false
+D:\Games\MarkOfKriRecomp\R5900_GHIDRA_DATABASE_AUDIT.txt:L505: 001159b8 | resetGrabMode__6Camera | body_bytes=12 | thunk=false | external=false
+D:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\compile_commands.json:L346: "command": "\"D:\\Downloads\\Microsoft Visual Studio\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe\"  /nologo /TP -DAGRESSIVE_LOGS=1 -DGRAPHICS_API_OPENGL_33 -DPLATFORM_DESKTOP -DPS2X_ENABLE_DEBUG_UI=1 -DPS2X_ENABLE_IOP_RPC_TRACE=1 -DPS2_FUNCTION_LOG_TRACKER=1 -DPS2_RUNTIME_LOGS=1 -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\ps2xRuntime\\..\\..\\..\\native\\generated\\controlled_slice\\include -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\ps2xRuntime\\include -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\ps2xRuntime\\src\\lib\\Kernel -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\ps2xRuntime\\..\\ps2xIOP\\include -ID:\\Games\\MarkOfKriRecomp\\build_mark_of_kri_runtime_debug\\_deps\\raylib-src\\src -ID:\\Games\\MarkOfKriRecomp\\build_mark_of_kri_runtime_debug\\_deps\\raylib-src\\src\\external\\glfw\\include -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\ps2xIOP\\include -ID:\\Games\\MarkOfKriRecomp\\build_mark_of_kri_runtime_debug\\_deps\\rlimgui-src -ID:\\Games\\MarkOfKriRecomp\\build_mark_of_kri_runtime_debug\\_deps\\imgui-src -external:ID:\\Games\\MarkOfKriRecomp\\build_mark_of_kri_runtime_debug\\ThirdParty\\ffmpeg-prefix\\src\\ffmpeg_external\\include -external:W0 /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++20 -MDd /FS /FoCMakeFiles\\ps2EntryRunner.dir\\D_\\Games\\MarkOfKriRecomp\\native\\runtime\\mark_of_kri\\MARK_OF_KRI_resetGrabMode_001159B8.cpp.obj /FdCMakeFiles\\ps2EntryRunner.dir\\ /FS -c D:\\Games\\MarkOfKriRecomp\\native\\runtime\\mark_of_kri\\MARK_OF_KRI_resetGrabMode_001159B8.cpp",
+D:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\compile_commands.json:L347: "file": "D:/Games/MarkOfKriRecomp/native/runtime/mark_of_kri/MARK_OF_KRI_resetGrabMode_001159B8.cpp",
+D:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\compile_commands.json:L348: "output": "D:/Games/MarkOfKriRecomp/build_mark_of_kri_runtime_debug/CMakeFiles/ps2EntryRunner.dir/D_/Games/MarkOfKriRecomp/native/runtime/mark_of_kri/MARK_OF_KRI_resetGrabMode_001159B8.cpp.obj"
+D:\Games\MarkOfKriRecomp\build_mark_of_kri_runtime_debug\.cmake\api\v1\reply\target-ps2EntryRunner-Debug-9ce7e810b2644db9ff24.json:L525: "path" : "D:/Games/MarkOfKriRecomp/native/runtime/mark_of_kri/MARK_OF_KRI_resetGrabMode_001159B8.cpp",
+D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_EXECUTION_INTERFACE_REVIEW_20261125_131703.txt:L700: void resetGrabMode__6Camera(
+D:\Games\MarkOfKriRecomp\diagnostics\TWO_FUNCTION_EXECUTION_INTERFACE_REVIEW_20261125_131703.txt:L736: resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\compile_commands.json:L1210: "command": "\"D:\\Downloads\\Microsoft Visual Studio\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe\"  /nologo /TP -DAGRESSIVE_LOGS=1 -DGRAPHICS_API_OPENGL_33 -DPLATFORM_DESKTOP -DPS2X_ENABLE_DEBUG_UI=1 -DPS2X_ENABLE_IOP_RPC_TRACE=1 -DPS2_FUNCTION_LOG_TRACKER=1 -DPS2_RUNTIME_LOGS=1 -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\ps2xRuntime\\..\\..\\..\\native\\generated\\controlled_slice\\include -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\ps2xRuntime\\include -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\ps2xRuntime\\src\\lib\\Kernel -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\ps2xRuntime\\..\\ps2xIOP\\include -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\out\\build\\x64-Release\\_deps\\raylib-src\\src -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\out\\build\\x64-Release\\_deps\\raylib-src\\src\\external\\glfw\\include -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\ps2xIOP\\include -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\out\\build\\x64-Release\\_deps\\rlimgui-src -ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\out\\build\\x64-Release\\_deps\\imgui-src -external:ID:\\Games\\MarkOfKriRecomp\\external\\PS2Recomp\\out\\build\\x64-Release\\ThirdParty\\ffmpeg-prefix\\src\\ffmpeg_external\\include -external:W0 /DWIN32 /D_WINDOWS /EHsc /Zi /O2 /Ob1 /DNDEBUG -std:c++20 -MD /FS /YuD:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xRuntime/CMakeFiles/ps2EntryRunner.dir/cmake_pch.hxx /FpD:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xRuntime/CMakeFiles/ps2EntryRunner.dir/.//cmake_pch.cxx.pch /FID:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xRuntime/CMakeFiles/ps2EntryRunner.dir/cmake_pch.hxx /Fops2xRuntime\\CMakeFiles\\ps2EntryRunner.dir\\D_\\Games\\MarkOfKriRecomp\\native\\runtime\\mark_of_kri\\MARK_OF_KRI_resetGrabMode_001159B8.cpp.obj /Fdps2xRuntime\\CMakeFiles\\ps2EntryRunner.dir\\ /FS -c D:\\Games\\MarkOfKriRecomp\\native\\runtime\\mark_of_kri\\MARK_OF_KRI_resetGrabMode_001159B8.cpp",
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\compile_commands.json:L1211: "file": "D:/Games/MarkOfKriRecomp/native/runtime/mark_of_kri/MARK_OF_KRI_resetGrabMode_001159B8.cpp",
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\out\build\x64-Release\compile_commands.json:L1212: "output": "D:/Games/MarkOfKriRecomp/external/PS2Recomp/out/build/x64-Release/ps2xRuntime/CMakeFiles/ps2EntryRunner.dir/D_/Games/MarkOfKriRecomp/native/runtime/mark_of_kri/MARK_OF_KRI_resetGrabMode_001159B8.cpp.obj"
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\CMakeLists.txt:L471: "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L14: // Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L15: // Address: 0x1159b8 - 0x1159c4
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L16: void resetGrabMode__6Camera(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L18: PS_LOG_ENTRY("resetGrabMode__6Camera");
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L21: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L23: // 0x1159b8: 0xac8003bc  sw zero,0x3bc(a0)
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L24: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L54: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L62: g_ps2RecompiledFunctionTable[0] = resetGrabMode__6Camera; // 0x1159b8
+D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:L4: extern void resetGrabMode__6Camera(uint8_t*, R5900Context*, PS2Runtime*);
+D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:L19: registered = runtime.registerFunction(0x001159B8u, &resetGrabMode__6Camera) && registered;
+D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\mark_of_kri_registration.cpp:L32: verified = runtime.hasFunction(0x001159B8u) && verified;
+D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L14: // Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L15: // Address: 0x1159b8 - 0x1159c4
+D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L16: void resetGrabMode__6Camera(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L18: PS_LOG_ENTRY("resetGrabMode__6Camera");
+D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L21: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L23: // 0x1159b8: 0xac8003bc  sw zero,0x3bc(a0)
+D:\Games\MarkOfKriRecomp\native\runtime\mark_of_kri\MARK_OF_KRI_resetGrabMode_001159B8.cpp:L24: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt:L17: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt:L38: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt:L70: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L20: constexpr uint32_t start = 0x001159B8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L24: symbol.name = "resetGrabMode__6Camera";
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L37: function.name = "resetGrabMode__6Camera";
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L48: store.address = 0x001159B8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L106: generatedFunction.find("resetGrabMode__6Camera") != std::string::npos);
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L108: generatedFunction.find("0x1159b8") != std::string::npos);
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L114: registration.find("resetGrabMode__6Camera") != std::string::npos);
+D:\Games\MarkOfKriRecomp\native\tests\recomp\real_function_execution_test.cpp:L8: void resetGrabMode__6Camera(
+D:\Games\MarkOfKriRecomp\native\tests\recomp\real_function_execution_test.cpp:L44: resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L397: FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L414: // Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L415: // Address: 0x1159b8 - 0x1159c4
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L416: void resetGrabMode__6Camera(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L418: PS_LOG_ENTRY("resetGrabMode__6Camera");
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L421: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L423: // 0x1159b8: 0xac8003bc  sw zero,0x3bc(a0)
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L424: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L454: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L462: g_ps2RecompiledFunctionTable[0] = resetGrabMode__6Camera; // 0x1159b8
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L984: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L1005: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L1037: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L1933: void resetGrabMode__6Camera(
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L1969: resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L397: FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L414: // Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L415: // Address: 0x1159b8 - 0x1159c4
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L416: void resetGrabMode__6Camera(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L418: PS_LOG_ENTRY("resetGrabMode__6Camera");
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L421: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L423: // 0x1159b8: 0xac8003bc  sw zero,0x3bc(a0)
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L424: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L454: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L462: g_ps2RecompiledFunctionTable[0] = resetGrabMode__6Camera; // 0x1159b8
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L984: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L1005: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L1037: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L1933: void resetGrabMode__6Camera(
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L1969: resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_HARNESS_TEMPLATES_20261125_155214.txt:L1350: 17:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_HARNESS_TEMPLATES_20261125_155214.txt:L1371: 38:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_HARNESS_TEMPLATES_20261125_155214.txt:L1403: 70:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_HARNESS_TEMPLATES_20261125_155214.txt:L1896: 8: void resetGrabMode__6Camera(
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_HARNESS_TEMPLATES_20261125_155214.txt:L1932: 44:     resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_HARNESS_TEMPLATES_20261125_155214.txt:L4397: 8: "resetGrabMode__6Camera","001159b8","001159b8","AC8003BC","sw","sw zero,0x3bc(a0)","FALL_THROUGH",4
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_HARNESS_TEMPLATES_20261125_155214.txt:L4398: 9: "resetGrabMode__6Camera","001159b8","001159bc","03E00008","jr","jr ra","TERMINATOR",4
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_ATTACK_ZONE_HARNESS_TEMPLATES_20261125_155214.txt:L4399: 10: "resetGrabMode__6Camera","001159b8","001159c0","24020001","_li","_li v0,0x1","FALL_THROUGH",4
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_DECODER_INTERFACE_INSPECTION_20261124_232442.txt:L644: 20:     constexpr uint32_t start = 0x001159B8u;
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_DECODER_INTERFACE_INSPECTION_20261124_232442.txt:L648: 24:     symbol.name = "resetGrabMode__6Camera";
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_DECODER_INTERFACE_INSPECTION_20261124_232442.txt:L661: 37:     function.name = "resetGrabMode__6Camera";
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_DECODER_INTERFACE_INSPECTION_20261124_232442.txt:L672: 48:     store.address = 0x001159B8u;
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_DECODER_INTERFACE_INSPECTION_20261124_232442.txt:L730: 106:           generatedFunction.find("resetGrabMode__6Camera") != std::string::npos);
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_DECODER_INTERFACE_INSPECTION_20261124_232442.txt:L732: 108:           generatedFunction.find("0x1159b8") != std::string::npos);
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_DECODER_INTERFACE_INSPECTION_20261124_232442.txt:L738: 114:           registration.find("resetGrabMode__6Camera") != std::string::npos);
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_DECODER_INTERFACE_INSPECTION_20261124_232442.txt:L847: 17:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_DECODER_INTERFACE_INSPECTION_20261124_232442.txt:L868: 38:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_DECODER_INTERFACE_INSPECTION_20261124_232442.txt:L900: 70:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L40: constexpr uint32_t start = 0x001159B8u;
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L44: symbol.name = "resetGrabMode__6Camera";
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L57: function.name = "resetGrabMode__6Camera";
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L68: store.address = 0x001159B8u;
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L126: generatedFunction.find("resetGrabMode__6Camera") != std::string::npos);
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L128: generatedFunction.find("0x1159b8") != std::string::npos);
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L134: registration.find("resetGrabMode__6Camera") != std::string::npos);
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L183: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L204: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L236: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L252: PATH: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L267: // Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L268: // Address: 0x1159b8 - 0x1159c4
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L269: void resetGrabMode__6Camera(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L271: PS_LOG_ENTRY("resetGrabMode__6Camera");
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L274: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L276: // 0x1159b8: 0xac8003bc  sw zero,0x3bc(a0)
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L277: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L307: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L315: g_ps2RecompiledFunctionTable[0] = resetGrabMode__6Camera; // 0x1159b8
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L334: void resetGrabMode__6Camera(
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_MULTIFUNCTION_GENERATOR_API_REVIEW_20261124_230850.txt:L370: resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220725.txt:L3: Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220725.txt:L4: Guest address: 0x001159B8
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt:L3: Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt:L4: Guest address: 0x001159B8
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt:L50: // Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt:L51: // Address: 0x1159b8 - 0x1159c4
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt:L52: void resetGrabMode__6Camera(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt:L54: PS_LOG_ENTRY("resetGrabMode__6Camera");
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt:L57: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt:L59: // 0x1159b8: 0xac8003bc  sw zero,0x3bc(a0)
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt:L60: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt:L90: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt:L98: g_ps2RecompiledFunctionTable[0] = resetGrabMode__6Camera; // 0x1159b8
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt:L104: Generated C++: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_CODEGEN_20261124_220843.txt:L116: Generated source path: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_COMPILE_RETRY_20261124_221102.txt:L3: Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_COMPILE_RETRY_20261124_221102.txt:L4: Guest address: 0x001159B8
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_COMPILE_RETRY_20261124_221102.txt:L5: Generated source: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_COMPILE_RETRY_20261124_221102.txt:L57: MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_COMPILE_RETRY_20261124_221102.txt:L60: (compiling source file '../../generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp')
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_EXECUTION_20261124_222559.txt:L3: Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_EXECUTION_20261124_222559.txt:L4: Guest entry: 0x001159B8
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_EXECUTION_20261124_222559.txt:L6: 0x001159B8: sw zero,0x3BC(a0)
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_EXECUTION_20261124_222559.txt:L63: MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_EXECUTION_RESULT_20261124_222830.txt:L3: Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_EXECUTION_RESULT_20261124_222830.txt:L4: Guest entry: 0x001159B8
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_IOP_FIX_20261124_221356.txt:L3: Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_IOP_FIX_20261124_221356.txt:L4: Guest address: 0x001159B8
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_IOP_FIX_20261124_221356.txt:L5: Generated source: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_IOP_FIX_20261124_221356.txt:L59: MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_IOP_FIX_20261124_221356.txt:L62: (compiling source file '../../generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp')
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_IOP_FIX_20261124_221356.txt:L126: MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_IOP_FIX_20261124_221356.txt:L129: (compiling source file '../../generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp')
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_OBJECT_COMPILE_20261124_221820.txt:L3: Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_OBJECT_COMPILE_20261124_221820.txt:L4: Guest address: 0x001159B8
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_OBJECT_COMPILE_20261124_221820.txt:L5: Generated source: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_OBJECT_COMPILE_20261124_221820.txt:L57: MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_OBJECT_COMPILE_20261124_221820.txt:L68: Object file: D:\Games\MarkOfKriRecomp\native\build\codegen_smoke_vs2026\markofkri_real_function_compile.dir\Release\MARK_OF_KRI_resetGrabMode_001159B8.obj
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_SLICE_DISCOVERY_20261124_220601.txt:L70: resetGrabMode__6Camera | Entry=001159b8 | Range=001159b8-001159c3 | Instructions=3 | Bytes=12
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_SLICE_DISCOVERY_20261124_220601.txt:L101: 001159b8 | AC8003BC | sw | sw zero,0x3bc(a0) | Function=resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_SLICE_DISCOVERY_20261124_220601.txt:L102: 001159bc | 03E00008 | jr | jr ra | Function=resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_SLICE_DISCOVERY_20261124_220601.txt:L103: 001159c0 | 24020001 | _li | _li v0,0x1 | Function=resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_STUB_INCLUDE_20261124_221544.txt:L3: Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_STUB_INCLUDE_20261124_221544.txt:L4: Guest address: 0x001159B8
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_STUB_INCLUDE_20261124_221544.txt:L60: MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_STUB_INCLUDE_20261124_221544.txt:L62: MARK_OF_KRI_resetGrabMode_001159B8.obj : error LNK2019: unresolved external symbol "public: void __cdecl PS2Runtime::Store32(unsigned char *,struct R5900Context *,unsigned int,unsigned int)" (?Store32@PS2Runtime@@QEAAXPEAEPEAUR5900Context@@II@Z) referenced in function "void __cdecl resetGrabMode__6Camera(unsigned char *,struct R5900Context *,class PS2Runtime *)" (?resetGrabMode__6Camera@@YAXPEAEPEAUR5900Context@@PEAVPS2Runtime@@@Z) [D:\Games\MarkOfKriRecomp\native\build\codegen_smoke_vs2026\markofkri_codegen_smoke.vcxproj]
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_STUB_INCLUDE_20261124_221544.txt:L123: MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_REAL_FUNCTION_STUB_INCLUDE_20261124_221544.txt:L125: MARK_OF_KRI_resetGrabMode_001159B8.obj : error LNK2019: unresolved external symbol "public: void __cdecl PS2Runtime::Store32(unsigned char *,struct R5900Context *,unsigned int,unsigned int)" (?Store32@PS2Runtime@@QEAAXPEAEPEAUR5900Context@@II@Z) referenced in function "void __cdecl resetGrabMode__6Camera(unsigned char *,struct R5900Context *,class PS2Runtime *)" (?resetGrabMode__6Camera@@YAXPEAEPEAUR5900Context@@PEAVPS2Runtime@@@Z) [D:\Games\MarkOfKriRecomp\native\build\codegen_smoke_vs2026\markofkri_codegen_smoke.vcxproj]
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_RUNTIME_EXECUTION_PREREQUISITES_20261124_221945.txt:L3: Target: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\MARK_OF_KRI_RUNTIME_EXECUTION_PREREQUISITES_20261124_221945.txt:L4: Guest address: 0x001159B8
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_EVIDENCE_ACQUISITION_20261125_155554.txt:L2766: 17:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_EVIDENCE_ACQUISITION_20261125_155554.txt:L2787: 38:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_EVIDENCE_ACQUISITION_20261125_155554.txt:L2819: 70:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_EVIDENCE_ACQUISITION_20261125_155554.txt:L3312: 8: void resetGrabMode__6Camera(
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_EVIDENCE_ACQUISITION_20261125_155554.txt:L3348: 44:     resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_EVIDENCE_ACQUISITION_20261125_155554.txt:L5813: 8: "resetGrabMode__6Camera","001159b8","001159b8","AC8003BC","sw","sw zero,0x3bc(a0)","FALL_THROUGH",4
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_EVIDENCE_ACQUISITION_20261125_155554.txt:L5814: 9: "resetGrabMode__6Camera","001159b8","001159bc","03E00008","jr","jr ra","TERMINATOR",4
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_EVIDENCE_ACQUISITION_20261125_155554.txt:L5815: 10: "resetGrabMode__6Camera","001159b8","001159c0","24020001","_li","_li v0,0x1","FALL_THROUGH",4
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_HARNESS_TEMPLATE_INSPECTION.txt:L1350: 17:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_HARNESS_TEMPLATE_INSPECTION.txt:L1371: 38:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_HARNESS_TEMPLATE_INSPECTION.txt:L1403: 70:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_HARNESS_TEMPLATE_INSPECTION.txt:L1896: 8: void resetGrabMode__6Camera(
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_HARNESS_TEMPLATE_INSPECTION.txt:L1932: 44:     resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_HARNESS_TEMPLATE_INSPECTION.txt:L4397: 8: "resetGrabMode__6Camera","001159b8","001159b8","AC8003BC","sw","sw zero,0x3bc(a0)","FALL_THROUGH",4
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_HARNESS_TEMPLATE_INSPECTION.txt:L4398: 9: "resetGrabMode__6Camera","001159b8","001159bc","03E00008","jr","jr ra","TERMINATOR",4
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_20261125_155554\ATTACK_ZONE_HARNESS_TEMPLATE_INSPECTION.txt:L4399: 10: "resetGrabMode__6Camera","001159b8","001159c0","24020001","_li","_li v0,0x1","FALL_THROUGH",4
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_LINK_DEPENDENCY_INSPECTION_20261125_160904.txt:L5808: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_LINK_DEPENDENCY_INSPECTION_20261125_160904.txt:L5829: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_execution\MARK_OF_KRI_LINK_DEPENDENCY_INSPECTION_20261125_160904.txt:L5861: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_inspection_20261125_155842\MARK_OF_KRI_ATTACK_ZONE_IMPLEMENTATION_INSPECTION_20261125_155842.txt:L1022: 1403:    70:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_inspection_20261125_155842\MARK_OF_KRI_ATTACK_ZONE_IMPLEMENTATION_INSPECTION_20261125_155842.txt:L1093: 1896:     8: void resetGrabMode__6Camera(
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\attack_zone_range_inspection_20261125_155842\MARK_OF_KRI_ATTACK_ZONE_IMPLEMENTATION_INSPECTION_20261125_155842.txt:L1110: 1932:    44:     resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_CMAKE_EXECUTION_TARGET_INSPECTION_20261125_001527.txt:L25: 17:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_CMAKE_EXECUTION_TARGET_INSPECTION_20261125_001527.txt:L46: 38:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_CMAKE_EXECUTION_TARGET_INSPECTION_20261125_001527.txt:L78: 70:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_CMAKE_EXECUTION_TARGET_INSPECTION_20261125_001527.txt:L133: 70:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_CMAKE_EXECUTION_TARGET_INSPECTION_20261125_001527.txt:L150: 70:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_CMAKE_EXECUTION_TARGET_INSPECTION_20261125_001527.txt:L171: 70:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_CMAKE_EXECUTION_TARGET_INSPECTION_20261125_001527.txt:L203: 17:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_CMAKE_EXECUTION_TARGET_INSPECTION_20261125_001527.txt:L212: 17:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\ps2recomp_evaluation\multifunction_execution\MARK_OF_KRI_CMAKE_EXECUTION_TARGET_INSPECTION_20261125_001527.txt:L318: 17:     "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+
+===== CONTROLLED SLICE CORRELATION =====
+FOUND: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+  Length:   2100
+  Created:  11/24/2026 10:08:46 PM
+  Modified: 11/24/2026 10:08:46 PM
+  SHA256:   88FA3654AD2A6061E62D1C9910F98C1D6EB0D29AE1D68104AD7CF2C616CCA59A
+  HASH MATCH: NO
+
+
+===== GENERATOR SOURCE CANDIDATES =====
+D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt:L17: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt:L38: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+D:\Games\MarkOfKriRecomp\native\tests\recomp\CMakeLists.txt:L70: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L20: constexpr uint32_t start = 0x001159B8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L24: symbol.name = "resetGrabMode__6Camera";
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L37: function.name = "resetGrabMode__6Camera";
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L48: store.address = 0x001159B8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L106: generatedFunction.find("resetGrabMode__6Camera") != std::string::npos);
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L108: generatedFunction.find("0x1159b8") != std::string::npos);
+D:\Games\MarkOfKriRecomp\native\tests\recomp\code_generator_smoke.cpp:L114: registration.find("resetGrabMode__6Camera") != std::string::npos);
+D:\Games\MarkOfKriRecomp\native\tests\recomp\real_function_execution_test.cpp:L8: void resetGrabMode__6Camera(
+D:\Games\MarkOfKriRecomp\native\tests\recomp\real_function_execution_test.cpp:L44: resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L397: FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L414: // Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L415: // Address: 0x1159b8 - 0x1159c4
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L416: void resetGrabMode__6Camera(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L418: PS_LOG_ENTRY("resetGrabMode__6Camera");
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L421: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L423: // 0x1159b8: 0xac8003bc  sw zero,0x3bc(a0)
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L424: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L454: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L462: g_ps2RecompiledFunctionTable[0] = resetGrabMode__6Camera; // 0x1159b8
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L984: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L1005: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L1037: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L1933: void resetGrabMode__6Camera(
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143412\SHIMMER_WORKSPACE_DISCOVERY.txt:L1969: resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L397: FILE: D:\Games\MarkOfKriRecomp\native\generated\controlled_slice\MARK_OF_KRI_resetGrabMode_001159B8.cpp
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L414: // Function: resetGrabMode__6Camera
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L415: // Address: 0x1159b8 - 0x1159c4
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L416: void resetGrabMode__6Camera(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime) {
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L418: PS_LOG_ENTRY("resetGrabMode__6Camera");
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L421: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L423: // 0x1159b8: 0xac8003bc  sw zero,0x3bc(a0)
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L424: ctx->pc = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L454: extern const uint32_t g_ps2RecompiledFunctionTableBase = 0x1159b8u;
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L462: g_ps2RecompiledFunctionTable[0] = resetGrabMode__6Camera; // 0x1159b8
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L984: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L1005: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp" ABSOLUTE)
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L1037: "D:/Games/MarkOfKriRecomp/native/generated/controlled_slice/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L1933: void resetGrabMode__6Camera(
+D:\Games\MarkOfKriRecomp\native\tests\recomp\shimmer_workspace_discovery_20261125_143421\SHIMMER_WORKSPACE_DISCOVERY.txt:L1969: resetGrabMode__6Camera(rdram.data(), &ctx, nullptr);
+
+===== TIMESTAMP NEIGHBORHOOD =====
+Runtime timestamp: 11/26/2026 8:27:40 PM
+Nearby generated files: 0
+
+===== ASSESSMENT =====
+1. resetGrabMode_001159B8 is the primary reference case for reconstructing the Mark controlled-generation workflow.
+2. Exact source/hash matching determines whether a controlled generated copy still exists.
+3. Function/address references identify the generator or test project that produced it.
+4. Timestamp neighborhood identifies other files produced by the same generation session.
+5. No production source, configuration, generated source, or build artifact was modified.
+
+Elapsed seconds: 5.578
+Elapsed: 00:00:05.577
