@@ -1,0 +1,712 @@
+MARK OF KRI — CONSTRUCTOR INTEGRATION PREFLIGHT V41
+Generated: 2026-11-28 06:57:14
+
+GENERATED SOURCE HASH VALIDATION
+reg_frame_0x1048e0.cpp | SHA256=5E5182A746FB6B8E11A605743FD0BB5747216ED2C569551E3FC9A7988CB9FB60 | MATCH=True
+dereg_frame_0x104920.cpp | SHA256=FDB94C0CB1293837ED6AAD433B1AF180B21B98264EE8C6D5560966A8D7C123AD | MATCH=True
+ps2___register_frame_info_table_0x37f9a8.cpp | SHA256=DF17877DD47406D6381821206A906FE594E237B3B83930D9678DA38D96138DF1 | MATCH=True
+ps2___deregister_frame_info_0x37fa00.cpp | SHA256=281625BF23079A689E340FC25F29B00A2285D1328020855150350B0B934E8BFE | MATCH=True
+
+REGISTRATION SOURCE — COMPLETE CONTENT
+   1: #include "ps2_runtime.h"
+   2: #include <cstdint>
+   3: 
+   4: extern void resetGrabMode__6Camera(uint8_t*, R5900Context*, PS2Runtime*);
+   5: extern void getAttackZoneRange__9NpcMasterP3NpcPfT2(uint8_t*, R5900Context*, PS2Runtime*);
+   6: extern void doorReset__FP6Mscobj(uint8_t*, R5900Context*, PS2Runtime*);
+   7: extern void Init__10gsBackdropi(uint8_t*, R5900Context*, PS2Runtime*);
+   8: extern void Load__7envGridPv(uint8_t*, R5900Context*, PS2Runtime*);
+   9: extern void addSpirit__6PlayerP9ObjHandle(uint8_t*, R5900Context*, PS2Runtime*);
+  10: extern void GetVoDataSizeInMacroBlocks__8movVoBuf(uint8_t*, R5900Context*, PS2Runtime*);
+  11: extern void SetViewArea__14DisplayEnvInfoUiUi(uint8_t*, R5900Context*, PS2Runtime*);
+  12: extern void allowLockMode__6Camerab(uint8_t*, R5900Context*, PS2Runtime*);
+  13: extern void anmcmd_exitHeader__Fv(uint8_t*, R5900Context*, PS2Runtime*);
+  14: extern void Update__9Shimmer2Df(uint8_t*, R5900Context*, PS2Runtime*);
+  15: 
+  16: extern void _start_0x100008(uint8_t*, R5900Context*, PS2Runtime*);
+  17: extern void Exit_0x393210(uint8_t*, R5900Context*, PS2Runtime*);
+  18: extern void TerminateLibrary_0x393160(uint8_t*, R5900Context*, PS2Runtime*);
+  19: extern void InitTLB_0x393718(uint8_t*, R5900Context*, PS2Runtime*);
+  20: extern void ps2__Exit_0x38aa80(uint8_t*, R5900Context*, PS2Runtime*);
+  21: 
+  22: // MARK OF KRI INIT SYSTEM GENERATED DECLARATIONS
+  23: extern void ps2__InitSys_0x392fa0(uint8_t*, R5900Context*, PS2Runtime*);
+  24: extern void Copy_0x392ff0(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  25: extern void Copy_0x393538(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  26: extern void CreateSema_0x38ae60(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  27: extern void FindAddress_0x392f20(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  28: extern void FlushCache_0x38b0e0(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  29: extern void GetEntryAddress_0x393038(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  30: extern void GetEntryAddress_0x393580(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  31: extern void GetOsdConfigParam_0x38af10(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  32: extern void GetSystemCallTableEntry_0x392f30(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  33: extern void InitAlarm_0x38bb20(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  34: extern void InitExecPS2_0x3930b0(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  35: extern void InitThread_0x38bcd0(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  36: extern void InitTLBFunctions_0x3935a0(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  37: extern void PatchIsNeeded_0x393048(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  38: extern void SetOsdConfigParam_0x38af00(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  39: extern void setup_0x392f70(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  40: extern void setup_0x392fe0(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  41: extern void setup_0x393590(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  42: extern void supplement_crt0_0x392ea0(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  43: 
+  44: extern void ps2_main_0x1014d0(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  45: extern void ps2___main_0x37b3c0(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  46: extern void startGame__Fv_0x1000c8(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  47: extern void ShowBootSequence__Fb_0x102bc8(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  48: extern void NewGame__Fv_0x101638(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  49: extern void doSavedLevel__Fv_0x101028(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  50: extern void doLevel__F6eLevelT0_0x1008d8(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  51: extern void FinishGame__Fv_0x103dc8(uint8_t* rdram, R5900Context* ctx, PS2Runtime* runtime);
+  52: void doLevel__F6eLevelT0_0x1008d8(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  53: void doSavedLevel__Fv_0x101028(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  54: void FinishGame__Fv_0x103dc8(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  55: void IngameTextMessageReset__Fv_0x2a78c8(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  56: void init__19PlayerMoveCheckList_0x21b1f0(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  57: void newGame__4Game_0x2bdd38(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  58: void NewGame__Fv_0x101638(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  59: void ps2___do_global_ctors_0x37b310(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  60: void ps2___main_0x37b3c0(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  61: void ps2_main_0x1014d0(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  62: void reset__19PlayerMoveCheckList_0x21b190(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  63: void ShowBootSequence__Fb_0x102bc8(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  64: void startGame__Fv_0x1000c8(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);
+  65: 
+  66: 
+  67: bool RegisterMarkOfKriFunctions(PS2Runtime& runtime)
+  68: {
+  69:     bool registered = true;
+  70:     registered = runtime.registerFunction(0x00100008u, &_start_0x100008) && registered;
+  71:     registered = runtime.registerFunction(0x00100018u, &_start_0x100008) && registered;
+  72:     registered = runtime.registerFunction(0x00100068u, &_start_0x100008) && registered;
+  73:     registered = runtime.registerFunction(0x00100084u, &_start_0x100008) && registered;
+  74:     registered = runtime.registerFunction(0x0010008Cu, &_start_0x100008) && registered;
+  75:     registered = runtime.registerFunction(0x00100094u, &_start_0x100008) && registered;
+  76:     registered = runtime.registerFunction(0x001000ACu, &_start_0x100008) && registered;
+  77:     registered = runtime.registerFunction(0x00393160u, &TerminateLibrary_0x393160) && registered;
+  78:     registered = runtime.registerFunction(0x00393210u, &Exit_0x393210) && registered;
+  79:     registered = runtime.registerFunction(0x00393224u, &Exit_0x393210) && registered;
+  80:     registered = runtime.registerFunction(0x00393718u, &InitTLB_0x393718) && registered;
+  81:     registered = runtime.registerFunction(0x0038AA80u, &ps2__Exit_0x38aa80) && registered;
+  82:     registered = runtime.registerFunction(0x0038AA88u, &ps2__Exit_0x38aa80) && registered;
+  83:     registered = runtime.registerFunction(0x001159B8u, &resetGrabMode__6Camera) && registered;
+  84:     registered = runtime.registerFunction(0x001D20C8u, &getAttackZoneRange__9NpcMasterP3NpcPfT2) && registered;
+  85:     registered = runtime.registerFunction(0x001F0078u, &doorReset__FP6Mscobj) && registered;
+  86:     registered = runtime.registerFunction(0x002DC180u, &Init__10gsBackdropi) && registered;
+  87:     registered = runtime.registerFunction(0x003208A0u, &Load__7envGridPv) && registered;
+  88:     registered = runtime.registerFunction(0x0021ACD0u, &addSpirit__6PlayerP9ObjHandle) && registered;
+  89:     registered = runtime.registerFunction(0x0034DA50u, &GetVoDataSizeInMacroBlocks__8movVoBuf) && registered;
+  90:     registered = runtime.registerFunction(0x002BDCB8u, &SetViewArea__14DisplayEnvInfoUiUi) && registered;
+  91:     registered = runtime.registerFunction(0x001161A0u, &allowLockMode__6Camerab) && registered;
+  92:     registered = runtime.registerFunction(0x0019C8C0u, &anmcmd_exitHeader__Fv) && registered;
+  93:     registered = runtime.registerFunction(0x002D6850u, &Update__9Shimmer2Df) && registered;
+  94: 
+  95:     // MARK OF KRI INIT SYSTEM GENERATED REGISTRATIONS
+  96:     registered = runtime.registerFunction(0x392fa0u, &ps2__InitSys_0x392fa0) && registered;
+  97:     registered = runtime.registerFunction(0x392fb0u, &ps2__InitSys_0x392fa0) && registered;
+  98:     registered = runtime.registerFunction(0x392fb8u, &ps2__InitSys_0x392fa0) && registered;
+  99:     registered = runtime.registerFunction(0x392fc0u, &ps2__InitSys_0x392fa0) && registered;
+ 100:     registered = runtime.registerFunction(0x392fc8u, &ps2__InitSys_0x392fa0) && registered;
+ 101:     registered = runtime.registerFunction(0x392fd0u, &ps2__InitSys_0x392fa0) && registered;
+ 102:     registered = runtime.registerFunction(0x00392EC4u, &supplement_crt0_0x392ea0) && registered;
+ 103:     registered = runtime.registerFunction(0x00392ED4u, &supplement_crt0_0x392ea0) && registered;
+ 104:     registered = runtime.registerFunction(0x00392F28u, &FindAddress_0x392f20) && registered;
+ 105:     registered = runtime.registerFunction(0x00392F50u, &GetSystemCallTableEntry_0x392f30) && registered;
+ 106:     registered = runtime.registerFunction(0x00392F5Cu, &GetSystemCallTableEntry_0x392f30) && registered;
+ 107:     registered = runtime.registerFunction(0x00392F78u, &setup_0x392f70) && registered;
+ 108:     registered = runtime.registerFunction(0x00392FE8u, &setup_0x392fe0) && registered;
+ 109:     registered = runtime.registerFunction(0x0039305Cu, &PatchIsNeeded_0x393048) && registered;
+ 110:     registered = runtime.registerFunction(0x00393080u, &PatchIsNeeded_0x393048) && registered;
+ 111:     registered = runtime.registerFunction(0x00393088u, &PatchIsNeeded_0x393048) && registered;
+ 112:     registered = runtime.registerFunction(0x00393090u, &PatchIsNeeded_0x393048) && registered;
+ 113:     registered = runtime.registerFunction(0x003930C8u, &InitExecPS2_0x3930b0) && registered;
+ 114:     registered = runtime.registerFunction(0x003930E8u, &InitExecPS2_0x3930b0) && registered;
+ 115:     registered = runtime.registerFunction(0x00393100u, &InitExecPS2_0x3930b0) && registered;
+ 116:     registered = runtime.registerFunction(0x00393108u, &InitExecPS2_0x3930b0) && registered;
+ 117:     registered = runtime.registerFunction(0x00393110u, &InitExecPS2_0x3930b0) && registered;
+ 118:     registered = runtime.registerFunction(0x0039311Cu, &InitExecPS2_0x3930b0) && registered;
+ 119:     registered = runtime.registerFunction(0x00393120u, &InitExecPS2_0x3930b0) && registered;
+ 120:     registered = runtime.registerFunction(0x00393128u, &InitExecPS2_0x3930b0) && registered;
+ 121:     registered = runtime.registerFunction(0x00393138u, &InitExecPS2_0x3930b0) && registered;
+ 122:     registered = runtime.registerFunction(0x00393598u, &setup_0x393590) && registered;
+ 123:     registered = runtime.registerFunction(0x003935D0u, &InitTLBFunctions_0x3935a0) && registered;
+ 124:     registered = runtime.registerFunction(0x003935E8u, &InitTLBFunctions_0x3935a0) && registered;
+ 125:     registered = runtime.registerFunction(0x003935F0u, &InitTLBFunctions_0x3935a0) && registered;
+ 126:     registered = runtime.registerFunction(0x003935F8u, &InitTLBFunctions_0x3935a0) && registered;
+ 127:     registered = runtime.registerFunction(0x00393604u, &InitTLBFunctions_0x3935a0) && registered;
+ 128:     registered = runtime.registerFunction(0x00393610u, &InitTLBFunctions_0x3935a0) && registered;
+ 129:     registered = runtime.registerFunction(0x00393618u, &InitTLBFunctions_0x3935a0) && registered;
+ 130:     registered = runtime.registerFunction(0x00393620u, &InitTLBFunctions_0x3935a0) && registered;
+ 131:     registered = runtime.registerFunction(0x00393630u, &InitTLBFunctions_0x3935a0) && registered;
+ 132:     registered = runtime.registerFunction(0x38AE60u, &CreateSema_0x38ae60) && registered;
+ 133:     registered = runtime.registerFunction(0x38AF00u, &SetOsdConfigParam_0x38af00) && registered;
+ 134:     registered = runtime.registerFunction(0x38AF10u, &GetOsdConfigParam_0x38af10) && registered;
+ 135:     registered = runtime.registerFunction(0x38B0E0u, &FlushCache_0x38b0e0) && registered;
+ 136:     registered = runtime.registerFunction(0x38BB20u, &InitAlarm_0x38bb20) && registered;
+ 137:     registered = runtime.registerFunction(0x38BCD0u, &InitThread_0x38bcd0) && registered;
+ 138:     registered = runtime.registerFunction(0x392EA0u, &supplement_crt0_0x392ea0) && registered;
+ 139:     registered = runtime.registerFunction(0x392F20u, &FindAddress_0x392f20) && registered;
+ 140:     registered = runtime.registerFunction(0x392F30u, &GetSystemCallTableEntry_0x392f30) && registered;
+ 141:     registered = runtime.registerFunction(0x392F70u, &setup_0x392f70) && registered;
+ 142:     registered = runtime.registerFunction(0x392FE0u, &setup_0x392fe0) && registered;
+ 143:     registered = runtime.registerFunction(0x392FF0u, &Copy_0x392ff0) && registered;
+ 144:     registered = runtime.registerFunction(0x393038u, &GetEntryAddress_0x393038) && registered;
+ 145:     registered = runtime.registerFunction(0x393048u, &PatchIsNeeded_0x393048) && registered;
+ 146:     registered = runtime.registerFunction(0x3930B0u, &InitExecPS2_0x3930b0) && registered;
+ 147:     registered = runtime.registerFunction(0x393538u, &Copy_0x393538) && registered;
+ 148:     registered = runtime.registerFunction(0x393580u, &GetEntryAddress_0x393580) && registered;
+ 149:     registered = runtime.registerFunction(0x393590u, &setup_0x393590) && registered;
+ 150:     registered = runtime.registerFunction(0x3935A0u, &InitTLBFunctions_0x3935a0) && registered;
+ 151:     registered = runtime.registerFunction(0x001014D0u, &ps2_main_0x1014d0) && registered;
+ 152:     registered = runtime.registerFunction(0x0037B3C0u, &ps2___main_0x37b3c0) && registered;
+ 153:     registered = runtime.registerFunction(0x001000C8u, &startGame__Fv_0x1000c8) && registered;
+ 154:     registered = runtime.registerFunction(0x00102BC8u, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 155:     registered = runtime.registerFunction(0x00101638u, &NewGame__Fv_0x101638) && registered;
+ 156:     registered = runtime.registerFunction(0x00101028u, &doSavedLevel__Fv_0x101028) && registered;
+ 157:     registered = runtime.registerFunction(0x001008D8u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 158:     registered = runtime.registerFunction(0x00103DC8u, &FinishGame__Fv_0x103dc8) && registered;
+ 159: 
+ 160:     bool verified = true;
+ 161:     verified = runtime.hasFunction(0x00100008u) && verified;
+ 162:     verified = runtime.hasFunction(0x00100018u) && verified;
+ 163:     verified = runtime.hasFunction(0x00100068u) && verified;
+ 164:     verified = runtime.hasFunction(0x00100084u) && verified;
+ 165:     verified = runtime.hasFunction(0x0010008Cu) && verified;
+ 166:     verified = runtime.hasFunction(0x00100094u) && verified;
+ 167:     verified = runtime.hasFunction(0x001000ACu) && verified;
+ 168:     verified = runtime.hasFunction(0x00393160u) && verified;
+ 169:     verified = runtime.hasFunction(0x00393210u) && verified;
+ 170:     verified = runtime.hasFunction(0x00393224u) && verified;
+ 171:     verified = runtime.hasFunction(0x00393718u) && verified;
+ 172:     verified = runtime.hasFunction(0x0038AA80u) && verified;
+ 173:     verified = runtime.hasFunction(0x0038AA88u) && verified;
+ 174:     verified = runtime.hasFunction(0x001159B8u) && verified;
+ 175:     verified = runtime.hasFunction(0x001D20C8u) && verified;
+ 176:     verified = runtime.hasFunction(0x001F0078u) && verified;
+ 177:     verified = runtime.hasFunction(0x002DC180u) && verified;
+ 178:     verified = runtime.hasFunction(0x003208A0u) && verified;
+ 179:     verified = runtime.hasFunction(0x0021ACD0u) && verified;
+ 180:     verified = runtime.hasFunction(0x0034DA50u) && verified;
+ 181:     verified = runtime.hasFunction(0x002BDCB8u) && verified;
+ 182:     verified = runtime.hasFunction(0x001161A0u) && verified;
+ 183:     verified = runtime.hasFunction(0x0019C8C0u) && verified;
+ 184:     verified = runtime.hasFunction(0x002D6850u) && verified;
+ 185: 
+ 186:     // MARK OF KRI INIT SYSTEM GENERATED VERIFICATION
+ 187:     verified = runtime.hasFunction(0x392fa0u) && verified;
+ 188:     verified = runtime.hasFunction(0x392fb0u) && verified;
+ 189:     verified = runtime.hasFunction(0x392fb8u) && verified;
+ 190:     verified = runtime.hasFunction(0x392fc0u) && verified;
+ 191:     verified = runtime.hasFunction(0x392fc8u) && verified;
+ 192:     verified = runtime.hasFunction(0x392fd0u) && verified;
+ 193:     verified = runtime.hasFunction(0x00392EC4u) && verified;
+ 194:     verified = runtime.hasFunction(0x00392ED4u) && verified;
+ 195:     verified = runtime.hasFunction(0x00392F28u) && verified;
+ 196:     verified = runtime.hasFunction(0x00392F50u) && verified;
+ 197:     verified = runtime.hasFunction(0x00392F5Cu) && verified;
+ 198:     verified = runtime.hasFunction(0x00392F78u) && verified;
+ 199:     verified = runtime.hasFunction(0x00392FE8u) && verified;
+ 200:     verified = runtime.hasFunction(0x0039305Cu) && verified;
+ 201:     verified = runtime.hasFunction(0x00393080u) && verified;
+ 202:     verified = runtime.hasFunction(0x00393088u) && verified;
+ 203:     verified = runtime.hasFunction(0x00393090u) && verified;
+ 204:     verified = runtime.hasFunction(0x003930C8u) && verified;
+ 205:     verified = runtime.hasFunction(0x003930E8u) && verified;
+ 206:     verified = runtime.hasFunction(0x00393100u) && verified;
+ 207:     verified = runtime.hasFunction(0x00393108u) && verified;
+ 208:     verified = runtime.hasFunction(0x00393110u) && verified;
+ 209:     verified = runtime.hasFunction(0x0039311Cu) && verified;
+ 210:     verified = runtime.hasFunction(0x00393120u) && verified;
+ 211:     verified = runtime.hasFunction(0x00393128u) && verified;
+ 212:     verified = runtime.hasFunction(0x00393138u) && verified;
+ 213:     verified = runtime.hasFunction(0x00393598u) && verified;
+ 214:     verified = runtime.hasFunction(0x003935D0u) && verified;
+ 215:     verified = runtime.hasFunction(0x003935E8u) && verified;
+ 216:     verified = runtime.hasFunction(0x003935F0u) && verified;
+ 217:     verified = runtime.hasFunction(0x003935F8u) && verified;
+ 218:     verified = runtime.hasFunction(0x00393604u) && verified;
+ 219:     verified = runtime.hasFunction(0x00393610u) && verified;
+ 220:     verified = runtime.hasFunction(0x00393618u) && verified;
+ 221:     verified = runtime.hasFunction(0x00393620u) && verified;
+ 222:     verified = runtime.hasFunction(0x00393630u) && verified;
+ 223:     verified = runtime.hasFunction(0x38AE60u) && verified;
+ 224:     verified = runtime.hasFunction(0x38AF00u) && verified;
+ 225:     verified = runtime.hasFunction(0x38AF10u) && verified;
+ 226:     verified = runtime.hasFunction(0x38B0E0u) && verified;
+ 227:     verified = runtime.hasFunction(0x38BB20u) && verified;
+ 228:     verified = runtime.hasFunction(0x38BCD0u) && verified;
+ 229:     verified = runtime.hasFunction(0x392EA0u) && verified;
+ 230:     verified = runtime.hasFunction(0x392F20u) && verified;
+ 231:     verified = runtime.hasFunction(0x392F30u) && verified;
+ 232:     verified = runtime.hasFunction(0x392F70u) && verified;
+ 233:     verified = runtime.hasFunction(0x392FE0u) && verified;
+ 234:     verified = runtime.hasFunction(0x392FF0u) && verified;
+ 235:     verified = runtime.hasFunction(0x393038u) && verified;
+ 236:     verified = runtime.hasFunction(0x393048u) && verified;
+ 237:     verified = runtime.hasFunction(0x3930B0u) && verified;
+ 238:     verified = runtime.hasFunction(0x393538u) && verified;
+ 239:     verified = runtime.hasFunction(0x393580u) && verified;
+ 240:     verified = runtime.hasFunction(0x393590u) && verified;
+ 241:     verified = runtime.hasFunction(0x3935A0u) && verified;
+ 242:     verified = runtime.hasFunction(0x001014D0u) && verified;
+ 243:     verified = runtime.hasFunction(0x0037B3C0u) && verified;
+ 244:     verified = runtime.hasFunction(0x001000C8u) && verified;
+ 245:     verified = runtime.hasFunction(0x00102BC8u) && verified;
+ 246:     verified = runtime.hasFunction(0x00101638u) && verified;
+ 247:     verified = runtime.hasFunction(0x00101028u) && verified;
+ 248:     verified = runtime.hasFunction(0x001008D8u) && verified;
+ 249:     verified = runtime.hasFunction(0x00103DC8u) && verified;
+ 250: 
+ 251:     // Main-path dependency and generated resume-point registrations.
+ 252:     registered = runtime.registerFunction(0x00101508u, &ps2_main_0x1014d0) && registered;
+ 253:     verified = runtime.hasFunction(0x00101508u) && verified;
+ 254:     registered = runtime.registerFunction(0x00101514u, &ps2_main_0x1014d0) && registered;
+ 255:     verified = runtime.hasFunction(0x00101514u) && verified;
+ 256:     registered = runtime.registerFunction(0x00101528u, &ps2_main_0x1014d0) && registered;
+ 257:     verified = runtime.hasFunction(0x00101528u) && verified;
+ 258:     registered = runtime.registerFunction(0x00101534u, &ps2_main_0x1014d0) && registered;
+ 259:     verified = runtime.hasFunction(0x00101534u) && verified;
+ 260:     registered = runtime.registerFunction(0x00101558u, &ps2_main_0x1014d0) && registered;
+ 261:     verified = runtime.hasFunction(0x00101558u) && verified;
+ 262:     registered = runtime.registerFunction(0x00101588u, &ps2_main_0x1014d0) && registered;
+ 263:     verified = runtime.hasFunction(0x00101588u) && verified;
+ 264:     registered = runtime.registerFunction(0x0010158Cu, &ps2_main_0x1014d0) && registered;
+ 265:     verified = runtime.hasFunction(0x0010158Cu) && verified;
+ 266:     registered = runtime.registerFunction(0x001015BCu, &ps2_main_0x1014d0) && registered;
+ 267:     verified = runtime.hasFunction(0x001015BCu) && verified;
+ 268:     registered = runtime.registerFunction(0x001015C4u, &ps2_main_0x1014d0) && registered;
+ 269:     verified = runtime.hasFunction(0x001015C4u) && verified;
+ 270:     registered = runtime.registerFunction(0x001015F0u, &ps2_main_0x1014d0) && registered;
+ 271:     verified = runtime.hasFunction(0x001015F0u) && verified;
+ 272:     registered = runtime.registerFunction(0x00101608u, &ps2_main_0x1014d0) && registered;
+ 273:     verified = runtime.hasFunction(0x00101608u) && verified;
+ 274:     registered = runtime.registerFunction(0x0037B3D8u, &ps2___main_0x37b3c0) && registered;
+ 275:     verified = runtime.hasFunction(0x0037B3D8u) && verified;
+ 276:     registered = runtime.registerFunction(0x001000DCu, &startGame__Fv_0x1000c8) && registered;
+ 277:     verified = runtime.hasFunction(0x001000DCu) && verified;
+ 278:     registered = runtime.registerFunction(0x001000E4u, &startGame__Fv_0x1000c8) && registered;
+ 279:     verified = runtime.hasFunction(0x001000E4u) && verified;
+ 280:     registered = runtime.registerFunction(0x001001A0u, &startGame__Fv_0x1000c8) && registered;
+ 281:     verified = runtime.hasFunction(0x001001A0u) && verified;
+ 282:     registered = runtime.registerFunction(0x001001B8u, &startGame__Fv_0x1000c8) && registered;
+ 283:     verified = runtime.hasFunction(0x001001B8u) && verified;
+ 284:     registered = runtime.registerFunction(0x001001C4u, &startGame__Fv_0x1000c8) && registered;
+ 285:     verified = runtime.hasFunction(0x001001C4u) && verified;
+ 286:     registered = runtime.registerFunction(0x001001CCu, &startGame__Fv_0x1000c8) && registered;
+ 287:     verified = runtime.hasFunction(0x001001CCu) && verified;
+ 288:     registered = runtime.registerFunction(0x001001DCu, &startGame__Fv_0x1000c8) && registered;
+ 289:     verified = runtime.hasFunction(0x001001DCu) && verified;
+ 290:     registered = runtime.registerFunction(0x001001F4u, &startGame__Fv_0x1000c8) && registered;
+ 291:     verified = runtime.hasFunction(0x001001F4u) && verified;
+ 292:     registered = runtime.registerFunction(0x00100210u, &startGame__Fv_0x1000c8) && registered;
+ 293:     verified = runtime.hasFunction(0x00100210u) && verified;
+ 294:     registered = runtime.registerFunction(0x00100218u, &startGame__Fv_0x1000c8) && registered;
+ 295:     verified = runtime.hasFunction(0x00100218u) && verified;
+ 296:     registered = runtime.registerFunction(0x00100220u, &startGame__Fv_0x1000c8) && registered;
+ 297:     verified = runtime.hasFunction(0x00100220u) && verified;
+ 298:     registered = runtime.registerFunction(0x00102BF4u, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 299:     verified = runtime.hasFunction(0x00102BF4u) && verified;
+ 300:     registered = runtime.registerFunction(0x00102BFCu, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 301:     verified = runtime.hasFunction(0x00102BFCu) && verified;
+ 302:     registered = runtime.registerFunction(0x00102C04u, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 303:     verified = runtime.hasFunction(0x00102C04u) && verified;
+ 304:     registered = runtime.registerFunction(0x00102C1Cu, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 305:     verified = runtime.hasFunction(0x00102C1Cu) && verified;
+ 306:     registered = runtime.registerFunction(0x00102C2Cu, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 307:     verified = runtime.hasFunction(0x00102C2Cu) && verified;
+ 308:     registered = runtime.registerFunction(0x00102C38u, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 309:     verified = runtime.hasFunction(0x00102C38u) && verified;
+ 310:     registered = runtime.registerFunction(0x00102C40u, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 311:     verified = runtime.hasFunction(0x00102C40u) && verified;
+ 312:     registered = runtime.registerFunction(0x00102C4Cu, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 313:     verified = runtime.hasFunction(0x00102C4Cu) && verified;
+ 314:     registered = runtime.registerFunction(0x00102C6Cu, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 315:     verified = runtime.hasFunction(0x00102C6Cu) && verified;
+ 316:     registered = runtime.registerFunction(0x00102C74u, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 317:     verified = runtime.hasFunction(0x00102C74u) && verified;
+ 318:     registered = runtime.registerFunction(0x00102C90u, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 319:     verified = runtime.hasFunction(0x00102C90u) && verified;
+ 320:     registered = runtime.registerFunction(0x00102CB0u, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 321:     verified = runtime.hasFunction(0x00102CB0u) && verified;
+ 322:     registered = runtime.registerFunction(0x00102CBCu, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 323:     verified = runtime.hasFunction(0x00102CBCu) && verified;
+ 324:     registered = runtime.registerFunction(0x00102CC8u, &ShowBootSequence__Fb_0x102bc8) && registered;
+ 325:     verified = runtime.hasFunction(0x00102CC8u) && verified;
+ 326:     registered = runtime.registerFunction(0x0010106Cu, &doSavedLevel__Fv_0x101028) && registered;
+ 327:     verified = runtime.hasFunction(0x0010106Cu) && verified;
+ 328:     registered = runtime.registerFunction(0x00101074u, &doSavedLevel__Fv_0x101028) && registered;
+ 329:     verified = runtime.hasFunction(0x00101074u) && verified;
+ 330:     registered = runtime.registerFunction(0x0010108Cu, &doSavedLevel__Fv_0x101028) && registered;
+ 331:     verified = runtime.hasFunction(0x0010108Cu) && verified;
+ 332:     registered = runtime.registerFunction(0x00101098u, &doSavedLevel__Fv_0x101028) && registered;
+ 333:     verified = runtime.hasFunction(0x00101098u) && verified;
+ 334:     registered = runtime.registerFunction(0x001010A8u, &doSavedLevel__Fv_0x101028) && registered;
+ 335:     verified = runtime.hasFunction(0x001010A8u) && verified;
+ 336:     registered = runtime.registerFunction(0x001010B8u, &doSavedLevel__Fv_0x101028) && registered;
+ 337:     verified = runtime.hasFunction(0x001010B8u) && verified;
+ 338:     registered = runtime.registerFunction(0x001010C4u, &doSavedLevel__Fv_0x101028) && registered;
+ 339:     verified = runtime.hasFunction(0x001010C4u) && verified;
+ 340:     registered = runtime.registerFunction(0x001010CCu, &doSavedLevel__Fv_0x101028) && registered;
+ 341:     verified = runtime.hasFunction(0x001010CCu) && verified;
+ 342:     registered = runtime.registerFunction(0x001010E0u, &doSavedLevel__Fv_0x101028) && registered;
+ 343:     verified = runtime.hasFunction(0x001010E0u) && verified;
+ 344:     registered = runtime.registerFunction(0x001010E8u, &doSavedLevel__Fv_0x101028) && registered;
+ 345:     verified = runtime.hasFunction(0x001010E8u) && verified;
+ 346:     registered = runtime.registerFunction(0x001010F0u, &doSavedLevel__Fv_0x101028) && registered;
+ 347:     verified = runtime.hasFunction(0x001010F0u) && verified;
+ 348:     registered = runtime.registerFunction(0x00101110u, &doSavedLevel__Fv_0x101028) && registered;
+ 349:     verified = runtime.hasFunction(0x00101110u) && verified;
+ 350:     registered = runtime.registerFunction(0x00101134u, &doSavedLevel__Fv_0x101028) && registered;
+ 351:     verified = runtime.hasFunction(0x00101134u) && verified;
+ 352:     registered = runtime.registerFunction(0x00101150u, &doSavedLevel__Fv_0x101028) && registered;
+ 353:     verified = runtime.hasFunction(0x00101150u) && verified;
+ 354:     registered = runtime.registerFunction(0x0010116Cu, &doSavedLevel__Fv_0x101028) && registered;
+ 355:     verified = runtime.hasFunction(0x0010116Cu) && verified;
+ 356:     registered = runtime.registerFunction(0x00101238u, &doSavedLevel__Fv_0x101028) && registered;
+ 357:     verified = runtime.hasFunction(0x00101238u) && verified;
+ 358:     registered = runtime.registerFunction(0x00101288u, &doSavedLevel__Fv_0x101028) && registered;
+ 359:     verified = runtime.hasFunction(0x00101288u) && verified;
+ 360:     registered = runtime.registerFunction(0x001012D8u, &doSavedLevel__Fv_0x101028) && registered;
+ 361:     verified = runtime.hasFunction(0x001012D8u) && verified;
+ 362:     registered = runtime.registerFunction(0x00101334u, &doSavedLevel__Fv_0x101028) && registered;
+ 363:     verified = runtime.hasFunction(0x00101334u) && verified;
+ 364:     registered = runtime.registerFunction(0x00101390u, &doSavedLevel__Fv_0x101028) && registered;
+ 365:     verified = runtime.hasFunction(0x00101390u) && verified;
+ 366:     registered = runtime.registerFunction(0x001013F8u, &doSavedLevel__Fv_0x101028) && registered;
+ 367:     verified = runtime.hasFunction(0x001013F8u) && verified;
+ 368:     registered = runtime.registerFunction(0x00101414u, &doSavedLevel__Fv_0x101028) && registered;
+ 369:     verified = runtime.hasFunction(0x00101414u) && verified;
+ 370:     registered = runtime.registerFunction(0x00101418u, &doSavedLevel__Fv_0x101028) && registered;
+ 371:     verified = runtime.hasFunction(0x00101418u) && verified;
+ 372:     registered = runtime.registerFunction(0x00101420u, &doSavedLevel__Fv_0x101028) && registered;
+ 373:     verified = runtime.hasFunction(0x00101420u) && verified;
+ 374:     registered = runtime.registerFunction(0x00101430u, &doSavedLevel__Fv_0x101028) && registered;
+ 375:     verified = runtime.hasFunction(0x00101430u) && verified;
+ 376:     registered = runtime.registerFunction(0x00101478u, &doSavedLevel__Fv_0x101028) && registered;
+ 377:     verified = runtime.hasFunction(0x00101478u) && verified;
+ 378:     registered = runtime.registerFunction(0x00100928u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 379:     verified = runtime.hasFunction(0x00100928u) && verified;
+ 380:     registered = runtime.registerFunction(0x00100944u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 381:     verified = runtime.hasFunction(0x00100944u) && verified;
+ 382:     registered = runtime.registerFunction(0x0010096Cu, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 383:     verified = runtime.hasFunction(0x0010096Cu) && verified;
+ 384:     registered = runtime.registerFunction(0x00100970u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 385:     verified = runtime.hasFunction(0x00100970u) && verified;
+ 386:     registered = runtime.registerFunction(0x00100978u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 387:     verified = runtime.hasFunction(0x00100978u) && verified;
+ 388:     registered = runtime.registerFunction(0x001009A4u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 389:     verified = runtime.hasFunction(0x001009A4u) && verified;
+ 390:     registered = runtime.registerFunction(0x001009ACu, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 391:     verified = runtime.hasFunction(0x001009ACu) && verified;
+ 392:     registered = runtime.registerFunction(0x001009C4u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 393:     verified = runtime.hasFunction(0x001009C4u) && verified;
+ 394:     registered = runtime.registerFunction(0x001009CCu, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 395:     verified = runtime.hasFunction(0x001009CCu) && verified;
+ 396:     registered = runtime.registerFunction(0x001009E4u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 397:     verified = runtime.hasFunction(0x001009E4u) && verified;
+ 398:     registered = runtime.registerFunction(0x001009F4u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 399:     verified = runtime.hasFunction(0x001009F4u) && verified;
+ 400:     registered = runtime.registerFunction(0x001009FCu, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 401:     verified = runtime.hasFunction(0x001009FCu) && verified;
+ 402:     registered = runtime.registerFunction(0x00100A10u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 403:     verified = runtime.hasFunction(0x00100A10u) && verified;
+ 404:     registered = runtime.registerFunction(0x00100A20u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 405:     verified = runtime.hasFunction(0x00100A20u) && verified;
+ 406:     registered = runtime.registerFunction(0x00100A28u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 407:     verified = runtime.hasFunction(0x00100A28u) && verified;
+ 408:     registered = runtime.registerFunction(0x00100A30u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 409:     verified = runtime.hasFunction(0x00100A30u) && verified;
+ 410:     registered = runtime.registerFunction(0x00100A3Cu, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 411:     verified = runtime.hasFunction(0x00100A3Cu) && verified;
+ 412:     registered = runtime.registerFunction(0x00100A5Cu, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 413:     verified = runtime.hasFunction(0x00100A5Cu) && verified;
+ 414:     registered = runtime.registerFunction(0x00100A74u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 415:     verified = runtime.hasFunction(0x00100A74u) && verified;
+ 416:     registered = runtime.registerFunction(0x00100B50u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 417:     verified = runtime.hasFunction(0x00100B50u) && verified;
+ 418:     registered = runtime.registerFunction(0x00100BA0u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 419:     verified = runtime.hasFunction(0x00100BA0u) && verified;
+ 420:     registered = runtime.registerFunction(0x00100BF0u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 421:     verified = runtime.hasFunction(0x00100BF0u) && verified;
+ 422:     registered = runtime.registerFunction(0x00100C50u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 423:     verified = runtime.hasFunction(0x00100C50u) && verified;
+ 424:     registered = runtime.registerFunction(0x00100C5Cu, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 425:     verified = runtime.hasFunction(0x00100C5Cu) && verified;
+ 426:     registered = runtime.registerFunction(0x00100CA4u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 427:     verified = runtime.hasFunction(0x00100CA4u) && verified;
+ 428:     registered = runtime.registerFunction(0x00100CB4u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 429:     verified = runtime.hasFunction(0x00100CB4u) && verified;
+ 430:     registered = runtime.registerFunction(0x00100D04u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 431:     verified = runtime.hasFunction(0x00100D04u) && verified;
+ 432:     registered = runtime.registerFunction(0x00100D10u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 433:     verified = runtime.hasFunction(0x00100D10u) && verified;
+ 434:     registered = runtime.registerFunction(0x00100D68u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 435:     verified = runtime.hasFunction(0x00100D68u) && verified;
+ 436:     registered = runtime.registerFunction(0x00100D70u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 437:     verified = runtime.hasFunction(0x00100D70u) && verified;
+ 438:     registered = runtime.registerFunction(0x00100D7Cu, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 439:     verified = runtime.hasFunction(0x00100D7Cu) && verified;
+ 440:     registered = runtime.registerFunction(0x00100DB4u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 441:     verified = runtime.hasFunction(0x00100DB4u) && verified;
+ 442:     registered = runtime.registerFunction(0x00100DD0u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 443:     verified = runtime.hasFunction(0x00100DD0u) && verified;
+ 444:     registered = runtime.registerFunction(0x00100DD8u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 445:     verified = runtime.hasFunction(0x00100DD8u) && verified;
+ 446:     registered = runtime.registerFunction(0x00100DE8u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 447:     verified = runtime.hasFunction(0x00100DE8u) && verified;
+ 448:     registered = runtime.registerFunction(0x00100E30u, &doLevel__F6eLevelT0_0x1008d8) && registered;
+ 449:     verified = runtime.hasFunction(0x00100E30u) && verified;
+ 450:     registered = runtime.registerFunction(0x00103DE8u, &FinishGame__Fv_0x103dc8) && registered;
+ 451:     verified = runtime.hasFunction(0x00103DE8u) && verified;
+ 452:     registered = runtime.registerFunction(0x00103DF0u, &FinishGame__Fv_0x103dc8) && registered;
+ 453:     verified = runtime.hasFunction(0x00103DF0u) && verified;
+ 454:     registered = runtime.registerFunction(0x00103DF8u, &FinishGame__Fv_0x103dc8) && registered;
+ 455:     verified = runtime.hasFunction(0x00103DF8u) && verified;
+ 456:     registered = runtime.registerFunction(0x00103E00u, &FinishGame__Fv_0x103dc8) && registered;
+ 457:     verified = runtime.hasFunction(0x00103E00u) && verified;
+ 458:     registered = runtime.registerFunction(0x00103E10u, &FinishGame__Fv_0x103dc8) && registered;
+ 459:     verified = runtime.hasFunction(0x00103E10u) && verified;
+ 460:     registered = runtime.registerFunction(0x00103E24u, &FinishGame__Fv_0x103dc8) && registered;
+ 461:     verified = runtime.hasFunction(0x00103E24u) && verified;
+ 462:     registered = runtime.registerFunction(0x00103E38u, &FinishGame__Fv_0x103dc8) && registered;
+ 463:     verified = runtime.hasFunction(0x00103E38u) && verified;
+ 464:     registered = runtime.registerFunction(0x00103E7Cu, &FinishGame__Fv_0x103dc8) && registered;
+ 465:     verified = runtime.hasFunction(0x00103E7Cu) && verified;
+ 466:     registered = runtime.registerFunction(0x00103E90u, &FinishGame__Fv_0x103dc8) && registered;
+ 467:     verified = runtime.hasFunction(0x00103E90u) && verified;
+ 468:     registered = runtime.registerFunction(0x00103E98u, &FinishGame__Fv_0x103dc8) && registered;
+ 469:     verified = runtime.hasFunction(0x00103E98u) && verified;
+ 470:     registered = runtime.registerFunction(0x00103EA0u, &FinishGame__Fv_0x103dc8) && registered;
+ 471:     verified = runtime.hasFunction(0x00103EA0u) && verified;
+ 472:     registered = runtime.registerFunction(0x00103EACu, &FinishGame__Fv_0x103dc8) && registered;
+ 473:     verified = runtime.hasFunction(0x00103EACu) && verified;
+ 474:     registered = runtime.registerFunction(0x00103EB4u, &FinishGame__Fv_0x103dc8) && registered;
+ 475:     verified = runtime.hasFunction(0x00103EB4u) && verified;
+ 476:     registered = runtime.registerFunction(0x00103EC0u, &FinishGame__Fv_0x103dc8) && registered;
+ 477:     verified = runtime.hasFunction(0x00103EC0u) && verified;
+ 478:     registered = runtime.registerFunction(0x00103EE0u, &FinishGame__Fv_0x103dc8) && registered;
+ 479:     verified = runtime.hasFunction(0x00103EE0u) && verified;
+ 480:     registered = runtime.registerFunction(0x00103EE8u, &FinishGame__Fv_0x103dc8) && registered;
+ 481:     verified = runtime.hasFunction(0x00103EE8u) && verified;
+ 482:     registered = runtime.registerFunction(0x00103F04u, &FinishGame__Fv_0x103dc8) && registered;
+ 483:     verified = runtime.hasFunction(0x00103F04u) && verified;
+ 484:     registered = runtime.registerFunction(0x00103F24u, &FinishGame__Fv_0x103dc8) && registered;
+ 485:     verified = runtime.hasFunction(0x00103F24u) && verified;
+ 486:     registered = runtime.registerFunction(0x00103F30u, &FinishGame__Fv_0x103dc8) && registered;
+ 487:     verified = runtime.hasFunction(0x00103F30u) && verified;
+ 488:     registered = runtime.registerFunction(0x00103F3Cu, &FinishGame__Fv_0x103dc8) && registered;
+ 489:     verified = runtime.hasFunction(0x00103F3Cu) && verified;
+ 490:     registered = runtime.registerFunction(0x0037B310u, &ps2___do_global_ctors_0x37b310) && registered;
+ 491:     verified = runtime.hasFunction(0x0037B310u) && verified;
+ 492:     registered = runtime.registerFunction(0x0037B314u, &ps2___do_global_ctors_0x37b310) && registered;
+ 493:     verified = runtime.hasFunction(0x0037B314u) && verified;
+ 494:     registered = runtime.registerFunction(0x0037B318u, &ps2___do_global_ctors_0x37b310) && registered;
+ 495:     verified = runtime.hasFunction(0x0037B318u) && verified;
+ 496:     registered = runtime.registerFunction(0x0037B31Cu, &ps2___do_global_ctors_0x37b310) && registered;
+ 497:     verified = runtime.hasFunction(0x0037B31Cu) && verified;
+ 498:     registered = runtime.registerFunction(0x0037B320u, &ps2___do_global_ctors_0x37b310) && registered;
+ 499:     verified = runtime.hasFunction(0x0037B320u) && verified;
+ 500:     registered = runtime.registerFunction(0x0037B324u, &ps2___do_global_ctors_0x37b310) && registered;
+ 501:     verified = runtime.hasFunction(0x0037B324u) && verified;
+ 502:     registered = runtime.registerFunction(0x0037B328u, &ps2___do_global_ctors_0x37b310) && registered;
+ 503:     verified = runtime.hasFunction(0x0037B328u) && verified;
+ 504:     registered = runtime.registerFunction(0x0037B32Cu, &ps2___do_global_ctors_0x37b310) && registered;
+ 505:     verified = runtime.hasFunction(0x0037B32Cu) && verified;
+ 506:     registered = runtime.registerFunction(0x0037B330u, &ps2___do_global_ctors_0x37b310) && registered;
+ 507:     verified = runtime.hasFunction(0x0037B330u) && verified;
+ 508:     registered = runtime.registerFunction(0x0037B334u, &ps2___do_global_ctors_0x37b310) && registered;
+ 509:     verified = runtime.hasFunction(0x0037B334u) && verified;
+ 510:     registered = runtime.registerFunction(0x0037B338u, &ps2___do_global_ctors_0x37b310) && registered;
+ 511:     verified = runtime.hasFunction(0x0037B338u) && verified;
+ 512:     registered = runtime.registerFunction(0x0037B33Cu, &ps2___do_global_ctors_0x37b310) && registered;
+ 513:     verified = runtime.hasFunction(0x0037B33Cu) && verified;
+ 514:     registered = runtime.registerFunction(0x0037B340u, &ps2___do_global_ctors_0x37b310) && registered;
+ 515:     verified = runtime.hasFunction(0x0037B340u) && verified;
+ 516:     registered = runtime.registerFunction(0x0037B344u, &ps2___do_global_ctors_0x37b310) && registered;
+ 517:     verified = runtime.hasFunction(0x0037B344u) && verified;
+ 518:     registered = runtime.registerFunction(0x0037B348u, &ps2___do_global_ctors_0x37b310) && registered;
+ 519:     verified = runtime.hasFunction(0x0037B348u) && verified;
+ 520:     registered = runtime.registerFunction(0x0037B34Cu, &ps2___do_global_ctors_0x37b310) && registered;
+ 521:     verified = runtime.hasFunction(0x0037B34Cu) && verified;
+ 522:     registered = runtime.registerFunction(0x0037B350u, &ps2___do_global_ctors_0x37b310) && registered;
+ 523:     verified = runtime.hasFunction(0x0037B350u) && verified;
+ 524:     registered = runtime.registerFunction(0x0037B354u, &ps2___do_global_ctors_0x37b310) && registered;
+ 525:     verified = runtime.hasFunction(0x0037B354u) && verified;
+ 526:     registered = runtime.registerFunction(0x0037B358u, &ps2___do_global_ctors_0x37b310) && registered;
+ 527:     verified = runtime.hasFunction(0x0037B358u) && verified;
+ 528:     registered = runtime.registerFunction(0x0037B35Cu, &ps2___do_global_ctors_0x37b310) && registered;
+ 529:     verified = runtime.hasFunction(0x0037B35Cu) && verified;
+ 530:     registered = runtime.registerFunction(0x0037B360u, &ps2___do_global_ctors_0x37b310) && registered;
+ 531:     verified = runtime.hasFunction(0x0037B360u) && verified;
+ 532:     registered = runtime.registerFunction(0x0037B364u, &ps2___do_global_ctors_0x37b310) && registered;
+ 533:     verified = runtime.hasFunction(0x0037B364u) && verified;
+ 534:     registered = runtime.registerFunction(0x0037B368u, &ps2___do_global_ctors_0x37b310) && registered;
+ 535:     verified = runtime.hasFunction(0x0037B368u) && verified;
+ 536:     registered = runtime.registerFunction(0x0037B36Cu, &ps2___do_global_ctors_0x37b310) && registered;
+ 537:     verified = runtime.hasFunction(0x0037B36Cu) && verified;
+ 538:     registered = runtime.registerFunction(0x0037B370u, &ps2___do_global_ctors_0x37b310) && registered;
+ 539:     verified = runtime.hasFunction(0x0037B370u) && verified;
+ 540:     registered = runtime.registerFunction(0x0037B374u, &ps2___do_global_ctors_0x37b310) && registered;
+ 541:     verified = runtime.hasFunction(0x0037B374u) && verified;
+ 542:     registered = runtime.registerFunction(0x0037B378u, &ps2___do_global_ctors_0x37b310) && registered;
+ 543:     verified = runtime.hasFunction(0x0037B378u) && verified;
+ 544:     registered = runtime.registerFunction(0x0037B37Cu, &ps2___do_global_ctors_0x37b310) && registered;
+ 545:     verified = runtime.hasFunction(0x0037B37Cu) && verified;
+ 546:     registered = runtime.registerFunction(0x0037B380u, &ps2___do_global_ctors_0x37b310) && registered;
+ 547:     verified = runtime.hasFunction(0x0037B380u) && verified;
+ 548:     registered = runtime.registerFunction(0x0037B384u, &ps2___do_global_ctors_0x37b310) && registered;
+ 549:     verified = runtime.hasFunction(0x0037B384u) && verified;
+ 550:     registered = runtime.registerFunction(0x0037B388u, &ps2___do_global_ctors_0x37b310) && registered;
+ 551:     verified = runtime.hasFunction(0x0037B388u) && verified;
+ 552:     registered = runtime.registerFunction(0x0037B38Cu, &ps2___do_global_ctors_0x37b310) && registered;
+ 553:     verified = runtime.hasFunction(0x0037B38Cu) && verified;
+ 554:     registered = runtime.registerFunction(0x0037B390u, &ps2___do_global_ctors_0x37b310) && registered;
+ 555:     verified = runtime.hasFunction(0x0037B390u) && verified;
+ 556:     registered = runtime.registerFunction(0x0037B394u, &ps2___do_global_ctors_0x37b310) && registered;
+ 557:     verified = runtime.hasFunction(0x0037B394u) && verified;
+ 558:     registered = runtime.registerFunction(0x0037B398u, &ps2___do_global_ctors_0x37b310) && registered;
+ 559:     verified = runtime.hasFunction(0x0037B398u) && verified;
+ 560:     registered = runtime.registerFunction(0x0037B39Cu, &ps2___do_global_ctors_0x37b310) && registered;
+ 561:     verified = runtime.hasFunction(0x0037B39Cu) && verified;
+ 562:     registered = runtime.registerFunction(0x0037B3A0u, &ps2___do_global_ctors_0x37b310) && registered;
+ 563:     verified = runtime.hasFunction(0x0037B3A0u) && verified;
+ 564:     registered = runtime.registerFunction(0x0037B3A4u, &ps2___do_global_ctors_0x37b310) && registered;
+ 565:     verified = runtime.hasFunction(0x0037B3A4u) && verified;
+ 566:     registered = runtime.registerFunction(0x0037B3A8u, &ps2___do_global_ctors_0x37b310) && registered;
+ 567:     verified = runtime.hasFunction(0x0037B3A8u) && verified;
+ 568:     registered = runtime.registerFunction(0x0037B3ACu, &ps2___do_global_ctors_0x37b310) && registered;
+ 569:     verified = runtime.hasFunction(0x0037B3ACu) && verified;
+ 570:     registered = runtime.registerFunction(0x0037B3B0u, &ps2___do_global_ctors_0x37b310) && registered;
+ 571:     verified = runtime.hasFunction(0x0037B3B0u) && verified;
+ 572:     registered = runtime.registerFunction(0x0037B3B4u, &ps2___do_global_ctors_0x37b310) && registered;
+ 573:     verified = runtime.hasFunction(0x0037B3B4u) && verified;
+ 574:     registered = runtime.registerFunction(0x0037B3B8u, &ps2___do_global_ctors_0x37b310) && registered;
+ 575:     verified = runtime.hasFunction(0x0037B3B8u) && verified;
+ 576:     registered = runtime.registerFunction(0x0037B3BCu, &ps2___do_global_ctors_0x37b310) && registered;
+ 577:     verified = runtime.hasFunction(0x0037B3BCu) && verified;
+ 578:     registered = runtime.registerFunction(0x002BDD38u, &newGame__4Game_0x2bdd38) && registered;
+ 579:     verified = runtime.hasFunction(0x002BDD38u) && verified;
+ 580:     registered = runtime.registerFunction(0x002BDDE0u, &newGame__4Game_0x2bdd38) && registered;
+ 581:     verified = runtime.hasFunction(0x002BDDE0u) && verified;
+ 582:     registered = runtime.registerFunction(0x002BDE38u, &newGame__4Game_0x2bdd38) && registered;
+ 583:     verified = runtime.hasFunction(0x002BDE38u) && verified;
+ 584:     registered = runtime.registerFunction(0x002BDE44u, &newGame__4Game_0x2bdd38) && registered;
+ 585:     verified = runtime.hasFunction(0x002BDE44u) && verified;
+ 586:     registered = runtime.registerFunction(0x002A78C8u, &IngameTextMessageReset__Fv_0x2a78c8) && registered;
+ 587:     verified = runtime.hasFunction(0x002A78C8u) && verified;
+ 588:     registered = runtime.registerFunction(0x002A78E0u, &IngameTextMessageReset__Fv_0x2a78c8) && registered;
+ 589:     verified = runtime.hasFunction(0x002A78E0u) && verified;
+ 590:     registered = runtime.registerFunction(0x0021B1F0u, &init__19PlayerMoveCheckList_0x21b1f0) && registered;
+ 591:     verified = runtime.hasFunction(0x0021B1F0u) && verified;
+ 592:     registered = runtime.registerFunction(0x0021B200u, &init__19PlayerMoveCheckList_0x21b1f0) && registered;
+ 593:     verified = runtime.hasFunction(0x0021B200u) && verified;
+ 594:     registered = runtime.registerFunction(0x0021B190u, &reset__19PlayerMoveCheckList_0x21b190) && registered;
+ 595:     verified = runtime.hasFunction(0x0021B190u) && verified;
+ 596:     registered = runtime.registerFunction(0x0021B1A0u, &reset__19PlayerMoveCheckList_0x21b190) && registered;
+ 597:     verified = runtime.hasFunction(0x0021B1A0u) && verified;
+ 598:     registered = runtime.registerFunction(0x0021B1C8u, &reset__19PlayerMoveCheckList_0x21b190) && registered;
+ 599:     verified = runtime.hasFunction(0x0021B1C8u) && verified;
+ 600: 
+ 601:     return registered && verified;
+ 602: }
+
+CMAKE SOURCE — NATIVE SOURCE LIST AND TARGET AREA
+ 464:     )
+ 465: endif()
+ 466: 
+ 467: # Mark of Kri generated native functions and runtime registration.
+ 468: set(MARK_OF_KRI_NATIVE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../native/runtime/mark_of_kri")
+ 469: set(MARK_OF_KRI_NATIVE_SOURCES
+ 470:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI__start_00100008.cpp"
+ 471:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_Exit_0x393210.cpp"
+ 472:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_TerminateLibrary_0x393160.cpp"
+ 473:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_InitTLB_0x393718.cpp"
+ 474:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_ps2__Exit_0x38aa80.cpp"
+ 475:     "${MARK_OF_KRI_NATIVE_DIR}/mark_of_kri_registration.cpp"
+ 476:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+ 477:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_getAttackZoneRange.cpp"
+ 478:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_doorReset.cpp"
+ 479:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_InitBackdrop.cpp"
+ 480:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_Load_envGrid.cpp"
+ 481:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_addSpirit.cpp"
+ 482:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_GetVoDataSizeInMacroBlocks.cpp"
+ 483:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_SetViewArea.cpp"
+ 484:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_allowLockMode.cpp"
+ 485:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_anmcmd_exitHeader.cpp"
+ 486:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_Update_Shimmer.cpp"
+ 487:     # MARK OF KRI INIT SYSTEM GENERATED SOURCES
+ 488: ${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_ps2__InitSys_0x392fa0_0x392FA0.cpp
+ 489:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_Copy_0x392ff0_0x392FF0.cpp"
+ 490:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_Copy_0x393538_0x393538.cpp"
+ 491:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_CreateSema_0x38ae60_0x38AE60.cpp"
+ 492:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_FindAddress_0x392f20_0x392F20.cpp"
+ 493:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_FlushCache_0x38b0e0_0x38B0E0.cpp"
+ 494:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_GetEntryAddress_0x393038_0x393038.cpp"
+ 495:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_GetEntryAddress_0x393580_0x393580.cpp"
+ 496:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_GetOsdConfigParam_0x38af10_0x38AF10.cpp"
+ 497:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_GetSystemCallTableEntry_0x392f30_0x392F30.cpp"
+ 498:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_InitAlarm_0x38bb20_0x38BB20.cpp"
+ 499:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_InitExecPS2_0x3930b0_0x3930B0.cpp"
+ 500:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_InitThread_0x38bcd0_0x38BCD0.cpp"
+ 501:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_InitTLBFunctions_0x3935a0_0x3935A0.cpp"
+ 502:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_PatchIsNeeded_0x393048_0x393048.cpp"
+ 503:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_SetOsdConfigParam_0x38af00_0x38AF00.cpp"
+ 504:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_setup_0x392f70_0x392F70.cpp"
+ 505:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_setup_0x392fe0_0x392FE0.cpp"
+ 506:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_setup_0x393590_0x393590.cpp"
+ 507:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_INIT_supplement_crt0_0x392ea0_0x392EA0.cpp"
+ 508:     "${MARK_OF_KRI_NATIVE_DIR}/ps2_main_0x1014d0.cpp"
+ 509:     "${MARK_OF_KRI_NATIVE_DIR}/ps2___main_0x37b3c0.cpp"
+ 510:     "${MARK_OF_KRI_NATIVE_DIR}/startGame__Fv_0x1000c8.cpp"
+ 511:     "${MARK_OF_KRI_NATIVE_DIR}/ShowBootSequence__Fb_0x102bc8.cpp"
+ 512:     "${MARK_OF_KRI_NATIVE_DIR}/NewGame__Fv_0x101638.cpp"
+ 513:     "${MARK_OF_KRI_NATIVE_DIR}/doSavedLevel__Fv_0x101028.cpp"
+ 514:     "${MARK_OF_KRI_NATIVE_DIR}/doLevel__F6eLevelT0_0x1008d8.cpp"
+ 515:     "${MARK_OF_KRI_NATIVE_DIR}/FinishGame__Fv_0x103dc8.cpp"
+ 516:     ${MARK_OF_KRI_NATIVE_DIR}/ps2___do_global_ctors_0x37b310.cpp
+ 517:     ${MARK_OF_KRI_NATIVE_DIR}/newGame__4Game_0x2bdd38.cpp
+ 518:     ${MARK_OF_KRI_NATIVE_DIR}/IngameTextMessageReset__Fv_0x2a78c8.cpp
+ 519:     ${MARK_OF_KRI_NATIVE_DIR}/init__19PlayerMoveCheckList_0x21b1f0.cpp
+ 520:     ${MARK_OF_KRI_NATIVE_DIR}/reset__19PlayerMoveCheckList_0x21b190.cpp
+ 521: )
+ 522: 
+ 523: 
+ 524: foreach(MARK_OF_KRI_SOURCE IN LISTS MARK_OF_KRI_NATIVE_SOURCES)
+ 525:     if(NOT EXISTS "${MARK_OF_KRI_SOURCE}")
+ 526:         message(FATAL_ERROR "Missing Mark of Kri generated source: ${MARK_OF_KRI_SOURCE}")
+ 527:     endif()
+ 528: endforeach()
+ 529: 
+ 530: target_sources(ps2EntryRunner PRIVATE ${MARK_OF_KRI_NATIVE_SOURCES})
+ 531: 
+ 532: set_source_files_properties(${MARK_OF_KRI_NATIVE_SOURCES}
+ 533:     PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
+ 534: )
+ 535: if(PS2X_ENABLE_RUNNER_UNITY_BUILD)
+ 536:     set_target_properties(ps2EntryRunner PROPERTIES
+ 537:         UNITY_BUILD ON
+ 538:         UNITY_BUILD_BATCH_SIZE "${PS2X_RUNNER_UNITY_BUILD_BATCH_SIZE}"
+ 539:     )
+ 540: endif()
+ 541: 
+ 542: if(PS2X_ENABLE_RUNNER_PCH)
+ 543:     set(PS2X_RUNNER_PCH_HEADERS
+ 544:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_runtime_macros.h"
+
+EXISTING CONSTRUCTOR REFERENCES
+reg_frame_0x1048e0 references in registration/CMake: 0
+dereg_frame_0x104920 references in registration/CMake: 0
+ps2___register_frame_info_table_0x37f9a8 references in registration/CMake: 0
+ps2___deregister_frame_info_0x37fa00 references in registration/CMake: 0
+
+BUILD GENERATION CHECK
+Controlled runner project exists: True
+
+V41 RESULT: READ-ONLY PREFLIGHT COMPLETE
+Production modified: NO
+Build executed: NO
+Runner launched or terminated: NO
+Actual elapsed seconds: 0.38
+Estimated runtime: 2–10 seconds
+PowerShell session remains open.
