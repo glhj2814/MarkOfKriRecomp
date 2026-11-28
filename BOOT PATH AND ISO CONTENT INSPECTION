@@ -1,0 +1,3009 @@
+MARK OF KRI — BOOT PATH AND ISO CONTENT INSPECTION
+Generated: 2026-11-27 21:32:30
+READ ONLY — no extraction, launch, or source/build modification.
+
+===== BOOT / CLI SOURCE FILES =====
+
+----- ps2xRecomp\src\runner\main.cpp -----
+Line count: 53
+   1: #include "ps2recomp/ps2_recompiler.h"
+   2: #include <iostream>
+   3: #include <string>
+   4: 
+   5: using namespace ps2recomp;
+   6: 
+   7: void printUsage()
+   8: {
+   9:     std::cout << "PS2Recomp - A static recompiler for PlayStation 2 ELF files\n";
+  10:     std::cout << "Usage: ps2recomp <config.toml>\n";
+  11:     std::cout << "  config.toml: Configuration file for the recompiler\n";
+  12: }
+  13: 
+  14: int main(int argc, char *argv[])
+  15: {
+  16:     if (argc < 2)
+  17:     {
+  18:         printUsage();
+  19:         return 1;
+  20:     }
+  21: 
+  22:     std::string configPath = argv[1];
+  23: 
+  24:     try
+  25:     {
+  26:         PS2Recompiler recompiler(configPath);
+  27: 
+  28:         if (!recompiler.initialize())
+  29:         {
+  30:             std::cerr << "Failed to initialize recompiler\n";
+  31:             recompiler.printReport();
+  32:             return 1;
+  33:         }
+  34: 
+  35:         if (!recompiler.recompile())
+  36:         {
+  37:             std::cerr << "Recompilation failed\n";
+  38:             recompiler.printReport();
+  39:             return 1;
+  40:         }
+  41: 
+  42:         recompiler.generateOutput();
+  43:         recompiler.printReport();
+  44: 
+  45:         std::cout << "Recompilation completed successfully\n";
+  46:         return 0;
+  47:     }
+  48:     catch (const std::exception &e)
+  49:     {
+  50:         std::cerr << "Error: " << e.what() << std::endl;
+  51:         return 1;
+  52:     }
+  53: }
+
+----- ps2xRuntime\src\main.cpp -----
+Line count: 258
+   1: #include "ps2_runtime.h"
+   2: #include "games_database.h"
+   3: #if defined(PS2X_ENABLE_DEBUG_UI) && !defined(PLATFORM_VITA)
+   4: #include "ps2_debug_panel.h"
+   5: #endif
+   6: 
+   7: #ifdef _DEBUG
+   8: #include "ps2_log.h"
+   9: #endif
+  10: 
+  11: #include <iostream>
+  12: #include <string>
+  13: #include <filesystem>
+  14: #include <exception>
+  15: #include <algorithm>
+  16: #include <cstdlib>
+  17: 
+  18: #if defined(__ANDROID__)
+  19: #include <android/log.h>
+  20: #include <unistd.h>
+  21: #include <thread>
+  22: #include <cstdio>
+  23: #include <cstring>
+  24: #endif
+  25: 
+  26: bool RegisterMarkOfKriFunctions(PS2Runtime& runtime);
+  27: 
+  28: namespace
+  29: {
+  30: #if defined(__ANDROID__)
+  31:     int g_logcatPipeFds[2]{-1, -1};
+  32:     std::thread g_logcatThread;
+  33: 
+  34:     void stopLogcatRedirect()
+  35:     {
+  36:         std::fflush(stdout);
+  37:         std::fflush(stderr);
+  38:         close(STDOUT_FILENO);
+  39:         close(STDERR_FILENO);
+  40:         if (g_logcatPipeFds[1] >= 0)
+  41:         {
+  42:             close(g_logcatPipeFds[1]);
+  43:             g_logcatPipeFds[1] = -1;
+  44:         }
+  45:         if (g_logcatThread.joinable())
+  46:         {
+  47:             g_logcatThread.join();
+  48:         }
+  49:     }
+  50: 
+  51:     void redirectStdioToLogcat()
+  52:     {
+  53:         if (pipe(g_logcatPipeFds) != 0)
+  54:         {
+  55:             return;
+  56:         }
+  57: 
+  58:         setvbuf(stdout, nullptr, _IOLBF, 0);
+  59:         setvbuf(stderr, nullptr, _IONBF, 0);
+  60:         dup2(g_logcatPipeFds[1], STDOUT_FILENO);
+  61:         dup2(g_logcatPipeFds[1], STDERR_FILENO);
+  62: 
+  63:         g_logcatThread = std::thread([]()
+  64:                                      {
+  65:                                          FILE *reader = fdopen(g_logcatPipeFds[0], "r");
+  66:                                          if (!reader)
+  67:                                          {
+  68:                                              return;
+  69:                                          }
+  70:                                          char line[1024];
+  71:                                          while (fgets(line, sizeof(line), reader))
+  72:                                          {
+  73:                                              size_t len = std::strlen(line);
+  74:                                              if (len > 0 && line[len - 1] == '\n')
+  75:                                              {
+  76:                                                  line[len - 1] = '\0';
+  77:                                              }
+  78:                                              __android_log_write(ANDROID_LOG_INFO, "ps2x", line);
+  79:                                          }
+  80:                                          fclose(reader);
+  81:                                          g_logcatPipeFds[0] = -1;
+  82:                                      });
+  83:         if (std::atexit(stopLogcatRedirect) != 0)
+  84:         {
+  85:             close(STDOUT_FILENO);
+  86:             close(STDERR_FILENO);
+  87:             close(g_logcatPipeFds[1]);
+  88:             g_logcatPipeFds[1] = -1;
+  89:             if (g_logcatThread.joinable())
+  90:             {
+  91:                 g_logcatThread.join();
+  92:             }
+  93:         }
+  94:     }
+  95: #endif
+  96: 
+  97:     void setupTerminateLogger() // to help on release build crashs
+  98:     {
+  99:         std::set_terminate([]()
+ 100:                            {
+ 101:                                std::cerr << "[terminate] unhandled exception" << std::endl;
+ 102:                                const std::exception_ptr ep = std::current_exception();
+ 103:                                if (ep)
+ 104:                                {
+ 105:                                    try
+ 106:                                    {
+ 107:                                        std::rethrow_exception(ep);
+ 108:                                    }
+ 109:                                    catch (const std::system_error &e)
+ 110:                                    {
+ 111:                                        std::cerr << "[terminate] std::system_error code=" << e.code().value()
+ 112:                                                  << " category=" << e.code().category().name()
+ 113:                                                  << " message=" << e.what() << std::endl;
+ 114:                                    }
+ 115:                                    catch (const std::exception &e)
+ 116:                                    {
+ 117:                                        std::cerr << "[terminate] std::exception: " << e.what() << std::endl;
+ 118:                                    }
+ 119:                                    catch (...)
+ 120:                                    {
+ 121:                                        std::cerr << "[terminate] non-std exception" << std::endl;
+ 122:                                    }
+ 123:                                }
+ 124:                                std::abort(); });
+ 125:     }
+ 126: 
+ 127:     std::string normalizeGameId(const std::string &folderName)
+ 128:     {
+ 129:         std::string result = folderName;
+ 130: 
+ 131:         size_t underscore = result.find('_');
+ 132:         if (underscore != std::string::npos)
+ 133:             result[underscore] = '-';
+ 134: 
+ 135:         size_t dot = result.find('.');
+ 136:         if (dot != std::string::npos)
+ 137:             result.erase(dot, 1);
+ 138: 
+ 139:         std::ranges::transform(result, result.begin(), [](unsigned char character)
+ 140:                                { return static_cast<char>(std::toupper(character)); });
+ 141: 
+ 142:         return result;
+ 143:     }
+ 144: 
+ 145:     std::filesystem::path getExecutablePath(int argc, char *argv[])
+ 146:     {
+ 147:         if (argc >= 2 && argv[1] && argv[1][0] != '\0')
+ 148:         {
+ 149:             std::cout << "Using argv boot path" << std::endl;
+ 150:             return std::filesystem::path(argv[1]);
+ 151:         }
+ 152: #if defined(PS2X_DEFAULT_BOOT_ELF)
+ 153:         std::cout << "Using default boot file" << std::endl;
+ 154:         const std::filesystem::path configuredPath = std::filesystem::path(PS2X_DEFAULT_BOOT_ELF);
+ 155: #if defined(PLATFORM_VITA)
+ 156:         return configuredPath;
+ 157: #endif
+ 158:         if (configuredPath.is_absolute())
+ 159:         {
+ 160:             return configuredPath;
+ 161:         }
+ 162:         return (std::filesystem::current_path() / configuredPath).lexically_normal();
+ 163: #else
+ 164:         throw std::runtime_error("Unable to determine executable path. Pass the guest ELF as argv[1] or define PS2X_DEFAULT_BOOT_ELF.");
+ 165: #endif
+ 166:     }
+ 167: }
+ 168: 
+ 169: int main(int argc, char *argv[])
+ 170: {
+ 171: #if defined(__ANDROID__)
+ 172:     redirectStdioToLogcat();
+ 173: #endif
+ 174:     setupTerminateLogger();
+ 175: 
+ 176:     try
+ 177:     {
+ 178:         std::filesystem::path pathObj = getExecutablePath(argc, argv);
+ 179: 
+ 180:         std::string filePathStr = pathObj.string();
+ 181:         std::string elfName = pathObj.filename().string();
+ 182:         std::string normalizedId = normalizeGameId(elfName);
+ 183: 
+ 184:         std::string windowTitle = "PS2-Recomp | ";
+ 185:         const char *gameName = getGameName(normalizedId);
+ 186: 
+ 187: #if !defined(PLATFORM_VITA)
+ 188:         if (gameName)
+ 189:         {
+ 190:             windowTitle += std::string(gameName) + " | " + elfName;
+ 191:         }
+ 192:         else
+ 193: #endif
+ 194:         {
+ 195:             windowTitle += elfName;
+ 196:         }
+ 197: 
+ 198:         PS2Runtime runtime;
+ 199: #if defined(PS2X_ENABLE_DEBUG_UI) && !defined(PLATFORM_VITA)
+ 200:         // This hook is to prevent leak rlimgui deps to recompiler etc
+ 201:         PS2DebugPanel debugPanel;
+ 202:         runtime.setDebugUiCallbacks(
+ 203:             [](PS2Runtime &rt, void *userData)
+ 204:             {
+ 205:                 (void)rt;
+ 206:                 static_cast<PS2DebugPanel *>(userData)->initialize();
+ 207:             },
+ 208:             [](PS2Runtime &rt, void *userData)
+ 209:             {
+ 210:                 static_cast<PS2DebugPanel *>(userData)->draw(rt);
+ 211:             },
+ 212:             [](PS2Runtime &rt, void *userData)
+ 213:             {
+ 214:                 (void)rt;
+ 215:                 static_cast<PS2DebugPanel *>(userData)->shutdown();
+ 216:             },
+ 217:             &debugPanel);
+ 218: #endif
+ 219:         if (!runtime.initialize(windowTitle.c_str()))
+ 220:         {
+ 221:             std::cerr << "Failed to initialize PS2 runtime" << std::endl;
+ 222:             return 1;
+ 223:         }
+ 224: 
+ 225:         if (!runtime.loadELF(filePathStr))
+ 226:         {
+ 227:             std::cerr << "Failed to load ELF file: " << filePathStr << std::endl;
+ 228:             return 1;
+ 229:         }
+ 230: 
+ 231:         if (!RegisterMarkOfKriFunctions(runtime))
+ 232:         {
+ 233:             std::cerr << "Failed to register Mark of Kri recompiled functions" << std::endl;
+ 234:             return 1;
+ 235:         }
+ 236: 
+ 237:         runtime.run();
+ 238: 
+ 239: #ifdef _DEBUG
+ 240:         ps2_log::print_saved_location();
+ 241: #endif
+ 242:         std::cout.flush();
+ 243:         std::cerr.flush();
+ 244:         std::_Exit(0);
+ 245:     }
+ 246:     catch (const std::exception &e)
+ 247:     {
+ 248:         std::cerr << "[main] fatal exception: " << e.what() << std::endl;
+ 249:     }
+ 250:     catch (...)
+ 251:     {
+ 252:         std::cerr << "[main] fatal exception: unknown" << std::endl;
+ 253:     }
+ 254: 
+ 255:     std::cout.flush();
+ 256:     std::cerr.flush();
+ 257:     std::_Exit(1);
+ 258: }
+
+----- ps2xRecomp\src\lib\config_manager.cpp -----
+Line count: 370
+   1: #include "ps2recomp/config_manager.h"
+   2: #include "ps2recomp/recompiler_reporter.h"
+   3: #include <toml.hpp>
+   4: #include <fstream>
+   5: #include <iostream>
+   6: #include <stdexcept>
+   7: #include <sstream>
+   8: #include <algorithm>
+   9: #include <limits>
+...
+  10: #include <thread>
+...
+  11: 
+  12: namespace ps2recomp
+  13: {
+  14: 
+  15:     ConfigManager::ConfigManager(const std::string &configPath)
+  16:         : m_configPath(configPath)
+  17:     {
+  18:     }
+  19: 
+  20:     ConfigManager::~ConfigManager() = default;
+  21: 
+  22:     void ConfigManager::setReporter(RecompilerReporter *reporter)
+  23:     {
+...
+  24:         m_reporter = reporter;
+...
+  25:     }
+  26: 
+  27:     RecompilerConfig ConfigManager::loadConfig() const
+  28:     {
+...
+  29:         RecompilerConfig config;
+  30: 
+...
+  31:         try
+  32:         {
+  33:             if (m_reporter)
+  34:             {
+  35:                 m_reporter->info("config", "Parsing toml file: " + m_configPath);
+...
+  36:             }
+  37:             auto data = toml::parse(m_configPath);
+...
+  38:             const auto &general = toml::find(data, "general");
+  39: 
+  40:             config.inputPath = toml::find<std::string>(general, "input");
+  41:             config.ghidraMapPath = toml::find_or<std::string>(general, "ghidra_output", "");
+  42:             config.outputPath = toml::find<std::string>(general, "output");
+  43:             config.singleFileOutput = toml::find_or<bool>(general, "single_file_output", false);
+...
+  44:             config.lowMemoryMode = toml::find_or<bool>(general, "low_memory_mode", config.lowMemoryMode);
+  45:             const int64_t configuredOutputWorkers = toml::find_or<int64_t>(
+...
+  46:                 general,
+  47:                 "output_worker_threads",
+  48:                 toml::find_or<int64_t>(general, "output_worker_thread", config.outputWorkerThreads));
+...
+  49:             const int64_t clampedOutputWorkers = std::clamp<int64_t>(
+...
+  50:                 configuredOutputWorkers,
+...
+  51:                 0,
+...
+  52:                 std::thread::hardware_concurrency() * 2);
+...
+  53:             if (configuredOutputWorkers != clampedOutputWorkers)
+...
+  54:             {
+  55:                 if (m_reporter)
+  56:                 {
+...
+  57:                     std::ostringstream msg;
+  58:                     msg << "output_worker_threads value " << configuredOutputWorkers
+...
+  59:                         << " is out of range; clamped to " << clampedOutputWorkers << ".";
+  60:                     m_reporter->warning("config", msg.str());
+  61:                 }
+...
+  62:             }
+  63:             config.outputWorkerThreads = static_cast<uint32_t>(clampedOutputWorkers);
+  64:             config.patchSyscalls = toml::find_or<bool>(general, "patch_syscalls", config.patchSyscalls);
+  65:             config.patchCop0 = toml::find_or<bool>(general, "patch_cop0", config.patchCop0);
+  66:             config.patchCache = toml::find_or<bool>(general, "patch_cache", config.patchCache);
+...
+  67: 
+  68:             if (general.contains("stubs") && general.at("stubs").is_array())
+...
+  69:             {
+  70:                 config.stubImplementations = toml::find<std::vector<std::string>>(general, "stubs");
+  71:             }
+...
+  72:             else if (data.contains("stubs") && data.at("stubs").is_array())
+...
+  73:             {
+...
+  74:                 config.stubImplementations = toml::find<std::vector<std::string>>(data, "stubs");
+...
+  75:             }
+  76: 
+  77:             auto appendEntryPointHints = [&](const toml::value &table, const char *key)
+  78:             {
+...
+  79:                 if (!table.contains(key) || !table.at(key).is_array())
+  80:                 {
+  81:                     return;
+  82:                 }
+...
+  83:                 const auto values = toml::find<std::vector<std::string>>(table, key);
+  84:                 config.entryPointHints.insert(
+  85:                     config.entryPointHints.end(), values.begin(), values.end());
+...
+  86:             };
+  87:             appendEntryPointHints(general, "entry_points");
+  88:             appendEntryPointHints(data, "entry_points");
+  89:             // Backward compatibility
+  90:             appendEntryPointHints(general, "untracked_stubs");
+  91:             appendEntryPointHints(data, "untracked_stubs");
+  92: 
+...
+  93:             std::sort(config.entryPointHints.begin(), config.entryPointHints.end());
+...
+  94:             config.entryPointHints.erase(
+  95:                 std::unique(config.entryPointHints.begin(), config.entryPointHints.end()),
+...
+  96:                 config.entryPointHints.end());
+...
+  97: 
+  98:             if (general.contains("skip") && general.at("skip").is_array())
+...
+  99:             {
+...
+ 100:                 config.skipFunctions = toml::find<std::vector<std::string>>(general, "skip");
+ 101:             }
+...
+ 102:             else if (data.contains("skip") && data.at("skip").is_array())
+...
+ 103:             {
+...
+ 104:                 config.skipFunctions = toml::find<std::vector<std::string>>(data, "skip");
+...
+ 105:             }
+ 106: 
+ 107:             if (data.contains("patches") && data.at("patches").is_table())
+ 108:             {
+...
+ 109:                 const auto &patches = toml::find(data, "patches");
+ 110: 
+ 111:                 if (patches.contains("instructions") && patches.at("instructions").is_array())
+ 112:                 {
+...
+ 131:                             }
+ 132: 
+ 133:                             const auto &valueField = patch.at("value");
+ 134:                             if (valueField.is_string())
+ 135:                             {
+ 136:                                 config.patches[address] = toml::find<std::string>(patch, "value");
+ 137:                             }
+ 138:                             else if (valueField.is_integer())
+ 139:                             {
+ 140:                                 std::ostringstream valueStream;
+ 141:                                 valueStream << "0x" << std::hex
+ 142:                                             << static_cast<uint32_t>(toml::find<int64_t>(patch, "value"));
+ 143:                                 config.patches[address] = valueStream.str();
+ 144:                             }
+...
+ 145:                         }
+ 146:                     }
+ 147:                 }
+ 148:             }
+ 149: 
+ 150:             if (data.contains("mmio") && data.at("mmio").is_table())
+ 151:             {
+...
+ 160:                     }
+ 161:                     else if (value.is_integer())
+ 162:                     {
+ 163:                         mmioAddr = static_cast<uint32_t>(value.as_integer());
+ 164:                     }
+ 165:                     config.mmioByInstructionAddress[instAddr] = mmioAddr;
+ 166:                 }
+ 167:             }
+ 168: 
+ 169:             if (data.contains("jump_tables") && data.at("jump_tables").is_table())
+ 170:             {
+ 171:                 const auto &jumpTablesNode = data.at("jump_tables");
+ 172:                 if (jumpTablesNode.contains("table") && jumpTablesNode.at("table").is_array())
+ 173:                 {
+...
+ 261:                             ++fallbackIndex;
+ 262:                         }
+ 263: 
+ 264:                         if (!table.entries.empty())
+ 265:                         {
+ 266:                             config.jumpTables.push_back(std::move(table));
+ 267:                         }
+ 268:                     }
+ 269:                 }
+ 270:             }
+ 271:         }
+ 272:         catch (const std::exception &e)
+ 273:         {
+ 274:             if (m_reporter)
+...
+ 275:             {
+ 276:                 m_reporter->error("config", std::string("Error parsing configuration file: ") + e.what());
+ 277:             }
+ 278:             throw;
+ 279:         }
+ 280: 
+ 281:         return config;
+ 282:     }
+ 283: 
+ 284:     void ConfigManager::saveConfig(const RecompilerConfig &config) const
+...
+ 285:     {
+ 286:         toml::value data;
+ 287: 
+ 288:         toml::table general;
+ 289:         general["input"] = config.inputPath;
+...
+ 290:         general["ghidra_output"] = config.ghidraMapPath;
+ 291:         general["output"] = config.outputPath;
+ 292:         general["single_file_output"] = config.singleFileOutput;
+...
+ 293:         general["low_memory_mode"] = config.lowMemoryMode;
+ 294:         general["output_worker_threads"] = static_cast<int64_t>(config.outputWorkerThreads);
+ 295:         general["patch_syscalls"] = config.patchSyscalls;
+ 296:         general["patch_cop0"] = config.patchCop0;
+ 297:         general["patch_cache"] = config.patchCache;
+...
+ 298:         general["skip"] = config.skipFunctions;
+...
+ 299:         general["stubs"] = config.stubImplementations;
+...
+ 300:         general["entry_points"] = config.entryPointHints;
+...
+ 301:         data["general"] = general;
+...
+ 302: 
+...
+ 303:         if (!config.mmioByInstructionAddress.empty())
+...
+ 304:         {
+...
+ 305:             toml::table mmioTable;
+...
+ 306:             for (const auto &[instAddr, mmioAddr] : config.mmioByInstructionAddress)
+...
+ 307:             {
+...
+ 308:                 std::ostringstream keyStream;
+...
+ 309:                 keyStream << "0x" << std::hex << instAddr;
+ 310:                 std::ostringstream valStream;
+ 311:                 valStream << "0x" << std::hex << mmioAddr;
+...
+ 312:                 mmioTable[keyStream.str()] = valStream.str();
+ 313:             }
+ 314:             data["mmio"] = mmioTable;
+...
+ 315:         }
+ 316: 
+ 317:         if (!config.jumpTables.empty())
+ 318:         {
+ 319:             toml::table jumpTables;
+ 320:             toml::array tableArray;
+ 321:             for (const auto &table : config.jumpTables)
+ 322:             {
+ 323:                 toml::table tableNode;
+ 324:                 std::ostringstream addressStream;
+ 325:                 addressStream << "0x" << std::hex << table.address;
+...
+ 326:                 tableNode["address"] = addressStream.str();
+ 327:                 tableNode["base_register"] = static_cast<int64_t>(table.baseRegister);
+ 328: 
+ 329:                 toml::array entries;
+...
+ 343:             data["jump_tables"] = jumpTables;
+ 344:         }
+ 345: 
+ 346:         toml::table patches;
+ 347:         toml::array instPatches;
+ 348:         for (const auto &[addr, value] : config.patches)
+ 349:         {
+ 350:             std::ostringstream addrStream;
+ 351:             addrStream << "0x" << std::hex << addr;
+ 352: 
+ 353:             toml::table p;
+ 354:             p["address"] = addrStream.str();
+ 355:             p["value"] = value;
+ 356:             instPatches.push_back(p);
+...
+ 357:         }
+ 358:         patches["instructions"] = instPatches;
+ 359:         data["patches"] = patches;
+ 360: 
+ 361:         std::ofstream file(m_configPath);
+ 362:         if (!file)
+ 363:         {
+ 364:             throw std::runtime_error("Failed to open file for writing: " + m_configPath);
+ 365:         }
+ 366: 
+ 367:         file << data;
+ 368:     }
+ 369: 
+...
+ 370: } // namespace ps2recomp
+...
+Relevant match lines: 66
+
+----- ps2xRecomp\include\ps2recomp\config_manager.h -----
+Line count: 28
+   1: #ifndef PS2RECOMP_CONFIG_MANAGER_H
+   2: #define PS2RECOMP_CONFIG_MANAGER_H
+   3: 
+   4: #include "ps2recomp/types.h"
+   5: #include <string>
+   6: 
+   7: namespace ps2recomp
+   8: {
+   9:     class RecompilerReporter;
+  10: 
+  11:     class ConfigManager
+  12:     {
+  13:     public:
+  14:         explicit ConfigManager(const std::string &configPath);
+  15:         ~ConfigManager();
+  16: 
+  17:         RecompilerConfig loadConfig() const;
+  18:         void saveConfig(const RecompilerConfig &config) const;
+  19:         void setReporter(RecompilerReporter *reporter);
+  20: 
+  21:     private:
+  22:         std::string m_configPath;
+  23:         RecompilerReporter *m_reporter = nullptr;
+  24:     };
+  25: 
+  26: }
+  27: 
+  28: #endif // PS2RECOMP_CONFIG_MANAGER_H
+
+----- ps2xRecomp\src\lib\ps2_recompiler.cpp -----
+Line count: 2653
+   1: #include "ps2recomp/ps2_recompiler.h"
+   2: #include "ps2recomp/instructions.h"
+   3: #include "ps2recomp/types.h"
+   4: #include "ps2recomp/elf_parser.h"
+   5: #include "ps2recomp/r5900_decoder.h"
+   6: #include "ps2_runtime_calls.h"
+   7: #include <iostream>
+   8: #include <fstream>
+   9: #include <sstream>
+...
+  78:             return sanitized;
+  79:         }
+  80: 
+  81:         bool shouldGenerateCodeForFunction(const Function &function)
+  82:         {
+  83:             return function.isRecompiled || function.isStub || function.isSkipped;
+  84:         }
+  85: 
+  86:         size_t resolveOutputWorkerCount(uint32_t configuredWorkerCount)
+  87:         {
+  88:             if (configuredWorkerCount > 0)
+  89:             {
+  90:                 return configuredWorkerCount;
+  91:             }
+...
+  92: 
+  93:             const unsigned int hardwareWorkers = std::thread::hardware_concurrency();
+  94:             if (hardwareWorkers >= 2)
+...
+  95:             {
+  96:                 return static_cast<size_t>(hardwareWorkers - 1);
+...
+  97:             }
+  98: 
+...
+ 100:         }
+ 101: 
+ 102:         void writeCombinedOutputPreamble(std::ostream &output)
+ 103:         {
+ 104:             output << "#include <stdexcept>\n";
+ 105:             output << "#include <ps2_recompiled_functions.h>\n\n";
+ 106:             output << "#include \"ps2_runtime_macros.h\"\n";
+ 107:             output << "#include \"ps2_runtime.h\"\n";
+ 108:             output << "#include <ps2_recompiled_stubs.h>\n";
+ 109:             output << "#include \"ps2_syscalls.h\"\n";
+ 110:             output << "#include \"ps2_stubs.h\"\n";
+ 111:             output << "#ifdef _DEBUG\n";
+ 112:             output << "#include \"ps2_log.h\"\n";
+ 113:             output << "#endif\n";
+...
+ 114:             output << "\n";
+ 115:         }
+ 116: 
+...
+ 138:                 return PatchClass::Cache;
+ 139:             }
+ 140:             return PatchClass::Generic;
+ 141:         }
+ 142: 
+ 143:         bool shouldApplyConfiguredPatch(PatchClass patchClass, const RecompilerConfig &config)
+ 144:         {
+ 145:             switch (patchClass)
+ 146:             {
+ 147:             case PatchClass::Syscall:
+ 148:                 return config.patchSyscalls;
+ 149:             case PatchClass::Cop0:
+ 150:                 return config.patchCop0;
+ 151:             case PatchClass::Cache:
+...
+ 152:                 return config.patchCache;
+ 153:             default:
+ 154:                 return true;
+ 155:             }
+ 156:         }
+...
+ 157: 
+ 158:         std::string escapeCStringLiteral(const std::string &value)
+...
+ 159:         {
+ 160:             std::string escaped;
+...
+ 281:         bool isEntryFunctionName(const std::string &name)
+ 282:         {
+ 283:             return name.rfind("entry_", 0) == 0;
+ 284:         }
+ 285: 
+ 286:         EntryDiscoveryStats discoverAdditionalEntryPointsImpl(
+ 287:             std::vector<Function> &functions,
+ 288:             std::unordered_map<uint32_t, std::vector<Instruction>> &decodedFunctions,
+ 289:             const std::vector<Section> &sections,
+ 290:             CodeGenerator *codeGenerator,
+ 291:             const std::function<bool(Function &)> &decodeExternalFunction,
+ 292:             const std::unordered_set<uint32_t> &seedEntryAddresses = {})
+ 293:         {
+ 294:             std::unordered_set<uint32_t> existingStarts;
+...
+ 341:                     if (address < function.start || address >= function.end)
+ 342:                     {
+ 343:                         continue;
+ 344:                     }
+ 345: 
+ 346:                     if (!function.isRecompiled || function.isStub || function.isSkipped)
+ 347:                     {
+ 348:                         continue;
+ 349:                     }
+ 350: 
+ 351:                     auto decodedIt = decodedFunctions.find(function.start);
+ 352:                     if (decodedIt == decodedFunctions.end())
+ 353:                     {
+ 354:                         continue;
+...
+ 419:                     }
+ 420:                 }
+ 421: 
+ 422:                 for (const auto &function : functions)
+ 423:                 {
+ 424:                     if (!function.isRecompiled || function.isStub || function.isSkipped)
+ 425:                     {
+ 426:                         continue;
+ 427:                     }
+ 428: 
+ 429:                     if (isEntryFunctionName(function.name))
+ 430:                     {
+ 431:                         continue;
+ 432:                     }
+...
+ 444:                         analysisResult = codeGenerator->collectInternalBranchTargets(
+ 445:                             function, instructions, &functions);
+ 446:                     }
+ 447:                     else
+ 448:                     {
+ 449:                         analysisResult.resumeEntryPoints.clear();
+ 450:                         analysisResult.externalEntryPoints.clear();
+ 451:                     }
+ 452: 
+ 453:                     for (uint32_t target : analysisResult.externalEntryPoints)
+ 454:                     {
+ 455:                         queuePendingEntry(target);
+ 456:                     }
+ 457: 
+...
+ 458:                     for (uint32_t target : analysisResult.resumeEntryPoints)
+...
+ 459:                     {
+ 460:                         queuePendingEntry(target);
+ 461:                     }
+...
+ 462:                 }
+ 463: 
+ 464:                 if (pendingEntries.empty())
+ 465:                 {
+ 466:                     break;
+...
+ 498:                     name << "entry_" << std::hex << target;
+ 499:                     entryFunction.name = name.str();
+ 500:                     entryFunction.start = target;
+ 501:                     entryFunction.isStub = false;
+ 502:                     entryFunction.isSkipped = false;
+ 503:                     entryFunction.isRecompiled = true;
+ 504: 
+ 505:                     if (pending.containingStart.has_value())
+ 506:                     {
+ 507:                         auto containingDecodedIt = decodedFunctions.find(*pending.containingStart);
+ 508:                         if (containingDecodedIt == decodedFunctions.end())
+ 509:                         {
+ 510:                             continue;
+ 511:                         }
+...
+ 605:         {
+ 606:             std::vector<uint32_t> boundaryStarts;
+ 607:             boundaryStarts.reserve(functions.size());
+ 608:             for (const auto &function : functions)
+ 609:             {
+ 610:                 if (!function.isRecompiled || function.isStub || function.isSkipped)
+ 611:                 {
+ 612:                     continue;
+ 613:                 }
+ 614:                 boundaryStarts.push_back(function.start);
+ 615:             }
+ 616: 
+ 617:             std::sort(boundaryStarts.begin(), boundaryStarts.end());
+ 618:             boundaryStarts.erase(std::unique(boundaryStarts.begin(), boundaryStarts.end()), boundaryStarts.end());
+...
+ 620:             auto findContainingFunction = [&](uint32_t address) -> const Function *
+ 621:             {
+ 622:                 const Function *best = nullptr;
+ 623:                 for (const auto &function : functions)
+ 624:                 {
+ 625:                     if (!function.isRecompiled || function.isStub || function.isSkipped)
+ 626:                     {
+ 627:                         continue;
+ 628:                     }
+ 629: 
+ 630:                     if (isEntryFunctionName(function.name))
+ 631:                     {
+ 632:                         continue;
+ 633:                     }
+...
+ 662: 
+ 663:             size_t reslicedCount = 0;
+ 664: 
+ 665:             for (auto &function : functions)
+ 666:             {
+ 667:                 if (!function.isRecompiled || function.isStub || function.isSkipped)
+ 668:                 {
+ 669:                     continue;
+ 670:                 }
+ 671: 
+ 672:                 if (!isEntryFunctionName(function.name))
+ 673:                 {
+ 674:                     continue;
+ 675:                 }
+...
+ 781:                 }
+ 782: 
+ 783:                 const Function *owner = nullptr;
+ 784:                 for (const auto &function : functions)
+ 785:                 {
+ 786:                     if (!function.isRecompiled || function.isStub || function.isSkipped ||
+ 787:                         entryAddress <= function.start || entryAddress >= function.end)
+ 788:                     {
+ 789:                         continue;
+ 790:                     }
+ 791: 
+ 792:                     const auto decodedIt = decodedFunctions.find(function.start);
+ 793:                     if (decodedIt == decodedFunctions.end())
+ 794:                     {
+...
+ 845:         };
+ 846: 
+ 847:         size_t addedCount = 0u;
+ 848:         for (const auto &function : functions)
+ 849:         {
+ 850:             if (!function.isRecompiled || function.isStub || function.isSkipped)
+ 851:                 continue;
+ 852:             const auto decodedIt = decodedFunctions.find(function.start);
+ 853:             if (decodedIt == decodedFunctions.end())
+ 854:                 continue;
+ 855:             const auto &instructions = decodedIt->second;
+ 856:             std::vector<uint32_t> *targets = nullptr;
+ 857:             for (size_t i = 0; i + 2 < instructions.size(); ++i)
+ 858:             {
+...
+ 872:             }
+ 873:         }
+ 874:         return addedCount;
+ 875:     }
+ 876: 
+ 877:     PS2Recompiler::PS2Recompiler(const std::string &configPath)
+ 878:         : m_configManager(configPath)
+ 879:     {
+ 880:         m_configManager.setReporter(&m_reporter);
+ 881:     }
+ 882: 
+ 883:     PS2Recompiler::~PS2Recompiler() = default;
+ 884: 
+ 885:     void PS2Recompiler::printReport() const
+...
+ 886:     {
+...
+ 887:         m_reporter.printSummary(std::cout);
+ 888:     }
+...
+ 889: 
+ 890:     bool PS2Recompiler::initialize()
+ 891:     {
+...
+ 892:         try
+ 893:         {
+...
+ 894:             m_reporter.progress("parsing config");
+ 895:             m_config = m_configManager.loadConfig();
+ 896:             m_skipFunctions.clear();
+ 897:             m_skipFunctionStarts.clear();
+ 898:             m_stubFunctions.clear();
+...
+ 899:             m_stubFunctionStarts.clear();
+ 900:             m_stubHandlerBindingsByStart.clear();
+ 901:             m_entryPointHintStarts.clear();
+ 902:             m_correctnessCriticalFunctionStarts.clear();
+...
+ 903: 
+...
+ 904:             for (const auto &name : m_config.skipFunctions)
+ 905:             {
+ 906:                 const FunctionSelector selector = parseFunctionSelector(name);
+ 907:                 if (!selector.name.empty())
+ 908:                 {
+ 909:                     m_skipFunctions[selector.name] = true;
+...
+ 910:                 }
+ 911:                 if (selector.start.has_value())
+ 912:                 {
+...
+ 913:                     m_skipFunctionStarts.insert(*selector.start);
+ 914:                 }
+ 915:             }
+ 916:             for (const auto &name : m_config.stubImplementations)
+ 917:             {
+ 918:                 const FunctionSelector selector = parseFunctionSelector(name);
+ 919:                 if (!selector.name.empty())
+ 920:                 {
+ 921:                     m_stubFunctions.insert(selector.name);
+ 922:                 }
+ 923:                 if (selector.start.has_value())
+ 924:                 {
+...
+ 932:                             std::ostringstream msg;
+ 933:                             msg << "Multiple stub handler bindings for 0x"
+ 934:                                 << std::hex << *selector.start
+ 935:                                 << " (keeping latest '" << selector.name
+ 936:                                 << "', previous '" << bindingIt->second << "')";
+ 937:                             m_reporter.warning("config", msg.str());
+ 938:                         }
+ 939:                         m_stubHandlerBindingsByStart[*selector.start] = selector.name;
+ 940:                     }
+ 941:                 }
+ 942:             }
+ 943:             for (const auto &hint : m_config.entryPointHints)
+ 944:             {
+ 945:                 const FunctionSelector selector = parseFunctionSelector(hint);
+...
+ 946:                 if (selector.start.has_value())
+ 947:                 {
+ 948:                     m_entryPointHintStarts.insert(*selector.start);
+ 949:                 }
+ 950:             }
+ 951: 
+...
+ 952:             m_reporter.progress("parsing ELF");
+ 953:             m_elfParser = std::make_unique<ElfParser>(m_config.inputPath);
+ 954:             m_elfParser->setReporter(&m_reporter);
+ 955:             if (!m_elfParser->parse())
+ 956:             {
+...
+ 957:                 m_reporter.error("elf", "Failed to parse ELF file: " + m_config.inputPath);
+ 958:                 return false;
+ 959:             }
+ 960: 
+ 961:             if (!m_config.ghidraMapPath.empty())
+...
+ 962:             {
+ 963:                 m_elfParser->loadGhidraFunctionMap(m_config.ghidraMapPath);
+ 964:             }
+ 965: 
+...
+ 966:             m_functions = m_elfParser->extractFunctions();
+ 967: 
+ 968: {
+ 969:     std::ofstream auditFile(
+...
+ 970:         "D:\\Downloads\\MarkOfKri_Audits\\ECOFF_MFUNCTIONS_RUNTIME_TIMESTAMP.tsv",
+ 971:         std::ios::trunc);
+...
+ 972: 
+ 973:     if (auditFile)
+ 974:     {
+ 975:         auditFile << "INDEX\tNAME\tSTART\tEND\tIS_STUB\tIS_SKIPPED\tIS_RECOMPILED\n";
+ 976: 
+ 977:         for (std::size_t auditIndex = 0;
+ 978:              auditIndex < m_functions.size();
+ 979:              ++auditIndex)
+ 980:         {
+ 981:             const auto &auditFunction = m_functions[auditIndex];
+ 982: 
+ 983:             auditFile
+...
+ 985:                 << auditFunction.name << "\t"
+ 986:                 << "0x" << std::hex << std::uppercase << auditFunction.start << "\t"
+ 987:                 << "0x" << auditFunction.end << std::dec << "\t"
+ 988:                 << (auditFunction.isStub ? 1 : 0) << "\t"
+ 989:                 << (auditFunction.isSkipped ? 1 : 0) << "\t"
+ 990:                 << (auditFunction.isRecompiled ? 1 : 0)
+ 991:                 << "\n";
+ 992:         }
+ 993: 
+ 994:         auditFile << "COUNT\t" << m_functions.size() << "\n";
+ 995:     }
+ 996: }
+ 997:             m_symbols = m_elfParser->extractSymbols();
+ 998:             m_sections = m_elfParser->getSections();
+...
+1005:                 return false;
+1006:             }
+1007: 
+1008:             {
+1009:                 m_bootstrapInfo = {};
+1010:                 uint32_t entry = m_elfParser->getEntryPoint();
+1011:                 {
+1012:                     std::ostringstream msg;
+1013:                     msg << "ELF entry point: 0x" << std::hex << entry;
+1014:                     m_reporter.info("elf", msg.str());
+1015:                 }
+1016:                 uint32_t bssStart = std::numeric_limits<uint32_t>::max();
+1017:                 uint32_t bssEnd = 0;
+1018:                 for (const auto &sec : m_sections)
+...
+1098:                     m_reporter.warning("relocation", msg.str());
+1099:                 }
+1100:             }
+1101:             m_codeGenerator->setRelocationCallNames(relocationCallNames);
+1102:             m_codeGenerator->setBootstrapInfo(m_bootstrapInfo);
+1103:             m_codeGenerator->setConfiguredJumpTables(m_config.jumpTables);
+1104:             m_codeGenerator->setEmitInstructionComments(true);
+1105: 
+1106:             fs::create_directories(m_config.outputPath);
+1107: 
+1108:             return true;
+1109:         }
+1110:         catch (const std::exception &e)
+1111:         {
+...
+1112:             m_reporter.error("initialize", e.what());
+1113:             return false;
+1114:         }
+...
+1115:     }
+1116: 
+1117:     bool PS2Recompiler::recompile()
+1118:     {
+1119:         try
+1120:         {
+1121:             {
+1122:                 std::ostringstream msg;
+1123:                 msg << "recompiling " << m_functions.size() << " functions";
+1124:                 m_reporter.progress(msg.str());
+1125:             }
+...
+1160:                         initializerStart,
+1161:                         "Initializer table target has no discovered guest function or manual handler");
+1162:                 }
+1163:             }
+1164: 
+1165:             // A configured stub whose routine was never discovered (e.g. only reached by a tail-call J)
+1166:             // would otherwise get no wrapper, and any branch to it hits an unregistered address at runtime.
+1167:             for (const auto &[stubStart, handlerName] : m_stubHandlerBindingsByStart)
+1168:             {
+1169:                 if (resolveStubTarget(handlerName) == StubTarget::Unknown)
+1170:                 {
+1171:                     continue;
+1172:                 }
+1173:                 // Only recompiled guest code can already reach this address; a stubbed owner emits none.
+...
+1174:                 const bool covered = std::any_of(
+1175:                     m_functions.begin(), m_functions.end(),
+1176:                     [&](const Function &function)
+1177:                     {
+1178:                         return stubStart >= function.start &&
+1179:                                stubStart < std::max(function.end, function.start + 4u) &&
+1180:                                (function.start == stubStart || !isStubFunction(function));
+1181:                     });
+...
+1212:                     }
+1213:                     m_reporter.warningAt(
+1214:                         "stub",
+1215:                         function.name,
+1216:                         function.start,
+1217:                         "Configured stub has no runtime handler; recompiling the original guest function");
+1218:                 }
+1219: 
+1220:                 if (shouldSkipFunction(function))
+1221:                 {
+1222:                     if (!correctnessCritical)
+1223:                     {
+1224:                         function.isSkipped = true;
+1225:                         function.isStub = false;
+...
+1247:                         m_reporter.recordCorrectnessCriticalFailure();
+1248:                         m_reporter.errorAt(
+1249:                             "correctness-critical",
+1250:                             function.name,
+1251:                             function.start,
+1252:                             "Initializer could not be recompiled and has no resolved manual handler");
+1253:                     }
+1254:                     else
+1255:                     {
+1256:                         m_reporter.warningAt("decode", function.name, function.start, "Skipping function due decode failure");
+1257:                     }
+1258:                     continue;
+1259:                 }
+1260: 
+...
+1261:                 function.isStub = false;
+1262:                 function.isSkipped = false;
+1263:                 function.isRecompiled = true;
+1264:                 m_reporter.recordFunctionRecompiled();
+1265: 
+1266: {
+1267:     static bool auditFinalStateWritten = false;
+1268: 
+1269:     if (!auditFinalStateWritten)
+1270:     {
+1271:         auditFinalStateWritten = true;
+...
+1272: 
+...
+1274:             "D:\\Downloads\\MarkOfKri_Audits\\ECOFF_FUNCTION_FINAL_STATE_TIMESTAMP.tsv",
+1275:             std::ios::trunc);
+1276: 
+1277:         if (finalAudit)
+1278:         {
+1279:             std::size_t auditRecompiled = 0;
+1280:             std::size_t auditStub = 0;
+1281:             std::size_t auditSkipped = 0;
+1282:             std::size_t auditNeither = 0;
+1283: 
+1284:             finalAudit
+1285:                 << "INDEX\tNAME\tSTART\tEND\tIS_STUB\tIS_SKIPPED\tIS_RECOMPILED\n";
+1286: 
+1287:             for (std::size_t auditIndex = 0;
+...
+1288:                  auditIndex < m_functions.size();
+1289:                  ++auditIndex)
+1290:             {
+1291:                 const auto &auditFunction = m_functions[auditIndex];
+1292: 
+1293:                 if (auditFunction.isRecompiled)
+...
+1294:                     ++auditRecompiled;
+1295: 
+1296:                 if (auditFunction.isStub)
+1297:                     ++auditStub;
+1298: 
+1299:                 if (auditFunction.isSkipped)
+1300:                     ++auditSkipped;
+1301: 
+...
+1302:                 if (!auditFunction.isRecompiled &&
+...
+1303:                     !auditFunction.isStub &&
+1304:                     !auditFunction.isSkipped)
+1305:                 {
+1306:                     ++auditNeither;
+1307:                 }
+1308: 
+1309:                 finalAudit
+1310:                     << auditIndex << "\t"
+...
+1311:                     << auditFunction.name << "\t"
+1312:                     << "0x" << std::hex << std::uppercase << auditFunction.start << "\t"
+1313:                     << "0x" << auditFunction.end << std::dec << "\t"
+1314:                     << (auditFunction.isStub ? 1 : 0) << "\t"
+1315:                     << (auditFunction.isSkipped ? 1 : 0) << "\t"
+1316:                     << (auditFunction.isRecompiled ? 1 : 0)
+1317:                     << "\n";
+1318:             }
+1319: 
+1320:             finalAudit << "COUNT\t" << m_functions.size() << "\n";
+1321:             finalAudit << "RECOMPILED\t" << auditRecompiled << "\n";
+1322:             finalAudit << "STUB\t" << auditStub << "\n";
+1323:             finalAudit << "SKIPPED\t" << auditSkipped << "\n";
+1324:             finalAudit << "NEITHER\t" << auditNeither << "\n";
+...
+1325:         }
+1326:     }
+1327: }
+1328: #if _DEBUG
+1329:                 processedCount++;
+...
+1336:                     }
+1337:                 }
+1338: #endif
+1339:             }
+1340: 
+1341:             discoverAdditionalEntryPoints();
+1342: 
+1343:             if (failedCount > 0)
+1344:             {
+1345:                 std::ostringstream msg;
+1346:                 msg << "Recompile completed with " << failedCount << " function(s) skipped due decode issues.";
+1347:                 m_reporter.warning("decode", msg.str());
+1348:             }
+1349: 
+...
+1350:             m_reporter.progress("recompilation pass completed");
+1351:             return correctnessCriticalFailureCount == 0u;
+1352:         }
+1353:         catch (const std::exception &e)
+1354:         {
+...
+1355:             m_reporter.error("recompile", e.what());
+1356:             return false;
+1357:         }
+1358:     }
+1359: 
+1360:     void PS2Recompiler::generateOutput()
+1361:     {
+1362:         try
+1363:         {
+...
+1364:             m_functionRenames.clear();
+1365: 
+1366:             auto makeName = [&](const Function &function) -> std::string
+1367:             {
+1368:                 std::string sanitized = sanitizeFunctionName(function.name);
+...
+1491:                 }
+1492:             }
+1493: 
+1494:             m_reporter.recordGeneratedFunctions(outputFunctions.size());
+1495: 
+1496:             const size_t outputWorkerCount = m_config.lowMemoryMode ? 1 : resolveOutputWorkerCount(m_config.outputWorkerThreads);
+1497:             if (outputFunctions.size() > 1 && outputWorkerCount > 1)
+1498:             {
+1499:                 {
+1500:                     std::ostringstream msg;
+1501:                     msg << "generating function output with " << outputWorkerCount << " worker(s)";
+1502:                     m_reporter.progress(msg.str());
+1503:                 }
+1504:             }
+...
+1541:                     }
+1542:                     throw;
+1543:                 }
+1544:             };
+1545: 
+1546:             if (m_config.singleFileOutput)
+1547:             {
+1548:                 fs::path outputPath = fs::path(m_config.outputPath) / "ps2_recompiled_functions.cpp";
+1549:                 std::ofstream combinedOutput(outputPath);
+1550:                 if (!combinedOutput)
+1551:                 {
+1552:                     throw std::runtime_error("Failed to open combined output: " + outputPath.string());
+1553:                 }
+1554: 
+...
+1555:                 writeCombinedOutputPreamble(combinedOutput);
+1556: 
+...
+1557:                 if (outputWorkerCount <= 1)
+...
+1558:                 {
+1559:                     for (const Function *function : outputFunctions)
+1560:                     {
+...
+1687:                             completedCode.erase(completedIt);
+1688:                             ++nextOutputIndex;
+1689: 
+1690:                             if (!combinedOutput)
+1691:                             {
+1692:                                 throw std::runtime_error("Failed while writing combined output: " + outputPath.string());
+1693:                             }
+1694:                         }
+1695:                     };
+1696: 
+1697:                     try
+1698:                     {
+1699:                         scheduleAvailableWork();
+1700: 
+...
+1744:                 }
+1745: 
+1746:                 combinedOutput.close();
+1747:                 if (!combinedOutput)
+1748:                 {
+1749:                     throw std::runtime_error("Failed to finish combined output: " + outputPath.string());
+1750:                 }
+1751: 
+1752:                 {
+1753:                     std::ostringstream msg;
+1754:                     msg << "wrote combined output to " << outputPath;
+1755:                     m_reporter.progress(msg.str());
+1756:                 }
+1757:             }
+...
+1758:             else
+1759:             {
+1760:                 struct GeneratedFile
+1761:                 {
+1762:                     fs::path outputPath;
+...
+1763:                     std::string code;
+1764:                 };
+1765: 
+1766:                 std::vector<fs::path> outputPaths;
+1767:                 outputPaths.reserve(outputFunctions.size());
+1768:                 for (const Function *function : outputFunctions)
+1769:                 {
+1770:                     outputPaths.push_back(getOutputPath(*function));
+...
+1771:                 }
+1772: 
+1773:                 auto generateFile = [&](CodeGenerator &codeGenerator, size_t outputIndex) -> GeneratedFile
+1774:                 {
+...
+1775:                     return GeneratedFile{outputPaths[outputIndex], generateFunctionCode(codeGenerator, *outputFunctions[outputIndex], true)};
+...
+1776:                 };
+1777: 
+1778:                 auto writeGeneratedFile = [&](GeneratedFile generated)
+...
+1779:                 {
+1780:                     fs::create_directories(generated.outputPath.parent_path());
+1781:                     if (!writeToFile(generated.outputPath.string(), generated.code))
+1782:                     {
+1783:                         throw std::runtime_error("Failed to write function output: " + generated.outputPath.string());
+...
+1784:                     }
+1785:                 };
+1786: 
+1787:                 if (outputWorkerCount <= 1)
+1788:                 {
+...
+1789:                     for (size_t outputIndex = 0; outputIndex < outputFunctions.size(); ++outputIndex)
+...
+1790:                     {
+1791:                         writeGeneratedFile(generateFile(*m_codeGenerator, outputIndex));
+...
+1930:                     }
+1931:                 }
+1932: 
+1933:                 {
+1934:                     std::ostringstream msg;
+1935:                     msg << "wrote individual function files to " << m_config.outputPath;
+1936:                     m_reporter.progress(msg.str());
+1937:                 }
+1938:             }
+1939: 
+1940:             m_decodedFunctions.clear();
+1941: 
+1942:             std::string registerFunctions = m_codeGenerator->generateFunctionRegistration(m_functions, m_generatedStubs);
+1943:             m_generatedStubs.clear();
+...
+1944: 
+1945:             fs::path registerPath = fs::path(m_config.outputPath) / "register_functions.cpp";
+1946:             if (!writeToFile(registerPath.string(), registerFunctions))
+1947:             {
+1948:                 throw std::runtime_error("Failed to write function registration file: " + registerPath.string());
+1949:             }
+1950:             {
+1951:                 std::ostringstream msg;
+1952:                 msg << "generated function registration file: " << registerPath;
+1953:                 m_reporter.progress(msg.str());
+...
+1964:             m_reporter.printSummary(std::cout);
+1965:             throw;
+1966:         }
+1967:     }
+1968: 
+1969:     bool PS2Recompiler::generateStubHeader()
+1970:     {
+1971:         try
+1972:         {
+1973:             std::stringstream ss;
+1974: 
+1975:             ss << "#pragma once\n\n";
+1976:             ss << "#include <cstdint>\n";
+1977:             ss << "#include \"ps2_runtime.h\"\n";
+...
+2002:             }
+2003: 
+2004:             // ss << "\n} // namespace stubs\n";
+2005:             // ss << "} // namespace ps2recomp\n";
+2006: 
+2007:             fs::path headerPath = fs::path(m_config.outputPath) / "ps2_recompiled_stubs.h";
+2008:             writeToFile(headerPath.string(), ss.str());
+2009: 
+2010:             {
+2011:                 std::ostringstream msg;
+2012:                 msg << "generated stub header file: " << headerPath;
+2013:                 m_reporter.progress(msg.str());
+2014:             }
+2015:             return true;
+...
+2019:             m_reporter.error("stub-header", e.what());
+2020:             return false;
+2021:         }
+2022:     }
+2023: 
+2024:     bool PS2Recompiler::generateFunctionHeader()
+2025:     {
+2026:         try
+2027:         {
+2028:             std::stringstream ss;
+2029: 
+2030:             ss << "#ifndef PS2_RECOMPILED_FUNCTIONS_H\n";
+2031:             ss << "#define PS2_RECOMPILED_FUNCTIONS_H\n\n";
+2032: 
+...
+2033:             ss << "#include <cstdint>\n\n";
+2034:             ss << "struct R5900Context;\n";
+2035:             ss << "class PS2Runtime;\n\n";
+2036: 
+2037:             for (const auto &function : m_functions)
+2038:             {
+...
+2039:                 if (!shouldGenerateCodeForFunction(function))
+...
+2044:                 std::string finalName = m_codeGenerator->getFunctionName(function.start);
+2045: 
+2046:                 ss << "void " << finalName << "(uint8_t* rdram, R5900Context* ctx, PS2Runtime *runtime);\n";
+2047:             }
+2048: 
+2049:             ss << "\n#endif // PS2_RECOMPILED_FUNCTIONS_H\n";
+2050: 
+2051:             fs::path headerPath = fs::path(m_config.outputPath) / "ps2_recompiled_functions.h";
+2052:             writeToFile(headerPath.string(), ss.str());
+2053: 
+2054:             {
+2055:                 std::ostringstream msg;
+2056:                 msg << "generated function header file: " << headerPath;
+2057:                 m_reporter.progress(msg.str());
+...
+2058:             }
+2059:             return true;
+...
+2063:             m_reporter.error("function-header", e.what());
+2064:             return false;
+2065:         }
+2066:     }
+2067: 
+2068:     void PS2Recompiler::discoverAdditionalEntryPoints()
+2069:     {
+2070:         m_resumeEntryTargetsByOwner.clear();
+2071:         if (!m_codeGenerator)
+2072:         {
+2073:             return;
+2074:         }
+2075: 
+2076:         std::unordered_set<uint32_t> guestFallbackEntryAddresses = m_entryPointHintStarts;
+...
+2077:         for (uint32_t address : m_stubFunctionStarts)
+2078:         {
+2079:             const auto bindingIt = m_stubHandlerBindingsByStart.find(address);
+2080:             if (bindingIt == m_stubHandlerBindingsByStart.end() ||
+2081:                 resolveStubTarget(bindingIt->second) == StubTarget::Unknown)
+2082:             {
+2083:                 guestFallbackEntryAddresses.insert(address);
+2084:             }
+...
+2085:         }
+2086: 
+2087:         // Prefer the existing wrapper when a configured entry lies inside a
+2088:         // decoded function. If Ghidra/analyzer omitted the whole routine,
+2089:         // synthesize a standalone guest function bounded by the next known
+2090:         // function instead of leaving a valid executable target unregistered.
+2091:         collectInternalEntryTargetsImpl(m_functions, m_decodedFunctions, guestFallbackEntryAddresses, m_resumeEntryTargetsByOwner);
+2092: 
+2093:         std::unordered_set<uint32_t> coveredEntryAddresses;
+2094:         coveredEntryAddresses.reserve(m_functions.size() + guestFallbackEntryAddresses.size());
+2095:         for (const auto &function : m_functions)
+...
+2110:             }
+2111:         }
+2112: 
+2113:         if (!standaloneEntryAddresses.empty())
+2114:         {
+2115:             const EntryDiscoveryStats configuredStats = discoverAdditionalEntryPointsImpl(
+2116:                 m_functions,
+2117:                 m_decodedFunctions,
+2118:                 m_sections,
+2119:                 nullptr,
+2120:                 [this](Function &function)
+2121:                 { return decodeFunction(function); },
+2122:                 standaloneEntryAddresses);
+2123:             if (configuredStats.discoveredCount > 0u)
+...
+2124:             {
+2125:                 m_reporter.recordAdditionalEntryPoints(configuredStats.discoveredCount);
+2126:                 std::ostringstream msg;
+2127:                 msg << "synthesized " << configuredStats.discoveredCount
+2128:                     << " standalone configured guest entry point(s)";
+2129:                 m_reporter.progress(msg.str());
+2130:             }
+2131:         }
+...
+2132: 
+2133:         auto findContainingFunction = [&](uint32_t address) -> const Function *
+...
+2134:         {
+2135:             const Function *best = nullptr;
+...
+2136:             for (const auto &function : m_functions)
+...
+2137:             {
+2138:                 if (!function.isRecompiled || function.isStub || function.isSkipped)
+2139:                 {
+2140:                     continue;
+2141:                 }
+2142: 
+2143:                 if (isEntryFunctionName(function.name))
+2144:                 {
+2145:                     continue;
+2146:                 }
+...
+2177:         // blocks nested inside a real function are synthetic wrappers; standalone ones need their own resume
+2178:         // points, otherwise a thread switched out inside a call from them cannot be resumed.
+2179:         std::vector<std::pair<uint32_t, uint32_t>> ownerRanges;
+2180:         for (const auto &function : m_functions)
+2181:         {
+2182:             if (function.isRecompiled && !function.isStub && !function.isSkipped &&
+2183:                 !isEntryFunctionName(function.name) && function.end > function.start)
+2184:             {
+2185:                 ownerRanges.emplace_back(function.start, function.end);
+2186:             }
+2187:         }
+2188:         std::sort(ownerRanges.begin(), ownerRanges.end());
+2189:         uint32_t maxEnd = 0u;
+2190:         std::vector<uint32_t> prefixMaxEnd;
+...
+2205:             return prefixMaxEnd[idx] > address;
+2206:         };
+2207: 
+2208:         for (const auto &function : m_functions)
+2209:         {
+2210:             if (!function.isRecompiled || function.isStub || function.isSkipped)
+2211:             {
+2212:                 continue;
+2213:             }
+2214: 
+2215:             if (isEntryFunctionName(function.name) && nestedInRealFunction(function.start))
+2216:             {
+2217:                 continue;
+2218:             }
+...
+2227:             CodeGenerator::AnalysisResult analysisResult =
+2228:                 m_codeGenerator->collectInternalBranchTargets(function, instructions, &m_functions);
+2229: 
+2230:             auto &ownerTargets = m_resumeEntryTargetsByOwner[function.start];
+2231:             ownerTargets.insert(ownerTargets.end(),
+2232:                                 analysisResult.resumeEntryPoints.begin(),
+2233:                                 analysisResult.resumeEntryPoints.end());
+2234:             ownerTargets.insert(ownerTargets.end(),
+2235:                                 analysisResult.indirectFallbackEntryPoints.begin(),
+2236:                                 analysisResult.indirectFallbackEntryPoints.end());
+2237: 
+2238:             for (uint32_t target : analysisResult.externalEntryPoints)
+2239:             {
+2240:                 const Function *owner = findContainingFunction(target);
+...
+2241:                 if (!owner)
+...
+2242:                 {
+2243:                     continue;
+...
+2244:                 }
+...
+2245: 
+2246:                 if (owner->start == target)
+...
+2280: 
+2281:         m_codeGenerator->setResumeEntryTargets(m_resumeEntryTargetsByOwner);
+2282: 
+2283:         if (totalTargets > 0u)
+2284:         {
+2285:             m_reporter.recordAdditionalEntryPoints(totalTargets);
+2286:             std::ostringstream msg;
+2287:             msg << "collected " << totalTargets
+2288:                 << " resumable entry point(s) across "
+2289:                 << m_resumeEntryTargetsByOwner.size()
+2290:                 << " owner function(s)";
+2291:             m_reporter.progress(msg.str());
+2292:         }
+2293:     }
+...
+2294: 
+2295:     bool PS2Recompiler::decodeFunction(Function &function)
+2296:     {
+2297:         std::vector<Instruction> instructions;
+2298:         bool truncated = false;
+2299: 
+2300:         uint32_t start = function.start;
+2301:         uint32_t end = function.end;
+2302: 
+2303:         // A branch in the last word still owns the word after it: when the next function starts on that delay
+...
+2324:                 }
+2325: 
+2326:                 uint32_t rawInstruction = m_elfParser->readWord(address);
+2327:                 const uint32_t originalInstruction = rawInstruction;
+2328: 
+2329:                 auto patchIt = m_config.patches.find(address);
+2330:                 if (patchIt != m_config.patches.end())
+2331:                 {
+2332:                     const PatchClass patchClass = classifyPatchedInstruction(originalInstruction);
+2333:                     if (shouldApplyConfiguredPatch(patchClass, m_config))
+2334:                     {
+2335:                         try
+2336:                         {
+2337:                             rawInstruction = std::stoul(patchIt->second, nullptr, 0);
+...
+2338:                             {
+...
+2339:                                 std::ostringstream msg;
+2340:                                 msg << "Applied patch at 0x" << std::hex << address;
+2341:                                 m_reporter.info("patch", msg.str());
+...
+2352:                             }
+2353:                         }
+2354:                     }
+2355:                 }
+2356: 
+2357:                 Instruction inst = m_decoder->decodeInstruction(address, rawInstruction, !m_config.lowMemoryMode);
+2358: 
+2359:                 auto mmioIt = m_config.mmioByInstructionAddress.find(address);
+2360:                 if (mmioIt != m_config.mmioByInstructionAddress.end())
+2361:                 {
+2362:                     inst.isMmio = true;
+2363:                     inst.mmioAddress = mmioIt->second;
+2364:                 }
+2365: 
+...
+2366:                 instructions.push_back(inst);
+2367:             }
+...
+2368:             catch (const std::exception &e)
+...
+2395:         m_decodedFunctions.insert_or_assign(function.start, std::move(instructions));
+2396: 
+2397:         return true;
+2398:     }
+2399: 
+2400:     bool PS2Recompiler::shouldSkipFunction(const Function &function) const
+2401:     {
+2402:         if (m_skipFunctionStarts.contains(function.start))
+2403:         {
+2404:             return true;
+2405:         }
+2406: 
+2407:         return m_skipFunctions.contains(function.name);
+2408:     }
+...
+2409: 
+2410:     bool PS2Recompiler::isStubFunction(const Function &function) const
+2411:     {
+2412:         if (m_stubFunctionStarts.contains(function.start))
+2413:         {
+2414:             return true;
+2415:         }
+2416: 
+2417:         if (m_stubFunctions.contains(function.name))
+2418:         {
+...
+2419:             return true;
+2420:         }
+2421:         return ps2_runtime_calls::isStubName(function.name);
+2422:     }
+2423: 
+2424:     bool PS2Recompiler::IsCorrectnessCriticalFunctionName(const std::string &name)
+2425:     {
+2426:         static constexpr const char *kPrefixes[] = {
+2427:             "__ct__",
+2428:             "__sinit_",
+2429:             "_GLOBAL__sub_I_",
+2430:             "GLOBAL__sub_I_",
+2431:             "__static_initialization_and_destruction_0",
+2432:             "__do_global_ctors",
+...
+2438:                 return true;
+2439:         }
+2440:         return false;
+2441:     }
+2442: 
+2443:     bool PS2Recompiler::isCorrectnessCriticalFunction(const Function &function) const
+2444:     {
+2445:         return IsCorrectnessCriticalFunctionName(function.name) ||
+2446:                m_correctnessCriticalFunctionStarts.contains(function.start);
+2447:     }
+2448: 
+2449:     bool PS2Recompiler::hasResolvedStubHandler(const Function &function) const
+2450:     {
+2451:         std::string handlerName = function.name;
+...
+2452:         const auto bindingIt = m_stubHandlerBindingsByStart.find(function.start);
+2453:         if (bindingIt != m_stubHandlerBindingsByStart.end() && !bindingIt->second.empty())
+2454:             handlerName = bindingIt->second;
+2455:         return resolveStubTarget(handlerName) != StubTarget::Unknown;
+2456:     }
+2457: 
+...
+2458:     void PS2Recompiler::collectCorrectnessCriticalFunctionStarts()
+2459:     {
+2460:         m_correctnessCriticalFunctionStarts.clear();
+2461:         for (const Section &section : m_sections)
+2462:         {
+2463:             if (section.name != ".ctors" &&
+2464:                 section.name != ".init_array" &&
+2465:                 section.name != ".preinit_array")
+2466:             {
+...
+2477:                     m_correctnessCriticalFunctionStarts.insert(target);
+2478:             }
+2479:         }
+2480:     }
+2481: 
+2482:     bool PS2Recompiler::writeToFile(const std::string &path, const std::string &content)
+2483:     {
+2484:         std::ofstream file(path);
+2485:         if (!file)
+2486:         {
+2487:             m_reporter.error("file", "Failed to open file for writing: " + path);
+2488:             return false;
+2489:         }
+2490: 
+...
+2491:         file << content;
+2492:         file.close();
+2493: 
+2494:         return true;
+2495:     }
+...
+2496: 
+2497:     std::filesystem::path PS2Recompiler::getOutputPath(const Function &function) const
+2498:     {
+2499:         std::string safeName;
+2500:         bool usedRenamedName = false;
+2501:         auto renameIt = m_functionRenames.find(function.start);
+2502:         if (renameIt != m_functionRenames.end() && !renameIt->second.empty())
+2503:         {
+2504:             safeName = renameIt->second;
+2505:             usedRenamedName = true;
+...
+2531:             {
+2532:                 safeName += suffixText;
+2533:             }
+2534:         }
+2535: 
+2536:         std::filesystem::path outputPath = m_config.outputPath;
+2537:         outputPath /= clampFilenameLength(safeName, ".cpp", 100);
+2538: 
+2539:         return outputPath;
+2540:     }
+2541: 
+2542:     std::string PS2Recompiler::clampFilenameLength(const std::string &baseName, const std::string &extension, std::size_t maxLength)
+2543:     {
+2544:         if (maxLength == 0)
+...
+2545:         {
+...
+2546:             // Keep this static helper side-effect free; callers validate arguments.
+2547:             // Better go over the limit than create files with an empty path
+...
+2548:             return baseName + extension;
+2549:         }
+2550: 
+...
+2572:             namePart = namePart.substr(0, available);
+2573: 
+2574:         return namePart + preservedSuffix + extension;
+2575:     }
+2576: 
+2577:     std::string PS2Recompiler::sanitizeFunctionName(const std::string &name) const
+2578:     {
+2579:         std::string sanitized = sanitizeIdentifierBody(name);
+2580:         if (sanitized.empty())
+2581:         {
+2582:             return sanitized;
+2583:         }
+2584: 
+2585:         if (sanitized == "main")
+...
+2593:         }
+2594: 
+2595:         return sanitized;
+2596:     }
+2597: 
+2598:     size_t PS2Recompiler::DiscoverAdditionalEntryPoints(
+2599:         std::vector<Function> &functions,
+2600:         std::unordered_map<uint32_t, std::vector<Instruction>> &decodedFunctions,
+2601:         const std::vector<Section> &sections)
+2602:     {
+2603:         CodeGenerator codeGenerator({}, sections);
+2604:         const EntryDiscoveryStats stats = discoverAdditionalEntryPointsImpl(
+2605:             functions,
+2606:             decodedFunctions,
+...
+2607:             sections,
+2608:             &codeGenerator,
+2609:             [](Function &)
+2610:             { return false; });
+2611:         return stats.discoveredCount;
+2612:     }
+...
+2613: 
+2614:     size_t PS2Recompiler::ResliceEntryFunctions(std::vector<Function> &functions, std::unordered_map<uint32_t, std::vector<Instruction>> &decodedFunctions)
+2615:     {
+2616:         return resliceEntryFunctionsImpl(functions, decodedFunctions);
+2617:     }
+2618: 
+2619:     size_t PS2Recompiler::CollectPostTransferEntryTargets(
+2620:         const std::vector<Function> &functions,
+2621:         const std::unordered_map<uint32_t, std::vector<Instruction>> &decodedFunctions,
+2622:         std::unordered_map<uint32_t, std::vector<uint32_t>> &targetsByOwner)
+...
+2623:     {
+2624:         return collectPostTransferEntryTargetsImpl(functions, decodedFunctions, targetsByOwner);
+2625:     }
+2626: 
+2627:     size_t PS2Recompiler::CollectInternalEntryTargets(
+...
+2628:         const std::vector<Function> &functions,
+2629:         const std::unordered_map<uint32_t, std::vector<Instruction>> &decodedFunctions,
+2630:         const std::unordered_set<uint32_t> &entryAddresses,
+2631:         std::unordered_map<uint32_t, std::vector<uint32_t>> &targetsByOwner)
+2632:     {
+2633:         return collectInternalEntryTargetsImpl(functions, decodedFunctions, entryAddresses, targetsByOwner);
+2634:     }
+2635: 
+...
+2636:     StubTarget PS2Recompiler::resolveStubTarget(const std::string &name)
+2637:     {
+2638:         if (!ps2_runtime_calls::resolveSyscallName(name).empty())
+2639:         {
+2640:             return StubTarget::Syscall;
+2641:         }
+2642:         if (!ps2_runtime_calls::resolveStubName(name).empty())
+2643:         {
+2644:             return StubTarget::Stub;
+...
+2645:         }
+2646:         return StubTarget::Unknown;
+2647:     }
+2648: 
+2649:     std::string PS2Recompiler::ClampFilenameLength(const std::string &baseName, const std::string &extension, std::size_t maxLength)
+2650:     {
+2651:         return clampFilenameLength(baseName, extension, maxLength);
+2652:     }
+2653: }
+...
+Relevant match lines: 135
+
+----- ps2xRecomp\CMakeLists.txt -----
+Line count: 138
+   1: cmake_minimum_required(VERSION 3.20)
+   2: 
+   3: project(PS2Recomp VERSION 0.1.0 LANGUAGES C CXX)
+   4: 
+   5: set(CMAKE_CXX_STANDARD 20)
+   6: set(CMAKE_CXX_STANDARD_REQUIRED ON)
+   7: set(CMAKE_C_STANDARD 99)
+   8: set(CMAKE_C_STANDARD_REQUIRED ON)
+   9: 
+  10: include(FetchContent)
+  11: 
+  12: FetchContent_Declare(
+  13:     elfio
+  14:     GIT_REPOSITORY https://github.com/serge1/ELFIO.git
+  15:     GIT_TAG Release_3.12
+  16:     GIT_SHALLOW TRUE
+  17: )
+  18: FetchContent_MakeAvailable(elfio)
+  19: 
+  20: FetchContent_Declare(
+  21:     toml11
+  22:     GIT_REPOSITORY https://github.com/ToruNiina/toml11.git
+  23:     GIT_TAG v4.4.0
+  24: )
+  25: FetchContent_MakeAvailable(toml11)
+  26: 
+  27: FetchContent_Declare(
+  28:     fmt
+  29:     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+  30:     GIT_TAG 12.1.0
+  31: )
+  32: FetchContent_MakeAvailable(fmt)
+  33:  
+  34: FetchContent_Declare(
+  35:     libdwarf
+  36:     GIT_REPOSITORY https://github.com/davea42/libdwarf-code.git
+  37:     GIT_TAG v2.2.0
+  38:     GIT_SHALLOW TRUE
+  39: )
+  40: 
+  41: set(BUILD_DWARFDUMP    OFF CACHE BOOL "" FORCE)
+  42: set(BUILD_DWARFEXAMPLE OFF CACHE BOOL "" FORCE)
+  43: set(BUILD_DWARFGEN     OFF CACHE BOOL "" FORCE)
+  44: 
+  45: set(BUILD_SHARED   OFF CACHE BOOL "" FORCE)
+  46: set(BUILD_NON_SHARED ON CACHE BOOL "" FORCE)
+  47: 
+  48: FetchContent_MakeAvailable(libdwarf)
+  49: 
+  50: set(LIBDWARF_INCLUDE_DIR "${libdwarf_SOURCE_DIR}/src/lib/libdwarf")
+  51: 
+  52: FetchContent_Declare(
+  53:     rabbitizer
+  54:     GIT_REPOSITORY https://github.com/Decompollaborate/rabbitizer.git
+  55:     GIT_TAG 1.14.3
+  56: )
+  57: FetchContent_MakeAvailable(rabbitizer)
+  58: 
+  59: if (NOT TARGET rabbitizer)
+  60:     file(GLOB_RECURSE RABBITIZER_SOURCES CONFIGURE_DEPENDS
+  61:         "${rabbitizer_SOURCE_DIR}/src/analysis/*.c"
+  62:         "${rabbitizer_SOURCE_DIR}/src/common/*.c"
+  63:         "${rabbitizer_SOURCE_DIR}/src/instructions/*.c"
+  64:         "${rabbitizer_SOURCE_DIR}/src/instructions/*/*.c"
+  65:     )
+  66: 
+  67:     add_library(rabbitizer STATIC ${RABBITIZER_SOURCES})
+  68: 
+  69:     target_include_directories(rabbitizer PUBLIC
+  70:         "${rabbitizer_SOURCE_DIR}/include"
+  71:         "${rabbitizer_SOURCE_DIR}/tables"
+  72:         "${rabbitizer_SOURCE_DIR}/tables/tables"
+  73:     )
+  74: endif()
+  75: 
+  76: file(GLOB_RECURSE PS2RECOMP_LIB_SOURCES CONFIGURE_DEPENDS
+  77:     src/lib/*.cpp
+  78: )
+  79: 
+  80: file(GLOB_RECURSE PS2RECOMP_HEADERS CONFIGURE_DEPENDS
+  81:     include/*.h
+  82:     include/*.hpp
+  83: )
+  84: 
+  85: add_library(ps2_recomp_lib STATIC ${PS2RECOMP_LIB_SOURCES} ${PS2RECOMP_HEADERS})
+  86: 
+  87: target_compile_definitions(ps2_recomp_lib
+  88: PUBLIC
+  89:     LIBDWARF_STATIC
+  90: PRIVATE
+  91:     LIBDWARF_STATIC
+  92: )
+  93: 
+  94: target_include_directories(ps2_recomp_lib
+  95: PUBLIC
+  96:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+  97:     ${elfio_SOURCE_DIR}
+  98:     ${LIBDWARF_INCLUDE_DIR}
+  99: 
+ 100: PRIVATE
+ 101:     ${CMAKE_CURRENT_SOURCE_DIR}/../ps2xRuntime/include
+ 102: )
+ 103: 
+ 104: target_link_libraries(ps2_recomp_lib
+ 105: PUBLIC
+ 106:     fmt::fmt
+ 107:     toml11::toml11 
+ 108:     dwarf
+ 109:     rabbitizer
+ 110: )
+ 111: 
+ 112: file(GLOB_RECURSE PS2RECOMP_EXE_SOURCES CONFIGURE_DEPENDS
+ 113:     src/runner/*.cpp
+ 114: )
+ 115: 
+ 116: add_executable(ps2_recomp ${PS2RECOMP_EXE_SOURCES})
+ 117: 
+ 118: target_link_libraries(ps2_recomp
+ 119: PRIVATE
+ 120:     ps2_recomp_lib
+ 121: )
+ 122: 
+ 123: install(TARGETS ps2_recomp ps2_recomp_lib
+ 124:     RUNTIME DESTINATION bin
+ 125:     LIBRARY DESTINATION lib
+ 126:     ARCHIVE DESTINATION lib
+ 127: )
+ 128: 
+ 129: install(DIRECTORY include/
+ 130:     DESTINATION include
+ 131: )
+ 132: 
+ 133: include("${CMAKE_SOURCE_DIR}/ps2xRuntime/cmake/ReleaseMode.cmake")
+ 134: 
+ 135: if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+ 136:     EnableFastReleaseMode(ps2_recomp_lib)
+ 137:     EnableFastReleaseMode(ps2_recomp)
+ 138: endif()
+
+----- ps2xRuntime\CMakeLists.txt -----
+Line count: 656
+   1: cmake_minimum_required(VERSION 3.20)
+   2: 
+   3: project(PS2Runtime VERSION 0.1.0 LANGUAGES CXX)
+   4: 
+   5: set(CMAKE_CXX_STANDARD 20)
+   6: set(CMAKE_CXX_STANDARD_REQUIRED ON)
+   7: 
+   8: option(PS2X_ENABLE_RUNNER_UNITY_BUILD "Build ps2EntryRunner with CMake unity build" ON)
+   9: set(PS2X_RUNNER_UNITY_BUILD_BATCH_SIZE 32 CACHE STRING "Unity build batch size for ps2EntryRunner")
+  10: option(PS2X_ENABLE_RUNNER_PCH "Precompile the heavy runtime headers for ps2EntryRunner" ON)
+  11: option(PS2X_ENABLE_SCCACHE "Use sccache as compiler launcher when available" ON)
+  12: 
+  13: option(PS2X_ENABLE_RUNTIME_LOGS "Enable PS2 runtime logs" ON)
+  14: option(PS2X_ENABLE_AGRESSIVE_LOGS "Enable very verbose/agressive PS2 runtime logs" ON)
+  15: option(PS2X_ENABLE_IOP_RPC_TRACE "Log unhandled IOP/SIF RPC trace suggestions" ON)
+  16: option(PS2X_STRICT_RETURN_DIAGNOSTICS "Route generated JR $ra returns through runtime branch diagnostics" OFF)
+  17: option(PS2X_SHOW_WINDOWS_CONSOLE "Show a console window for ps2EntryRunner on Windows release builds" ON)
+  18: option(PS2X_ENABLE_DEBUG_UI "Build the desktop runtime debug UI" ON)
+  19: 
+  20: if(PS2X_ENABLE_SCCACHE)
+  21:     find_program(PS2X_SCCACHE_PROGRAM sccache)
+  22: 
+  23:     if(PS2X_SCCACHE_PROGRAM)
+  24:         if(CMAKE_C_COMPILER)
+  25:             set(CMAKE_C_COMPILER_LAUNCHER "${PS2X_SCCACHE_PROGRAM}")
+  26:         endif()
+  27: 
+  28:         set(CMAKE_CXX_COMPILER_LAUNCHER "${PS2X_SCCACHE_PROGRAM}")
+  29:         message(STATUS "Using sccache: ${PS2X_SCCACHE_PROGRAM}")
+  30:     else()
+  31:         message(STATUS "sccache not found; continuing without compiler launcher")
+  32:     endif()
+  33: endif()
+  34: 
+  35: include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/ReleaseMode.cmake")
+  36: 
+  37: set(PS2X_IS_VITA OFF)
+  38: 
+  39: if((CMAKE_C_COMPILER MATCHES "arm-vita-eabi") OR
+  40:     (CMAKE_CXX_COMPILER MATCHES "arm-vita-eabi"))
+  41:     set(PS2X_IS_VITA ON)
+  42: endif()
+  43: 
+  44: set(PS2X_IS_ANDROID OFF)
+  45: 
+  46: if(ANDROID)
+  47:     set(PS2X_IS_ANDROID ON)
+  48: endif()
+  49: 
+  50: option(PS2X_VITA_CREATE_PACKAGE "Create Vita eboot/vpk targets" ON)
+  51: set(PS2X_VITA_APP_NAME "PS2 Retro X" CACHE STRING "Display name for the Vita bubble")
+  52: set(PS2X_VITA_TITLEID "RANJ00001" CACHE STRING "9-character Vita title id")
+  53: set(PS2X_VITA_VERSION "01.00" CACHE STRING "Vita app version")
+  54: set(PS2X_DEFAULT_BOOT_ELF "" CACHE STRING "Guest ELF path passed directly to main() when argv is unavailable")
+  55: 
+  56: if(PS2X_IS_VITA)
+  57:     if(NOT DEFINED ENV{VITASDK})
+  58:         message(FATAL_ERROR "VITASDK is not defined. Configure inside the VitaSDK environment or pass the Vita toolchain file.")
+  59:     endif()
+  60: 
+  61:     set(PS2X_VITASDK "$ENV{VITASDK}")
+  62: 
+  63:     if(NOT EXISTS "${PS2X_VITASDK}/share/vita.cmake")
+  64:         message(FATAL_ERROR "Could not find vita.cmake under ${PS2X_VITASDK}/share.")
+  65:     endif()
+  66: 
+  67:     include("${PS2X_VITASDK}/share/vita.cmake" REQUIRED)
+  68: else()
+  69:     include(FetchContent)
+  70:     set(FETCHCONTENT_QUIET FALSE)
+  71:     set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+  72:     set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
+  73: 
+  74:     if(PS2X_IS_ANDROID)
+  75:         set(PLATFORM "Android" CACHE STRING "" FORCE)
+  76:     endif()
+  77: 
+  78:     FetchContent_Declare(
+  79:         raylib
+  80:         GIT_REPOSITORY "https://github.com/raysan5/raylib.git"
+  81:         GIT_TAG "5.5" # we will migrate to 4.2.0 later, trust me it will be better
+  82:         GIT_PROGRESS TRUE
+  83:     )
+  84:     FetchContent_MakeAvailable(raylib)
+  85: 
+  86:     if(PS2X_ENABLE_DEBUG_UI AND NOT PS2X_IS_ANDROID)
+  87:         FetchContent_Declare(
+  88:             imgui
+  89:             GIT_REPOSITORY https://github.com/ocornut/imgui.git
+  90:             GIT_TAG "v1.92.7-docking"
+  91:             GIT_SHALLOW TRUE
+  92:         )
+  93:         FetchContent_GetProperties(imgui)
+  94: 
+  95:         if(NOT imgui_POPULATED)
+  96:             FetchContent_Populate(imgui)
+  97:         endif()
+  98: 
+  99:         set(PS2X_IMGUI_SOURCE_DIR "${imgui_SOURCE_DIR}")
+ 100: 
+ 101:         add_library(imgui STATIC
+ 102:             "${PS2X_IMGUI_SOURCE_DIR}/imgui.cpp"
+ 103:             "${PS2X_IMGUI_SOURCE_DIR}/imgui_draw.cpp"
+ 104:             "${PS2X_IMGUI_SOURCE_DIR}/imgui_tables.cpp"
+ 105:             "${PS2X_IMGUI_SOURCE_DIR}/imgui_widgets.cpp"
+ 106:             "${PS2X_IMGUI_SOURCE_DIR}/imgui_demo.cpp"
+ 107:         )
+ 108:         target_include_directories(imgui PUBLIC "${PS2X_IMGUI_SOURCE_DIR}")
+ 109: 
+ 110:         FetchContent_Declare(
+ 111:             rlImGui
+ 112:             GIT_REPOSITORY https://github.com/raylib-extras/rlImGui.git
+ 113:             GIT_TAG "Raylib_5_5"
+ 114:             GIT_SHALLOW TRUE
+ 115:         )
+ 116:         FetchContent_GetProperties(rlImGui)
+ 117: 
+ 118:         if(NOT rlimgui_POPULATED)
+ 119:             FetchContent_Populate(rlImGui)
+ 120:         endif()
+ 121: 
+ 122:         set(PS2X_RLIMGUI_SOURCE_DIR "${rlimgui_SOURCE_DIR}")
+ 123: 
+ 124:         add_library(rlImGui STATIC
+ 125:             "${PS2X_RLIMGUI_SOURCE_DIR}/rlImGui.cpp"
+ 126:         )
+ 127:         target_include_directories(rlImGui PUBLIC "${PS2X_RLIMGUI_SOURCE_DIR}")
+ 128:         target_link_libraries(rlImGui PUBLIC raylib imgui)
+ 129:     endif()
+ 130: endif()
+ 131: 
+ 132: add_library(ps2_host_backend INTERFACE)
+ 133: 
+ 134: set(PS2X_DEFAULT_BOOT_ELF_DEFINE "")
+ 135: 
+ 136: if(PS2X_DEFAULT_BOOT_ELF)
+ 137:     set(PS2X_DEFAULT_BOOT_ELF_DEFINE "${PS2X_DEFAULT_BOOT_ELF}")
+ 138:     string(REPLACE "\\" "\\\\" PS2X_DEFAULT_BOOT_ELF_DEFINE "${PS2X_DEFAULT_BOOT_ELF_DEFINE}")
+ 139:     string(REPLACE "\"" "\\\"" PS2X_DEFAULT_BOOT_ELF_DEFINE "${PS2X_DEFAULT_BOOT_ELF_DEFINE}")
+ 140: endif()
+ 141: 
+ 142: if(PS2X_IS_VITA)
+ 143:     set(PS2X_VITA_PREFIX "${PS2X_VITASDK}/arm-vita-eabi")
+ 144:     set(PS2X_VITA_EXTRA_INCLUDE_DIRS "" CACHE STRING "Extra include directories for Vita host dependencies")
+ 145:     set(PS2X_VITA_LIBRARY_DIR "${PS2X_VITA_PREFIX}/lib")
+ 146:     set(PS2X_VITA_REQUIRED_LIBRARY_NAMES
+ 147:         raylib
+ 148:         SDL2
+ 149:         OpenSLES
+ 150:         taihen_stub
+ 151:         SceAppMgr_stub
+ 152:         SceCtrl_stub
+ 153:         SceGxm_stub
+ 154:         SceCommonDialog_stub
+ 155:         SceLibKernel_stub
+ 156:         SceAudio_stub
+ 157:         SceTouch_stub
+ 158:         SceHid_stub
+ 159:         SceMotion_stub
+ 160:         SceSysmodule_stub
+ 161:         SceIofilemgr_stub
+ 162:         SceNetCtl_stub
+ 163:         SceNet_stub
+ 164:         SceDisplay_stub
+ 165:         SceAppUtil_stub
+ 166:         SceAudioIn_stub
+ 167:         ScePower_stub
+ 168:         SceProcessmgr_stub
+ 169:         SceIme_stub
+ 170:         libIMGEGL_stub_weak
+ 171:         libgpu_es4_ext_stub_weak
+ 172:         libGLESv2_stub_weak
+ 173:         libGL_stub_weak
+ 174:         libGLESv1_CM_stub_weak
+ 175:     )
+ 176: 
+ 177:     set(PS2X_VITA_INCLUDE_DIRS
+ 178:         "${PS2X_VITA_PREFIX}/include"
+ 179:     )
+ 180: 
+ 181:     foreach(PS2X_VITA_OPTIONAL_INCLUDE_DIR IN ITEMS
+ 182:         "${PS2X_VITA_PREFIX}/include/raylib"
+ 183:         "${PS2X_VITA_PREFIX}/include/SDL2")
+ 184:         if(EXISTS "${PS2X_VITA_OPTIONAL_INCLUDE_DIR}")
+ 185:             list(APPEND PS2X_VITA_INCLUDE_DIRS "${PS2X_VITA_OPTIONAL_INCLUDE_DIR}")
+ 186:         endif()
+ 187:     endforeach()
+ 188: 
+ 189:     if(PS2X_VITA_EXTRA_INCLUDE_DIRS)
+ 190:         list(APPEND PS2X_VITA_INCLUDE_DIRS ${PS2X_VITA_EXTRA_INCLUDE_DIRS})
+ 191:     endif()
+ 192: 
+ 193:     if(NOT EXISTS "${PS2X_VITA_PREFIX}/include/SDL2/SDL.h")
+ 194:         message(FATAL_ERROR
+ 195:             "Missing SDL2 headers under ${PS2X_VITA_PREFIX}/include/SDL2. "
+ 196:             "Quenom/raylib-5.5-vita requires SDL2 with PVR support installed into VitaSDK.")
+ 197:     endif()
+ 198: 
+ 199:     if(NOT EXISTS "${PS2X_VITA_LIBRARY_DIR}")
+ 200:         message(FATAL_ERROR "Missing Vita library directory: ${PS2X_VITA_LIBRARY_DIR}")
+ 201:     endif()
+ 202: 
+ 203:     function(ps2x_find_vita_library out_var library_name)
+ 204:         string(MAKE_C_IDENTIFIER "${library_name}" library_id)
+ 205:         set(cache_var "PS2X_VITA_LIB_${library_id}")
+ 206: 
+ 207:         find_library(${cache_var}
+ 208:             NAMES "${library_name}" "${library_name}.a" "lib${library_name}.a"
+ 209:             PATHS "${PS2X_VITA_LIBRARY_DIR}"
+ 210:             NO_DEFAULT_PATH
+ 211:         )
+ 212: 
+ 213:         if(NOT ${cache_var})
+ 214:             message(FATAL_ERROR
+ 215:                 "Could not find Vita library '${library_name}' under ${PS2X_VITA_LIBRARY_DIR}. "
+ 216:                 "Install Quenom/raylib-5.5-vita and its SDL2/PVR dependencies into VitaSDK first.")
+ 217:         endif()
+ 218: 
+ 219:         set(${out_var} "${${cache_var}}" PARENT_SCOPE)
+ 220:     endfunction()
+ 221: 
+ 222:     set(PS2X_VITA_RESOLVED_LIBRARIES "")
+ 223: 
+ 224:     foreach(PS2X_VITA_LIBRARY_NAME IN LISTS PS2X_VITA_REQUIRED_LIBRARY_NAMES)
+ 225:         ps2x_find_vita_library(PS2X_VITA_LIBRARY_PATH "${PS2X_VITA_LIBRARY_NAME}")
+ 226:         list(APPEND PS2X_VITA_RESOLVED_LIBRARIES "${PS2X_VITA_LIBRARY_PATH}")
+ 227:     endforeach()
+ 228: 
+ 229:     target_compile_definitions(ps2_host_backend INTERFACE PLATFORM_VITA)
+ 230:     target_include_directories(ps2_host_backend INTERFACE ${PS2X_VITA_INCLUDE_DIRS})
+ 231:     target_link_libraries(ps2_host_backend INTERFACE
+ 232:         ${PS2X_VITA_RESOLVED_LIBRARIES}
+ 233:         m
+ 234:         c
+ 235:         pthread
+ 236:     )
+ 237: else()
+ 238:     target_link_libraries(ps2_host_backend INTERFACE raylib)
+ 239: 
+ 240:     if(PS2X_IS_ANDROID)
+ 241:         target_link_libraries(ps2_host_backend INTERFACE log android)
+ 242:     endif()
+ 243: endif()
+ 244: 
+ 245: if(PS2X_IS_ANDROID)
+ 246:     set(PS2X_ENABLE_FFMPEG_DEFAULT OFF)
+ 247: else()
+ 248:     set(PS2X_ENABLE_FFMPEG_DEFAULT ON)
+ 249: endif()
+ 250: 
+ 251: option(PS2X_ENABLE_FFMPEG "Enable FFmpeg-backed MPEG video decoding" ${PS2X_ENABLE_FFMPEG_DEFAULT})
+ 252: 
+ 253: if(NOT PS2X_ENABLE_FFMPEG)
+ 254:     message(STATUS "FFmpeg disabled; MPEG video decode falls back to stub frames")
+ 255:     add_library(ffmpeg INTERFACE)
+ 256: elseif(WIN32)
+ 257:     include(ExternalProject)
+ 258: 
+ 259:     set(FFMPEG_PREBUILT_TAG "n7.1-241205")
+ 260:     set(FFMPEG_PREBUILT_URL
+ 261:         "https://github.com/System233/ffmpeg-msvc-prebuilt/releases/download/${FFMPEG_PREBUILT_TAG}/ffmpeg-${FFMPEG_PREBUILT_TAG}-lgpl-amd64-shared.zip")
+ 262: 
+ 263:     set(FFMPEG_PREFIX_DIR "${CMAKE_BINARY_DIR}/ThirdParty/ffmpeg-prefix")
+ 264:     set(FFMPEG_SOURCE_DIR "${FFMPEG_PREFIX_DIR}/src/ffmpeg_external")
+ 265:     set(FFMPEG_INCLUDE_DIR "${FFMPEG_SOURCE_DIR}/include")
+ 266:     set(FFMPEG_LIB_DIR "${FFMPEG_SOURCE_DIR}/bin")
+ 267:     set(FFMPEG_BIN_DIR "${FFMPEG_SOURCE_DIR}/bin")
+ 268: 
+ 269:     ExternalProject_Add(ffmpeg_external
+ 270:         URL "${FFMPEG_PREBUILT_URL}"
+ 271:         DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+ 272:         PREFIX "${FFMPEG_PREFIX_DIR}"
+ 273:         CONFIGURE_COMMAND ""
+ 274:         BUILD_COMMAND ""
+ 275:         INSTALL_COMMAND ""
+ 276:         BUILD_BYPRODUCTS
+ 277:         "${FFMPEG_LIB_DIR}/avcodec.lib"
+ 278:         "${FFMPEG_LIB_DIR}/avformat.lib"
+ 279:         "${FFMPEG_LIB_DIR}/avutil.lib"
+ 280:         "${FFMPEG_LIB_DIR}/swresample.lib"
+ 281:         "${FFMPEG_LIB_DIR}/swscale.lib"
+ 282:     )
+ 283: 
+ 284:     # Link against the import libraries shipped with the Windows DLLs.
+ 285:     add_library(ffmpeg_avcodec STATIC IMPORTED GLOBAL)
+ 286:     set_target_properties(ffmpeg_avcodec PROPERTIES
+ 287:         IMPORTED_LOCATION "${FFMPEG_LIB_DIR}/avcodec.lib"
+ 288:         INTERFACE_INCLUDE_DIRECTORIES "${FFMPEG_INCLUDE_DIR}"
+ 289:     )
+ 290:     add_dependencies(ffmpeg_avcodec ffmpeg_external)
+ 291: 
+ 292:     add_library(ffmpeg_avformat STATIC IMPORTED GLOBAL)
+ 293:     set_target_properties(ffmpeg_avformat PROPERTIES
+ 294:         IMPORTED_LOCATION "${FFMPEG_LIB_DIR}/avformat.lib"
+ 295:         INTERFACE_INCLUDE_DIRECTORIES "${FFMPEG_INCLUDE_DIR}"
+ 296:     )
+ 297:     add_dependencies(ffmpeg_avformat ffmpeg_external)
+ 298: 
+ 299:     add_library(ffmpeg_avutil STATIC IMPORTED GLOBAL)
+ 300:     set_target_properties(ffmpeg_avutil PROPERTIES
+ 301:         IMPORTED_LOCATION "${FFMPEG_LIB_DIR}/avutil.lib"
+ 302:         INTERFACE_INCLUDE_DIRECTORIES "${FFMPEG_INCLUDE_DIR}"
+ 303:     )
+ 304:     add_dependencies(ffmpeg_avutil ffmpeg_external)
+ 305: 
+ 306:     add_library(ffmpeg_swresample STATIC IMPORTED GLOBAL)
+ 307:     set_target_properties(ffmpeg_swresample PROPERTIES
+ 308:         IMPORTED_LOCATION "${FFMPEG_LIB_DIR}/swresample.lib"
+ 309:         INTERFACE_INCLUDE_DIRECTORIES "${FFMPEG_INCLUDE_DIR}"
+ 310:     )
+ 311:     add_dependencies(ffmpeg_swresample ffmpeg_external)
+ 312: 
+ 313:     add_library(ffmpeg_swscale STATIC IMPORTED GLOBAL)
+ 314:     set_target_properties(ffmpeg_swscale PROPERTIES
+ 315:         IMPORTED_LOCATION "${FFMPEG_LIB_DIR}/swscale.lib"
+ 316:         INTERFACE_INCLUDE_DIRECTORIES "${FFMPEG_INCLUDE_DIR}"
+ 317:     )
+ 318:     add_dependencies(ffmpeg_swscale ffmpeg_external)
+ 319: 
+ 320:     add_library(ffmpeg INTERFACE)
+ 321:     target_link_libraries(ffmpeg INTERFACE
+ 322:         ffmpeg_avcodec
+ 323:         ffmpeg_avformat
+ 324:         ffmpeg_avutil
+ 325:         ffmpeg_swresample
+ 326:         ffmpeg_swscale
+ 327:         bcrypt
+ 328:         secur32
+ 329:         ws2_32
+ 330:         user32
+ 331:         advapi32
+ 332:         ole32
+ 333:         shell32
+ 334:     )
+ 335: 
+ 336:     set(PS2X_FFMPEG_BIN_DIR "${FFMPEG_BIN_DIR}" CACHE INTERNAL "Directory containing FFmpeg runtime DLLs")
+ 337:     set(PS2X_COPY_FFMPEG_DLLS_SCRIPT
+ 338:         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CopyFfmpegDlls.cmake"
+ 339:         CACHE INTERNAL
+ 340:         "Script used to stage FFmpeg runtime DLLs beside executables")
+ 341: else()
+ 342:     find_package(PkgConfig REQUIRED)
+ 343:     pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET GLOBAL
+ 344:         libavcodec
+ 345:         libavformat
+ 346:         libavutil
+ 347:         libswresample
+ 348:         libswscale
+ 349:     )
+ 350: 
+ 351:     add_library(ffmpeg INTERFACE)
+ 352:     target_link_libraries(ffmpeg INTERFACE PkgConfig::FFMPEG)
+ 353: endif()
+ 354: 
+ 355: function(ps2x_stage_ffmpeg_runtime_dlls target_name)
+ 356:     if(NOT WIN32)
+ 357:         return()
+ 358:     endif()
+ 359: 
+ 360:     if(NOT PS2X_FFMPEG_BIN_DIR OR NOT PS2X_COPY_FFMPEG_DLLS_SCRIPT)
+ 361:         return()
+ 362:     endif()
+ 363: 
+ 364:     if(TARGET ffmpeg_external)
+ 365:         add_dependencies(${target_name} ffmpeg_external)
+ 366:     endif()
+ 367: 
+ 368:     add_custom_command(
+ 369:         TARGET ${target_name} POST_BUILD
+ 370:         COMMAND "${CMAKE_COMMAND}"
+ 371:         "-Dsource_dir=${PS2X_FFMPEG_BIN_DIR}"
+ 372:         "-Ddest_dir=$<TARGET_FILE_DIR:${target_name}>"
+ 373:         -P "${PS2X_COPY_FFMPEG_DLLS_SCRIPT}"
+ 374:         VERBATIM
+ 375:     )
+ 376: endfunction()
+ 377: 
+ 378: add_library(ps2_runtime STATIC
+ 379:     src/lib/game_overrides.cpp
+ 380:     src/lib/gs/ps2_gif_arbiter.cpp
+ 381:     src/lib/ps2_audio.cpp
+ 382:     src/lib/ps2_audio_vag.cpp
+ 383:     src/lib/ps2_audio_stream.cpp
+ 384:     src/lib/gs/ps2_gs_memory.cpp
+ 385:     src/lib/gs/gs_frontend.cpp
+ 386:     src/lib/gs/gs_cpu_backend.cpp
+ 387:     src/lib/ps2_iop_host.cpp
+ 388:     src/lib/ps2_memory.cpp
+ 389:     src/lib/ps2_ipu.cpp
+ 390:     src/lib/ps2_pad.cpp
+ 391:     src/lib/ps2_rom_device.cpp
+ 392:     src/lib/ps2_vfs.cpp
+ 393:     src/lib/ps2_runtime.cpp
+ 394:     src/lib/ps2_vif1_interpreter.cpp
+ 395:     src/lib/vu/ps2_vu1_core.cpp
+ 396:     src/lib/vu/ps2_vu1_upper.cpp
+ 397:     src/lib/vu/ps2_vu1_lower.cpp
+ 398:     src/lib/games_database.cpp
+ 399: )
+ 400: 
+ 401: if(PS2X_ENABLE_RUNTIME_LOGS)
+ 402:     target_compile_definitions(ps2_runtime PUBLIC
+ 403:         PS2_RUNTIME_LOGS=1
+ 404:     )
+ 405: endif()
+ 406: 
+ 407: if(PS2X_ENABLE_AGRESSIVE_LOGS)
+ 408:     target_compile_definitions(ps2_runtime PUBLIC
+ 409:         AGRESSIVE_LOGS=1
+ 410:         PS2_FUNCTION_LOG_TRACKER=1
+ 411:     )
+ 412: endif()
+ 413: 
+ 414: if(PS2X_ENABLE_IOP_RPC_TRACE)
+ 415:     target_compile_definitions(ps2_runtime PUBLIC
+ 416:         PS2X_ENABLE_IOP_RPC_TRACE=1
+ 417:     )
+ 418: else()
+ 419:     target_compile_definitions(ps2_runtime PUBLIC
+ 420:         PS2X_ENABLE_IOP_RPC_TRACE=0
+ 421:     )
+ 422: endif()
+ 423: 
+ 424: if(PS2X_STRICT_RETURN_DIAGNOSTICS)
+ 425:     target_compile_definitions(ps2_runtime PUBLIC
+ 426:         PS2X_STRICT_RETURN_DIAGNOSTICS=1
+ 427:     )
+ 428: endif()
+ 429: 
+ 430: target_compile_definitions(ps2_runtime PRIVATE
+ 431:     PS2X_HAS_FFMPEG=$<BOOL:${PS2X_ENABLE_FFMPEG}>
+ 432: )
+ 433: 
+ 434: file(GLOB_RECURSE KERNEL_SRC_FILES CONFIGURE_DEPENDS
+ 435:     "${CMAKE_CURRENT_SOURCE_DIR}/src/lib/Kernel/*.cpp"
+ 436: )
+ 437: 
+ 438: target_sources(ps2_runtime PRIVATE
+ 439:     ${KERNEL_SRC_FILES}
+ 440: )
+ 441: 
+ 442: file(GLOB RUNNER_SRC_FILES CONFIGURE_DEPENDS
+ 443:     "${CMAKE_CURRENT_SOURCE_DIR}/src/runner/*.cpp"
+ 444: )
+ 445: 
+ 446: set(RUNNER_MAIN_CPP "${CMAKE_CURRENT_SOURCE_DIR}/src/runner/main.cpp")
+ 447: set(ROOT_MAIN_CPP "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+ 448: 
+ 449: if(EXISTS "${RUNNER_MAIN_CPP}")
+ 450:     list(APPEND RUNNER_SRC_FILES "${RUNNER_MAIN_CPP}")
+ 451: elseif(EXISTS "${ROOT_MAIN_CPP}")
+ 452:     list(APPEND RUNNER_SRC_FILES "${ROOT_MAIN_CPP}")
+ 453: endif()
+ 454: 
+ 455: if(PS2X_IS_ANDROID)
+ 456:     add_library(ps2EntryRunner SHARED
+ 457:         ${RUNNER_SRC_FILES}
+ 458:     )
+ 459: 
+ 460:     target_link_options(ps2EntryRunner PRIVATE "-Wl,--undefined=ANativeActivity_onCreate")
+ 461: else()
+ 462:     add_executable(ps2EntryRunner
+ 463:         ${RUNNER_SRC_FILES}
+ 464:     )
+ 465: endif()
+ 466: 
+ 467: # Mark of Kri generated native functions and runtime registration.
+ 468: set(MARK_OF_KRI_NATIVE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../native/runtime/mark_of_kri")
+ 469: set(MARK_OF_KRI_NATIVE_SOURCES
+ 470:     "${MARK_OF_KRI_NATIVE_DIR}/mark_of_kri_registration.cpp"
+ 471:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_resetGrabMode_001159B8.cpp"
+ 472:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_getAttackZoneRange.cpp"
+ 473:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_doorReset.cpp"
+ 474:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_InitBackdrop.cpp"
+ 475:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_Load_envGrid.cpp"
+ 476:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_addSpirit.cpp"
+ 477:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_GetVoDataSizeInMacroBlocks.cpp"
+ 478:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_SetViewArea.cpp"
+ 479:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_allowLockMode.cpp"
+ 480:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_anmcmd_exitHeader.cpp"
+ 481:     "${MARK_OF_KRI_NATIVE_DIR}/MARK_OF_KRI_Update_Shimmer.cpp"
+ 482: )
+ 483: 
+ 484: foreach(MARK_OF_KRI_SOURCE IN LISTS MARK_OF_KRI_NATIVE_SOURCES)
+ 485:     if(NOT EXISTS "${MARK_OF_KRI_SOURCE}")
+ 486:         message(FATAL_ERROR "Missing Mark of Kri generated source: ${MARK_OF_KRI_SOURCE}")
+ 487:     endif()
+ 488: endforeach()
+ 489: 
+ 490: target_sources(ps2EntryRunner PRIVATE ${MARK_OF_KRI_NATIVE_SOURCES})
+ 491: 
+ 492: set_source_files_properties(${MARK_OF_KRI_NATIVE_SOURCES}
+ 493:     PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
+ 494: )
+ 495: if(PS2X_ENABLE_RUNNER_UNITY_BUILD)
+ 496:     set_target_properties(ps2EntryRunner PROPERTIES
+ 497:         UNITY_BUILD ON
+ 498:         UNITY_BUILD_BATCH_SIZE "${PS2X_RUNNER_UNITY_BUILD_BATCH_SIZE}"
+ 499:     )
+ 500: endif()
+ 501: 
+ 502: if(PS2X_ENABLE_RUNNER_PCH)
+ 503:     set(PS2X_RUNNER_PCH_HEADERS
+ 504:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_runtime_macros.h"
+ 505:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_runtime.h"
+ 506:     )
+ 507: 
+ 508:     foreach(PS2X_RUNNER_GENERATED_HEADER IN ITEMS
+ 509:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_recompiled_functions.h"
+ 510:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_recompiled_stubs.h")
+ 511:         if(EXISTS "${PS2X_RUNNER_GENERATED_HEADER}")
+ 512:             list(APPEND PS2X_RUNNER_PCH_HEADERS "${PS2X_RUNNER_GENERATED_HEADER}")
+ 513:         endif()
+ 514:     endforeach()
+ 515: 
+ 516:     list(APPEND PS2X_RUNNER_PCH_HEADERS
+ 517:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_syscalls.h"
+ 518:         "${CMAKE_CURRENT_SOURCE_DIR}/include/ps2_stubs.h"
+ 519:     )
+ 520: 
+ 521:     target_precompile_headers(ps2EntryRunner PRIVATE ${PS2X_RUNNER_PCH_HEADERS})
+ 522: endif()
+ 523: 
+ 524: if(PS2X_DEFAULT_BOOT_ELF_DEFINE)
+ 525:     target_compile_definitions(ps2EntryRunner PRIVATE
+ 526:         PS2X_DEFAULT_BOOT_ELF="${PS2X_DEFAULT_BOOT_ELF_DEFINE}"
+ 527:     )
+ 528: endif()
+ 529: 
+ 530: if(MSVC)
+ 531:     target_compile_options(ps2EntryRunner PRIVATE /FS)
+ 532: endif()
+ 533: 
+ 534: target_include_directories(ps2_runtime PUBLIC
+ 535:     ${CMAKE_CURRENT_SOURCE_DIR}/include
+ 536:     ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/Kernel
+ 537:     ${CMAKE_CURRENT_SOURCE_DIR}/../ps2xIOP/include
+ 538: )
+ 539: 
+ 540:     # MARK_OF_KRI_IOP_SUBDIRECTORY_REGISTRATION
+ 541:     # ps2xRuntime is also configured as a standalone CMake project.
+ 542:     # Register the IOP library here when its parent project has not done so.
+ 543:     if(NOT TARGET ps2_iop)
+ 544:         add_subdirectory(
+ 545:             "${CMAKE_CURRENT_SOURCE_DIR}/../ps2xIOP"
+ 546:             "${CMAKE_CURRENT_BINARY_DIR}/ps2xIOP"
+ 547:         )
+ 548:     endif()
+ 549: target_link_libraries(ps2_runtime PUBLIC ps2_host_backend ffmpeg ps2_iop)
+ 550: target_link_libraries(ps2EntryRunner
+ 551:     PRIVATE
+ 552:     ps2_runtime
+ 553: )
+ 554: 
+ 555: if(PS2X_ENABLE_DEBUG_UI AND NOT PS2X_IS_VITA AND NOT PS2X_IS_ANDROID)
+ 556:     target_sources(ps2EntryRunner PRIVATE
+ 557:         src/lib/ps2_debug_panel.cpp
+ 558:     )
+ 559:     target_link_libraries(ps2EntryRunner PRIVATE rlImGui imgui)
+ 560:     target_compile_definitions(ps2EntryRunner PRIVATE PS2X_ENABLE_DEBUG_UI=1)
+ 561: endif()
+ 562: 
+ 563: ps2x_stage_ffmpeg_runtime_dlls(ps2EntryRunner)
+ 564: 
+ 565: if(PS2X_IS_VITA)
+ 566:     set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1") 
+ 567:     set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d ATTRIBUTE2=12")
+ 568: 
+ 569:     if(PS2X_VITA_CREATE_PACKAGE)
+ 570:         set(PS2X_VITA_VPK_FILES "")
+ 571: 
+ 572:         foreach(PS2X_VITA_MODULE IN ITEMS
+ 573:             libgpu_es4_ext.suprx
+ 574:             libIMGEGL.suprx
+ 575:             libGLESv2.suprx
+ 576:             libpvrPSP2_WSEGL.suprx
+ 577:             libGL.suprx)
+ 578:             set(PS2X_VITA_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vita/module/${PS2X_VITA_MODULE}")
+ 579: 
+ 580:             if(EXISTS "${PS2X_VITA_MODULE_PATH}")
+ 581:                 list(APPEND PS2X_VITA_VPK_FILES FILE "${PS2X_VITA_MODULE_PATH}" "module/${PS2X_VITA_MODULE}")
+ 582:             else()
+ 583:                 message(WARNING
+ 584:                     "Missing ${PS2X_VITA_MODULE_PATH}; the vpk will rely on ur0:data/external/ for it")
+ 585:             endif()
+ 586:         endforeach()
+ 587: 
+ 588:         vita_create_self(eboot.bin ps2EntryRunner UNSAFE)
+ 589:         vita_create_vpk(ps2EntryRunner.vpk ${PS2X_VITA_TITLEID} eboot.bin
+ 590:             VERSION ${PS2X_VITA_VERSION}
+ 591:             NAME ${PS2X_VITA_APP_NAME}
+ 592:             ${PS2X_VITA_VPK_FILES}
+ 593:         )
+ 594:     endif()
+ 595: endif()
+ 596: 
+ 597: if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+ 598:     EnableFastReleaseMode(ps2_runtime)
+ 599:     EnableFastReleaseMode(ps2EntryRunner)
+ 600: 
+ 601:     if(WIN32 AND NOT PS2X_SHOW_WINDOWS_CONSOLE)
+ 602:         if(MSVC)
+ 603:             target_link_options(ps2EntryRunner PRIVATE
+ 604:                 $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>:/SUBSYSTEM:WINDOWS>
+ 605:                 $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>:/ENTRY:mainCRTStartup>
+ 606:             )
+ 607:         elseif(MINGW)
+ 608:             target_link_options(ps2EntryRunner PRIVATE
+ 609:                 $<$<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>:-mwindows>
+ 610:             )
+ 611:         endif()
+ 612:     endif()
+ 613: endif()
+ 614: 
+ 615: # Work around WinAPI vs raylib symbol clash for CloseWindow on x64
+ 616: if(MSVC)
+ 617:     target_link_options(ps2EntryRunner PRIVATE "/FORCE:MULTIPLE")
+ 618: endif()
+ 619: 
+ 620: # Vita: Work around for GCC 10's LTO plugin
+ 621: if(PS2X_IS_VITA)
+ 622:     target_link_options(ps2EntryRunner PRIVATE "-Wl,--allow-multiple-definition")
+ 623:     target_sources(ps2EntryRunner PRIVATE src/lib/ps2_vita_runtime.cpp)
+ 624:     set_source_files_properties(src/lib/ps2_vita_runtime.cpp PROPERTIES
+ 625:         SKIP_UNITY_BUILD_INCLUSION TRUE
+ 626:         COMPILE_OPTIONS "-fno-lto"
+ 627:     )
+ 628: endif()
+ 629: 
+ 630: if(PS2X_IS_ANDROID)
+ 631:     target_sources(ps2EntryRunner PRIVATE src/lib/ps2_android_runtime.cpp)
+ 632: endif()
+ 633: 
+ 634: install(TARGETS ps2_runtime ps2EntryRunner
+ 635:     RUNTIME DESTINATION bin
+ 636:     LIBRARY DESTINATION lib
+ 637:     ARCHIVE DESTINATION lib
+ 638: )
+ 639: 
+ 640: if(WIN32 AND PS2X_ENABLE_FFMPEG)
+ 641:     install(DIRECTORY "${FFMPEG_BIN_DIR}/"
+ 642:         DESTINATION bin
+ 643:         FILES_MATCHING
+ 644:         PATTERN "*.dll"
+ 645:     )
+ 646: endif()
+ 647: 
+ 648: install(DIRECTORY include/
+ 649:     DESTINATION include
+ 650: )
+ 651: 
+ 652: # MARK_OF_KRI_GENERATED_INCLUDE_PATHS
+ 653: target_include_directories(ps2EntryRunner PRIVATE
+ 654:     "${CMAKE_CURRENT_SOURCE_DIR}/../../../native/generated/controlled_slice/include"
+ 655: )
+ 656: 
+
+===== EXTRACTED GAME DIRECTORY INVENTORY =====
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA).iso | 2697428992 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Vimm's Lair.txt | 466 bytes
+
+===== EXTRACTED GAME TREE: D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA) =====
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\modules
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\movies
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\Barb.wad | 272082944 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\SCUS_971.40 | 5442946 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\SYSTEM.CNF | 57 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\modules\989ERR.irx | 17452 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\modules\989snd.irx | 144812 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\modules\ioprp24.img | 251065 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\modules\libsd.irx | 24677 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\modules\mcman.irx | 90677 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\modules\mcserv.irx | 7353 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\modules\mcxman.irx | 5857 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\modules\mtapman.irx | 11013 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\modules\padman.irx | 43861 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\modules\sio2man.irx | 6553 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\movies\misr.pss | 48807940 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\movies\NAR12.PSS | 72450052 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\movies\NAR14.PSS | 62799876 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\movies\studio.pss | 4374532 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\movies\TBI.PSS | 34668548 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\movies\TFI.PSS | 43909124 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\movies\TIB.PSS | 38797316 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\movies\tif.pss | 21774340 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\movies\TIR_C.PSS | 44154884 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\movies\TIV.PSS | 25165828 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\movies\TRI_C.PSS | 41762820 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\movies\TVI.PSS | 71122948 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\bgc.pss | 25591812 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\bgl.pss | 25591812 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\credits.pss | 137478148 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\dea.pss | 79527940 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\est.pss | 34471940 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\fc.pss | 25755652 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\fl.pss | 25821188 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\fortc.pss | 25788420 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\FORTL.PSS | 25853956 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\fru.pss | 232095748 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\ic.pss | 25952260 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\il.pss | 26132484 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\INTRO.PSS | 117702660 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\kri01.pss | 65814532 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\kri02.pss | 56049668 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\mainc.pss | 66633732 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\MISB.PSS | 100368388 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\MISF.PSS | 116654084 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\MISV.PSS | 106283012 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\nc.pss | 25935876 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\ND.pss | 40697860 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\ND2.PSS | 68042756 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\nl.pss | 25952260 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\RC.PSS | 25919492 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\RL.PSS | 25952260 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\TII.PSS | 27049988 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\TIT5.PSS | 69107716 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\TIX2.PSS | 90406916 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\MOVIES2\tom.pss | 76562436 bytes
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\movies
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\MUSIC
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\AMBL.VAG | 7064144 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\AMBR.VAG | 7064144 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\BA1L.VAG | 4274336 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\BA1R.VAG | 4274336 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\CNTSQUAK.VAG | 22256 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\DIESQUAK.VAG | 47280 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\Evillaff.vag | 60208 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\MIX1L.VAG | 3633824 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\MIX1R.VAG | 3633824 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\STREAM0.WAD | 21907456 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\stream1.WAD | 7833600 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\movies\M055_058.vag | 655792 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\movies\M085_093.vag | 1541984 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\movies\M63TO68B.vag | 1324032 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\movies\M72to75b.vag | 1381328 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\movies\M76to80b.vag | 1057968 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\movies\M82to84b.vag | 458704 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\movies\Mov_127.vag | 909040 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\movies\MOV_84c.vag | 11600 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\MUSIC\music_32.vpk | 27133952 bytes
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_4
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lun1_0
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_1
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_2
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_3
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_4
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\misc
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\mun1_0
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\small1_0
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\small1_1
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\small1_2
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\small1_3
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\small1_4
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\small2_0
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\small2_1
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\small2_2
+DIR  | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\sun1_0
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_244_1.vag | 13680 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_244_2.vag | 14688 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_244_3.vag | 20112 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_245_1.vag | 34416 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_245_2.vag | 48672 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_245_3.vag | 31216 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_257_1.vag | 70640 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_257_2.vag | 67152 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_260_1.vag | 15728 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_260_2.vag | 15504 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_261_1.vag | 19808 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_261_2.vag | 21648 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_262_1.vag | 19824 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_262_2.vag | 20032 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_263_1.vag | 18576 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_263_2.vag | 18592 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_264_1.vag | 20080 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_264_2.vag | 22848 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_265_1.vag | 18528 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_265_2.vag | 24864 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_266_1.vag | 16336 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_266_2.vag | 16432 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_267_1.vag | 17040 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_267_2.vag | 16688 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_268_1.vag | 15296 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_0\F1_268_2.vag | 14560 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_269_1.vag | 16080 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_269_2.vag | 16096 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_270_1.vag | 19408 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_270_2.vag | 18816 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_271_1.vag | 17392 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_271_2.vag | 18240 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_272_1.vag | 20912 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_272_2.vag | 18720 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_273_1.vag | 17808 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_273_2.vag | 16928 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_274_1.vag | 20064 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_274_2.vag | 19424 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_275_1.vag | 18448 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_275_2.vag | 20848 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_277_1.vag | 32352 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_277_2.vag | 32528 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_278_1.vag | 15840 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_278_2.vag | 17920 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_279_1.vag | 28640 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_1\F1_279_2.vag | 27376 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_249_1.vag | 70144 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_249_2.vag | 66688 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_249_3.vag | 77280 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_280_1.vag | 17904 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_280_2.vag | 18928 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_281_1.vag | 28368 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_281_2.vag | 33536 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_282_1.vag | 22416 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_282_2.vag | 22640 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_283_1.vag | 19808 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_283_2.vag | 19840 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_284_1.vag | 18464 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_284_2.vag | 19840 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_286_1.vag | 44752 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_286_2.vag | 42848 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_287_1.vag | 28928 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_287_2.vag | 29120 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_288_1.vag | 29104 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_288_2.vag | 29024 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_289_1.vag | 25648 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_289_2.vag | 26560 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_290_1.vag | 18608 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_290_2.vag | 18096 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_291_1.vag | 28224 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_291_2.vag | 25664 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_292_1.vag | 30864 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_292_2.vag | 32176 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_293_1.vag | 28736 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\fem1_2\F1_293_2.vag | 27824 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_244_1.vag | 19088 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_244_2.vag | 19584 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_244_3.vag | 18928 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_245_1.vag | 27648 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_245_2.vag | 25856 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_245_3.vag | 32992 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_246_1.vag | 35824 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_246_2.vag | 30960 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_246_3.vag | 34576 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_247_1.vag | 80304 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_247_2.vag | 72976 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_247_3.vag | 83664 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_248_1.vag | 75312 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_248_2.vag | 64400 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_248_3.vag | 52960 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_249_1.vag | 56912 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_249_2.vag | 69200 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_249_3.vag | 98448 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_252_1.vag | 206384 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_252_2.vag | 155792 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_252_3.vag | 106864 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_252_4.vag | 251872 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_252_5.vag | 201296 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_0\L1_252_6.vag | 152352 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_257_1.vag | 63136 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_257_2.vag | 61888 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_260_1.vag | 19248 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_260_2.vag | 18704 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_261_1.vag | 26032 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_261_2.vag | 21136 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_262_1.vag | 19920 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_262_2.vag | 19712 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_263_1.vag | 21200 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_263_2.vag | 20720 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_264_1.vag | 21648 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_264_2.vag | 22640 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_265_1.vag | 21200 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_265_2.vag | 21168 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_266_1.vag | 21504 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_266_2.vag | 28832 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_267_1.vag | 18784 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_267_2.vag | 17872 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_268_1.vag | 17264 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_1\L1_268_2.vag | 21680 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_269_1.vag | 15984 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_269_2.vag | 18064 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_270_1.vag | 18976 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_270_2.vag | 21664 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_271_1.vag | 20400 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_271_2.vag | 23984 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_272_1.vag | 18560 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_272_2.vag | 22080 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_273_1.vag | 18768 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_273_2.vag | 20880 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_274_1.vag | 23248 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_274_2.vag | 20704 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_275_1.vag | 17760 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_275_2.vag | 18784 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_277_1.vag | 36192 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_277_2.vag | 28080 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_278_1.vag | 21488 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_278_2.vag | 27328 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_279_1.vag | 19168 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_2\L1_279_2.vag | 21584 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_280_1.vag | 24960 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_280_2.vag | 25360 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_281_1.vag | 40912 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_281_2.vag | 51056 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_282_1.vag | 26304 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_282_2.vag | 33648 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_283_1.vag | 24160 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_283_2.vag | 24928 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_284_1.vag | 30736 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_284_2.vag | 26480 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_286_1.vag | 33872 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_286_2.vag | 35168 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_287_1.vag | 32080 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_287_2.vag | 25760 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_288_1.vag | 25056 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_288_2.vag | 22736 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_289_1.vag | 28000 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_289_2.vag | 27872 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_290_1.vag | 20016 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_3\L1_290_2.vag | 19424 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_4\L1_291_1.vag | 34256 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_4\L1_291_2.vag | 25744 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_4\L1_292_1.vag | 21872 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_4\L1_292_2.vag | 27632 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_4\L1_293_1.vag | 26144 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lrg1_4\L1_293_2.vag | 28176 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lun1_0\UL_244_1.vag | 31568 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lun1_0\UL_244_2.vag | 25248 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lun1_0\UL_245_1.vag | 40192 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lun1_0\UL_245_2.vag | 36656 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lun1_0\UL_249_1.vag | 79408 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lun1_0\UL_249_2.vag | 68624 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lun1_0\UL_257_1.vag | 67024 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\lun1_0\UL_257_2.vag | 65120 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_244_1.vag | 14928 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_244_2.vag | 15424 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_244_3.vag | 16560 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_245_1.vag | 44528 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_245_2.vag | 49872 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_245_3.vag | 57616 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_246_1.vag | 23696 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_246_2.vag | 22080 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_246_3.vag | 23104 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_247_1.vag | 65232 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_247_2.vag | 79136 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_247_3.vag | 121424 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_248_1.vag | 53312 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_248_2.vag | 60112 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_248_3.vag | 59888 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_249_1.vag | 59536 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_249_2.vag | 57184 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_249_3.vag | 77664 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_252_1.vag | 207280 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_252_2.vag | 250576 bytes
+FILE | D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA)\streams\vocals\med1_0\M1_252_3.vag | 153216 bytes
+
+===== ISO METADATA =====
+ISO path: D:\Downloads\Mark of Kri, The (USA)\Mark of Kri, The (USA).iso
+ISO size: 2697428992 bytes
+ISO last write: 08/14/2014 14:25:11
+No 7z/7zz/bsdtar executable found on PATH.
+ISO contents not inspected; no extraction attempted.
+
+Elapsed seconds: 0.266
+Source modifications: NONE.
+Build modifications: NONE.
+Game files launched or extracted: NONE.
