@@ -1,0 +1,1331 @@
+MARK OF KRI — SIF / RPC PACKET OWNERSHIP AND DISPATCH AUDIT
+GENERATED: 2026-11-27 20:22:27
+MODE: READ-ONLY SOURCE TRACE
+
+===== IMPLEMENTATION FILE HASHES =====
+ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp SHA256: FCA911DA82716904EA408BB20848D03AA36582C10C304DA03EE0DAD7A1BFA8F1
+ps2xRuntime\src\lib\Kernel\Stubs\SIF.h SHA256: 628E65A764E363E07FE068F91865D49F5C0E5EB2918CACABEFBB07BC8ED5C320
+ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp SHA256: 765190EB48CDFE9CCF5538071B6624B15B8BD5DCE8B7D22AA8DB2B64E67D291A
+ps2xRuntime\src\lib\Kernel\Stubs\RPC.h SHA256: 58052613E9C9D84702930D5264BB1692E90C5C7D184892FF9317BADAB0EC8474
+
+===== COMPLETE SIF / RPC IMPLEMENTATION FILES =====
+--- ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp ---
+    1: #include "Common.h"
+    2: #include "SIF.h"
+    3: #include "../Syscalls/RPC.h"
+    4: #include "../../ps2_iop_transport.h"
+    5: #include "runtime/ps2_address.h"
+    6: #include "runtime/ee_scheduler.h"
+    7: 
+    8: #include <algorithm>
+    9: #include <cstring>
+   10: #include <limits>
+   11: #include <vector>
+   12: 
+   13: namespace ps2_stubs
+   14: {
+   15:     void sceSifCmdIntrHdlr(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   16:     {
+   17:         TODO_NAMED("sceSifCmdIntrHdlr", rdram, ctx, runtime);
+   18:     }
+   19: 
+   20:     void sceSifLoadModule(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   21:     {
+   22:         ps2_syscalls::SifLoadModule(rdram, ctx, runtime);
+   23:     }
+   24: 
+   25:     void sceSifSendCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   26:     {
+   27:         const uint32_t srcAddr = getRegU32(ctx, 7); // $a3
+   28:         const uint32_t dstAddr = readStackU32(rdram, ctx, 16);
+   29:         const uint32_t size = readStackU32(rdram, ctx, 20);
+   30:         if (size != 0u && srcAddr != 0u && dstAddr != 0u)
+   31:         {
+   32:             std::vector<uint8_t> payload(size);
+   33:             bool valid = runtime != nullptr;
+   34:             for (uint32_t i = 0; i < size; ++i)
+   35:             {
+   36:                 const uint8_t *src = getConstMemPtr(rdram, srcAddr + i);
+   37:                 if (!src)
+   38:                 {
+   39:                     valid = false;
+   40:                     break;
+   41:                 }
+   42:                 payload[i] = *src;
+   43:             }
+   44:             if (!valid || !runtime->writeIopMemory(dstAddr, payload.data(), payload.size()))
+   45:             {
+   46:                 setReturnS32(ctx, 0);
+   47:                 return;
+   48:             }
+   49:         }
+   50: 
+   51:         setReturnS32(ctx, 1);
+   52:     }
+   53: 
+   54:     namespace
+   55:     {
+   56:         struct Ps2SifDmaTransfer
+   57:         {
+   58:             uint32_t src = 0;
+   59:             uint32_t dest = 0;
+   60:             int32_t size = 0;
+   61:             int32_t attr = 0;
+   62:         };
+   63:         static_assert(sizeof(Ps2SifDmaTransfer) == 16u, "Unexpected SIF DMA descriptor size");
+   64: 
+   65:         std::mutex g_sifDmaTransferMutex;
+   66:         uint32_t g_nextSifDmaTransferId = 1u;
+   67:         std::mutex g_sifCmdStateMutex;
+   68:         std::unordered_map<uint32_t, uint32_t> g_sifRegs;
+   69:         std::unordered_map<uint32_t, uint32_t> g_sifSregs;
+   70:         struct SifCmdHandler
+   71:         {
+   72:             uint32_t function = 0u;
+   73:             uint32_t argument = 0u;
+   74:         };
+   75: 
+   76:         std::unordered_map<uint32_t, SifCmdHandler> g_sifCmdHandlers;
+   77:         uint32_t g_sifCmdBuffer = 0u;
+   78:         uint32_t g_sifSysCmdBuffer = 0u;
+   79:         bool g_sifCmdInitialized = false;
+   80:         uint32_t g_sifGetRegLogCount = 0u;
+   81:         uint32_t g_sifSetRegLogCount = 0u;
+   82: 
+   83:         constexpr uint32_t kSifRegBootStatus = 0x4u;
+   84:         constexpr uint32_t kSifRegMainAddr = 0x80000000u;
+   85:         constexpr uint32_t kSifRegSubAddr = 0x80000001u;
+   86:         constexpr uint32_t kSifRegMsCom = 0x80000002u;
+   87:         constexpr uint32_t kSifBootReadyMask = 0x00020000u;
+   88: 
+   89:         void seedDefaultSifRegsLocked()
+   90:         {
+   91:             g_sifRegs.clear();
+   92:             g_sifSregs.clear();
+   93:             g_sifCmdHandlers.clear();
+   94:             g_sifCmdBuffer = 0u;
+   95:             g_sifSysCmdBuffer = 0u;
+   96:             g_sifCmdInitialized = false;
+   97:             g_sifGetRegLogCount = 0u;
+   98:             g_sifSetRegLogCount = 0u;
+   99: 
+  100:             g_sifRegs[kSifRegBootStatus] = kSifBootReadyMask;
+  101:             g_sifRegs[kSifRegMainAddr] = 0u;
+  102:             g_sifRegs[kSifRegSubAddr] = 0u;
+  103:             g_sifRegs[kSifRegMsCom] = 0u;
+  104:         }
+  105: 
+  106:         bool shouldTraceSifReg(uint32_t reg)
+  107:         {
+  108:             switch (reg)
+  109:             {
+  110:             case 0x2u:
+  111:             case 0x4u:
+  112:             case 0x80000000u:
+  113:             case 0x80000001u:
+  114:             case 0x80000002u:
+  115:                 return true;
+  116:             default:
+  117:                 return false;
+  118:             }
+  119:         }
+  120: 
+  121:         struct SifStateInitializer
+  122:         {
+  123:             SifStateInitializer()
+  124:             {
+  125:                 std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  126:                 seedDefaultSifRegsLocked();
+  127:             }
+  128:         } g_sifStateInitializer;
+  129: 
+  130:         uint32_t allocateSifDmaTransferId()
+  131:         {
+  132:             std::lock_guard<std::mutex> lock(g_sifDmaTransferMutex);
+  133:             uint32_t id = g_nextSifDmaTransferId++;
+  134:             if (id == 0u)
+  135:             {
+  136:                 id = g_nextSifDmaTransferId++;
+  137:             }
+  138:             return id;
+  139:         }
+  140: 
+  141:         bool isCopyableGuestAddress(uint32_t addr)
+  142:         {
+  143:             if (Ps2AddressInRange(addr, PS2_SCRATCHPAD_BASE, PS2_SCRATCHPAD_SIZE))
+  144:             {
+  145:                 return true;
+  146:             }
+  147: 
+  148:             if (addr < PS2_EE_UNCACHED_RAM_MIRROR_BASE)
+  149:             {
+  150:                 return true;
+  151:             }
+  152: 
+  153:             if (Ps2IsUncachedRamMirrorAddress(addr))
+  154:             {
+  155:                 return true;
+  156:             }
+  157: 
+  158:             if (Ps2IsKseg01Address(addr))
+  159:             {
+  160:                 return true;
+  161:             }
+  162: 
+  163:             return false;
+  164:         }
+  165: 
+  166:         bool canAccessEeRange(const uint8_t *rdram, uint32_t address, uint32_t sizeBytes)
+  167:         {
+  168:             if (!rdram)
+  169:             {
+  170:                 return false;
+  171:             }
+  172:             if (sizeBytes == 0u)
+  173:             {
+  174:                 return true;
+  175:             }
+  176:             if (sizeBytes - 1u > std::numeric_limits<uint32_t>::max() - address)
+  177:             {
+  178:                 return false;
+  179:             }
+  180:             for (uint32_t i = 0u; i < sizeBytes; ++i)
+  181:             {
+  182:                 const uint32_t byteAddress = address + i;
+  183:                 if (!isCopyableGuestAddress(byteAddress) || getConstMemPtr(rdram, byteAddress) == nullptr)
+  184:                 {
+  185:                     return false;
+  186:                 }
+  187:             }
+  188:             return true;
+  189:         }
+  190: 
+  191:         bool readEeRange(const uint8_t *rdram, uint32_t address, void *destination, uint32_t sizeBytes)
+  192:         {
+  193:             if ((!destination && sizeBytes != 0u) || !canAccessEeRange(rdram, address, sizeBytes))
+  194:                 return false;
+  195:             auto *bytes = static_cast<uint8_t *>(destination);
+  196:             for (uint32_t i = 0u; i < sizeBytes; ++i)
+  197:             {
+  198:                 const uint8_t *source = getConstMemPtr(rdram, address + i);
+  199:                 if (!source)
+  200:                     return false;
+  201:                 bytes[i] = *source;
+  202:             }
+  203:             return true;
+  204:         }
+  205: 
+  206:         bool writeEeRange(uint8_t *rdram, uint32_t address, const void *source, uint32_t sizeBytes)
+  207:         {
+  208:             if ((!source && sizeBytes != 0u) || !canAccessEeRange(rdram, address, sizeBytes))
+  209:                 return false;
+  210:             ps2TraceGuestRangeWrite(rdram, address, sizeBytes, "SIF IOP-to-EE DMA", nullptr);
+  211:             const auto *bytes = static_cast<const uint8_t *>(source);
+  212:             for (uint32_t i = 0u; i < sizeBytes; ++i)
+  213:             {
+  214:                 uint8_t *destination = getMemPtr(rdram, address + i);
+  215:                 if (!destination)
+  216:                     return false;
+  217:                 *destination = bytes[i];
+  218:             }
+  219:             return true;
+  220:         }
+  221:     }
+  222: 
+  223:     void resetSifState()
+  224:     {
+  225:         std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  226:         seedDefaultSifRegsLocked();
+  227:     }
+  228: 
+  229:     bool dispatchSifCommand(uint8_t *rdram,
+  230:                             PS2Runtime *runtime,
+  231:                             uint32_t commandId,
+  232:                             const void *packet,
+  233:                             size_t packetSize) noexcept
+  234:     {
+  235:         if (!rdram || !runtime || !packet || packetSize < 16u || packetSize > 112u)
+  236:             return false;
+  237: 
+  238:         SifCmdHandler registered{};
+  239:         {
+  240:             std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  241:             const auto handler = g_sifCmdHandlers.find(commandId);
+  242:             if (handler == g_sifCmdHandlers.end() || handler->second.function == 0u)
+  243:                 return false;
+  244:             registered = handler->second;
+  245:         }
+  246: 
+  247:         if (!runtime->hasFunction(registered.function))
+  248:             return false;
+  249: 
+  250:         const uint32_t packetAddress = runtime->guestMalloc(static_cast<uint32_t>(packetSize), 16u);
+  251:         if (packetAddress == 0u)
+  252:             return false;
+  253: 
+  254:         uint8_t *const first = getMemPtr(rdram, packetAddress);
+  255:         uint8_t *const last = getMemPtr(rdram, packetAddress + static_cast<uint32_t>(packetSize - 1u));
+  256:         if (!first || !last || last < first || static_cast<size_t>(last - first) != packetSize - 1u)
+  257:         {
+  258:             runtime->guestFree(packetAddress);
+  259:             return false;
+  260:         }
+  261: 
+  262:         ps2TraceGuestRangeWrite(rdram, packetAddress, static_cast<uint32_t>(packetSize), "SIF command packet", nullptr);
+  263:         std::memcpy(first, packet, packetSize);
+  264: 
+  265:         try
+  266:         {
+  267:             GuestInvocation invocation{};
+  268:             invocation.kind = GuestInvocationKind::SifCommand;
+  269:             invocation.tag = commandId;
+  270:             invocation.context = runtime->cpu();
+  271:             invocation.context.pc = registered.function;
+  272:             SET_GPR_U32(&invocation.context, 4, packetAddress);
+  273:             SET_GPR_U32(&invocation.context, 5, registered.argument);
+  274:             SET_GPR_U32(&invocation.context, 6, 0u);
+  275:             SET_GPR_U32(&invocation.context, 7, 0u);
+  276:             SET_GPR_U32(&invocation.context, 29, 0u);
+  277:             SET_GPR_U32(&invocation.context, 31, 0u);
+  278:             invocation.onComplete = [runtime, packetAddress](const R5900Context &, R5900Context &)
+  279:             {
+  280:                 runtime->guestFree(packetAddress);
+  281:             };
+  282:             runtime->eeScheduler().queueInvocation(std::move(invocation));
+  283:             return true;
+  284:         }
+  285:         catch (...)
+  286:         {
+  287:             runtime->guestFree(packetAddress);
+  288:             return false;
+  289:         }
+  290:     }
+  291: 
+  292:     void sceSifAddCmdHandler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  293:     {
+  294:         const uint32_t cid = getRegU32(ctx, 4);
+  295:         const uint32_t handler = getRegU32(ctx, 5);
+  296:         const uint32_t argument = getRegU32(ctx, 6);
+  297:         std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  298:         g_sifCmdHandlers[cid] = SifCmdHandler{handler, argument};
+  299:         setReturnS32(ctx, 0);
+  300:     }
+  301: 
+  302:     void sceSifAllocIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  303:     {
+  304:         (void)rdram;
+  305:         const uint32_t reqSize = getRegU32(ctx, 4);
+  306:         setReturnU32(ctx, runtime ? runtime->allocateIopMemory(reqSize, 64u) : 0u);
+  307:     }
+  308: 
+  309:     void sceSifAllocSysMemory(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  310:     {
+  311:         (void)rdram;
+  312:         const uint32_t size = getRegU32(ctx, 5);
+  313:         setReturnU32(ctx, runtime ? runtime->allocateIopMemory(size, 64u) : 0u);
+  314:     }
+  315: 
+  316:     void sceSifBindRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  317:     {
+  318:         ps2_syscalls::SifBindRpc(rdram, ctx, runtime);
+  319:     }
+  320: 
+  321:     void sceSifCheckStatRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  322:     {
+  323:         ps2_syscalls::SifCheckStatRpc(rdram, ctx, runtime);
+  324:     }
+  325: 
+  326:     void sceSifDmaStat(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  327:     {
+  328:         (void)rdram;
+  329:         (void)runtime;
+  330:         (void)getRegU32(ctx, 4); // trid
+  331: 
+  332:         // Transfers are applied immediately by sceSifSetDma in this runtime.
+  333:         setReturnS32(ctx, -1);
+  334:     }
+  335: 
+  336:     void sceSifExecRequest(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  337:     {
+  338:         setReturnS32(ctx, 0);
+  339:     }
+  340: 
+  341:     void sceSifExitCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  342:     {
+  343:         std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  344:         seedDefaultSifRegsLocked();
+  345:         setReturnS32(ctx, 0);
+  346:     }
+  347: 
+  348:     void sceSifExitRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  349:     {
+  350:         setReturnS32(ctx, 0);
+  351:     }
+  352: 
+  353:     void sceSifFreeIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  354:     {
+  355:         (void)rdram;
+  356:         const uint32_t addr = getRegU32(ctx, 4);
+  357:         setReturnS32(ctx, runtime && runtime->freeIopMemory(addr) ? 0 : -1);
+  358:     }
+  359: 
+  360:     void sceSifFreeSysMemory(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  361:     {
+  362:         (void)rdram;
+  363:         const uint32_t addr = getRegU32(ctx, 4);
+  364:         setReturnS32(ctx, runtime && runtime->freeIopMemory(addr) ? 0 : -1);
+  365:     }
+  366: 
+  367:     void sceSifGetDataTable(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  368:     {
+  369:         std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  370:         setReturnU32(ctx, g_sifCmdBuffer);
+  371:     }
+  372: 
+  373:     void sceSifGetIopAddr(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  374:     {
+  375:         setReturnU32(ctx, getRegU32(ctx, 4));
+  376:     }
+  377: 
+  378:     void sceSifGetNextRequest(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  379:     {
+  380:         setReturnS32(ctx, 0);
+  381:     }
+  382: 
+  383:     void sceSifGetOtherData(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  384:     {
+  385:         const uint32_t rdAddr = getRegU32(ctx, 4);
+  386:         const uint32_t srcAddr = getRegU32(ctx, 5);
+  387:         const uint32_t dstAddr = getRegU32(ctx, 6);
+  388:         const int32_t sizeSigned = static_cast<int32_t>(getRegU32(ctx, 7));
+  389: 
+  390:         if (sizeSigned <= 0)
+  391:         {
+  392:             setReturnS32(ctx, 0);
+  393:             return;
+  394:         }
+  395: 
+  396:         const uint32_t size = static_cast<uint32_t>(sizeSigned);
+  397:         if (size > PS2_RAM_SIZE)
+  398:         {
+  399:             static uint32_t warnCount = 0;
+  400:             if (warnCount < 32u)
+  401:             {
+  402:                 std::cerr << "sceSifGetOtherData rejected oversized transfer size=0x"
+  403:                           << std::hex << size << std::dec << std::endl;
+  404:                 ++warnCount;
+  405:             }
+  406:             setReturnS32(ctx, -1);
+  407:             return;
+  408:         }
+  409: 
+  410:         if (runtime)
+  411:         {
+  412:             PS2IopTransport::notifyTransfer(runtime, rdram, {
+  413:                                                                 ps2x::iop::SifTransferKind::GetOtherData,
+  414:                                                                 ps2x::iop::SifTransferPhase::BeforeCopy,
+  415:                                                                 srcAddr,
+  416:                                                                 dstAddr,
+  417:                                                                 size,
+  418:                                                             });
+  419:         }
+  420: 
+  421:         std::vector<uint8_t> payload(size);
+  422:         if (!runtime || !runtime->isIopMemoryRange(srcAddr, size) ||
+  423:             !canAccessEeRange(rdram, dstAddr, size) ||
+  424:             !runtime->readIopMemory(srcAddr, payload.data(), payload.size()) ||
+  425:             !writeEeRange(rdram, dstAddr, payload.data(), size))
+  426:         {
+  427:             static uint32_t warnCount = 0;
+  428:             if (warnCount < 32u)
+  429:             {
+  430:                 PS2_IF_AGRESSIVE_LOGS({
+  431:                     std::cerr << "sceSifGetOtherData copy failed src=0x" << std::hex << srcAddr
+  432:                               << " dst=0x" << dstAddr
+  433:                               << " size=0x" << size
+  434:                               << std::dec << std::endl;
+  435:                 });
+  436:                 ++warnCount;
+  437:             }
+  438:             setReturnS32(ctx, -1);
+  439:             return;
+  440:         }
+  441: 
+  442:         // SifRpcReceiveData_t keeps src/dest/size at offsets 0x10/0x14/0x18.
+  443:         if (uint8_t *rd = getMemPtr(rdram, rdAddr))
+  444:         {
+  445:             std::memcpy(rd + 0x10u, &srcAddr, sizeof(srcAddr));
+  446:             std::memcpy(rd + 0x14u, &dstAddr, sizeof(dstAddr));
+  447:             std::memcpy(rd + 0x18u, &size, sizeof(size));
+  448:         }
+  449: 
+  450:         if (runtime)
+  451:         {
+  452:             PS2IopTransport::notifyTransfer(runtime, rdram, {
+  453:                                                                 ps2x::iop::SifTransferKind::GetOtherData,
+  454:                                                                 ps2x::iop::SifTransferPhase::AfterCopy,
+  455:                                                                 srcAddr,
+  456:                                                                 dstAddr,
+  457:                                                                 size,
+  458:                                                             });
+  459:         }
+  460: 
+  461:         setReturnS32(ctx, 0);
+  462:     }
+  463: 
+  464:     void sceSifGetReg(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  465:     {
+  466:         const uint32_t reg = getRegU32(ctx, 4);
+  467:         uint32_t value = 0u;
+  468:         bool shouldLog = false;
+  469:         {
+  470:             std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  471:             auto it = g_sifRegs.find(reg);
+  472:             if (it != g_sifRegs.end())
+  473:             {
+  474:                 value = it->second;
+  475:             }
+  476:             shouldLog = shouldTraceSifReg(reg) && g_sifGetRegLogCount < 128u;
+  477:             if (shouldLog)
+  478:             {
+  479:                 ++g_sifGetRegLogCount;
+  480:             }
+  481:         }
+  482:         if (shouldLog)
+  483:         {
+  484:             PS2_IF_AGRESSIVE_LOGS({
+  485:                 auto flags = std::cerr.flags();
+  486:                 std::cerr << "[sceSifGetReg] reg=0x" << std::hex << reg
+  487:                           << " value=0x" << value
+  488:                           << " pc=0x" << (ctx ? ctx->pc : 0u)
+  489:                           << " ra=0x" << (ctx ? getRegU32(ctx, 31) : 0u)
+  490:                           << std::dec << std::endl;
+  491:                 std::cerr.flags(flags);
+  492:             });
+  493:         }
+  494:         setReturnU32(ctx, value);
+  495:     }
+  496: 
+  497:     void sceSifGetSreg(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  498:     {
+  499:         const uint32_t reg = getRegU32(ctx, 4);
+  500:         uint32_t value = 0u;
+  501:         {
+  502:             std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  503:             auto it = g_sifSregs.find(reg);
+  504:             if (it != g_sifSregs.end())
+  505:             {
+  506:                 value = it->second;
+  507:             }
+  508:         }
+  509:         setReturnU32(ctx, value);
+  510:     }
+  511: 
+  512:     void sceSifInitCmd(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  513:     {
+  514:         std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  515:         g_sifCmdInitialized = true;
+  516:         setReturnS32(ctx, 0);
+  517:     }
+  518: 
+  519:     void sceSifInitIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  520:     {
+  521:         // The physical IOP allocator is initialized by IopSubsystem::reset().
+  522:         setReturnS32(ctx, 0);
+  523:     }
+  524: 
+  525:     void sceSifInitRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  526:     {
+  527:         ps2_syscalls::SifInitRpc(rdram, ctx, runtime);
+  528:     }
+  529: 
+  530:     void sceSifIsAliveIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  531:     {
+  532:         setReturnS32(ctx, 1);
+  533:     }
+  534: 
+  535:     void sceSifLoadElf(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  536:     {
+  537:         ps2_syscalls::sceSifLoadElf(rdram, ctx, runtime);
+  538:     }
+  539: 
+  540:     void sceSifLoadElfPart(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  541:     {
+  542:         ps2_syscalls::sceSifLoadElfPart(rdram, ctx, runtime);
+  543:     }
+  544: 
+  545:     void sceSifLoadFileReset(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  546:     {
+  547:         setReturnS32(ctx, 0);
+  548:     }
+  549: 
+  550:     void sceSifLoadIopHeap(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  551:     {
+  552:         setReturnS32(ctx, 0);
+  553:     }
+  554: 
+  555:     void sceSifLoadModuleBuffer(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  556:     {
+  557:         ps2_syscalls::sceSifLoadModuleBuffer(rdram, ctx, runtime);
+  558:     }
+  559: 
+  560:     void sceSifRebootIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  561:     {
+  562:         PS2IopTransport::reset(runtime);
+  563:         setReturnS32(ctx, 1);
+  564:     }
+  565: 
+  566:     void sceSifRegisterRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  567:     {
+  568:         ps2_syscalls::SifRegisterRpc(rdram, ctx, runtime);
+  569:     }
+  570: 
+  571:     void sceSifRemoveCmdHandler(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  572:     {
+  573:         const uint32_t cid = getRegU32(ctx, 4);
+  574:         std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  575:         g_sifCmdHandlers.erase(cid);
+  576:         setReturnS32(ctx, 0);
+  577:     }
+  578: 
+  579:     void sceSifRemoveRpc(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  580:     {
+  581:         ps2_syscalls::SifRemoveRpc(rdram, ctx, runtime);
+  582:     }
+  583: 
+  584:     void sceSifRemoveRpcQueue(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  585:     {
+  586:         ps2_syscalls::SifRemoveRpcQueue(rdram, ctx, runtime);
+  587:     }
+  588: 
+  589:     void sceSifResetIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  590:     {
+  591:         PS2IopTransport::reset(runtime);
+  592:         setReturnS32(ctx, 1);
+  593:     }
+  594: 
+  595:     void sceSifRpcLoop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  596:     {
+  597:         setReturnS32(ctx, 0);
+  598:     }
+  599: 
+  600:     void sceSifSearchModuleByAddress(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  601:     {
+  602:         // The guest libkernel version asks LOADFILE over RPC, a BIOS module no BIOS-free IOP registers.
+  603:         constexpr int32_t kUnknownModule = -202; // KE_UNKNOWN_MODULE, as loadcore reports a miss
+  604:         const int32_t moduleId = runtime ? runtime->findIopModuleByAddress(getRegU32(ctx, 4)) : -1;
+  605:         setReturnS32(ctx, moduleId > 0 ? moduleId : kUnknownModule);
+  606:     }
+  607: 
+  608:     void sceSifSetCmdBuffer(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  609:     {
+  610:         const uint32_t newBuffer = getRegU32(ctx, 4);
+  611:         uint32_t prev = 0u;
+  612:         {
+  613:             std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  614:             prev = g_sifCmdBuffer;
+  615:             g_sifCmdBuffer = newBuffer;
+  616:         }
+  617:         setReturnU32(ctx, prev);
+  618:     }
+  619: 
+  620:     void isceSifSetDChain(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  621:     {
+  622:         sceSifSetDChain(rdram, ctx, runtime);
+  623:     }
+  624: 
+  625:     void isceSifSetDma(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  626:     {
+  627:         sceSifSetDma(rdram, ctx, runtime);
+  628:     }
+  629: 
+  630:     void sceSifSetDChain(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  631:     {
+  632:         (void)rdram;
+  633:         (void)runtime;
+  634:         setReturnS32(ctx, 0);
+  635:     }
+  636: 
+  637:     void sceSifSetDma(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  638:     {
+  639:         const uint32_t dmatAddr = getRegU32(ctx, 4);
+  640:         const uint32_t count = getRegU32(ctx, 5);
+  641: 
+  642:         const uint32_t listAddr = getRegU32(ctx, 4);
+  643:         PS2_IF_AGRESSIVE_LOGS({
+  644:             std::cerr << "[sceSifSetDma:CALL] pc=0x" << std::hex << ctx->pc
+  645:                       << " ra=0x" << getRegU32(ctx, 31)
+  646:                       << " list=0x" << listAddr
+  647:                       << " count=" << std::dec << count
+  648:                       << std::endl;
+  649: 
+  650:             for (uint32_t i = 0; i < count; ++i)
+  651:             {
+  652:                 const uint32_t desc = listAddr + i * 16;
+  653:                 const uint32_t src = READ32(desc + 0);
+  654:                 const uint32_t dst = READ32(desc + 4);
+  655:                 const uint32_t size = READ32(desc + 8);
+  656:                 const uint32_t attr = READ32(desc + 12);
+  657: 
+  658:                 std::cerr << "[sceSifSetDma:DESC] i=" << i
+  659:                           << " src=0x" << std::hex << src
+  660:                           << " dst=0x" << dst
+  661:                           << " size=0x" << size
+  662:                           << " attr=0x" << attr
+  663:                           << " pc=0x" << ctx->pc
+  664:                           << " ra=0x" << getRegU32(ctx, 31)
+  665:                           << std::dec << std::endl;
+  666:             }
+  667:         });
+  668: 
+  669:         if (!dmatAddr || count == 0u || count > 32u)
+  670:         {
+  671:             setReturnS32(ctx, 0);
+  672:             return;
+  673:         }
+  674: 
+  675:         std::array<Ps2SifDmaTransfer, 32u> pending{};
+  676:         uint32_t pendingCount = 0u;
+  677:         bool ok = true;
+  678:         for (uint32_t i = 0; i < count; ++i)
+  679:         {
+  680:             const uint32_t entryAddr = dmatAddr + (i * static_cast<uint32_t>(sizeof(Ps2SifDmaTransfer)));
+  681:             const uint8_t *entry = getConstMemPtr(rdram, entryAddr);
+  682:             if (!entry)
+  683:             {
+  684:                 ok = false;
+  685:                 break;
+  686:             }
+  687: 
+  688:             Ps2SifDmaTransfer xfer{};
+  689:             std::memcpy(&xfer, entry, sizeof(xfer));
+  690:             if (xfer.size <= 0)
+  691:             {
+  692:                 continue;
+  693:             }
+  694: 
+  695:             const uint32_t sizeBytes = static_cast<uint32_t>(xfer.size);
+  696:             if (sizeBytes > PS2_RAM_SIZE)
+  697:             {
+  698:                 ok = false;
+  699:                 break;
+  700:             }
+  701:             if (!runtime || !canAccessEeRange(rdram, xfer.src, sizeBytes) || !runtime->isIopMemoryRange(xfer.dest, sizeBytes))
+  702:             {
+  703:                 ok = false;
+  704:                 break;
+  705:             }
+  706: 
+  707:             pending[pendingCount++] = xfer;
+  708:         }
+  709: 
+  710:         if (ok)
+  711:         {
+  712:             for (uint32_t i = 0; i < pendingCount; ++i)
+  713:             {
+  714:                 const Ps2SifDmaTransfer &xfer = pending[i];
+  715:                 if (runtime)
+  716:                 {
+  717:                     PS2IopTransport::notifyTransfer(runtime, rdram, {
+  718:                                                                         ps2x::iop::SifTransferKind::SetDma,
+  719:                                                                         ps2x::iop::SifTransferPhase::BeforeCopy,
+  720:                                                                         xfer.src,
+  721:                                                                         xfer.dest,
+  722:                                                                         static_cast<uint32_t>(xfer.size),
+  723:                                                                     });
+  724:                 }
+  725:                 const uint32_t sizeBytes = static_cast<uint32_t>(xfer.size);
+  726:                 std::vector<uint8_t> payload(sizeBytes);
+  727:                 if (!readEeRange(rdram, xfer.src, payload.data(), sizeBytes) || !runtime->writeIopMemory(xfer.dest, payload.data(), payload.size()))
+  728:                 {
+  729:                     ok = false;
+  730:                     break;
+  731:                 }
+  732:                 if (runtime)
+  733:                 {
+  734:                     PS2IopTransport::notifyTransfer(runtime, rdram, {
+  735:                                                                         ps2x::iop::SifTransferKind::SetDma,
+  736:                                                                         ps2x::iop::SifTransferPhase::AfterCopy,
+  737:                                                                         xfer.src,
+  738:                                                                         xfer.dest,
+  739:                                                                         static_cast<uint32_t>(xfer.size),
+  740:                                                                     });
+  741:                 }
+  742:             }
+  743:         }
+  744: 
+  745:         if (!ok)
+  746:         {
+  747:             static uint32_t warnCount = 0;
+  748:             if (warnCount < 32u)
+  749:             {
+  750:                 PS2_IF_AGRESSIVE_LOGS({
+  751:                     std::cerr << "sceSifSetDma failed dmat=0x" << std::hex << dmatAddr
+  752:                               << " count=0x" << count
+  753:                               << std::dec << std::endl;
+  754:                 });
+  755:                 ++warnCount;
+  756:             }
+  757:             setReturnS32(ctx, 0);
+  758:             return;
+  759:         }
+  760: 
+  761:         ps2_syscalls::dispatchDmacHandlersForCause(rdram, runtime, 5u);
+  762: 
+  763:         setReturnS32(ctx, static_cast<int32_t>(allocateSifDmaTransferId()));
+  764:     }
+  765: 
+  766:     void sceSifSetIopAddr(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  767:     {
+  768:         setReturnU32(ctx, getRegU32(ctx, 5));
+  769:     }
+  770: 
+  771:     void sceSifSetReg(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  772:     {
+  773:         const uint32_t reg = getRegU32(ctx, 4);
+  774:         const uint32_t value = getRegU32(ctx, 5);
+  775:         uint32_t prev = 0u;
+  776:         bool shouldLog = false;
+  777:         {
+  778:             std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  779:             auto it = g_sifRegs.find(reg);
+  780:             if (it != g_sifRegs.end())
+  781:             {
+  782:                 prev = it->second;
+  783:             }
+  784:             g_sifRegs[reg] = value;
+  785:             shouldLog = shouldTraceSifReg(reg) && g_sifSetRegLogCount < 128u;
+  786:             if (shouldLog)
+  787:             {
+  788:                 ++g_sifSetRegLogCount;
+  789:             }
+  790:         }
+  791:         if (shouldLog)
+  792:         {
+  793:             PS2_IF_AGRESSIVE_LOGS({
+  794:                 auto flags = std::cerr.flags();
+  795:                 std::cerr << "[sceSifSetReg] reg=0x" << std::hex << reg
+  796:                           << " prev=0x" << prev
+  797:                           << " value=0x" << value
+  798:                           << " pc=0x" << (ctx ? ctx->pc : 0u)
+  799:                           << " ra=0x" << (ctx ? getRegU32(ctx, 31) : 0u)
+  800:                           << std::dec << std::endl;
+  801:                 std::cerr.flags(flags);
+  802:             });
+  803:         }
+  804:         setReturnU32(ctx, prev);
+  805:     }
+  806: 
+  807:     void sceSifSetRpcQueue(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  808:     {
+  809:         ps2_syscalls::SifSetRpcQueue(rdram, ctx, runtime);
+  810:     }
+  811: 
+  812:     void sceSifSetSreg(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  813:     {
+  814:         const uint32_t reg = getRegU32(ctx, 4);
+  815:         const uint32_t value = getRegU32(ctx, 5);
+  816:         uint32_t prev = 0u;
+  817:         {
+  818:             std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  819:             auto it = g_sifSregs.find(reg);
+  820:             if (it != g_sifSregs.end())
+  821:             {
+  822:                 prev = it->second;
+  823:             }
+  824:             g_sifSregs[reg] = value;
+  825:         }
+  826:         setReturnU32(ctx, prev);
+  827:     }
+  828: 
+  829:     void sceSifSetSysCmdBuffer(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  830:     {
+  831:         const uint32_t newBuffer = getRegU32(ctx, 4);
+  832:         uint32_t prev = 0u;
+  833:         {
+  834:             std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+  835:             prev = g_sifSysCmdBuffer;
+  836:             g_sifSysCmdBuffer = newBuffer;
+  837:         }
+  838:         setReturnU32(ctx, prev);
+  839:     }
+  840: 
+  841:     void sceSifStopDma(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  842:     {
+  843:         setReturnS32(ctx, 0);
+  844:     }
+  845: 
+  846:     void sceSifSyncIop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  847:     {
+  848:         setReturnS32(ctx, 1);
+  849:     }
+  850: 
+  851:     void sceSifWriteBackDCache(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+  852:     {
+  853:         setReturnS32(ctx, 0);
+  854:     }
+  855: }
+
+--- ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp ---
+    1: #include "Common.h"
+    2: #include "RPC.h"
+    3: 
+    4: namespace ps2_stubs
+    5: {
+    6:     void sceRpcFreePacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+    7:     {
+    8:         TODO_NAMED("sceRpcFreePacket", rdram, ctx, runtime);
+    9:     }
+   10: 
+   11:     void sceRpcGetFPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   12:     {
+   13:         TODO_NAMED("sceRpcGetFPacket", rdram, ctx, runtime);
+   14:     }
+   15: 
+   16:     void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+   17:     {
+   18:         TODO_NAMED("sceRpcGetFPacket2", rdram, ctx, runtime);
+   19:     }
+   20: }
+
+===== CROSS-SOURCE SYMBOL REFERENCES =====
+--- SEARCH: sceSifCmdIntrHdlr ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:15: void sceSifCmdIntrHdlr(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:17: TODO_NAMED("sceSifCmdIntrHdlr", rdram, ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.h:8: void sceSifCmdIntrHdlr(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+MATCH COUNT: 3
+
+--- SEARCH: sceRpcFreePacket ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:6: void sceRpcFreePacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:8: TODO_NAMED("sceRpcFreePacket", rdram, ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.h:7: void sceRpcFreePacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+MATCH COUNT: 3
+
+--- SEARCH: sceRpcGetFPacket ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:11: void sceRpcGetFPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:13: TODO_NAMED("sceRpcGetFPacket", rdram, ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:16: void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:18: TODO_NAMED("sceRpcGetFPacket2", rdram, ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.h:8: void sceRpcGetFPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.h:9: void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+MATCH COUNT: 6
+
+--- SEARCH: sceRpcGetFPacket2 ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:16: void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:18: TODO_NAMED("sceRpcGetFPacket2", rdram, ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.h:9: void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+MATCH COUNT: 3
+
+--- SEARCH: dispatchSifCommand ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:518: return ps2_stubs::dispatchSifCommand(rdram,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:229: bool dispatchSifCommand(uint8_t *rdram,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.h:7: bool dispatchSifCommand(uint8_t *rdram, PS2Runtime *runtime, uint32_t commandId, const void *packet, size_t packetSize) noexcept;
+MATCH COUNT: 3
+
+--- SEARCH: resetSifState ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:36: void resetSifState();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:2451: ps2_stubs::resetSifState();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:223: void resetSifState()
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.h:11: void resetSifState();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp:17: void resetSifState();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp:32: ps2_stubs::resetSifState();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp:328: tc.Run("resetSifState seeds boot-ready SIF registers", [](TestCase &t)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:20: void resetSifState();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:112: ps2_stubs::resetSifState();
+MATCH COUNT: 9
+
+--- SEARCH: RpcPacket ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:992: uint32_t rpcPacketIndex = 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:999: rpcPacketIndex = g_rpc_packet_index;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:1151: rpcPacketIndex,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:232: return kind == ps2x::iop::IopHandleKind::RpcPacket
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:88: if (kRpcPacketPoolCount == 0)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:91: uint32_t slot = g_rpc_packet_index++ % kRpcPacketPoolCount;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:92: uint32_t addr = kRpcPacketPoolBase + (slot * kRpcPacketSize);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:93: rpcZeroRdram(rdram, addr, kRpcPacketSize);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:245: static constexpr uint32_t kRpcPacketSize = 64;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:246: static constexpr uint32_t kRpcPacketPoolBase = 0x01F00000;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:247: static constexpr uint32_t kRpcPacketPoolBytes = 0x00010000;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:248: static constexpr uint32_t kRpcPacketPoolCount = kRpcPacketPoolBytes / kRpcPacketSize;
+MATCH COUNT: 12
+
+--- SEARCH: RPC_PACKET ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:999: rpcPacketIndex = g_rpc_packet_index;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:236: g_rpc_packet_index = 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:91: uint32_t slot = g_rpc_packet_index++ % kRpcPacketPoolCount;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:216: inline uint32_t g_rpc_packet_index = 0;
+MATCH COUNT: 4
+
+--- SEARCH: FPacket ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:1599: (channelBase == 0x1000A000u) ? (m_gifPacketCallback || m_gifArbiter != nullptr) : true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2042: submitGifPacket(GifPathId::Path3, p.chainData.data(), static_cast<uint32_t>(p.chainData.size()), false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2071: submitGifPacket(GifPathId::Path3, m_scratchpad + srcPhys, chunk, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2090: submitGifPacket(GifPathId::Path3, m_rdram + srcPhys, chunk, false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2284: else if (m_gifPacketCallback)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2285: m_gifPacketCallback(packetData, packetSize);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2299: void PS2Memory::submitGifPacket(GifPathId pathId, const uint8_t *data, uint32_t sizeBytes, bool drainImmediately, bool path2DirectHl)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2316: else if (m_gifPacketCallback)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2317: m_gifPacketCallback(data, sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2323: void PS2Memory::processGIFPacket(uint32_t srcPhysAddr, uint32_t qwCount)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2342: submitGifPacket(GifPathId::Path3, m_rdram + srcPhysAddr, chunk);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2349: void PS2Memory::processGIFPacket(const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2352: submitGifPacket(GifPathId::Path3, data, sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2353: else if (m_gifPacketCallback && data && sizeBytes >= 16)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2354: m_gifPacketCallback(data, sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_memory.cpp:2609: if (!gs.processNativePackedGIFPacket(payload, payloadBytes))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_runtime.cpp:753: { m_gs.processGIFPacket(data, size); });
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:323: submitGifPacket(GifPathId::Path2, imagePacket.data(), static_cast<uint32_t>(imagePacket.size()), true, m_vif1PendingPath2DirectHl);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_vif1_interpreter.cpp:501: submitGifPacket(GifPathId::Path2, data + pos, qwCount * 16, true, directHl);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_frontend.cpp:39: struct PackedGifPacketTag
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_frontend.cpp:50: bool visitPackedGifPacket(const uint8_t *data, uint32_t sizeBytes, Visitor &&visitor)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_frontend.cpp:55: PackedGifPacketTag tag{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_frontend.cpp:91: bool validatePackedGifPacket(const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_frontend.cpp:93: return visitPackedGifPacket(data, sizeBytes, [](const PackedGifPacketTag &)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_frontend.cpp:97: std::atomic<uint32_t> s_debugGifPacketCount{0};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_frontend.cpp:641: void GS::processGIFPacket(const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_frontend.cpp:651: const uint32_t packetIndex = s_debugGifPacketCount.fetch_add(1, std::memory_order_relaxed);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_frontend.cpp:740: bool GS::processNativePackedGIFPacket(const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_frontend.cpp:746: if (!validatePackedGifPacket(data, sizeBytes))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_frontend.cpp:749: const bool processed = visitPackedGifPacket(data, sizeBytes, [&](const PackedGifPacketTag &tag)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\gs\gs_frontend.cpp:776: ++m_nativePackedGIFPacketCount;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:296: uint32_t advanceGifPacketWords(uint8_t *rdram, PS2Runtime *runtime, uint32_t stateAddr, uint32_t wordCount)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:614: const uint32_t refPacketAddr = terminatePacketBuilderState(rdram, ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:618: refPacketAddr,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:621: writePacketBuilderCurrent(rdram, runtime, stateAddr, refPacketAddr + 16u);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\GS.cpp:635: setReturnU32(ctx, advanceGifPacketWords(rdram, runtime, getRegU32(ctx, 4), getRegU32(ctx, 5)));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:11: void sceRpcGetFPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:13: TODO_NAMED("sceRpcGetFPacket", rdram, ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:16: void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:18: TODO_NAMED("sceRpcGetFPacket2", rdram, ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.h:8: void sceRpcGetFPacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.h:9: void sceRpcGetFPacket2(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:923: m_activeMemory->submitGifPacket(GifPathId::Path1, m_xgkick.packet.data(), m_xgkick.totalBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\vu\ps2_vu1_core.cpp:925: m_activeGs->processGIFPacket(m_xgkick.packet.data(), m_xgkick.totalBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2056: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2080: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2318: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2372: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2445: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2500: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2559: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2664: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2707: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2775: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2820: gs.processGIFPacket(packetA.data(), static_cast<uint32_t>(packetA.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2821: gs.processGIFPacket(packetB.data(), static_cast<uint32_t>(packetB.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2908: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:2996: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:4267: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:5951: gs.processGIFPacket(packetA.data(), static_cast<uint32_t>(packetA.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:5962: gs.processGIFPacket(packetB.data(), static_cast<uint32_t>(packetB.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:6027: gs.processGIFPacket(packetT8H.data(), static_cast<uint32_t>(packetT8H.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:6093: gs.processGIFPacket(packetMixT8H.data(), static_cast<uint32_t>(packetMixT8H.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:6121: gs.processGIFPacket(packetMixNibble.data(), static_cast<uint32_t>(packetMixNibble.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:6300: gs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_gs_tests.cpp:6344: gs.processGIFPacket(packet2.data(), static_cast<uint32_t>(packet2.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:925: mem.setGifPacketCallback([](const uint8_t *, uint32_t) {});
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:950: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:967: mem.submitGifPacket(GifPathId::Path3, packetA.data(), static_cast<uint32_t>(packetA.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:968: mem.submitGifPacket(GifPathId::Path3, packetB.data(), static_cast<uint32_t>(packetB.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1028: mem.submitGifPacket(GifPathId::Path3, path3Image.data(), static_cast<uint32_t>(path3Image.size()), false);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1030: std::vector<uint8_t> vifPacket;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1031: appendU32(vifPacket, makeVifCmd(0x51u, 0u, 1u)); // DIRECTHL 1 QW
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1034: vifPacket.push_back(static_cast<uint8_t>(0xD2u + i));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1036: mem.processVIF1Data(vifPacket.data(), static_cast<uint32_t>(vifPacket.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1059: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1107: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1151: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1197: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1234: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1802: genericGs.processGIFPacket(packet.data(), static_cast<uint32_t>(packet.size()));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1815: t.Equals(nativeGs.nativePackedGIFPacketCount(), 1ull, "native packed GIF packet counter should increment");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1836: std::vector<uint8_t> capturedGifPacket;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1837: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1839: capturedGifPacket.assign(data, data + sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1840: gs.processGIFPacket(data, sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1895: t.IsTrue(capturedGifPacket.size() >= kCt32PayloadOffset + kCt32Bytes,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1897: bool ct32PayloadOk = capturedGifPacket.size() >= kCt32PayloadOffset + kCt32Bytes;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1900: if (capturedGifPacket[kCt32PayloadOffset + i] != rdram[kCt32Data + i])
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1944: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:1945: { gs.processGIFPacket(data, sizeBytes); });
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:2031: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:2081: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:2162: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:2262: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:2336: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:2390: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:2442: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:2527: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:2756: gs.processGIFPacket(data, sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:2824: gs.processGIFPacket(data, sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_memory_tests.cpp:2877: gs.processGIFPacket(data, sizeBytes);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu1_tests.cpp:1145: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu1_tests.cpp:1211: mem.setGifPacketCallback([&](const uint8_t *packet, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu1_tests.cpp:1265: mem.setGifPacketCallback([&](const uint8_t *packet, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu1_tests.cpp:1320: mem.setGifPacketCallback([&](const uint8_t *data, uint32_t sizeBytes)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_vu1_tests.cpp:1384: gs.processGIFPacket(data, sizeBytes);
+MATCH COUNT: 107
+
+--- SEARCH: FreePacket ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:6: void sceRpcFreePacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.cpp:8: TODO_NAMED("sceRpcFreePacket", rdram, ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\RPC.h:7: void sceRpcFreePacket(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+MATCH COUNT: 3
+
+--- SEARCH: SifCmd ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:15: void sceSifCmdIntrHdlr(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:17: TODO_NAMED("sceSifCmdIntrHdlr", rdram, ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:67: std::mutex g_sifCmdStateMutex;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:70: struct SifCmdHandler
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:76: std::unordered_map<uint32_t, SifCmdHandler> g_sifCmdHandlers;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:77: uint32_t g_sifCmdBuffer = 0u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:79: bool g_sifCmdInitialized = false;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:93: g_sifCmdHandlers.clear();
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:94: g_sifCmdBuffer = 0u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:96: g_sifCmdInitialized = false;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:125: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:225: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:238: SifCmdHandler registered{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:240: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:241: const auto handler = g_sifCmdHandlers.find(commandId);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:242: if (handler == g_sifCmdHandlers.end() || handler->second.function == 0u)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:297: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:298: g_sifCmdHandlers[cid] = SifCmdHandler{handler, argument};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:343: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:369: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:370: setReturnU32(ctx, g_sifCmdBuffer);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:470: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:502: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:514: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:515: g_sifCmdInitialized = true;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:574: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:575: g_sifCmdHandlers.erase(cid);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:613: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:614: prev = g_sifCmdBuffer;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:615: g_sifCmdBuffer = newBuffer;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:778: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:818: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:834: std::lock_guard<std::mutex> lock(g_sifCmdStateMutex);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.h:8: void sceSifCmdIntrHdlr(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+MATCH COUNT: 34
+
+--- SEARCH: SifCommand ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:511: bool PS2IopHostAdapter::sendSifCommand(uint32_t commandId,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.cpp:518: return ps2_stubs::dispatchSifCommand(rdram,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_iop_host.h:87: bool sendSifCommand(uint32_t commandId, const void *packet, size_t packetSize) override;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:229: bool dispatchSifCommand(uint8_t *rdram,
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:268: invocation.kind = GuestInvocationKind::SifCommand;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.h:7: bool dispatchSifCommand(uint8_t *rdram, PS2Runtime *runtime, uint32_t commandId, const void *packet, size_t packetSize) noexcept;
+MATCH COUNT: 6
+
+--- SEARCH: SifRpc ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:142: {kSifRpcDebugFlagNowait, "nowait"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:143: {kSifRpcDebugFlagHandledByHle, "hle"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:144: {kSifRpcDebugFlagCallback, "callback"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:145: {kSifRpcDebugFlagMissingClient, "bad-client"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:146: {kSifRpcDebugFlagServerDispatch, "server"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:147: {kSifRpcDebugFlagUnhandled, "unhandled"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:148: {kSifRpcDebugFlagFallbackCopy, "fallback-copy"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:149: {kSifRpcDebugFlagFallbackZero, "fallback-zero"},
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:975: t_SifRpcServerData sd{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:985: t_SifRpcClientData cd{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:1238: std::vector<SifRpcDebugEvent> events;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:1243: events.reserve(kSifRpcDebugHistoryCount);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:1244: for (size_t i = 0; i < kSifRpcDebugHistoryCount; ++i)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:1246: const SifRpcDebugEvent &event = g_sif_rpc_debug_history[i];
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:1253: std::sort(events.begin(), events.end(), [](const SifRpcDebugEvent &a, const SifRpcDebugEvent &b)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:1285: for (const SifRpcDebugEvent &event : events)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:1292: const bool unhandled = (event.flags & kSifRpcDebugFlagUnhandled) != 0u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:1352: for (const SifRpcDebugEvent &event : events)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:442: // SifRpcReceiveData_t keeps src/dest/size at offsets 0x10/0x14/0x18.
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.cpp:595: void sceSifRpcLoop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Stubs\SIF.h:44: void sceSifRpcLoop(uint8_t *rdram, R5900Context *ctx, PS2Runtime *runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:9: SifRpcDebugEvent makeRpcDebugEvent(const char *op, R5900Context *ctx, PS2Runtime *runtime)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:11: SifRpcDebugEvent event{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:19: void pushSifRpcDebugEventLocked(SifRpcDebugEvent event)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:22: g_sif_rpc_debug_history[event.seq % kSifRpcDebugHistoryCount] = event;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:25: void pushSifRpcDebugEvent(SifRpcDebugEvent event)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:28: pushSifRpcDebugEventLocked(event);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:39: const uint32_t count = std::min<uint32_t>(size, static_cast<uint32_t>(kSifRpcDebugPreviewBytes));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:105: void logUnhandledRpcTrace(const SifRpcDebugEvent &event)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:240: for (size_t i = 0; i < kSifRpcDebugHistoryCount; ++i)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:242: g_sif_rpc_debug_history[i] = SifRpcDebugEvent{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:248: SifRpcDebugEvent event = makeRpcDebugEvent("InitRpc", ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:250: pushSifRpcDebugEventLocked(event);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:260: t_SifRpcClientData *client = reinterpret_cast<t_SifRpcClientData *>(getMemPtr(rdram, clientPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:264: SifRpcDebugEvent event = makeRpcDebugEvent("BindRpc", ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:268: event.flags = kSifRpcDebugFlagMissingClient;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:270: pushSifRpcDebugEvent(event);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:307: t_SifRpcServerData *dummy = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, serverPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:320: t_SifRpcServerData *sd = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, serverPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:332: SifRpcDebugEvent event = makeRpcDebugEvent("BindRpc", ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:338: pushSifRpcDebugEvent(event);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:460: auto *client = reinterpret_cast<t_SifRpcClientData *>(getMemPtr(rdram, clientPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:463: SifRpcDebugEvent event = makeRpcDebugEvent("CallRpc", ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:474: event.flags = kSifRpcDebugFlagMissingClient | ((mode & kSifRpcModeNowait) ? kSifRpcDebugFlagNowait : 0u);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:476: pushSifRpcDebugEvent(event);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:506: ? reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, serverPtr))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:516: server->rmode = ((mode & kSifRpcModeNowait) && endFunction == 0u) ? 0 : 1;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:549: (mode & kSifRpcModeNowait) != 0u)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:616: SifRpcDebugEvent event = makeRpcDebugEvent("CallRpc", &base, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:631: ((mode & kSifRpcModeNowait) ? kSifRpcDebugFlagNowait : 0u) |
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:632: (iopResult.handled ? kSifRpcDebugFlagHandledByHle : 0u) |
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:633: (callbackCompleted ? kSifRpcDebugFlagCallback : 0u) |
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:634: (serverDispatched ? kSifRpcDebugFlagServerDispatch : 0u) |
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:635: (!handled ? kSifRpcDebugFlagUnhandled : 0u) |
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:636: (copiedFallback ? kSifRpcDebugFlagFallbackCopy : 0u) |
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:637: (zeroedFallback ? kSifRpcDebugFlagFallbackZero : 0u);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:642: if ((event.flags & kSifRpcDebugFlagUnhandled) != 0u)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:647: pushSifRpcDebugEvent(event);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:720: t_SifRpcServerData *sd = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, sdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:723: SifRpcDebugEvent event = makeRpcDebugEvent("RegisterRpc", ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:730: event.flags = kSifRpcDebugFlagMissingClient;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:732: pushSifRpcDebugEvent(event);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:760: t_SifRpcDataQueue *queue = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, qd));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:772: t_SifRpcServerData *cur = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, curPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:793: t_SifRpcClientData *cd = reinterpret_cast<t_SifRpcClientData *>(getMemPtr(rdram, entry.first));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:805: SifRpcDebugEvent event = makeRpcDebugEvent("RegisterRpc", ctx, runtime);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:813: pushSifRpcDebugEvent(event);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:835: t_SifRpcDataQueue *qd = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, qdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:862: t_SifRpcDataQueue *cur = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, curPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:896: t_SifRpcDataQueue *qd = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, qdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:905: t_SifRpcDataQueue *cur = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, curPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:910: t_SifRpcDataQueue *rem = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, qdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:926: t_SifRpcDataQueue *qd = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, qdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:937: t_SifRpcServerData *sd = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, sdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:948: t_SifRpcServerData *cur = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, curPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:953: t_SifRpcServerData *sd = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, sdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:42: struct t_SifRpcHeader
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:50: struct t_SifRpcClientData
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:52: t_SifRpcHeader hdr;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:58: uint32_t server;       // t_SifRpcServerData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:61: struct t_SifRpcServerData
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:70: uint32_t client;   // t_SifRpcClientData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:77: uint32_t link; // t_SifRpcServerData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:78: uint32_t next; // t_SifRpcServerData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:79: uint32_t base; // t_SifRpcDataQueue*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:82: struct t_SifRpcDataQueue
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:86: uint32_t link;  // t_SifRpcServerData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:87: uint32_t start; // t_SifRpcServerData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:88: uint32_t end;   // t_SifRpcServerData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:89: uint32_t next;  // t_SifRpcDataQueue*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:169: struct SifRpcDebugEvent
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:197: static constexpr size_t kSifRpcDebugHistoryCount = 256u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:198: static constexpr size_t kSifRpcDebugPreviewBytes = 16u;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:199: static constexpr uint32_t kSifRpcDebugFlagNowait = 1u << 0;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:200: static constexpr uint32_t kSifRpcDebugFlagHandledByHle = 1u << 1;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:201: static constexpr uint32_t kSifRpcDebugFlagCallback = 1u << 2;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:202: static constexpr uint32_t kSifRpcDebugFlagMissingClient = 1u << 3;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:203: static constexpr uint32_t kSifRpcDebugFlagServerDispatch = 1u << 4;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:204: static constexpr uint32_t kSifRpcDebugFlagUnhandled = 1u << 6;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:205: static constexpr uint32_t kSifRpcDebugFlagFallbackCopy = 1u << 7;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:206: static constexpr uint32_t kSifRpcDebugFlagFallbackZero = 1u << 8;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:210: inline SifRpcDebugEvent g_sif_rpc_debug_history[kSifRpcDebugHistoryCount]{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:262: static constexpr uint32_t kSifRpcModeNowait = 0x01;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:263: static constexpr uint32_t kSifRpcModeNoWbDc = 0x02;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp:46: struct SifRpcHeader
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp:54: struct SifRpcReceiveData
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp:56: SifRpcHeader hdr;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp:64: static_assert(sizeof(SifRpcReceiveData) == 28u, "Unexpected SifRpcReceiveData size.");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp:440: std::memset(env.rdram.data() + kRdAddr, 0, sizeof(SifRpcReceiveData));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_dma_tests.cpp:452: const SifRpcReceiveData rd = *reinterpret_cast<const SifRpcReceiveData *>(env.rdram.data() + kRdAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:34: struct SifRpcHeader
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:42: struct SifRpcClientData
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:44: SifRpcHeader hdr;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:53: struct SifRpcServerData
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:74: struct SifRpcDataQueue
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:98: static_assert(sizeof(SifRpcHeader) == 0x10u, "Unexpected SifRpcHeader size.");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:99: static_assert(sizeof(SifRpcClientData) == 0x28u, "Unexpected SifRpcClientData size.");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:100: static_assert(sizeof(SifRpcServerData) == 0x44u, "Unexpected SifRpcServerData size.");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:101: static_assert(sizeof(SifRpcDataQueue) == 0x18u, "Unexpected SifRpcDataQueue size.");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:190: MiniTest::Case("PS2SifRpc", [](TestCase &tc)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:279: const SifRpcClientData client = readGuestStruct<SifRpcClientData>(env.rdram.data(), kClientAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:316: const SifRpcDataQueue qdAfterRegister = readGuestStruct<SifRpcDataQueue>(env.rdram.data(), kQdAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:317: const SifRpcServerData sdAfterRegister = readGuestStruct<SifRpcServerData>(env.rdram.data(), kSdAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:330: const SifRpcClientData clientAfterBind = readGuestStruct<SifRpcClientData>(env.rdram.data(), kClientAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:358: const SifRpcServerData sdAfterCall = readGuestStruct<SifRpcServerData>(env.rdram.data(), kSdAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:513: const SifRpcClientData clientBeforeRegister = readGuestStruct<SifRpcClientData>(env.rdram.data(), kClientAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:535: const SifRpcClientData clientAfterRegister = readGuestStruct<SifRpcClientData>(env.rdram.data(), kClientAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:546: const SifRpcDataQueue qdAfterRemove = readGuestStruct<SifRpcDataQueue>(env.rdram.data(), kQdAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:547: const SifRpcServerData sdAfterRemove = readGuestStruct<SifRpcServerData>(env.rdram.data(), kSdAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:565: const SifRpcDataQueue qd = readGuestStruct<SifRpcDataQueue>(env.rdram.data(), kQdAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:642: const SifRpcServerData sdAfterCall = readGuestStruct<SifRpcServerData>(env.rdram.data(), kSdAddr);
+MATCH COUNT: 131
+
+--- SEARCH: SifRpcData ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:760: t_SifRpcDataQueue *queue = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, qd));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:835: t_SifRpcDataQueue *qd = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, qdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:862: t_SifRpcDataQueue *cur = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, curPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:896: t_SifRpcDataQueue *qd = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, qdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:905: t_SifRpcDataQueue *cur = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, curPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:910: t_SifRpcDataQueue *rem = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, qdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:926: t_SifRpcDataQueue *qd = reinterpret_cast<t_SifRpcDataQueue *>(getMemPtr(rdram, qdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:79: uint32_t base; // t_SifRpcDataQueue*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:82: struct t_SifRpcDataQueue
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:89: uint32_t next;  // t_SifRpcDataQueue*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:74: struct SifRpcDataQueue
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:101: static_assert(sizeof(SifRpcDataQueue) == 0x18u, "Unexpected SifRpcDataQueue size.");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:316: const SifRpcDataQueue qdAfterRegister = readGuestStruct<SifRpcDataQueue>(env.rdram.data(), kQdAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:546: const SifRpcDataQueue qdAfterRemove = readGuestStruct<SifRpcDataQueue>(env.rdram.data(), kQdAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:565: const SifRpcDataQueue qd = readGuestStruct<SifRpcDataQueue>(env.rdram.data(), kQdAddr);
+MATCH COUNT: 15
+
+--- SEARCH: SifRpcClientData ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:985: t_SifRpcClientData cd{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:260: t_SifRpcClientData *client = reinterpret_cast<t_SifRpcClientData *>(getMemPtr(rdram, clientPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:460: auto *client = reinterpret_cast<t_SifRpcClientData *>(getMemPtr(rdram, clientPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:793: t_SifRpcClientData *cd = reinterpret_cast<t_SifRpcClientData *>(getMemPtr(rdram, entry.first));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:50: struct t_SifRpcClientData
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:70: uint32_t client;   // t_SifRpcClientData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:42: struct SifRpcClientData
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:99: static_assert(sizeof(SifRpcClientData) == 0x28u, "Unexpected SifRpcClientData size.");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:279: const SifRpcClientData client = readGuestStruct<SifRpcClientData>(env.rdram.data(), kClientAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:330: const SifRpcClientData clientAfterBind = readGuestStruct<SifRpcClientData>(env.rdram.data(), kClientAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:513: const SifRpcClientData clientBeforeRegister = readGuestStruct<SifRpcClientData>(env.rdram.data(), kClientAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:535: const SifRpcClientData clientAfterRegister = readGuestStruct<SifRpcClientData>(env.rdram.data(), kClientAddr);
+MATCH COUNT: 12
+
+--- SEARCH: SifRpcServerData ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\ps2_debug_panel.cpp:975: t_SifRpcServerData sd{};
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:307: t_SifRpcServerData *dummy = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, serverPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:320: t_SifRpcServerData *sd = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, serverPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:506: ? reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, serverPtr))
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:720: t_SifRpcServerData *sd = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, sdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:772: t_SifRpcServerData *cur = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, curPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:937: t_SifRpcServerData *sd = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, sdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:948: t_SifRpcServerData *cur = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, curPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\RPC.cpp:953: t_SifRpcServerData *sd = reinterpret_cast<t_SifRpcServerData *>(getMemPtr(rdram, sdPtr));
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:58: uint32_t server;       // t_SifRpcServerData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:61: struct t_SifRpcServerData
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:77: uint32_t link; // t_SifRpcServerData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:78: uint32_t next; // t_SifRpcServerData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:86: uint32_t link;  // t_SifRpcServerData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:87: uint32_t start; // t_SifRpcServerData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:88: uint32_t end;   // t_SifRpcServerData*
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:53: struct SifRpcServerData
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:100: static_assert(sizeof(SifRpcServerData) == 0x44u, "Unexpected SifRpcServerData size.");
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:317: const SifRpcServerData sdAfterRegister = readGuestStruct<SifRpcServerData>(env.rdram.data(), kSdAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:358: const SifRpcServerData sdAfterCall = readGuestStruct<SifRpcServerData>(env.rdram.data(), kSdAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:547: const SifRpcServerData sdAfterRemove = readGuestStruct<SifRpcServerData>(env.rdram.data(), kSdAddr);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xTest\src\ps2_sif_rpc_tests.cpp:642: const SifRpcServerData sdAfterCall = readGuestStruct<SifRpcServerData>(env.rdram.data(), kSdAddr);
+MATCH COUNT: 22
+
+--- SEARCH: packet pool ---
+MATCH COUNT: 0
+
+--- SEARCH: packetPool ---
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:88: if (kRpcPacketPoolCount == 0)
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:91: uint32_t slot = g_rpc_packet_index++ % kRpcPacketPoolCount;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\Runtime.h:92: uint32_t addr = kRpcPacketPoolBase + (slot * kRpcPacketSize);
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:246: static constexpr uint32_t kRpcPacketPoolBase = 0x01F00000;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:247: static constexpr uint32_t kRpcPacketPoolBytes = 0x00010000;
+D:\Games\MarkOfKriRecomp\external\PS2Recomp\ps2xRuntime\src\lib\Kernel\Syscalls\Helpers\State.h:248: static constexpr uint32_t kRpcPacketPoolCount = kRpcPacketPoolBytes / kRpcPacketSize;
+MATCH COUNT: 6
+
+===== AUDIT SUMMARY =====
+SOURCE FILES SCANNED: 113
+RELEVANT FILES IDENTIFIED: 22
+SOURCE MODIFIED: NO
+BUILD EXECUTED: NO
+GAME EXECUTABLE MODIFIED: NO
+ELAPSED SECONDS: 11.805
